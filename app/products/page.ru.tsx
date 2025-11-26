@@ -6,7 +6,6 @@ import { Card } from "react-bootstrap";
 import Link from "next/link";
 import { FaClock, FaDollarSign, FaChartLine } from "react-icons/fa";
 import Header from "../../components/Header";
-import Footer from "../../components/Footer";
 
 export default function ProductsPage() {
   const [menuOpen, setMenuOpen] = useState(false);

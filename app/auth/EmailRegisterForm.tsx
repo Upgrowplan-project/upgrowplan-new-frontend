@@ -36,9 +36,9 @@ export default function EmailRegisterForm({
 
     setPasswordStrength(strength);
 
-    if (strength <= 1) setPasswordHint("Пароль слабый");
-    else if (strength === 2) setPasswordHint("Пароль средний");
-    else setPasswordHint("Пароль сильный");
+    if (strength <= 1) setPasswordHint("Password is weak");
+    else if (strength === 2) setPasswordHint("Password is medium");
+    else setPasswordHint("Password is strong");
   }
 
   // регистрация
@@ -49,19 +49,19 @@ export default function EmailRegisterForm({
 
     // Проверка пароля
     const passwordRules = [
-      { regex: /.{8,}/, message: "Пароль должен содержать минимум 8 символов" },
+      { regex: /.{8,}/, message: "Password must be at least 8 characters" },
       {
         regex: /[A-Z]/,
-        message: "Пароль должен содержать хотя бы одну заглавную букву",
+        message: "Password must contain at least one uppercase letter",
       },
       {
         regex: /[a-z]/,
-        message: "Пароль должен содержать хотя бы одну строчную букву",
+        message: "Password must contain at least one lowercase letter",
       },
-      { regex: /[0-9]/, message: "Пароль должен содержать хотя бы одну цифру" },
+      { regex: /[0-9]/, message: "Password must contain at least one digit" },
       {
         regex: /[^A-Za-z0-9]/,
-        message: "Пароль должен содержать хотя бы один спецсимвол",
+        message: "Password must contain at least one special character",
       },
     ];
 
@@ -79,7 +79,7 @@ export default function EmailRegisterForm({
       router.push("/account");
     } catch (err: any) {
       setErrors({
-        email: err.message || "Ошибка регистрации",
+        email: err.message || "Registration error",
         password: undefined,
       });
     } finally {
@@ -98,9 +98,9 @@ export default function EmailRegisterForm({
       localStorage.setItem("email", res.email);
       router.push("/account");
     } catch (err: any) {
-      console.error("Login error response:", err.response?.data); // <- добавлено
+      console.error("Login error response:", err.response?.data);
       setErrors({
-        email: err.message || "Ошибка входа",
+        email: err.message || "Login error",
       });
     } finally {
       setSubmitting(false);
@@ -110,7 +110,7 @@ export default function EmailRegisterForm({
   function renderPasswordStrength() {
     const score = passwordStrength;
     const strengthText =
-      score <= 2 ? "Слабый" : score === 3 ? "Средний" : "Сильный";
+      score <= 2 ? "Weak" : score === 3 ? "Medium" : "Strong";
 
     return (
       <div className="mt-2">
@@ -176,7 +176,7 @@ export default function EmailRegisterForm({
 
                 <div className="mb-3">
                   <label htmlFor="login-password" className="form-label">
-                    Пароль
+                    Password
                   </label>
                   <div className={styles.passwordWrapper}>
                     <input
@@ -197,7 +197,7 @@ export default function EmailRegisterForm({
                         src={
                           showPassword ? "/images/eye1.png" : "/images/eye.png"
                         }
-                        alt="Показать пароль"
+                        alt="Show password"
                         width={32}
                         height={32}
                       />
@@ -210,7 +210,7 @@ export default function EmailRegisterForm({
                   className={`${styles.mainBtn} ${styles.loginBtn} w-100`}
                   disabled={submitting}
                 >
-                  {submitting ? "Входим…" : "Войти"}
+                  {submitting ? "Logging in…" : "Login"}
                 </button>
               </form>
             ) : (
@@ -236,7 +236,7 @@ export default function EmailRegisterForm({
 
                 <div className="mb-3">
                   <label htmlFor="reg-password" className="form-label">
-                    Пароль
+                    Password
                   </label>
                   <div className={styles.passwordWrapper}>
                     <input
@@ -271,8 +271,8 @@ export default function EmailRegisterForm({
                     className="mt-2"
                     style={{ fontSize: "0.85rem", color: "#666" }}
                   >
-                    Пароль должен содержать минимум 8 символов, заглавные и
-                    строчные буквы, цифры и спецсимволы.
+                    Password must be at least 8 characters, include upper and
+                    lower case letters, digits and special characters.
                   </div>
 
                   {renderPasswordStrength()}
@@ -283,7 +283,7 @@ export default function EmailRegisterForm({
                   className={`${styles.mainBtn} ${styles.registerBtn} w-100`}
                   disabled={submitting}
                 >
-                  {submitting ? "Регистрируем…" : "Зарегистрироваться"}
+                  {submitting ? "Registering…" : "Register"}
                 </button>
               </form>
             )}

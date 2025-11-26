@@ -148,6 +148,17 @@ main {
   margin: 0;
 }
 
+.product-card-meta {
+  margin-top: 1rem !important;
+}
+
+.product-card-meta li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.2rem 0;
+}
+
 footer {
   flex-shrink: 0;
 }
@@ -186,8 +197,8 @@ footer {
   object-fit: cover;
 }
 
-/* Чтобы текст не прижимался к краям */
-.card-body {
+/* Чтобы текст не прижимался к краям (только для блог-постов) */
+.blog-post .card-body {
   overflow: hidden;
 }
 
@@ -237,7 +248,7 @@ footer {
     border-right: 1px solid #eee;
   }
 
-  .card-body {
+  .blog-post .card-body {
     padding: 1.5rem;
     width: 60%;
   }
@@ -257,7 +268,7 @@ footer {
     border-bottom: 1px solid #eee;
   }
 
-  .card-body {
+  .blog-post .card-body {
     padding: 1rem 1.25rem;
   }
 }

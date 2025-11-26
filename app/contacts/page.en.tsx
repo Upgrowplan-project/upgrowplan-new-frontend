@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import dynamic from "next/dynamic";
 import Header from "../../components/Header";
-import Footer from "../../components/Footer";
 
 //const Header = dynamic(() => import('@/components/Header'), { ssr: false });
 //const Footer = dynamic(() => import('@/components/Footer'), { ssr: false });
@@ -24,12 +23,12 @@ export default function ContactsPage() {
     e.preventDefault();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      setError("Введите корректный Email");
+      setError("Please enter a valid email");
       return;
     }
     setError("");
-    console.log("Отправка сообщения:", { name, email, message });
-    alert("Сообщение отправлено! (Пока имитация отправки)");
+    console.log("Sending message:", { name, email, message });
+    alert("Message sent! (simulation)");
   };
 
   return (
@@ -38,7 +37,7 @@ export default function ContactsPage() {
 
       <main className="container my-5">
         <h1 className="mb-4" style={{ color: "#1e6078" }}>
-          Контакты
+          Contacts
         </h1>
 
         <div
@@ -86,7 +85,7 @@ export default function ContactsPage() {
         >
           <div className="mb-3">
             <label htmlFor="name" className="form-label">
-              Имя
+              Name
             </label>
             <input
               type="text"
@@ -94,7 +93,7 @@ export default function ContactsPage() {
               className="form-control"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Введите ваше имя"
+              placeholder="Enter your name"
               required
             />
           </div>
@@ -108,14 +107,14 @@ export default function ContactsPage() {
               className={`form-control ${error ? "is-invalid" : ""}`}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Введите ваш email"
+              placeholder="Enter your email"
               required
             />
             {error && <div className="invalid-feedback">{error}</div>}
           </div>
           <div className="mb-3">
             <label htmlFor="message" className="form-label">
-              Сообщение
+              Message
             </label>
             <textarea
               id="message"
@@ -123,7 +122,7 @@ export default function ContactsPage() {
               rows={4}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="Введите ваше сообщение"
+              placeholder="Enter your message"
               required
             ></textarea>
           </div>
@@ -136,13 +135,13 @@ export default function ContactsPage() {
               onChange={() => setIsChecked(!isChecked)}
             />
             <label className="form-check-label" htmlFor="policyCheck">
-              Отправляя данное сообщение, я ознакомился и согласился с{" "}
+              By sending this message I have read and agree with the{" "}
               <a href="/privacy" target="_blank">
-                Политикой конфиденциальности
+                Privacy Policy
               </a>{" "}
-              и{" "}
+              and the{" "}
               <a href="/privacy" target="_blank">
-                Политикой обработки персональных данных
+                Personal Data Processing Policy
               </a>
               .
             </label>
@@ -152,7 +151,7 @@ export default function ContactsPage() {
             className="btn btn-primary w-100"
             disabled={!isChecked}
           >
-            Отправить сообщение
+            Send message
           </button>
         </form>
       </main>

@@ -1,13 +1,7 @@
-// app/layout.tsx
+// Root layout - required by Next.js
+// The actual localized layout is in app/[locale]/layout.tsx
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import "./globals.css";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "aos/dist/aos.css";
-import "bootstrap-icons/font/bootstrap-icons.css";
-
-import AOSWrapper from "./AOSWrapper";
-import Footer from "@/components/Footer";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -15,14 +9,10 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title:
-    "Upgrowplan | Бизнес-планы, Финансовые модели, Аналитика | Business-plans, Financial mdels, Analytics, Market research",
-  description: "Upgrowplan: future planning service",
+  title: "Upgrowplan | Business plans, Financial models, Analytics, Market research",
+  description: "Upgrowplan — future planning service",
   icons: {
     icon: "/favicon.ico",
-  },
-  other: {
-    "google-site-verification": "VC2der9heI-3B_vfBFC91po9GzPr3_j5iK5B-zjmVLs",
   },
 };
 
@@ -32,11 +22,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ru">
-      <AOSWrapper />
+    <html lang="en">
       <body className={`${inter.variable} antialiased`}>
-        <main>{children}</main>
-        <Footer />
+        {children}
       </body>
     </html>
   );

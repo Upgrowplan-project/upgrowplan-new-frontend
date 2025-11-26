@@ -1,0 +1,21 @@
+export const LABELS = {
+  pageTitle: "Marketingovoe issledovanie",
+  pageDescription: "AI analiz rynka, konkurentov, segmentatsiya i tsenovaya strategiya",
+  formTitle: "Parametry issledovaniya",
+  basicInfo: "Osnovnaya informatsiya",
+  productNameLabel: "Nazvanie produkta/uslugi",
+  productNamePlaceholder: "Naprimer: Kofeynaya",
+  descriptionLabel: "Opisanie",
+  descriptionPlaceholder: "Podrobnoe opisanie produkta ili uslugi...",
+  industryLabel: "Otrasl",
+  industryPlaceholder: "Naprimer: Obshchepit, IT",
+  countryLabel: "Strana",
+  countryPlaceholder: "Naprimer: Russia, USA",
+  regionLabel: "Region (optsionalno)",
+  regionPlaceholder: "Naprimer: Moskva",
+  businessTypeTitle: "Tip biznesa",
+  businessTypePlaceholder: "Naprimer: RESTORAN, ECOMMERCE, SAAS",
+  targetAudienceTitle: "Tselovaya auditoriya",
+  targetAudiencePlaceholder: "Opisanie tselovoy auditorii...",
+  submitButton: "Zapustit' issledovanie"
+};

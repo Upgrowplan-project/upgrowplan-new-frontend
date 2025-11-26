@@ -15,12 +15,12 @@ export default function Footer() {
     <footer className="bg-light py-4">
       <div className="container d-flex justify-content-between align-items-center small flex-wrap">
         <div className="text-muted">
-          © {new Date().getFullYear()} Upgrowplan. Все права защищены.
+          © {new Date().getFullYear()} Upgrowplan. All rights reserved.
         </div>
         <ul className="list-inline mb-0" style={{ marginBottom: 0 }}>
           <li className="list-inline-item">
             <Link href="/" style={{ textDecoration: "none", color: "#0785f6" }}>
-              Главная
+              Home
             </Link>
           </li>
           <li className="list-inline-item">
@@ -28,7 +28,7 @@ export default function Footer() {
               href="/products"
               style={{ textDecoration: "none", color: "#0785f6" }}
             >
-              Продукты
+              Products
             </Link>
           </li>
           <li className="list-inline-item">
@@ -36,7 +36,7 @@ export default function Footer() {
               href="/solutions"
               style={{ textDecoration: "none", color: "#0785f6" }}
             >
-              Решения
+              Solutions
             </Link>
           </li>
           <li className="list-inline-item">
@@ -44,7 +44,7 @@ export default function Footer() {
               href="/about"
               style={{ textDecoration: "none", color: "#0785f6" }}
             >
-              О нас
+              About
             </Link>
           </li>
           <li className="list-inline-item">
@@ -52,7 +52,7 @@ export default function Footer() {
               href="/blog"
               style={{ textDecoration: "none", color: "#0785f6" }}
             >
-              Блог
+              Blog
             </Link>
           </li>
           <li className="list-inline-item">
@@ -60,7 +60,7 @@ export default function Footer() {
               href="/contacts"
               style={{ textDecoration: "none", color: "#0785f6" }}
             >
-              Контакты
+              Contacts
             </Link>
           </li>
           <li className="list-inline-item">
@@ -71,7 +71,7 @@ export default function Footer() {
                 color: "#0785f6",
               }}
             >
-              {isLoggedIn ? "Аккаунт" : "Войти"}
+              {isLoggedIn ? "Account" : "Sign in"}
             </Link>
           </li>
         </ul>

@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Header from "../../components/Header";
-import Footer from "../../components/Footer";
 import { CSSTransition } from "react-transition-group";
 import styles from "./auth.module.css";
 import EmailRegisterForm from "./EmailRegisterForm";
