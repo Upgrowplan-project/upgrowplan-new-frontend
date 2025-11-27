@@ -21,14 +21,13 @@ export default async function LocaleLayout({
 }) {
   const locale = params.locale;
 
-  // Загружаем переводы на сервере. Передаём их как namespaced messages
-  // (next-intl ожидает, что useTranslations('header') найдёт ключи под messages.header)
+  // Загружаем переводы на сервере
   let messages: Record<string, any> = {};
   try {
     const common = await import(`../../locales/${locale}/common.json`);
     const header = await import(`../../locales/${locale}/header.json`);
     messages = {
-      common: common?.default ?? {},
+      ...common?.default,
       header: header?.default ?? {},
     };
   } catch (err) {

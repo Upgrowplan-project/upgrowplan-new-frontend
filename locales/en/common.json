@@ -1,3 +1,14 @@
 {
-  "siteName": "Upgrowplan"
+  "siteName": "Upgrowplan",
+  "footer": {
+    "home": "Home",
+    "products": "Products",
+    "solutions": "Solutions",
+    "about": "About",
+    "blog": "Blog",
+    "contacts": "Contacts",
+    "account": "Account",
+    "signIn": "Sign in",
+    "copyright": "All rights reserved."
+  }
 }

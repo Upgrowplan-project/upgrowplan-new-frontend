@@ -2,10 +2,21 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
+import { useLocale } from "next-intl";
 import Header from "../../components/Header";
 
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const locale = useLocale();
+
+  // Helper to create locale-aware path (en = no prefix, ru = /ru prefix)
+  const getLocalePath = (path: string) => {
+    if (locale === 'en') {
+      return path;
+    }
+    return `/${locale}${path}`;
+  };
 
   return (
     <div>
@@ -88,12 +99,12 @@ export default function Home() {
               className="d-flex gap-3 flex-wrap justify-content-center"
               data-aos="zoom-in"
             >
-              <a href="/products" className="btn btn-primary btn-lg">
+              <Link href={getLocalePath("/products")} className="btn btn-primary btn-lg">
                 Экспертные решения
-              </a>
-              <a href="/solutions" className="btn btn-primary btn-lg">
+              </Link>
+              <Link href={getLocalePath("/solutions")} className="btn btn-primary btn-lg">
                 Автоматические инструменты
-              </a>
+              </Link>
             </div>
           </div>
 
@@ -245,8 +256,8 @@ export default function Home() {
                   data-aos="zoom-in"
                   data-aos-delay={i * 100}
                 >
-                  <a
-                    href="/solutions"
+                  <Link
+                    href={getLocalePath("/solutions")}
                     style={{
                       textDecoration: "none",
                       color: "inherit",
@@ -271,7 +282,7 @@ export default function Home() {
                         <span>Релиз: осень 2025</span>
                       </div>
                     </div>
-                  </a>
+                  </Link>
                 </div>
               ))}
             </div>
@@ -290,9 +301,9 @@ export default function Home() {
           <h2 className="mb-3" style={{ color: "#1e6078" }}>
             Сфокусируйтесь на любимом деле — остальное мы сделаем за вас
           </h2>
-          <a href="/contacts" className="btn btn-primary btn-lg">
+          <Link href={getLocalePath("/contacts")} className="btn btn-primary btn-lg">
             Написать нам →
-          </a>
+          </Link>
         </section>
       </main>
     </div>

@@ -54,27 +54,9 @@ const nextConfig = {
   },
 };
 
-// Wrap Next config with next-intl plugin so the library can provide the
-// runtime `next-intl/config` module and routing helpers for the App Router.
-// The plugin expects to receive the locales/defaultLocale here instead of
-// a top-level `i18n` property on nextConfig.
-try {
-  const createNextIntlPlugin = require("next-intl/plugin");
-  const withNextIntl = createNextIntlPlugin({
-    locales: ["en", "ru"],
-    defaultLocale: "en",
-    // Disable automatic locale detection for local testing so that
-    // the root URL (/) consistently serves the default locale (en).
-    // Users can still access Russian via /ru.
-    localeDetection: false,
-  });
-  module.exports = withNextIntl(nextConfig);
-} catch (err) {
-  // If plugin can't be loaded for any reason, fallback to exporting the
-  // plain nextConfig so builds can still run (useful for CI/debug).
-  console.warn(
-    "next-intl plugin not available, exporting plain nextConfig",
-    err
-  );
-  module.exports = nextConfig;
-}
+const withNextIntl = require('next-intl/plugin')(
+  // This is the default (also the `src` folder is supported out of the box)
+  './i18n/request.ts'
+);
+
+module.exports = withNextIntl(nextConfig);

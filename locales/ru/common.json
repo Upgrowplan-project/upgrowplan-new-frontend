@@ -1,3 +1,14 @@
 {
-  "siteName": "Upgrowplan"
+  "siteName": "Upgrowplan",
+  "footer": {
+    "home": "Главная",
+    "products": "Продукты",
+    "solutions": "Решения",
+    "about": "О нас",
+    "blog": "Блог",
+    "contacts": "Контакты",
+    "account": "Аккаунт",
+    "signIn": "Войти",
+    "copyright": "Все права защищены."
+  }
 }

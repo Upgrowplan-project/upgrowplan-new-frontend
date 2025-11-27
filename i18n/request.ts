@@ -1,25 +1,11 @@
-import type { NextRequest } from 'next/server';
+import { getRequestConfig } from 'next-intl/server';
 
-// Minimal request config used by next-intl plugin. This function should
-// return configuration for the current request (locale, messages path, etc.).
-// For now we provide a simple implementation that prefers the NEXT_LOCALE
-// cookie, then the accept-language header, and falls back to 'en'.
-
-export default function getRequestConfig(req?: NextRequest) {
-  const cookieLocale = req?.cookies?.get?.('NEXT_LOCALE')?.value;
-  const header = req?.headers?.get('accept-language') || undefined;
-  let locale = 'en';
-  if (cookieLocale) locale = cookieLocale;
-  else if (header) {
-    // crude parsing: take first language
-    const first = header.split(',')[0];
-    if (first.startsWith('ru')) locale = 'ru';
-    else locale = 'en';
-  }
+export default getRequestConfig(async ({ locale }) => {
+  // Fallback to 'en' if locale is undefined
+  const currentLocale = locale || 'en';
 
   return {
-    locale,
-    // sourceLocale and messages configuration are optional for basic use.
-    // next-intl will then load messages using the runtime helpers.
+    locale: currentLocale,
+    messages: (await import(`../locales/${currentLocale}/common.json`)).default
   };
-}
+});
