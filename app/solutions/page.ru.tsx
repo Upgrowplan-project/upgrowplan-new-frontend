@@ -54,6 +54,13 @@ export default function SolutionsPage() {
       link: "/solutions/openAbroad",
       elementId: "relocation-service-card",
     },
+    {
+      title: "Synth Focus Lab",
+      description:
+        "Виртуарльная панель респондентов. Создание фокус-групп и анализ ответов респондентов по входным параметрам. Тонкая настройка демографии, возраста, социальных и финансовых парметров целевой аудитории.",
+      icon: <FiUsers className="me-2 text-warning" />,
+      release: "зима 2025",
+    },
   ];
   const { trackClick } = useClickAnalytics();
 
