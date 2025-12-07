@@ -313,6 +313,10 @@ export default function MarketResearchPage() {
     seconds: number;
   } | null>(null);
 
+  // Health status state
+  const [healthStatus, setHealthStatus] = useState<any>(null);
+  const [isLoadingHealth, setIsLoadingHealth] = useState(true);
+
   // Автофокус на первое поле формы и предотвращение автоскролла
   useEffect(() => {
     // Скроллим страницу в начало
@@ -322,6 +326,36 @@ export default function MarketResearchPage() {
     if (productNameInputRef.current) {
       productNameInputRef.current.focus();
     }
+  }, []);
+
+  // Load health status on mount and refresh every 30 seconds
+  useEffect(() => {
+    const fetchHealthStatus = async () => {
+      try {
+        // HARDCODED FOR NOW - env var not working
+        const healthApiBaseUrl = "http://localhost:8005";
+        const response = await fetch(`${healthApiBaseUrl}/api/v1/agents/health`);
+
+        if (response.ok) {
+          const data = await response.json();
+          setHealthStatus(data);
+        } else {
+          console.error("[Health Check] Failed to fetch health status:", response.status);
+        }
+      } catch (error) {
+        console.error("[Health Check] Error fetching health status:", error);
+      } finally {
+        setIsLoadingHealth(false);
+      }
+    };
+
+    // Fetch immediately
+    fetchHealthStatus();
+
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchHealthStatus, 30000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const businessTypeOptions = [
@@ -568,7 +602,51 @@ export default function MarketResearchPage() {
       !formData.localization ||
       formData.researchGoals.length === 0
     ) {
-      setError("Пожалуйста, заполните все обязательные поля");
+      setError("Please fill in all required fields");
+      setIsSubmitting(false);
+      return;
+    }
+
+    // CRITICAL: Health check BEFORE starting research
+    console.log("[HEALTH CHECK] Checking all system components before starting research...");
+    // HARDCODED FOR NOW - env var not working
+    const healthApiBaseUrl = "http://localhost:8005";
+
+    try {
+      const healthResponse = await fetch(`${healthApiBaseUrl}/api/v1/agents/health`);
+
+      if (!healthResponse.ok) {
+        throw new Error(`Health check failed: HTTP ${healthResponse.status}`);
+      }
+
+      const healthData = await healthResponse.json();
+      console.log("[HEALTH CHECK] Response:", healthData);
+
+      if (!healthData.all_ready) {
+        // Find which components failed
+        const failedComponents = healthData.agents
+          .filter((agent: any) => !agent.ready && !agent.optional)
+          .map((agent: any) => `${agent.name}: ${agent.error || 'offline'}`)
+          .join('\n');
+
+        setError(
+          `❌ System is not ready to start research!\n\n` +
+          `The following components are unavailable:\n${failedComponents}\n\n` +
+          `Please ensure all services are running and try again.`
+        );
+        setIsSubmitting(false);
+        console.error("[HEALTH CHECK] System not ready:", failedComponents);
+        return;
+      }
+
+      console.log("[HEALTH CHECK] ✓ All critical components are ready!");
+
+    } catch (healthError) {
+      console.error("[HEALTH CHECK] Error:", healthError);
+      setError(
+        `❌ Failed to check system readiness: ${healthError instanceof Error ? healthError.message : String(healthError)}\n\n` +
+        `Make sure Market Research Service is running on port 8005.`
+      );
       setIsSubmitting(false);
       return;
     }
@@ -619,7 +697,7 @@ export default function MarketResearchPage() {
 
       // Get API base URL from environment or use default
       const apiBaseUrl =
-        process.env.NEXT_PUBLIC_SOLUTIONS_API_URL || "http://localhost:8002";
+        "http://localhost:8005";
 
       const response = await fetch(
         `${apiBaseUrl}/api/v1/research/from-onboarding`,
@@ -684,7 +762,7 @@ export default function MarketResearchPage() {
 
     // Get API base URL from environment or use default
     const apiBaseUrl =
-      process.env.NEXT_PUBLIC_SOLUTIONS_API_URL || "http://localhost:8002";
+      "http://localhost:8005";
 
     const interval = setInterval(async () => {
       try {
@@ -793,7 +871,7 @@ export default function MarketResearchPage() {
 
     // Get API base URL from environment or use default
     const apiBaseUrl =
-      process.env.NEXT_PUBLIC_SOLUTIONS_API_URL || "http://localhost:8002";
+      "http://localhost:8005";
 
     try {
       // Fetch enhanced report (new format)
@@ -950,7 +1028,7 @@ export default function MarketResearchPage() {
     try {
       // Get API base URL from environment or use default
       const apiBaseUrl =
-        process.env.NEXT_PUBLIC_SOLUTIONS_API_URL || "http://localhost:8002";
+        "http://localhost:8005";
 
       const response = await fetch(
         `${apiBaseUrl}/api/v1/research/${researchId}/report/${format}`,
@@ -1038,6 +1116,93 @@ export default function MarketResearchPage() {
                 >
                   Закрыть
                 </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Health Status Panel */}
+        {!isLoadingHealth && healthStatus && (
+          <div className={styles.healthSection}>
+            <div className={styles.healthCard}>
+              <h3 style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ fontSize: '1.2rem' }}>🏥</span>
+                System Health
+                <span style={{
+                  marginLeft: 'auto',
+                  fontSize: '0.9rem',
+                  padding: '0.25rem 0.75rem',
+                  borderRadius: '12px',
+                  backgroundColor: healthStatus.all_ready ? '#d4edda' : '#f8d7da',
+                  color: healthStatus.all_ready ? '#155724' : '#721c24',
+                  fontWeight: 500
+                }}>
+                  {healthStatus.all_ready ? '✓ Ready' : '✗ Not Ready'}
+                </span>
+              </h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '0.75rem' }}>
+                {healthStatus.agents.map((agent: any, index: number) => (
+                  <div
+                    key={index}
+                    style={{
+                      padding: '0.75rem',
+                      border: '1px solid',
+                      borderColor: agent.ready ? '#c3e6cb' : agent.optional ? '#fff3cd' : '#f5c6cb',
+                      borderRadius: '8px',
+                      backgroundColor: agent.ready ? '#f7fdf9' : agent.optional ? '#fffef5' : '#fff5f6',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem'
+                    }}
+                  >
+                    <span style={{ fontSize: '1.5rem' }}>
+                      {agent.ready ? '✅' : agent.optional ? '⚠️' : '❌'}
+                    </span>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 500, fontSize: '0.9rem', marginBottom: '0.25rem' }}>
+                        {agent.name}
+                        {agent.port && <span style={{ color: '#6c757d', fontSize: '0.85rem' }}> :{agent.port}</span>}
+                        {agent.optional && <span style={{ color: '#856404', fontSize: '0.75rem', marginLeft: '0.25rem' }}>(opt.)</span>}
+                      </div>
+                      <div style={{ fontSize: '0.8rem', color: agent.ready ? '#28a745' : agent.optional ? '#856404' : '#dc3545' }}>
+                        {agent.status}
+                      </div>
+                      {agent.error && (
+                        <div style={{ fontSize: '0.75rem', color: '#6c757d', marginTop: '0.25rem' }}>
+                          {agent.error}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ marginTop: '0.75rem', fontSize: '0.75rem', color: '#6c757d', textAlign: 'right' }}>
+                Updated: {new Date(healthStatus.timestamp).toLocaleTimeString('en-US')}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Warning when system is not ready */}
+        {!isLoadingHealth && healthStatus && !healthStatus.all_ready && (
+          <div className={styles.errorSection}>
+            <div style={{
+              maxWidth: '900px',
+              margin: '0 auto 2rem',
+              padding: '1rem',
+              background: '#fff3cd',
+              border: '1px solid #ffc107',
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.75rem'
+            }}>
+              <FiAlertCircle size={24} color="#856404" />
+              <div>
+                <strong style={{ color: '#856404', fontSize: '0.95rem' }}>System Not Ready</strong>
+                <p style={{ margin: '0.25rem 0 0', color: '#856404', fontSize: '0.9rem' }}>
+                  Some system components are unavailable. Research will only be available when all required components are ready.
+                </p>
               </div>
             </div>
           </div>
@@ -1239,17 +1404,22 @@ export default function MarketResearchPage() {
               <button
                 type="submit"
                 className={styles.submitButton}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !healthStatus?.all_ready}
               >
                 {isSubmitting ? (
                   <>
                     <div className={styles.spinner} />
-                    Собираем и анализируем данные ...
+                    Gathering and analyzing data...
+                  </>
+                ) : !healthStatus?.all_ready ? (
+                  <>
+                    <FiAlertCircle />
+                    System Not Ready
                   </>
                 ) : (
                   <>
                     <FiBarChart2 />
-                    Начать исследование
+                    Start Research
                   </>
                 )}
               </button>
@@ -1296,6 +1466,16 @@ export default function MarketResearchPage() {
               </div>
 
               <div className={styles.resultsBody}>
+                {/* MESSAGE: REPORT READY */}
+                <div className={styles.section}>
+                  <p style={{ fontSize: '1.2rem', textAlign: 'center', padding: '3rem', color: '#1e6078', fontWeight: 500 }}>
+                    ✅ Your market research report has been successfully generated!<br /><br />
+                    Download the full report in DOCX or PDF format below.
+                  </p>
+                </div>
+
+                {/* ALL REPORT SECTIONS HIDDEN - AVAILABLE FOR DOWNLOAD ONLY */}
+                <div style={{ display: 'none' }}>
                 {/* Executive Summary Section */}
                 <div className={styles.section}>
                   <h3>Резюме исследования</h3>
@@ -2037,7 +2217,9 @@ export default function MarketResearchPage() {
                     </div>
                   </div>
                 </div>
+                </div> {/* End of hidden block */}
 
+                {/* DOWNLOAD BUTTONS */}
                 <div className={styles.section}>
                   <div className={styles.downloadButtons}>
                     <button
@@ -2069,41 +2251,38 @@ export default function MarketResearchPage() {
           <div className={styles.resultsSection}>
             <div className={styles.resultsCard}>
               <div className={styles.resultsHeader}>
-                <h2>Результаты исследования (Legacy Format)</h2>
+                <h2>Market Research Report</h2>
               </div>
               <div className={styles.resultsBody}>
-                <p className={styles.legacyNote}>
-                  Отображается старый формат отчета. Обновленный формат с
-                  AI-синтезом будет доступен в следующих исследованиях.
-                </p>
-                {researchReport.executive_summary && (
-                  <div className={styles.section}>
-                    <h3>Исполнительное резюме</h3>
-                    <div className={styles.executiveSummary}>
-                      <p>{cleanMarkdown(researchReport.executive_summary)}</p>
-                    </div>
-                  </div>
-                )}
+                {/* СООБЩЕНИЕ: ОТЧЕТ ГОТОВ */}
+                <div className={styles.section}>
+                  <p style={{ fontSize: '1.2rem', textAlign: 'center', padding: '3rem', color: '#1e6078', fontWeight: 500 }}>
+                    ✅ Your market research report has been successfully generated!<br /><br />
+                    Download the full report in DOCX or PDF format below.
+                  </p>
+                </div>
+
+                {/* КНОПКИ СКАЧИВАНИЯ */}
                 <div className={styles.section}>
                   <div className={styles.downloadButtons}>
                     <button
                       className={styles.downloadButton}
                       onClick={() => handleDownload("docx")}
                     >
-                      <FiFile /> Скачать в DOCX
+                      <FiFile /> Download DOCX
                     </button>
                     <button
                       className={styles.downloadButton}
                       onClick={() => handleDownload("pdf")}
                       style={{ backgroundColor: "#dc2626" }}
                     >
-                      <FiDownload /> Скачать в PDF
+                      <FiDownload /> Download PDF
                     </button>
                   </div>
                 </div>
                 <div className={styles.resetSection}>
                   <button className={styles.resetButton} onClick={handleReset}>
-                    <FiRefreshCw /> Исследовать еще раз
+                    <FiRefreshCw /> Research Again
                   </button>
                 </div>
               </div>

@@ -11,3 +11,5 @@ export default function ContactsLocalePage({ params }: Params) {
   return params.locale === "ru" ? <ContactsPageRu /> : <ContactsPageEn />;
 }
 
+
+

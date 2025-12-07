@@ -11,3 +11,5 @@ export default function BlogLocalePage({ params }: Params) {
   return params.locale === "ru" ? <BlogPageRu /> : <BlogPageEn />;
 }
 
+
+

@@ -34,7 +34,9 @@ export default function Header() {
   
   // Function to switch locale while preserving current path
   const switchLocale = (newLocale: string) => {
-    const newPath = `/${newLocale}${baseHref === "/" ? "" : baseHref}${query}`;
+    // For 'en', don't add prefix; for 'ru', add /ru prefix
+    const localePrefix = newLocale === 'en' ? '' : `/${newLocale}`;
+    const newPath = `${localePrefix}${baseHref === "/" ? "" : baseHref}${query}`;
     router.push(newPath);
   };
 
@@ -45,7 +47,7 @@ export default function Header() {
         style={{ backgroundColor: "#d7ecf6", margin: 0, padding: "0.5rem 0" }}
       >
         <div className="container">
-          <Link href={`/${locale}`} className="navbar-brand d-flex align-items-center">
+          <Link href={locale === 'en' ? '/' : `/${locale}`} className="navbar-brand d-flex align-items-center">
             <Image
               src="/LogoUpGrowSmall2.png"
               alt="Up&Grow Logo"
@@ -76,33 +78,36 @@ export default function Header() {
           >
             <ul className="navbar-nav ms-auto mb-2 mb-md-0">
               <li className="nav-item">
-                <Link href={`/${locale}/products`} className="nav-link" style={{ color: "#0785f6" }}>
+                <Link href={locale === 'en' ? '/products' : `/${locale}/products`} className="nav-link" style={{ color: "#0785f6" }}>
                   {t("products")}
                 </Link>
               </li>
               <li className="nav-item">
-                <Link href={`/${locale}/solutions`} className="nav-link" style={{ color: "#0785f6" }}>
+                <Link href={locale === 'en' ? '/solutions' : `/${locale}/solutions`} className="nav-link" style={{ color: "#0785f6" }}>
                   {t("solutions")}
                 </Link>
               </li>
               <li className="nav-item">
-                <Link href={`/${locale}/blog`} className="nav-link" style={{ color: "#0785f6" }}>
+                <Link href={locale === 'en' ? '/blog' : `/${locale}/blog`} className="nav-link" style={{ color: "#0785f6" }}>
                   {t("blog")}
                 </Link>
               </li>
               <li className="nav-item">
-                <Link href={`/${locale}/about`} className="nav-link" style={{ color: "#0785f6" }}>
+                <Link href={locale === 'en' ? '/about' : `/${locale}/about`} className="nav-link" style={{ color: "#0785f6" }}>
                   {t("about")}
                 </Link>
               </li>
               <li className="nav-item">
-                <Link href={`/${locale}/contacts`} className="nav-link" style={{ color: "#0785f6" }}>
+                <Link href={locale === 'en' ? '/contacts' : `/${locale}/contacts`} className="nav-link" style={{ color: "#0785f6" }}>
                   {t("contacts")}
                 </Link>
               </li>
               <li className="nav-item">
                 <Link
-                  href={isLoggedIn ? `/${locale}/account` : `/${locale}/auth`}
+                  href={isLoggedIn 
+                    ? (locale === 'en' ? '/account' : `/${locale}/account`)
+                    : (locale === 'en' ? '/auth' : `/${locale}/auth`)
+                  }
                   className="nav-link"
                   style={{ color: "#0785f6" }}
                 >

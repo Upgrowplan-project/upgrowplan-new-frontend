@@ -11,3 +11,5 @@ export default function SolutionsLocalePage({ params }: Params) {
   return params.locale === "ru" ? <SolutionsPageRu /> : <SolutionsPageEn />;
 }
 
+
+

@@ -59,7 +59,8 @@ export default function SolutionsPage() {
       description:
         "Виртуарльная панель респондентов. Создание фокус-групп и анализ ответов респондентов по входным параметрам. Тонкая настройка демографии, возраста, социальных и финансовых парметров целевой аудитории.",
       icon: <FiUsers className="me-2 text-warning" />,
-      release: "зима 2025",
+      link: "/solutions/synthFocusLab",
+      elementId: "synth-focus-lab-card",
     },
   ];
   const { trackClick } = useClickAnalytics();

@@ -11,3 +11,5 @@ export default function OpenAbroadLocalePage({ params }: Params) {
   return params.locale === "ru" ? <OpenAbroadPageRu /> : <OpenAbroadPageEn />;
 }
 
+
+

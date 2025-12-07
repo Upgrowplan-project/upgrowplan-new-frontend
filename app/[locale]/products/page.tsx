@@ -11,3 +11,5 @@ export default function ProductsLocalePage({ params }: Params) {
   return params.locale === "ru" ? <ProductsPageRu /> : <ProductsPageEn />;
 }
 
+
+

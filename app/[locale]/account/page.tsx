@@ -11,3 +11,5 @@ export default function AccountLocalePage({ params }: Params) {
   return params.locale === "ru" ? <AccountPageRu /> : <AccountPageEn />;
 }
 
+
+

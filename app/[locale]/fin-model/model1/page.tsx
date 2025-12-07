@@ -11,3 +11,5 @@ export default function FinModelOneLocalePage({ params }: Params) {
   return params.locale === "ru" ? <ModelOnePageRu /> : <ModelOnePageEn />;
 }
 
+
+

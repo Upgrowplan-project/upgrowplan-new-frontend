@@ -10,3 +10,5 @@ export default async function HomePage({
   return locale === "ru" ? <HomePageRu /> : <HomePageEn />;
 }
 
+
+

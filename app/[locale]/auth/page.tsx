@@ -11,3 +11,5 @@ export default function AuthLocalePage({ params }: Params) {
   return params.locale === "ru" ? <AuthPageRu /> : <AuthPageEn />;
 }
 
+
+

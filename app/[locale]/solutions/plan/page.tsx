@@ -11,3 +11,5 @@ export default function PlanLocalePage({ params }: Params) {
   return params.locale === "ru" ? <PlanPageRu /> : <PlanPageEn />;
 }
 
+
+

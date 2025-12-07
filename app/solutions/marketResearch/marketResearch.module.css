@@ -292,6 +292,22 @@
   box-shadow: 0 2px 8px rgba(7, 133, 246, 0.3);
 }
 
+/* Health Status Panel */
+.healthSection {
+  max-width: 900px;
+  margin: 0 auto 2rem;
+  padding: 0 1rem;
+  animation: fadeIn 0.4s ease-in;
+}
+
+.healthCard {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e0e0e0;
+}
+
 /* Progress Section */
 .progressSection {
   max-width: 900px;

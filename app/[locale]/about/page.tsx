@@ -11,3 +11,5 @@ export default function AboutLocalePage({ params }: Params) {
   return params.locale === "ru" ? <AboutPageRu /> : <AboutPageEn />;
 }
 
+
+
