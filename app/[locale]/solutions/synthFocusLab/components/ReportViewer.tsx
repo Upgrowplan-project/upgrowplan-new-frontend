@@ -260,6 +260,105 @@ export default function ReportViewer({ report, researchId }: ReportViewerProps) 
           </ListGroup>
         </Card.Body>
       </Card>
-    </div>
+
+
+    {/* New: Global Themes Analysis */}
+    {report.global_themes && report.global_themes.length > 0 && (
+        <Card className="mb-4 shadow-sm border-0">
+            <Card.Header className="bg-gradient text-white" style={{ background: "linear-gradient(45deg, #FF6B6B, #EE5253)" }}>
+                <h5 className="mb-0">🔥 Глобальные темы и боли</h5>
+            </Card.Header>
+            <Card.Body>
+                <Row>
+                    {report.global_themes.slice(0, 4).map((theme, i) => (
+                        <Col md={6} key={i} className="mb-3">
+                            <div className="p-3 border rounded bg-light h-100">
+                                <div className="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 className="mb-0 text-capitalize text-danger fw-bold">{theme.theme.replace(/_/g, " ")}</h6>
+                                    <Badge bg="secondary">{theme.count} упоминаний</Badge>
+                                </div>
+                                {theme.representative_quotes && theme.representative_quotes[0] && (
+                                    <em className="text-muted small">"{theme.representative_quotes[0]}"</em>
+                                )}
+                            </div>
+                        </Col>
+                    ))}
+                </Row>
+            </Card.Body>
+        </Card>
+    )}
+
+    {/* New: Deep Segment Analysis */}
+    {report.segment_analytics && report.segment_analytics.length > 0 && (
+        <>
+            <h4 className="mb-3" style={{ color: "#1e6078" }}>Детальный анализ сегментов</h4>
+            <Accordion className="mb-4">
+                {report.segment_analytics.map((segment, idx) => (
+                    <Accordion.Item eventKey={String(idx)} key={idx}>
+                        <Accordion.Header>
+                            <span className="fw-bold">{segment.persona_name}</span>
+                        </Accordion.Header>
+                        <Accordion.Body>
+                            <p className="lead fs-6">{segment.profile.description}</p>
+                            
+                            <Row className="mb-3 g-3">
+                                <Col md={4}>
+                                    <div className="p-2 border rounded text-center bg-light-subtle">
+                                        <div className="small text-muted">Интерес</div>
+                                        <div className="h4 mb-0 text-primary">
+                                            {"⭐".repeat(Math.round(segment.stats.key_metrics?.interest || 0))}
+                                        </div>
+                                    </div>
+                                </Col>
+                                <Col md={4}>
+                                    <div className="p-2 border rounded text-center bg-light-subtle">
+                                        <div className="small text-muted">Бюджет</div>
+                                        <div className="h4 mb-0 text-success">
+                                            {"💰".repeat(Math.round(segment.stats.key_metrics?.willingness_to_pay || 0))}
+                                        </div>
+                                    </div>
+                                </Col>
+                                <Col md={4}>
+                                    <div className="p-2 border rounded text-center bg-light-subtle">
+                                        <div className="small text-muted">Срочность</div>
+                                        <div className="h4 mb-0 text-danger">
+                                            {"🔥".repeat(Math.round(segment.stats.key_metrics?.urgency || 0))}
+                                        </div>
+                                    </div>
+                                </Col>
+                            </Row>
+
+                            <Alert variant="info" className="mb-3">
+                                <strong>💡 Стратегия продаж:</strong> {segment.profile.strategy}
+                            </Alert>
+
+                            <Row>
+                                <Col md={6}>
+                                    <h6 className="text-danger">Главная боль</h6>
+                                    <p>{segment.profile.core_pain}</p>
+                                    
+                                    <h6 className="text-muted">Барьеры</h6>
+                                    <ul>
+                                        {segment.profile.barriers?.map((b: string, i: number) => <li key={i}>{b}</li>)}
+                                    </ul>
+                                </Col>
+                                <Col md={6}>
+                                    <h6 className="text-success">Триггер покупки</h6>
+                                    <p>{segment.profile.trigger}</p>
+                                    
+                                    <h6 className="text-muted">Мотиваторы</h6>
+                                    <ul>
+                                        {segment.profile.motivations?.map((m: string, i: number) => <li key={i}>{m}</li>)}
+                                    </ul>
+                                </Col>
+                            </Row>
+                        </Accordion.Body>
+                    </Accordion.Item>
+                ))}
+            </Accordion>
+        </>
+    )}
+
+  </div>
   );
 }

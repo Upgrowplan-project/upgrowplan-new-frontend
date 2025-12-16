@@ -6,6 +6,12 @@ export interface ResearchRequest {
     product_description: string;
     location: string;
     respondents_per_persona?: number;
+    hypothesis_text?: string;
+    personas_count?: number;  // NEW: Number of personas to generate (default: 5)
+    max_questions?: number;   // NEW: Maximum questions in survey (default: 12)
+    industry_category?: string;  // NEW: Hard filter for category (15 options)
+    target_audience_type?: string;  // NEW: B2B/B2C/B2B2C
+    research_goals?: string[];  // NEW: Array of research goals (min 3)
 }
 
 export enum ResearchStatus {
@@ -43,6 +49,7 @@ export interface ResearchStatusResponse {
     id: number;
     product_description: string;
     location: string;
+    hypothesis_text?: string;  // NEW: Optional hypothesis field
     status: ResearchStatus;
     error_message?: string;
     created_at: string;
@@ -58,6 +65,7 @@ export interface Question {
     text: string;
     question_type: string;
     options?: string[];
+    scale_instruction?: string;
     order: number;
 }
 
@@ -78,6 +86,25 @@ export interface Report {
     readiness_analysis: any;
     recommendations: string[];
     created_at: string;
+    // New fields for Unified Report
+    global_themes?: Array<{
+        theme: string;
+        count: number;
+        representative_quotes: string[];
+    }>;
+    segment_analytics?: Array<{
+        persona_name: string;
+        stats: any;
+        themes: any[];
+        profile: {
+            description: string;
+            core_pain: string;
+            motivations: string[];
+            barriers: string[];
+            trigger: string;
+            strategy: string;
+        };
+    }>;
 }
 
 export interface ResearchDetail {

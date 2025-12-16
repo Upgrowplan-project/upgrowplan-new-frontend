@@ -79,7 +79,11 @@ export default function ReportDisplay({
             report.recommendations
               ?.map(
                 (r: any) =>
-                  `<div class="recommendation"><strong>${r}</strong></div>`
+                  `<div class="recommendation">
+                     <span style="color:#666;font-size:0.8em">[${r.priority}]</span>
+                     <strong>${r.recommendation}</strong>
+                     <div style="font-size:0.9em;margin-top:5px"><em>${r.rationale}</em></div>
+                   </div>`
               )
               .join("") || ""
           }
@@ -127,8 +131,8 @@ ${report.executive_summary}
 KEY RECOMMENDATIONS
 ${
   report.recommendations
-    ?.map((r: any, i: number) => `${i + 1}. ${r}`)
-    .join("\n") || "No recommendations"
+    ?.map((r: any, i: number) => `${i + 1}. [${r.priority}] ${r.recommendation}\n   (${r.rationale})`)
+    .join("\n\n") || "No recommendations"
 }
 
 ═══════════════════════════════════════════════════════════

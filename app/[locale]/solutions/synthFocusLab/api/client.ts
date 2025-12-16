@@ -124,7 +124,7 @@ class SynthFocusLabAPI {
     async pollResearchStatus(
         researchId: number,
         onProgress?: (status: ResearchStatusResponse) => void,
-        maxAttempts: number = 120,
+        maxAttempts: number = 1440,  // 1440 attempts = 2 hours (1440 * 5s = 7200s)
         intervalMs: number = 5000
     ): Promise<ResearchStatusResponse> {
         for (let attempt = 0; attempt < maxAttempts; attempt++) {
@@ -143,6 +143,62 @@ class SynthFocusLabAPI {
         }
 
         throw new Error("Research polling timeout");
+    }
+
+    /**
+     * Get unified segment analytics (Stage C1)
+     */
+    async getSegmentAnalytics(researchId: number): Promise<any> {
+        const response = await fetch(`${API_BASE_URL}/api/research/${researchId}/analytics/segments`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.json();
+    }
+
+    /**
+     * Get final unified report HTML/Markdown (Stage C2)
+     */
+    async getFinalReport(researchId: number, format: "html" | "markdown" = "html"): Promise<string> {
+        const response = await fetch(`${API_BASE_URL}/api/research/${researchId}/report/final?format=${format}`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.text();
+    }
+
+    /**
+     * Stop running research
+     */
+    async stopResearch(researchId: number): Promise<any> {
+        const response = await fetch(`${API_BASE_URL}/api/research/${researchId}/stop`, {
+            method: "POST",
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.json();
+    }
+
+    /**
+     * Export research data as CSV/JSON (Stage B1)
+     */
+    async exportResearchData(researchId: number, format: "csv" | "json" = "csv"): Promise<Blob> {
+        const response = await fetch(`${API_BASE_URL}/api/research/${researchId}/export/${format}`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.blob();
+    }
+
+    /**
+     * Export research report as DOCX
+     */
+    async exportReportDocx(researchId: number): Promise<Blob> {
+        const response = await fetch(`${API_BASE_URL}/api/research/${researchId}/export/docx`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.blob();
+    }
+
+    /**
+     * Export research report as PDF
+     */
+    async exportReportPdf(researchId: number): Promise<Blob> {
+        const response = await fetch(`${API_BASE_URL}/api/research/${researchId}/export/pdf`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.blob();
     }
 }
 
