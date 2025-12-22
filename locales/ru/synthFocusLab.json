@@ -1,0 +1,121 @@
+{
+  "synthFocusLab": {
+  "title": "Виртуальные Фокус-Группы",
+  "description": "AI-симуляция фокус-групп с реалистичными персонами для глубокого понимания вашей аудитории",
+  "form": {
+    "title": "Создать исследование",
+    "productDescription": {
+      "label": "Описание продукта",
+      "placeholder": "Опишите ваш продукт или услугу подробно...",
+      "help": "Опишите ваш продукт или услугу максимально подробно"
+    },
+    "industryCategory": {
+      "label": "Категория продукта *",
+      "placeholder": "Выберите категорию...",
+      "help": "Выберите категорию для точных персон (без IT-терминов для физических товаров)"
+    },
+    "targetAudience": {
+      "label": "Тип аудитории *",
+      "b2b": "B2B (Бизнес для бизнеса)",
+      "b2c": "B2C (Бизнес для потребителей)",
+      "b2b2c": "B2B2C (Комбинированная модель)"
+    },
+    "researchGoals": {
+      "label": "Исследовательские цели * (минимум 3)",
+      "help": "Выберите вопросы, на которые вы хотите получить ответы",
+      "selected": "Выбрано: {count} / мин. 3"
+    },
+    "location": {
+      "label": "Локация",
+      "russia": "Россия",
+      "abroad": "За рубежом"
+    },
+    "personasCount": {
+      "label": "Количество персон"
+    },
+    "submit": "Создать исследование",
+    "submitting": "Создание исследования..."
+  },
+  "industryCategories": {
+    "b2b_saas": "IT / SaaS / B2B Software",
+    "physical_food": "Еда и напитки (Вино, Продукты питания)",
+    "physical_fashion": "Одежда и аксессуары",
+    "physical_electronics": "Электроника и гаджеты",
+    "services_education": "Образование и обучение",
+    "services_fitness": "Фитнес и спорт",
+    "services_beauty": "Красота и здоровье",
+    "services_consulting": "Консалтинг и профессиональные услуги",
+    "industrial_manufacturing": "Производство и оборудование",
+    "real_estate": "Недвижимость",
+    "fintech": "Финансовые услуги",
+    "healthtech": "Медицина и здравоохранение",
+    "ecommerce": "Маркетплейс / E-commerce",
+    "travel_hospitality": "Туризм и гостеприимство",
+    "other": "Другое"
+  },
+  "researchGoalsOptions": {
+    "target_audience": "Кто моя целевая аудитория?",
+    "pain_points": "Какие проблемы/боли решает мой продукт?",
+    "price_point": "Какую цену готовы платить?",
+    "purchase_triggers": "Что мотивирует купить?",
+    "objections": "Какие возражения у покупателей?",
+    "decision_criteria": "По каким критериям выбирают?",
+    "brand_perception": "Как воспринимают мой бренд?",
+    "feature_priorities": "Какие функции важнее всего?",
+    "user_journey": "Как проходит путь клиента?",
+    "market_fit": "Есть ли product-market fit?",
+    "competitive_position": "Как я выгляжу на фоне конкурентов?",
+    "messaging_test": "Какой месседж зацепит?",
+    "channel_preferences": "Где искать клиентов?",
+    "retention_factors": "Что удерживает клиентов?"
+  },
+  "status": {
+    "title": "Статус исследования",
+    "pending": "Ожидание...",
+    "generating_personas": "Генерация Buyer Persona...",
+    "creating_respondents": "Создание виртуальных респондентов...",
+    "generating_questions": "Генерация вопросов опроса...",
+    "conducting_survey": "Проведение виртуального опроса...",
+    "generating_report": "Формирование отчета...",
+    "completed": "Завершено",
+    "failed": "Ошибка"
+  },
+  "healthCheck": {
+    "title": "Статус сервисов",
+    "refresh": "Обновить",
+    "online": "Online",
+    "offline": "Offline",
+    "checking": "Проверка...",
+    "openai": "OpenAI",
+    "configured": "Настроен",
+    "notConfigured": "Не настроен",
+    "active": "Активен",
+    "keyError": "Ошибка ключа"
+  },
+  "eventLogger": {
+    "title": "Журнал событий",
+    "clear": "Очистить",
+    "empty": "События будут отображаться здесь"
+  },
+  "errors": {
+    "selectCategory": "Выберите категорию продукта",
+    "selectAudienceType": "Выберите тип аудитории (B2B/B2C/B2B2C)",
+    "selectMinGoals": "Выберите минимум 3 исследовательских цели",
+    "fillAllFields": "Пожалуйста, заполните все поля",
+    "servicesNotReady": "⚠️ Внимание! Не все сервисы готовы. Проверьте статус сервисов перед запуском исследования."
+  },
+  "buttons": {
+    "download": "Скачать отчет",
+    "newResearch": "Создать новое исследование"
+  },
+  "progress": {
+    "title": "Прогресс исследования",
+    "completed": "Завершено"
+  },
+  "success": {
+    "title": "Исследование успешно завершено!",
+    "reportReady": "Отчет сформирован и готов к скачиванию",
+    "duration": "Время выполнения: {minutes} мин {seconds} сек"
+  }
+  }
+}

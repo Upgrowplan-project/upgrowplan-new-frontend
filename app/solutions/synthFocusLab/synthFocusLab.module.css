@@ -12,9 +12,9 @@
 /* Hero Section */
 .hero {
   text-align: left;
-  margin-bottom: 3rem;
-  padding: 3rem 1rem 2rem 1rem;
-  max-width: 1000px;
+  margin-bottom: 0.75rem;
+  padding: 1.5rem 1rem 0.5rem 1rem;
+  max-width: 1400px;
   margin-left: auto;
   margin-right: auto;
 }
@@ -35,15 +35,39 @@
 
 /* Form Section */
 .formSection {
-  max-width: 900px;
-  margin: 0 auto 3rem;
+  max-width: 1400px;
+  margin: 0 auto 0.75rem;
   padding: 0 1rem;
+}
+
+/* Main Content Layout */
+.contentLayout {
+  display: grid;
+  grid-template-columns: 1fr 350px;
+  gap: 1.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+@media (max-width: 1200px) {
+  .contentLayout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mainContent {
+  min-width: 0;
+}
+
+.sidebarContent {
+  min-width: 0;
 }
 
 .card {
   background: white;
   border-radius: 16px;
-  padding: 2rem;
+  padding: 1.5rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
 }
@@ -144,7 +168,8 @@
 
 .textarea {
   resize: vertical;
-  min-height: 100px;
+  min-height: 120px;
+  width: 100%;
 }
 
 /* Button Group */
@@ -1365,4 +1390,160 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+/* Section improvements */
+.section {
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+/* Goal Buttons Grid */
+.goalButtonsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.goalButton {
+  padding: 0.875rem 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  background: white;
+  color: #334155;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.goalButton:hover {
+  border-color: #0785f6;
+  background: #f0f8ff;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(7, 133, 246, 0.15);
+}
+
+.goalButton.selected {
+  border-color: #0785f6;
+  background: linear-gradient(135deg, #0785f6 0%, #1e6078 100%);
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(7, 133, 246, 0.25);
+}
+
+.goalButton.selected:hover {
+  background: linear-gradient(135deg, #1e6078 0%, #0785f6 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(7, 133, 246, 0.35);
+}
+
+.goalCheckmark {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #cbd5e1;
+  border-radius: 4px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.goalButton.selected .goalCheckmark {
+  border-color: white;
+  background: white;
+  color: #0785f6;
+}
+
+/* Research Calculator Card */
+.calculatorCard {
+  background: linear-gradient(135deg, #f0f8ff 0%, #e3f2fd 100%);
+  border: 2px solid #0785f6;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.calculatorCard h3 {
+  color: #1e6078;
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.calculatorMetrics {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.metricRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: white;
+  border-radius: 8px;
+  border-left: 3px solid #0785f6;
+}
+
+.metricLabel {
+  color: #64748b;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.metricValue {
+  color: #1e6078;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.estimatedTime {
+  background: #1e6078;
+  color: white;
+  padding: 1rem;
+  border-radius: 8px;
+  text-align: center;
+  margin-top: 0.75rem;
+}
+
+.estimatedTime .timeValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.estimatedTime .timeLabel {
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+
+/* Select improvements */
+.select {
+  padding: 0.75rem 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background: white;
+  font-family: inherit;
+  width: 100%;
+  cursor: pointer;
+}
+
+.select:focus {
+  outline: none;
+  border-color: #1e6078;
+  box-shadow: 0 0 0 3px rgba(30, 96, 120, 0.1);
 }

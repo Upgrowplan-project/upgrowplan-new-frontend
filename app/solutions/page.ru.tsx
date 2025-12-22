@@ -16,14 +16,16 @@ import Header from "../../components/Header";
 
 export default function SolutionsPage() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [finPilotCountry, setFinPilotCountry] = useState("ru"); // Default Russia
 
   const solutions = [
     {
       title: "FinPilot Free",
       description:
-        "Готовые финансовые модели. Анализ доходов и расходов компании. Приибыль, рентабельность, точка безубыточности. Страна - Россия. Доступен бесплатно",
+        "Готовые финансовые модели. Анализ доходов и расходов компании. Прибыль, рентабельность, точка безубыточности. Доступен бесплатно",
       icon: <FiBarChart2 className="me-2 text-success" />,
-      link: "/fin-model/model1/",
+      link: `/fin-model/model1?country=${finPilotCountry}`,
+      hasCountrySelector: true,
     },
     {
       title: "MarketSense AI Agent",
@@ -123,6 +125,22 @@ export default function SolutionsPage() {
                       </>
                     )}
                   </div>
+                  {solution.hasCountrySelector && (
+                    <div className="mt-3">
+                      <label htmlFor="country-select" className="form-label small text-muted">
+                        Выберите страну:
+                      </label>
+                      <select
+                        id="country-select"
+                        className="form-select"
+                        value={finPilotCountry}
+                        onChange={(e) => setFinPilotCountry(e.target.value)}
+                      >
+                        <option value="ru">🇷🇺 Россия</option>
+                        <option value="il">🇮🇱 Израиль</option>
+                      </select>
+                    </div>
+                  )}
                   {solution.link && (
                     <div className="mt-3">
                       <Link

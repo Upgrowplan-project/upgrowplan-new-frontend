@@ -1,0 +1,121 @@
+{
+  "synthFocusLab": {
+  "title": "Virtual Focus Groups",
+  "description": "AI-powered focus group simulation with realistic personas for deep audience understanding",
+  "form": {
+    "title": "Create Research",
+    "productDescription": {
+      "label": "Product Description",
+      "placeholder": "Describe your product or service in detail...",
+      "help": "Describe your product or service as detailed as possible"
+    },
+    "industryCategory": {
+      "label": "Product Category *",
+      "placeholder": "Select category...",
+      "help": "Select category for accurate personas (no IT terms for physical goods)"
+    },
+    "targetAudience": {
+      "label": "Audience Type *",
+      "b2b": "B2B (Business to Business)",
+      "b2c": "B2C (Business to Consumer)",
+      "b2b2c": "B2B2C (Combined Model)"
+    },
+    "researchGoals": {
+      "label": "Research Goals * (minimum 3)",
+      "help": "Select questions you want to get answers for",
+      "selected": "Selected: {count} / min. 3"
+    },
+    "location": {
+      "label": "Location",
+      "russia": "Russia",
+      "abroad": "Abroad"
+    },
+    "personasCount": {
+      "label": "Number of Personas"
+    },
+    "submit": "Create Research",
+    "submitting": "Creating research..."
+  },
+  "industryCategories": {
+    "b2b_saas": "IT / SaaS / B2B Software",
+    "physical_food": "Food & Beverages (Wine, Food Products)",
+    "physical_fashion": "Clothing & Accessories",
+    "physical_electronics": "Electronics & Gadgets",
+    "services_education": "Education & Training",
+    "services_fitness": "Fitness & Sports",
+    "services_beauty": "Beauty & Health",
+    "services_consulting": "Consulting & Professional Services",
+    "industrial_manufacturing": "Manufacturing & Equipment",
+    "real_estate": "Real Estate",
+    "fintech": "Financial Services",
+    "healthtech": "Medicine & Healthcare",
+    "ecommerce": "Marketplace / E-commerce",
+    "travel_hospitality": "Travel & Hospitality",
+    "other": "Other"
+  },
+  "researchGoalsOptions": {
+    "target_audience": "Who is my target audience?",
+    "pain_points": "What problems/pains does my product solve?",
+    "price_point": "What price are they willing to pay?",
+    "purchase_triggers": "What motivates to buy?",
+    "objections": "What are buyer objections?",
+    "decision_criteria": "What criteria do they choose by?",
+    "brand_perception": "How is my brand perceived?",
+    "feature_priorities": "What features matter most?",
+    "user_journey": "How does the customer journey look?",
+    "market_fit": "Is there product-market fit?",
+    "competitive_position": "How do I compare to competitors?",
+    "messaging_test": "What message resonates?",
+    "channel_preferences": "Where to find customers?",
+    "retention_factors": "What retains customers?"
+  },
+  "status": {
+    "title": "Research Status",
+    "pending": "Pending...",
+    "generating_personas": "Generating Buyer Personas...",
+    "creating_respondents": "Creating Virtual Respondents...",
+    "generating_questions": "Generating Survey Questions...",
+    "conducting_survey": "Conducting Virtual Survey...",
+    "generating_report": "Generating Report...",
+    "completed": "Completed",
+    "failed": "Failed"
+  },
+  "healthCheck": {
+    "title": "Services Status",
+    "refresh": "Refresh",
+    "online": "Online",
+    "offline": "Offline",
+    "checking": "Checking...",
+    "openai": "OpenAI",
+    "configured": "Configured",
+    "notConfigured": "Not Configured",
+    "active": "Active",
+    "keyError": "Key Error"
+  },
+  "eventLogger": {
+    "title": "Event Log",
+    "clear": "Clear",
+    "empty": "Events will appear here"
+  },
+  "errors": {
+    "selectCategory": "Select product category",
+    "selectAudienceType": "Select audience type (B2B/B2C/B2B2C)",
+    "selectMinGoals": "Select at least 3 research goals",
+    "fillAllFields": "Please fill all required fields",
+    "servicesNotReady": "⚠️ Warning! Not all services are ready. Check service status before starting research."
+  },
+  "buttons": {
+    "download": "Download Report",
+    "newResearch": "Create New Research"
+  },
+  "progress": {
+    "title": "Research Progress",
+    "completed": "Completed"
+  },
+  "success": {
+    "title": "Research completed successfully!",
+    "reportReady": "Report generated and ready for download",
+    "duration": "Duration: {minutes} min {seconds} sec"
+  }
+  }
+}

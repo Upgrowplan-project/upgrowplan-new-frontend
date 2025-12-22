@@ -1,20 +1,27 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Header from "../../../components/Header";
 import styles from "../form-styles.module.css";
 
 export default function FinModelPage() {
+  const searchParams = useSearchParams();
+  const country = searchParams.get("country") || "ru"; // Default Russia for RU page
+  
   const [menuOpen, setMenuOpen] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [resultHtml, setResultHtml] = useState(
     '<i class="fa fa-spinner fa-spin"></i> Ваш результат появится здесь после расчета.'
   );
+  
+  const [isPrivacyAgreed, setIsPrivacyAgreed] = useState(false);
 
   const [formData, setFormData] = useState({
     fullname: "",
     email: "",
     businessName: "",
+    businessType: "", // Тип бизнеса/профессии
     form: "",
     taxSystem: "",
     horizon: "",
@@ -45,11 +52,38 @@ export default function FinModelPage() {
     "hint-loan-term": true,
   });
 
+  const formatNumberInput = (value: string) => {
+     // Убираем нецифровые символы (кроме точки)
+     if (!value) return "";
+     const rawValue = value.replace(/,/g, ""); 
+     if (isNaN(Number(rawValue))) return value; 
+     
+     // Форматируем с запятыми как разделителями тысяч
+     const parts = rawValue.split(".");
+     parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+     return parts.join(".");
+  };
+
+  const parseNumberInput = (value: string) => {
+      if (!value) return "";
+      return value.replace(/,/g, "");
+  };
+
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    
+    // Для числовых полей добавляем форматирование
+    if (["revenue", "salaryExpense", "rentExpense", "suppliesExpense", "otherExpense", "investment", "variableExpensesValue"].includes(name)) {
+        const raw = parseNumberInput(value);
+        if (raw === "" || /^\d*\.?\d*$/.test(raw)) { 
+             const formatted = formatNumberInput(raw);
+             setFormData((prev) => ({ ...prev, [name]: formatted }));
+        }
+    } else {
+        setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const hideTooltip = (id: keyof typeof hintsVisible) => {
@@ -74,10 +108,11 @@ export default function FinModelPage() {
       "variableExpensesValue",
     ];
 
-    const dataRaw: Record<string, any> = { ...formData };
+    const dataRaw: Record<string, any> = { ...formData, locale: country };
     numericFields.forEach((key) => {
       const val = dataRaw[key];
-      dataRaw[key] = val === "" || val === null ? null : Number(val);
+      const parsedVal = typeof val === 'string' ? val.replace(/,/g, "") : val;
+      dataRaw[key] = parsedVal === "" || parsedVal === null ? null : Number(parsedVal);
     });
     dataRaw.variableExpensesIsPercent =
       dataRaw.variableExpensesIsPercent === "true";
@@ -87,8 +122,12 @@ export default function FinModelPage() {
     );
 
     try {
+      const API_URL = process.env.NODE_ENV === "development" 
+        ? "http://localhost:8088/api/finance/calculate"
+        : "https://upgrowplan-backend-9736a5b5c447.herokuapp.com/api/finance/calculate";
+
       const resp = await fetch(
-        "https://upgrowplan-backend-9736a5b5c447.herokuapp.com/api/finance/calculate",
+        API_URL,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -98,11 +137,68 @@ export default function FinModelPage() {
 
       if (!resp.ok) throw new Error("Ошибка сервера");
       const result = await resp.json();
+      
+      // Check if Osek Patur limit will be exceeded
+      const formatNumber = (num: number) => num.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      
+      // Calculate annual revenue for warnings
+      const monthlyRevenue = Number(parseNumberInput(formData.revenue)) || 0;
+      const annualRevenue = monthlyRevenue * 12;
+      let warningMessage = "";
+
+      if (country === "il" && formData.taxSystem === "osek_patur") {
+        if (annualRevenue > 120) { // 120,000 ILS in thousands
+          warningMessage = `
+            <div class="alert alert-warning mt-3" role="alert">
+              <strong>⚠️ Важно:</strong> Ваша прогнозируемая годовая выручка (${formatNumber(annualRevenue)} тыс. шек.) превышает лимит Эсек Патур в 120,000 шек./год.
+              <br/>Вы будете автоматически переведены в статус <strong>Эсек Мурше</strong> (НДС 17% + прогрессивный налог).
+              <br/>Расчет учитывает этот переход после 12 месяцев.
+            </div>
+          `;
+        }
+      } else if (country === "ru" || !country) {
+         // Russian limits logic (in thousands RUB)
+         // NPD: 2,400 (2.4 mln)
+         // Patent: 60,000 (60 mln)
+         // USN (VAT limit): 60,000 (60 mln)
+         // USN (Limit): 450,000 (450 mln)
+         
+         if (formData.taxSystem === "npd" && annualRevenue > 2400) {
+             warningMessage = `
+            <div class="alert alert-danger mt-3" role="alert">
+              <strong>⚠️ Критично:</strong> Годовая выручка (${formatNumber(annualRevenue)} тыс. ₽) превышает лимит НПД (2.4 млн ₽).
+              <br/>Вам необходимо перейти на ИП (УСН/Патент) или ООО. Расчет может быть некорректен для НПД.
+            </div>`;
+         } else if (formData.taxSystem === "patent" && annualRevenue > 60000) {
+              warningMessage = `
+            <div class="alert alert-danger mt-3" role="alert">
+              <strong>⚠️ Критично:</strong> Годовая выручка (${formatNumber(annualRevenue)} тыс. ₽) превышает лимит Патента (60 млн ₽).
+              <br/>Вы потеряете право на патент и будете переведены на ОСНО (или УСН, если подавали заявление).
+            </div>`;
+         } else if ((formData.taxSystem === "usn_6" || formData.taxSystem === "usn_15")) {
+             if (annualRevenue > 450000) {
+                  warningMessage = `
+                <div class="alert alert-danger mt-3" role="alert">
+                  <strong>⚠️ Критично:</strong> Годовая выручка (${formatNumber(annualRevenue)} тыс. ₽) превышает лимит УСН (450 млн ₽).
+                  <br/>Вы обязаны перейти на ОСНО. Расчет будет переключен на ОСНО автоматически (в разработке).
+                </div>`;
+             } else if (annualRevenue > 60000) {
+                  warningMessage = `
+                <div class="alert alert-warning mt-3" role="alert">
+                  <strong>⚠️ Внимание (2025):</strong> Годовая выручка (${formatNumber(annualRevenue)} тыс. ₽) превышает 60 млн ₽.
+                  <br/>Вы обязаны платить НДС (обычно 5% или 7%) даже на УСН. Расчет будет скорректирован.
+                </div>`;
+             }
+         }
+      }
+      
+      const currency = country === "il" ? "₪" : "₽";
 
       setResultHtml(`
+        ${warningMessage}
         <div><b>Чистая прибыль (NP):</b> ${(result.totalNetProfit ?? 0).toFixed(
           2
-        )} тыс ₽</div>
+        )} тыс ${currency}</div>
         <div><b>Рентабельность инвестиций (ROI):</b> ${(
           result.roi ?? 0
         ).toFixed(2)}%</div>
@@ -111,8 +207,8 @@ export default function FinModelPage() {
             ? result.paybackMonth + " месяцев"
             : "Не достигнута"
         }</div>
-        <div><b>EBITDA:</b> ${(result.ebitda ?? 0).toFixed(2)} тыс ₽</div>
-        <div><b>Cash Flow:</b> ${(result.cashFlow ?? 0).toFixed(2)} тыс ₽</div>
+        <div><b>EBITDA:</b> ${(result.ebitda ?? 0).toFixed(2)} тыс ${currency}</div>
+        <div><b>Cash Flow:</b> ${(result.cashFlow ?? 0).toFixed(2)} тыс ${currency}</div>
         <div><b>Точка безубыточности:</b> ${
           result.breakEvenMonth > 0
             ? result.breakEvenMonth + " месяцев"
@@ -129,7 +225,7 @@ export default function FinModelPage() {
       <Header />
 
       <main className={styles.pageContainer}>
-        <h1>Генератор финансовой модели для малого бизнеса. Ver. R.003</h1>
+        <h1>Генератор финансовой модели ({country === "il" ? "Израиль" : "Россия"}). Ver. {country === "il" ? "IL.001" : "RU.003"}</h1>
 
         <div className="details-toggle">
           <a
@@ -146,9 +242,21 @@ export default function FinModelPage() {
           {detailsOpen && (
             <div id="details-content">
               <p>
-                Заполните форму для получения расчета. Чем больше данных, тем
-                точнее результат...
+                Заполните форму для получения расчета. Чем больше данных, тем точнее результат.
               </p>
+              {country === "il" && (
+                <div className="mt-3">
+                  <h6>Налоговые системы Израиля:</h6>
+                  <ul className="small">
+                    <li><strong>Эсек Патур:</strong> Без НДС. Лимит годового оборота ~120,000 шек. Прогрессивный подоходный налог 10-20%.</li>
+                    <li><strong>Эсек Мурше:</strong> НДС 17% (можно возвращать входящий НДС). Прогрессивный подоходный налог 10-47%.</li>
+                    <li><strong>Хевра Баам (ХП):</strong> Корпоративный налог 23%. Налог на дивиденды 25-30% (не включен в расчет).</li>
+                  </ul>
+                  <p className="small text-muted">
+                    💡 Социальные отчисления работодателя (~14%) автоматически добавляются к расходам.
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -196,20 +304,50 @@ export default function FinModelPage() {
                 />
               </div>
             </div>
+
+            {/* Тип бизнеса / Деятельности */}
             <div className={styles.row}>
-              <div className={styles.inputWithIcon}>
-                <i className="fa fa-building"></i>
+              <div className={styles.inputWithIcon} style={{ gridColumn: "1 / -1" }}>
+                <i className="fa fa-briefcase"></i>
                 <select
-                  name="form"
-                  value={formData.form}
+                  name="businessType"
+                  value={formData.businessType}
                   onChange={handleInputChange}
                   required
                 >
-                  <option value="">Тип предприятия</option>
-                  <option value="ИП">ИП</option>
-                  <option value="ООО">ООО</option>
+                  <option value="">
+                    {country === "il" ? "Выберите тип деятельности" : "Выберите форму бизнеса"}
+                  </option>
+                  
+                  {country === "il" ? (
+                    <>
+                      <option value="other">Другое (Общий бизнес - доступен Эсек Патур)</option>
+                      <option value="medical">Медицинские/Парамедицинские услуги</option>
+                      <option value="legal">Юридические услуги (Адвокат)</option>
+                      <option value="accounting">Бухгалтерия/Счетоводство</option>
+                      <option value="engineering">Инженерные/Архитектурные услуги</option>
+                      <option value="insurance">Страховой агент</option>
+                      <option value="detective">Частный детектив</option>
+                      <option value="auditor">Аудитор</option>
+                      <option value="consultant">Консультант по управлению</option>
+                      <option value="writer">Писатель</option>
+                      <option value="realtor">Брокер по недвижимости</option>
+                      <option value="teacher">Преподаватель/Учитель</option>
+                    </>
+                  ) : (
+                    <>
+                      <option value="self_employed">Самозанятый (НПД)</option>
+                      <option value="ip">Индивидуальный предприниматель (ИП)</option>
+                      <option value="ooo">Общество с ограниченной ответственностью (ООО)</option>
+                      <option value="ao">Акционерное общество (АО)</option>
+                    </>
+                  )}
                 </select>
               </div>
+            </div>
+
+
+            <div className={styles.row}>
               <div className={styles.inputWithIcon}>
                 <i className="fa fa-percent"></i>
                 <select
@@ -219,11 +357,47 @@ export default function FinModelPage() {
                   required
                 >
                   <option value="">Налоговая система</option>
-                  <option value="usn_6">УСН 6%</option>
-                  <option value="usn_15">УСН 15%</option>
-                  <option value="osno">ОСНО</option>
-                  <option value="patent">Патент</option>
+                  {country === "il" ? (
+                    <>
+                      {/* Только "other" (общий бизнес) может использовать Эсек Патур */}
+                      {(formData.businessType === "other" || !formData.businessType) && (
+                        <option value="osek_patur">Эсек Патур (без НДС, прогрессивный 10-20%)</option>
+                      )}
+                      <option value="osek_murshe">Эсек Мурше (НДС 17%, прогрессивный 10-47%)</option>
+                      <option value="company_ltd">Хевра Баам (корпоративный 23%)</option>
+                    </>
+                  ) : (
+                    <>
+                     {/* Логика для России */}
+                     {(formData.businessType === "self_employed" || formData.businessType === "ip") && (
+                        <option value="npd">НПД (Самозанятый) - 4-6%, лимит 2.4 млн</option>
+                     )}
+                     {formData.businessType === "ip" && (
+                        <option value="patent">Патент (ПСН) - фикс, лимит 60 млн</option>
+                     )}
+                     {(formData.businessType === "ip" || formData.businessType === "ooo" || formData.businessType === "ao") && (
+                        <>
+                           <option value="usn_6">УСН "Доходы" (6%) - лимит 450 млн</option>
+                           <option value="usn_15">УСН "Доходы-Расходы" (15%) - лимит 450 млн</option>
+                        </>
+                     )}
+                     {(formData.businessType === "ip" || formData.businessType === "ooo") && (
+                        <>
+                           <option value="ausn_dohodi">АУСН "Доходы" (8%)</option>
+                           <option value="ausn_dohodi_rashodi">АУСН "Д-Р" (20%)</option>
+                        </>
+                     )}
+                     {formData.businessType !== "self_employed" && (
+                        <option value="osno">ОСНО (НДС 20% + Налог на прибыль/НДФЛ)</option>
+                     )}
+                    </>
+                  )}
                 </select>
+                {country === "il" && formData.businessType && formData.businessType !== "other" && (
+                  <small className="text-muted d-block mt-1">
+                    ⚠️ Ваша профессия требует обязательной регистрации плательщиком НДС (Эсек Мурше или Хевра Баам)
+                  </small>
+                )}
               </div>
               <div className={styles.inputWithIcon}>
                 <i className="fa fa-calendar"></i>
@@ -248,7 +422,7 @@ export default function FinModelPage() {
               <div className={styles.inputWithIcon}>
                 <i className="fa fa-chart-line"></i>
                 <input
-                  type="number"
+                  type="text"
                   name="revenue"
                   placeholder="Выручка"
                   value={formData.revenue}
@@ -349,11 +523,12 @@ export default function FinModelPage() {
               <div className={styles.inputWithIcon}>
                 <i className="fa fa-ruble-sign"></i>
                 <input
-                  type="number"
+                  type="text"
                   name="variableExpensesValue"
-                  placeholder="Переменные расходы"
+                  placeholder="Переменные расходы (% или сумма)"
                   value={formData.variableExpensesValue}
                   onChange={handleInputChange}
+                  required
                 />
               </div>
             </div>
@@ -362,11 +537,16 @@ export default function FinModelPage() {
           {/* Постоянные расходы */}
           <fieldset className={styles.fieldset}>
             <legend className={styles.legend}>
-              Постоянные расходы ежемесячные, тыс ₽
+              Постоянные расходы ежемесячные, тыс {country === "il" ? "₪" : "₽"}
             </legend>
+            {country === "il" && (
+              <p className="small text-muted mb-2">
+                💡 Примечание: Социальные отчисления работодателя (~14%) автоматически добавляются к расходам
+              </p>
+            )}
             <div className={`${styles.row} ${styles.rowFour}`}>
               <input
-                type="number"
+                type="text"
                 name="suppliesExpense"
                 placeholder="Закупки"
                 value={formData.suppliesExpense}
@@ -374,21 +554,21 @@ export default function FinModelPage() {
                 required
               />
               <input
-                type="number"
+                type="text"
                 name="salaryExpense"
                 placeholder="Зарплата"
                 value={formData.salaryExpense}
                 onChange={handleInputChange}
               />
               <input
-                type="number"
+                type="text"
                 name="rentExpense"
                 placeholder="Аренда"
                 value={formData.rentExpense}
                 onChange={handleInputChange}
               />
               <input
-                type="number"
+                type="text"
                 name="otherExpense"
                 placeholder="Прочие"
                 value={formData.otherExpense}
@@ -403,9 +583,9 @@ export default function FinModelPage() {
             <div className={`${styles.row} ${styles.rowFour}`}>
               <div className={styles.inputWithIcon}>
                 <input
-                  type="number"
+                  type="text"
                   name="investment"
-                  placeholder="Инвестиции, тыс ₽"
+                  placeholder={`Инвестиции, тыс ${country === "il" ? "₪" : "₽"}`}
                   value={formData.investment}
                   onChange={handleInputChange}
                 />
@@ -484,20 +664,27 @@ export default function FinModelPage() {
             </div>
           </fieldset>
 
-          <p className="privacy">
-            Отправляя форму, вы соглашаетесь с&nbsp;
-            <a
-              href="https://upgrowplan.com/privacy/"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Политикой конфиденциальности
-            </a>
-            .
-          </p>
+          <div className="form-check mb-3 d-flex align-items-center justify-content-center">
+             <input 
+               className="form-check-input me-2" 
+               type="checkbox" 
+               id="privacy-check" 
+               required 
+               checked={isPrivacyAgreed}
+               onChange={(e) => setIsPrivacyAgreed(e.target.checked)}
+             />
+             <label className="form-check-label" htmlFor="privacy-check" style={{fontSize: '0.9em', textAlign: 'left'}}>
+               Отправляя форму, вы соглашаетесь с <a href="/ru/privacy" target="_blank" rel="noreferrer">Политикой конфиденциальности</a> / политикой по защите персональных данных
+             </label>
+          </div>
 
           <div style={{ textAlign: "center" }}>
-            <button type="submit" className={styles.submitButton}>
+            <button 
+              type="submit" 
+              className={styles.submitButton}
+              disabled={!isPrivacyAgreed}
+              style={{ opacity: isPrivacyAgreed ? 1 : 0.5, cursor: isPrivacyAgreed ? 'pointer' : 'not-allowed' }}
+            >
               Рассчитать
             </button>
           </div>

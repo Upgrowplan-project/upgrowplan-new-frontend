@@ -20,11 +20,6 @@ interface EventLoggerProps {
 export default function EventLogger({ logs, onClear }: EventLoggerProps) {
   const logEndRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to bottom when new logs arrive
-  useEffect(() => {
-    logEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [logs]);
-
   const getLevelColor = (level: LogLevel): string => {
     switch (level) {
       case "success":

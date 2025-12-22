@@ -31,12 +31,14 @@ export default function Header() {
   // Extract the path without locale for building hrefs
   const pathWithoutLocale = pathname.replace(/^\/(en|ru)/, "") || "/";
   const baseHref = pathWithoutLocale === "" ? "/" : pathWithoutLocale;
-  
+
   // Function to switch locale while preserving current path
   const switchLocale = (newLocale: string) => {
     // For 'en', don't add prefix; for 'ru', add /ru prefix
     const localePrefix = newLocale === 'en' ? '' : `/${newLocale}`;
-    const newPath = `${localePrefix}${baseHref === "/" ? "" : baseHref}${query}`;
+    // If baseHref is "/", we want just the locale prefix (or empty for en)
+    const pathPart = baseHref === "/" ? "" : baseHref;
+    const newPath = `${localePrefix}${pathPart}${query}` || '/';
     router.push(newPath);
   };
 

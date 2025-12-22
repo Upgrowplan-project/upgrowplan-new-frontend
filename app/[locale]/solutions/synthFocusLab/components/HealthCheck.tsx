@@ -30,17 +30,10 @@ export default function HealthCheck({
   const [services, setServices] = useState<ServiceStatus[]>([
     {
       name: "Synth Focus Lab Backend",
-      url: "http://localhost:8000",
-      port: 8000,
+      url: "http://localhost:8003",  // UPDATED: Use correct port
+      port: 8003,
       status: "checking",
     },
-    // Blueprint service check disabled - not required for testing
-    // {
-    //   name: "Blueprint Service",
-    //   url: "http://localhost:8003",
-    //   port: 8003,
-    //   status: "checking",
-    // },
   ]);
 
   const [openaiStatus, setOpenaiStatus] = useState<OpenAIStatus>({
@@ -50,7 +43,7 @@ export default function HealthCheck({
 
   const [isChecking, setIsChecking] = useState(false);
 
-  const checkService = async (service: ServiceStatus): Promise<boolean> => {
+  const checkService = async (service: ServiceStatus) => {
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 3000);
@@ -66,13 +59,13 @@ export default function HealthCheck({
     }
   };
 
-  const checkOpenAI = async (): Promise<OpenAIStatus> => {
+  const checkOpenAI = async () => {
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000);
 
       // Use the Synth Focus Lab backend health endpoint (first service)
-      const backendUrl = services[0]?.url || "http://localhost:8000";
+      const backendUrl = services[0]?.url || "http://localhost:8003";
       const response = await fetch(`${backendUrl}/health`, {
         signal: controller.signal,
       });
