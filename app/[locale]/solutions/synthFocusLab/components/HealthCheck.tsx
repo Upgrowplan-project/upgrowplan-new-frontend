@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Card, Badge, Button, Row, Col } from "react-bootstrap";
-import { FiActivity, FiRefreshCw, FiCheck, FiX, FiKey } from "react-icons/fi";
+import { FiActivity, FiRefreshCw, FiCheck, FiX, FiKey, FiSearch } from "react-icons/fi";
 
 interface ServiceStatus {
   name: string;
@@ -21,11 +21,13 @@ interface OpenAIStatus {
 interface HealthCheckProps {
   onLog?: (message: string, level: "info" | "success" | "error") => void;
   onStatusChange?: (allReady: boolean) => void;
+  locale?: "ru" | "en";
 }
 
 export default function HealthCheck({
   onLog,
   onStatusChange,
+  locale = "ru",
 }: HealthCheckProps) {
   const [services, setServices] = useState<ServiceStatus[]>([
     {
@@ -40,6 +42,8 @@ export default function HealthCheck({
     configured: false,
     valid: false,
   });
+
+  const [deepResearchStatus, setDeepResearchStatus] = useState<"checking" | "online" | "offline">("checking");
 
   const [isChecking, setIsChecking] = useState(false);
 
@@ -75,16 +79,22 @@ export default function HealthCheck({
       if (response.ok) {
         const data = await response.json();
         return {
-          configured: data.openai_configured || false,
-          valid: data.openai_valid || false,
-          model: data.openai_model,
+          openai: {
+            configured: data.openai_configured || false,
+            valid: data.openai_valid || false,
+            model: data.openai_model,
+          },
+          deepResearch: data.deep_research_agent_available ? "online" : "offline",
         };
       }
     } catch (error) {
-      console.error("OpenAI check failed:", error);
+      console.error("Health check failed:", error);
     }
 
-    return { configured: false, valid: false };
+    return {
+      openai: { configured: false, valid: false },
+      deepResearch: "offline" as const,
+    };
   };
 
   const checkAllServices = async () => {
@@ -102,18 +112,20 @@ export default function HealthCheck({
       })
     );
 
-    // Check OpenAI
-    const openai = await checkOpenAI();
+    // Check OpenAI and Deep Research Agent
+    const healthData = await checkOpenAI();
 
     setServices(updatedServices);
-    setOpenaiStatus(openai);
+    setOpenaiStatus(healthData.openai);
+    setDeepResearchStatus(healthData.deepResearch);
 
     // Check if all services are ready
     const allServicesOnline = updatedServices.every(
       (s) => s.status === "online"
     );
-    const openaiReady = openai.configured && openai.valid;
-    const allReady = allServicesOnline && openaiReady;
+    const openaiReady = healthData.openai.configured && healthData.openai.valid;
+    const deepResearchReady = healthData.deepResearch === "online";
+    const allReady = allServicesOnline && openaiReady && deepResearchReady;
 
     // Notify parent component
     onStatusChange?.(allReady);
@@ -128,33 +140,65 @@ export default function HealthCheck({
     return () => clearInterval(interval);
   }, []);
 
-  const getStatusBadge = (status: ServiceStatus["status"]) => {
+  // Translations
+  const translations = {
+    ru: {
+      title: "Статус сервисов",
+      refresh: "Обновить",
+      backend: "Synth Focus Lab Backend",
+      openai: "OpenAI",
+      deepResearch: "Deep Research Agent",
+      online: "Online",
+      offline: "Offline",
+      checking: "Проверка...",
+      notConfigured: "Не настроен",
+      active: "Активен",
+      keyError: "Ошибка ключа",
+    },
+    en: {
+      title: "Service Status",
+      refresh: "Refresh",
+      backend: "Synth Focus Lab Backend",
+      openai: "OpenAI",
+      deepResearch: "Deep Research Agent",
+      online: "Online",
+      offline: "Offline",
+      checking: "Checking...",
+      notConfigured: "Not Configured",
+      active: "Active",
+      keyError: "Key Error",
+    },
+  };
+
+  const getStatusBadge = (status: ServiceStatus["status"], translationKey: "online" | "offline" | "checking") => {
+    const t = translations[locale];
     switch (status) {
       case "online":
         return (
           <Badge bg="success">
             <FiCheck className="me-1" />
-            Online
+            {t.online}
           </Badge>
         );
       case "offline":
         return (
           <Badge bg="danger">
             <FiX className="me-1" />
-            Offline
+            {t.offline}
           </Badge>
         );
       default:
-        return <Badge bg="secondary">Проверка...</Badge>;
+        return <Badge bg="secondary">{t.checking}</Badge>;
     }
   };
 
   const getOpenAIBadge = () => {
+    const t = translations[locale];
     if (!openaiStatus.configured) {
       return (
         <Badge bg="warning">
           <FiX className="me-1" />
-          Не настроен
+          {t.notConfigured}
         </Badge>
       );
     }
@@ -162,24 +206,26 @@ export default function HealthCheck({
       return (
         <Badge bg="success">
           <FiCheck className="me-1" />
-          Активен
+          {t.active}
         </Badge>
       );
     }
     return (
       <Badge bg="danger">
         <FiX className="me-1" />
-        Ошибка ключа
+        {t.keyError}
       </Badge>
     );
   };
+
+  const t = translations[locale];
 
   return (
     <Card className="shadow-sm mb-3">
       <Card.Header className="d-flex justify-content-between align-items-center">
         <div>
           <FiActivity className="me-2" />
-          <strong>Статус сервисов</strong>
+          <strong>{t.title}</strong>
         </div>
         <Button
           variant="outline-primary"
@@ -188,15 +234,16 @@ export default function HealthCheck({
           disabled={isChecking}
         >
           <FiRefreshCw className={`me-1 ${isChecking ? "spin" : ""}`} />
-          Обновить
+          {t.refresh}
         </Button>
       </Card.Header>
       <Card.Body>
         <div className="d-flex justify-content-between align-items-center gap-3 flex-wrap">
+          {/* Backend Service Status */}
           {services.map((service, index) => (
             <div key={index} className="d-flex align-items-center gap-2">
-              <span className="text-muted">{service.name}:</span>
-              {getStatusBadge(service.status)}
+              <span className="text-muted">{t.backend}:</span>
+              {getStatusBadge(service.status, service.status)}
             </div>
           ))}
 
@@ -204,9 +251,18 @@ export default function HealthCheck({
           <div className="d-flex align-items-center gap-2">
             <span className="text-muted">
               <FiKey className="me-1" style={{ fontSize: "14px" }} />
-              OpenAI:
+              {t.openai}:
             </span>
             {getOpenAIBadge()}
+          </div>
+
+          {/* Deep Research Agent Status */}
+          <div className="d-flex align-items-center gap-2">
+            <span className="text-muted">
+              <FiSearch className="me-1" style={{ fontSize: "14px" }} />
+              {t.deepResearch}:
+            </span>
+            {getStatusBadge(deepResearchStatus, deepResearchStatus)}
           </div>
         </div>
       </Card.Body>
