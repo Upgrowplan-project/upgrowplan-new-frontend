@@ -142,22 +142,14 @@ const INDUSTRY_OPTIONS = [
 
 const RESEARCH_GOALS = [
   { value: "target_audience", label: "Кто моя целевая аудитория?" },
-  { value: "pain_points", label: "Какие проблемы/боли решает мой продукт?" },
   { value: "price_point", label: "Какую цену готовы платить?" },
-  { value: "purchase_triggers", label: "Что мотивирует купить?" },
-  { value: "objections", label: "Какие возражения у покупателей?" },
   { value: "decision_criteria", label: "По каким критериям выбирают?" },
-  { value: "brand_perception", label: "Как воспринимают мой бренд?" },
-  { value: "feature_priorities", label: "Какие функции важнее всего?" },
-  { value: "user_journey", label: "Как проходит путь клиента?" },
-  { value: "market_fit", label: "Есть ли product-market fit?" },
   {
     value: "competitive_position",
     label: "Как я выгляжу на фоне конкурентов?",
   },
-  { value: "messaging_test", label: "Какой месседж зацепит?" },
-  { value: "channel_preferences", label: "Где искать клиентов?" },
-  { value: "retention_factors", label: "Что удерживает клиентов?" },
+  { value: "pain_points", label: "Какие проблемы/боли решает мой продукт?" },
+  { value: "market_fit", label: "Есть ли product-market fit?" },
 ];
 
 const INFO_SECTIONS = [
@@ -1183,15 +1175,13 @@ export default function SynthFocusLabPage() {
                   researchStatus.status !== "completed" &&
                   researchStatus.status !== "failed" ? (
                     <div style={{ display: "flex", gap: "0.75rem" }}>
-                      {/* Progress button (2/3 width) */}
+                      {/* Progress button */}
                       <button
                         type="button"
                         className={styles.submitButton}
                         disabled
                         style={{
-                          flex: "2",
-                          padding: "1rem 2rem",
-                          fontSize: "1.1rem",
+                          flex: "1",
                           cursor: "not-allowed",
                           opacity: 0.8,
                         }}
@@ -1200,25 +1190,15 @@ export default function SynthFocusLabPage() {
                         исследование...
                       </button>
 
-                      {/* Pause/Resume button (1/3 width) */}
+                      {/* Pause/Resume button - используем ТОТ ЖЕ класс submitButton */}
                       <button
                         type="button"
                         onClick={handlePauseResearch}
+                        className={styles.submitButton}
                         style={{
-                          flex: "1",
-                          padding: "1rem 2rem",
-                          fontSize: "1.1rem",
-                          fontWeight: "600",
-                          borderRadius: "8px",
-                          border: "none",
+                          flex: "0 0 auto",
+                          width: "auto",
                           background: isPaused ? "#28a745" : "#dc3545",
-                          color: "white",
-                          cursor: "pointer",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          gap: "0.5rem",
-                          transition: "all 0.2s",
                         }}
                       >
                         {isPaused ? <FiPlay /> : <FiPause />} {isPaused ? "Продолжить" : "Остановить"}
@@ -1400,7 +1380,7 @@ export default function SynthFocusLabPage() {
                         onClick={handleDownloadReport}
                         style={{
                           padding: "1rem",
-                          fontSize: "1.1rem",
+                          fontSize: "1rem",
                           background: "#28a745",
                           border: "none",
                           color: "white",
@@ -1408,10 +1388,13 @@ export default function SynthFocusLabPage() {
                           cursor: "pointer",
                           fontWeight: "600",
                           display: "flex",
+                          flexDirection: "column",
                           alignItems: "center",
                           justifyContent: "center",
                           gap: "0.5rem",
                           transition: "all 0.2s",
+                          minWidth: "160px",
+                          minHeight: "160px",
                         }}
                         onMouseEnter={(e) =>
                           (e.currentTarget.style.background = "#218838")
@@ -1420,7 +1403,13 @@ export default function SynthFocusLabPage() {
                           (e.currentTarget.style.background = "#28a745")
                         }
                       >
-                        <FiDownload size={20} /> Скачать отчет
+                        <FiDownload size={32} />
+                        <div style={{ textAlign: "center", lineHeight: "1.3" }}>
+                          <div style={{ fontWeight: "700" }}>Скачать отчет</div>
+                          <div style={{ fontSize: "0.85rem", opacity: "0.95" }}>
+                            в формате DOCX
+                          </div>
+                        </div>
                       </button>
 
                       {/* QR Code */}

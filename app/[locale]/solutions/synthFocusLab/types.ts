@@ -105,6 +105,76 @@ export interface Report {
             strategy: string;
         };
     }>;
+    // [STAGE 9.1] Executive Summary Professional Re-interpretation
+    executive_summary_details?: {
+        original_request: string;
+        location: string;
+        industry_vertical: string;
+        business_model: string;
+        usp: string;
+        growth_hypothesis: string;
+        marketing_summary: string;
+    };
+    // [STAGE 9.2] Devil's Advocate Market Saturation Analysis
+    market_saturation?: {
+        saturation_level: string;
+        survival_probability: number;
+        red_ocean_analysis: string;
+        bottleneck_opportunity: string | null;
+        pivot_recommendation: string | null;
+        devils_advocate_summary: string;
+    };
+    // [STAGE 9.3] Advanced Visualizations
+    advanced_visualizations?: {
+        triggers_barriers_heatmap: string;
+        innovation_adoption_curve: {
+            curve_text: string;
+            distribution: {
+                innovators: number;
+                early_adopters: number;
+                early_majority: number;
+                late_majority: number;
+                laggards: number;
+            };
+            insights: string[];
+        };
+        gold_nuggets: Array<{
+            insight: string;
+            why_unique: string;
+            action: string;
+        }>;
+    };
+    // [STAGE 10.1] Targeted Insights Pipeline
+    targeted_insights?: {
+        insights_by_goal: {
+            [key: string]: {
+                goal: string;
+                search_query: string;
+                search_results: Array<{
+                    title: string;
+                    url: string;
+                    snippet: string;
+                }>;
+                analysis: string;
+                extracted_entities: {
+                    company_names: string[];
+                    locations: string[];
+                    prices: string[];
+                };
+            };
+        };
+        validation_report: {
+            passed: string[];
+            failed: Array<{
+                goal: string;
+                errors: string[];
+            }>;
+            warnings: Array<{
+                goal?: string;
+                error: string;
+            }>;
+        };
+    };
 }
 
 export interface ResearchDetail {

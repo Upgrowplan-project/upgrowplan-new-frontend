@@ -31,17 +31,9 @@ type ResearchGoal =
   | "target_audience"
   | "pain_points"
   | "price_point"
-  | "purchase_triggers"
-  | "objections"
   | "decision_criteria"
-  | "brand_perception"
-  | "feature_priorities"
-  | "user_journey"
-  | "market_fit"
   | "competitive_position"
-  | "messaging_test"
-  | "channel_preferences"
-  | "retention_factors";
+  | "market_fit";
 
 interface FormData {
   productDescription: string;
@@ -111,20 +103,36 @@ const INDUSTRY_OPTIONS = [
 ];
 
 const RESEARCH_GOALS = [
-  { value: "target_audience", label: "Who is my target audience?" },
-  { value: "pain_points", label: "What problems/pains does my product solve?" },
-  { value: "price_point", label: "What price are they willing to pay?" },
-  { value: "purchase_triggers", label: "What motivates to buy?" },
-  { value: "objections", label: "What are buyer objections?" },
-  { value: "decision_criteria", label: "What criteria do they choose by?" },
-  { value: "brand_perception", label: "How is my brand perceived?" },
-  { value: "feature_priorities", label: "What features matter most?" },
-  { value: "user_journey", label: "How does the customer journey look?" },
-  { value: "market_fit", label: "Is there product-market fit?" },
-  { value: "competitive_position", label: "How do I compare to competitors?" },
-  { value: "messaging_test", label: "What message resonates?" },
-  { value: "channel_preferences", label: "Where to find customers?" },
-  { value: "retention_factors", label: "What retains customers?" },
+  {
+    value: "target_audience",
+    label: "🎯 Target Audience",
+    description: "Demographics + archetypes with real neighborhoods"
+  },
+  {
+    value: "pain_points",
+    label: "💢 Pain Points",
+    description: "JTBD pains from competitor reviews"
+  },
+  {
+    value: "price_point",
+    label: "💰 Pricing",
+    description: "Median Price + 3 price corridors"
+  },
+  {
+    value: "decision_criteria",
+    label: "⚖️ Decision Criteria",
+    description: "Ranking of selection factors in percentages"
+  },
+  {
+    value: "competitive_position",
+    label: "🏆 Competitive Position",
+    description: "Comparison table with top competitors"
+  },
+  {
+    value: "market_fit",
+    label: "📊 Product-Market Fit",
+    description: "PMF Score + Red Ocean analysis"
+  },
 ];
 
 const INFO_SECTIONS = [
@@ -241,8 +249,8 @@ export default function SynthFocusLabPage() {
       setError("Select audience type (B2B/B2C/B2B2C)");
       return;
     }
-    if (formData.researchGoals.length < 3) {
-      setError("Select at least 3 research goals");
+    if (formData.researchGoals.length < 1) {
+      setError("Select at least 1 research goal");
       return;
     }
 
@@ -584,9 +592,9 @@ export default function SynthFocusLabPage() {
 
                   {/* Research Goals as Buttons */}
                   <div className={styles.section}>
-                    <h3>Research Goals * (minimum 3)</h3>
+                    <h3>Research Goals *</h3>
                     <p className={styles.formDescription}>
-                      Select questions you want to get answers for
+                      Select research goals (from 1 to 6). Each goal has its own specialized analysis scenario
                     </p>
                     <div className={styles.goalButtonsGrid}>
                       {RESEARCH_GOALS.map(goal => (
@@ -604,8 +612,14 @@ export default function SynthFocusLabPage() {
                       ))}
                     </div>
                     <div className={styles.selectedCount}>
-                      Selected: {formData.researchGoals.length} / min. 3
+                      Selected: {formData.researchGoals.length} / 6
                     </div>
+                    {formData.researchGoals.length > 0 && (
+                      <div style={{ marginTop: "0.5rem", fontSize: "0.85rem", color: "#64748b" }}>
+                        {RESEARCH_GOALS.filter(g => formData.researchGoals.includes(g.value as ResearchGoal))
+                          .map(g => `${g.label}: ${g.description}`).join(" • ")}
+                      </div>
+                    )}
                   </div>
 
                   {/* Country and City */}
@@ -873,7 +887,7 @@ export default function SynthFocusLabPage() {
                         onClick={handleDownloadReport}
                         style={{
                           padding: "1rem",
-                          fontSize: "1.1rem",
+                          fontSize: "1rem",
                           background: "#28a745",
                           border: "none",
                           color: "white",
@@ -881,15 +895,24 @@ export default function SynthFocusLabPage() {
                           cursor: "pointer",
                           fontWeight: "600",
                           display: "flex",
+                          flexDirection: "column",
                           alignItems: "center",
                           justifyContent: "center",
                           gap: "0.5rem",
-                          transition: "all 0.2s"
+                          transition: "all 0.2s",
+                          minWidth: "160px",
+                          minHeight: "160px",
                         }}
                         onMouseEnter={(e) => e.currentTarget.style.background = "#218838"}
                         onMouseLeave={(e) => e.currentTarget.style.background = "#28a745"}
                       >
-                        <FiDownload size={20} /> Download Report
+                        <FiDownload size={32} />
+                        <div style={{ textAlign: "center", lineHeight: "1.3" }}>
+                          <div style={{ fontWeight: "700" }}>Download Report</div>
+                          <div style={{ fontSize: "0.85rem", opacity: "0.95" }}>
+                            in DOCX format
+                          </div>
+                        </div>
                       </button>
 
                       {/* QR Code */}
