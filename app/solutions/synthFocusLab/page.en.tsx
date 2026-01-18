@@ -114,17 +114,9 @@ const RESEARCH_GOALS = [
   { value: "target_audience", label: "Who is my target audience?" },
   { value: "pain_points", label: "What problems/pains does my product solve?" },
   { value: "price_point", label: "What price are they willing to pay?" },
-  { value: "purchase_triggers", label: "What motivates to buy?" },
-  { value: "objections", label: "What are buyer objections?" },
   { value: "decision_criteria", label: "What criteria do they choose by?" },
-  { value: "brand_perception", label: "How is my brand perceived?" },
-  { value: "feature_priorities", label: "What features matter most?" },
-  { value: "user_journey", label: "How does the customer journey look?" },
-  { value: "market_fit", label: "Is there product-market fit?" },
   { value: "competitive_position", label: "How do I compare to competitors?" },
-  { value: "messaging_test", label: "What message resonates?" },
-  { value: "channel_preferences", label: "Where to find customers?" },
-  { value: "retention_factors", label: "What retains customers?" },
+  { value: "market_fit", label: "Is there product-market fit?" },
 ];
 
 const INFO_SECTIONS = [
@@ -233,11 +225,11 @@ export default function SynthFocusLabPage() {
     e.preventDefault();
 
     // Validation
-    if (!formData.industryCategory || formData.industryCategory === "") {
+    if (!formData.industryCategory || formData.industryCategory.length === 0) {
       setError("Select product category");
       return;
     }
-    if (!formData.targetAudienceType || formData.targetAudienceType === "") {
+    if (!formData.targetAudienceType || formData.targetAudienceType.length === 0) {
       setError("Select audience type (B2B/B2C/B2B2C)");
       return;
     }
@@ -254,7 +246,7 @@ export default function SynthFocusLabPage() {
     setSubmittedGoalsCount(formData.researchGoals.length);
 
     try {
-      const response = await fetch("http://localhost:8003/api/research", {
+      const response = await fetch("http://localhost:8004/api/research", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -291,7 +283,7 @@ export default function SynthFocusLabPage() {
   const pollResearchStatus = async (researchId: number) => {
     const interval = setInterval(async () => {
       try {
-        const response = await fetch(`http://localhost:8003/api/research/${researchId}`);
+        const response = await fetch(`http://localhost:8004/api/research/${researchId}`);
         const data = await response.json();
 
         setResearchStatus(data);
@@ -363,8 +355,9 @@ export default function SynthFocusLabPage() {
     if (!researchStatus) return;
 
     try {
-      const response = await fetch(`http://localhost:8003/api/research/${researchStatus.id}/export?output_format=docx&include_infographics=true`, {
-        method: "POST"
+      // [FIX] Use GET request to instant download endpoint (pre-generated DOCX)
+      const response = await fetch(`http://localhost:8004/api/research/${researchStatus.id}/export/docx`, {
+        method: "GET"  // Changed from POST to GET
       });
 
       if (!response.ok) {
@@ -513,8 +506,8 @@ export default function SynthFocusLabPage() {
                       onChange={(e) => setFormData({ ...formData, industryCategory: e.target.value as IndustryCategory })}
                       required
                       style={{
-                        borderColor: error && (!formData.industryCategory || formData.industryCategory === "") ? "#dc2626" : undefined,
-                        borderWidth: error && (!formData.industryCategory || formData.industryCategory === "") ? "2px" : undefined
+                        borderColor: error && (!formData.industryCategory || formData.industryCategory.length === 0) ? "#dc2626" : undefined,
+                        borderWidth: error && (!formData.industryCategory || formData.industryCategory.length === 0) ? "2px" : undefined
                       }}
                     >
                       <option value="">Select category...</option>
@@ -524,7 +517,7 @@ export default function SynthFocusLabPage() {
                         </option>
                       ))}
                     </select>
-                    {error && (!formData.industryCategory || formData.industryCategory === "") && (
+                    {error && (!formData.industryCategory || formData.industryCategory.length === 0) && (
                       <p style={{ color: "#dc2626", fontSize: "0.875rem", marginTop: "0.5rem" }}>
                         ⚠️ This field is required
                       </p>
@@ -537,11 +530,11 @@ export default function SynthFocusLabPage() {
                     <div
                       className={styles.radioGroup}
                       style={{
-                        borderColor: error && (!formData.targetAudienceType || formData.targetAudienceType === "") ? "#dc2626" : undefined,
-                        borderWidth: error && (!formData.targetAudienceType || formData.targetAudienceType === "") ? "2px" : undefined,
-                        borderStyle: error && (!formData.targetAudienceType || formData.targetAudienceType === "") ? "solid" : undefined,
-                        borderRadius: error && (!formData.targetAudienceType || formData.targetAudienceType === "") ? "8px" : undefined,
-                        padding: error && (!formData.targetAudienceType || formData.targetAudienceType === "") ? "1rem" : undefined
+                        borderColor: error && (!formData.targetAudienceType || formData.targetAudienceType.length === 0) ? "#dc2626" : undefined,
+                        borderWidth: error && (!formData.targetAudienceType || formData.targetAudienceType.length === 0) ? "2px" : undefined,
+                        borderStyle: error && (!formData.targetAudienceType || formData.targetAudienceType.length === 0) ? "solid" : undefined,
+                        borderRadius: error && (!formData.targetAudienceType || formData.targetAudienceType.length === 0) ? "8px" : undefined,
+                        padding: error && (!formData.targetAudienceType || formData.targetAudienceType.length === 0) ? "1rem" : undefined
                       }}
                     >
                       <label className={styles.radioLabel}>
@@ -575,7 +568,7 @@ export default function SynthFocusLabPage() {
                         <span>B2B2C (Combined Model)</span>
                       </label>
                     </div>
-                    {error && (!formData.targetAudienceType || formData.targetAudienceType === "") && (
+                    {error && (!formData.targetAudienceType || formData.targetAudienceType.length === 0) && (
                       <p style={{ color: "#dc2626", fontSize: "0.875rem", marginTop: "0.5rem" }}>
                         ⚠️ Please select audience type
                       </p>
@@ -734,7 +727,7 @@ export default function SynthFocusLabPage() {
                   <button
                     type="submit"
                     className={styles.submitButton}
-                    disabled={isSubmitting || (researchStatus && researchStatus.status !== "completed" && researchStatus.status !== "failed")}
+                    disabled={isSubmitting || Boolean(researchStatus && researchStatus.status !== "completed" && researchStatus.status !== "failed")}
                   >
                     {researchStatus && researchStatus.status !== "completed" && researchStatus.status !== "failed" ? (
                       <>

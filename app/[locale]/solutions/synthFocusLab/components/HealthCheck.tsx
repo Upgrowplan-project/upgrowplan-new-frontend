@@ -32,8 +32,8 @@ export default function HealthCheck({
   const [services, setServices] = useState<ServiceStatus[]>([
     {
       name: "Synth Focus Lab Backend",
-      url: "http://localhost:8003",  // UPDATED: Use correct port
-      port: 8003,
+      url: "http://localhost:8004",  // UPDATED: Use correct port
+      port: 8004,
       status: "checking",
     },
   ]);
@@ -69,7 +69,7 @@ export default function HealthCheck({
       const timeoutId = setTimeout(() => controller.abort(), 5000);
 
       // Use the Synth Focus Lab backend health endpoint (first service)
-      const backendUrl = services[0]?.url || "http://localhost:8003";
+      const backendUrl = services[0]?.url || "http://localhost:8004";
       const response = await fetch(`${backendUrl}/health`, {
         signal: controller.signal,
       });

@@ -144,20 +144,9 @@ const RESEARCH_GOALS = [
   { value: "target_audience", label: "Кто моя целевая аудитория?" },
   { value: "pain_points", label: "Какие проблемы/боли решает мой продукт?" },
   { value: "price_point", label: "Какую цену готовы платить?" },
-  { value: "purchase_triggers", label: "Что мотивирует купить?" },
-  { value: "objections", label: "Какие возражения у покупателей?" },
   { value: "decision_criteria", label: "По каким критериям выбирают?" },
-  { value: "brand_perception", label: "Как воспринимают мой бренд?" },
-  { value: "feature_priorities", label: "Какие функции важнее всего?" },
-  { value: "user_journey", label: "Как проходит путь клиента?" },
+  { value: "competitive_position", label: "Как я выгляжу на фоне конкурентов?" },
   { value: "market_fit", label: "Есть ли product-market fit?" },
-  {
-    value: "competitive_position",
-    label: "Как я выгляжу на фоне конкурентов?",
-  },
-  { value: "messaging_test", label: "Какой месседж зацепит?" },
-  { value: "channel_preferences", label: "Где искать клиентов?" },
-  { value: "retention_factors", label: "Что удерживает клиентов?" },
 ];
 
 const INFO_SECTIONS = [
@@ -339,7 +328,7 @@ export default function SynthFocusLabPage() {
 
     // In local development, show message instead of broken localhost link
     // (QR code will point to a placeholder that explains localhost limitation)
-    return `http://localhost:8003/api/research/${researchStatus?.id}/export?output_format=docx&include_infographics=true`;
+    return `http://localhost:8004/api/research/${researchStatus?.id}/export?output_format=docx&include_infographics=true`;
   };
 
   // Calculation of research metrics
@@ -404,7 +393,7 @@ export default function SynthFocusLabPage() {
     setLastSubmittedFormData({ ...formData });
 
     try {
-      const response = await fetch("http://localhost:8003/api/research", {
+      const response = await fetch("http://localhost:8004/api/research", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -450,7 +439,7 @@ export default function SynthFocusLabPage() {
 
       try {
         const response = await fetch(
-          `http://localhost:8003/api/research/${researchId}`
+          `http://localhost:8004/api/research/${researchId}`
         );
         const data = await response.json();
 
@@ -532,10 +521,12 @@ export default function SynthFocusLabPage() {
     if (!researchStatus) return;
 
     try {
+      // [FIX] Changed from POST to GET - report is already generated after research completion
+      // The report is generated immediately after research finishes, not on button click
       const response = await fetch(
-        `http://localhost:8003/api/research/${researchStatus.id}/export?output_format=docx&include_infographics=true`,
+        `http://localhost:8004/api/research/${researchStatus.id}/export/docx`,
         {
-          method: "POST",
+          method: "GET", // Changed from POST to GET
         }
       );
 
@@ -587,8 +578,17 @@ export default function SynthFocusLabPage() {
 
   // Pause research (stop polling)
   const handlePauseResearch = () => {
-    setIsPaused(true);
+    setIsPaused((prev) => !prev);
     // Polling will be stopped by the paused state
+  };
+
+  // Resume research (restart polling)
+  const handleResumeResearch = () => {
+    setIsPaused(false);
+    // Polling will restart automatically
+    if (researchStatus) {
+      pollResearchStatus(researchStatus.id);
+    }
   };
 
   // Retry research with same parameters
@@ -602,7 +602,7 @@ export default function SynthFocusLabPage() {
     setIsPaused(false);
 
     try {
-      const response = await fetch("http://localhost:8003/api/research", {
+      const response = await fetch("http://localhost:8004/api/research", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -1182,28 +1182,38 @@ export default function SynthFocusLabPage() {
                   {researchStatus &&
                   researchStatus.status !== "completed" &&
                   researchStatus.status !== "failed" ? (
-                    <div style={{ display: "flex", gap: "0.75rem" }}>
-                      {/* Progress button (2/3 width) */}
+                    <div style={{ display: "flex", gap: "0.75rem", alignItems: "stretch" }}>
+                      {/* Progress/Retry button (2/3 width) */}
                       <button
                         type="button"
                         className={styles.submitButton}
-                        disabled
+                        disabled={!isPaused}
+                        onClick={isPaused ? handleRetryResearch : undefined}
                         style={{
                           flex: "2",
                           padding: "1rem 2rem",
                           fontSize: "1.1rem",
-                          cursor: "not-allowed",
-                          opacity: 0.8,
+                          cursor: isPaused ? "pointer" : "not-allowed",
+                          opacity: isPaused ? 1 : 0.8,
+                          margin: 0,
                         }}
                       >
-                        <FiRefreshCw className={styles.spinning} /> Проводится
-                        исследование...
+                        {isPaused ? (
+                          <>
+                            <FiRotateCw /> Исследовать снова
+                          </>
+                        ) : (
+                          <>
+                            <FiRefreshCw className={styles.spinning} /> Проводится
+                            исследование...
+                          </>
+                        )}
                       </button>
 
                       {/* Pause/Resume button (1/3 width) */}
                       <button
                         type="button"
-                        onClick={handlePauseResearch}
+                        onClick={isPaused ? handleResumeResearch : handlePauseResearch}
                         style={{
                           flex: "1",
                           padding: "1rem 2rem",
@@ -1219,6 +1229,7 @@ export default function SynthFocusLabPage() {
                           justifyContent: "center",
                           gap: "0.5rem",
                           transition: "all 0.2s",
+                          margin: 0,
                         }}
                       >
                         {isPaused ? <FiPlay /> : <FiPause />} {isPaused ? "Продолжить" : "Остановить"}
@@ -1394,13 +1405,15 @@ export default function SynthFocusLabPage() {
                         alignItems: "center",
                       }}
                     >
-                      {/* Download Button */}
+                      {/* Download Button - Square like QR Code */}
                       <button
                         className={styles.downloadButton}
                         onClick={handleDownloadReport}
                         style={{
-                          padding: "1rem",
-                          fontSize: "1.1rem",
+                          width: "180px",  // Fixed width to make it square-ish
+                          height: "180px", // Fixed height to make it square
+                          padding: "1.5rem",
+                          fontSize: "1rem",
                           background: "#28a745",
                           border: "none",
                           color: "white",
@@ -1408,9 +1421,10 @@ export default function SynthFocusLabPage() {
                           cursor: "pointer",
                           fontWeight: "600",
                           display: "flex",
+                          flexDirection: "column", // Stack icon and text vertically
                           alignItems: "center",
                           justifyContent: "center",
-                          gap: "0.5rem",
+                          gap: "0.75rem",
                           transition: "all 0.2s",
                         }}
                         onMouseEnter={(e) =>
@@ -1420,7 +1434,10 @@ export default function SynthFocusLabPage() {
                           (e.currentTarget.style.background = "#28a745")
                         }
                       >
-                        <FiDownload size={20} /> Скачать отчет
+                        <FiDownload size={32} />
+                        <span style={{ textAlign: "center", lineHeight: "1.3" }}>
+                          Скачать отчет
+                        </span>
                       </button>
 
                       {/* QR Code */}

@@ -11,8 +11,8 @@ import {
     ResearchDetail,
 } from "../types";
 
-// UPDATED: Use port 8003 for Synth Focus Lab backend
-const API_BASE_URL = process.env.NEXT_PUBLIC_SYNTH_API_URL || "http://localhost:8003";
+// UPDATED: Use port 8004 for Synth Focus Lab backend
+const API_BASE_URL = process.env.NEXT_PUBLIC_SYNTH_API_URL || "http://localhost:8004";
 
 class SynthFocusLabAPI {
     /**

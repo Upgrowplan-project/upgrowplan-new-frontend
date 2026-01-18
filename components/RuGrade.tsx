@@ -16,11 +16,12 @@ interface GradeProps {
   sessionId: string;
 }
 
-export default function Grade({ sessionId }: GradeProps) {
+export default function RuGrade({ sessionId }: GradeProps) {
   const [rating, setRating] = useState<Rating>({});
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [errorMessage, setErrorMessage] = useState("");
   const [feedback, setFeedback] = useState("");
 
-  // Автоматический расчет общей оценки
   const calculateOverallRating = () => {
     const ratings = [
       rating.clarity,
@@ -39,8 +40,13 @@ export default function Grade({ sessionId }: GradeProps) {
 
   const submitRatingAndFeedback = async () => {
     try {
+      setStatus("submitting");
+      setErrorMessage("");
       const overallRating = calculateOverallRating();
-      const response = await fetch("http://localhost:8000/api/rating", {
+
+      const apiUrl = process.env.NEXT_PUBLIC_MONITORING_API_URL || "http://localhost:8000";
+
+      const response = await fetch(`${apiUrl}/api/rating`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -48,16 +54,21 @@ export default function Grade({ sessionId }: GradeProps) {
           overall: overallRating,
           feedback,
           session_id: sessionId,
+          service_name: "synth_focus_lab",
+          page_url: typeof window !== 'undefined' ? window.location.href : undefined
         }),
       });
 
       if (response.ok) {
-        alert("✅ Спасибо за вашу оценку и отзыв!");
-        setRating({});
-        setFeedback("");
+        setStatus("success");
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || "Failed to submit rating");
       }
     } catch (error) {
       console.error("Ошибка отправки рейтинга:", error);
+      setStatus("error");
+      setErrorMessage("Произошла ошибка при отправке оценки. Попробуйте позже.");
     }
   };
 
@@ -79,7 +90,7 @@ export default function Grade({ sessionId }: GradeProps) {
   );
 
   return (
-    <Card className="shadow-sm h-100" style={{ borderRadius: "16px" }}>
+    <Card className="shadow-sm h-100" style={{ borderRadius: "16px", border: "1px solid #eee" }}>
       <Card.Header
         style={{
           backgroundColor: "transparent",
@@ -93,8 +104,7 @@ export default function Grade({ sessionId }: GradeProps) {
         style={{ maxHeight: "650px", overflowY: "auto", padding: "1.5rem" }}
       >
         <div style={{ width: "100%" }}>
-          {/* Текст о конфиденциальности */}
-          <Alert variant="light" className="mb-4" style={{ width: "100%" }}>
+          <Alert variant="light" className="mb-4" style={{ width: "100%", backgroundColor: "#f8f9fb", border: "none" }}>
             <p className="small mb-2">
               🎁 Сервис запущен в тестовом режиме и полностью бесплатен!
             </p>
@@ -106,45 +116,45 @@ export default function Grade({ sessionId }: GradeProps) {
             </p>
           </Alert>
 
-          {/* Понятность результата */}
+          {/* Clarity */}
           <div className="mb-4" style={{ width: "100%" }}>
-            <h6 className="small mb-2">Понятность результата</h6>
+            <h6 className="small mb-2 fw-bold">Понятность результата</h6>
             {renderStars("clarity", rating.clarity)}
           </div>
 
-          {/* Полезность */}
+          {/* Usefulness */}
           <div className="mb-4" style={{ width: "100%" }}>
-            <h6 className="small mb-2">Полезность сервиса</h6>
+            <h6 className="small mb-2 fw-bold">Полезность сервиса</h6>
             {renderStars("usefulness", rating.usefulness)}
           </div>
 
-          {/* Точность и логика */}
+          {/* Accuracy */}
           <div className="mb-4" style={{ width: "100%" }}>
-            <h6 className="small mb-2">Точность и логика</h6>
+            <h6 className="small mb-2 fw-bold">Точность и логика</h6>
             {renderStars("accuracy", rating.accuracy)}
           </div>
 
-          {/* Удобство использования */}
+          {/* Usability */}
           <div className="mb-4" style={{ width: "100%" }}>
-            <h6 className="small mb-2">Удобство использования</h6>
+            <h6 className="small mb-2 fw-bold">Удобство использования</h6>
             {renderStars("usability", rating.usability)}
           </div>
 
-          {/* Скорость */}
+          {/* Speed */}
           <div className="mb-4" style={{ width: "100%" }}>
-            <h6 className="small mb-2">Скорость генерации</h6>
+            <h6 className="small mb-2 fw-bold">Скорость генерации</h6>
             {renderStars("speed", rating.speed)}
           </div>
 
-          {/* Оформление */}
+          {/* Design */}
           <div className="mb-4" style={{ width: "100%" }}>
-            <h6 className="small mb-2">Оформление и структура</h6>
+            <h6 className="small mb-2 fw-bold">Оформление и структура</h6>
             {renderStars("design", rating.design)}
           </div>
 
-          {/* Общая оценка */}
-          <div className="mb-4 p-3 bg-light rounded" style={{ width: "100%" }}>
-            <h6 className="small mb-2 text-center">
+          {/* Overall Rating */}
+          <div className="mb-4 p-3 rounded" style={{ width: "100%", backgroundColor: "#f0f7fa" }}>
+            <h6 className="small mb-2 text-center text-brand">
               <strong>Общая оценка</strong>
             </h6>
             <div className="d-flex w-100 justify-content-center gap-1">
@@ -159,17 +169,17 @@ export default function Grade({ sessionId }: GradeProps) {
             </div>
           </div>
 
-          {/* Рекомендация друзьям */}
+          {/* Recommendation */}
           <div className="mb-4" style={{ width: "100%" }}>
-            <h6 className="small mb-2">
+            <h6 className="small mb-2 fw-bold">
               Насколько вероятно, что вы порекомендуете наш сервис друзьям?
             </h6>
             {renderStars("recommend", rating.recommend)}
           </div>
 
-          {/* Цена */}
+          {/* Price */}
           <div className="mb-4" style={{ width: "100%" }}>
-            <h6 className="small mb-2">
+            <h6 className="small mb-2 fw-bold">
               Сколько может по вашему стоить такая услуга при разовой оплате?
             </h6>
             <div className="d-flex flex-wrap gap-2" style={{ width: "100%" }}>
@@ -177,11 +187,14 @@ export default function Grade({ sessionId }: GradeProps) {
                 <Button
                   key={price}
                   size="sm"
-                  style={{ flex: "1 1 calc(33.333% - 0.5rem)" }}
-                  variant={
-                    rating.price === price ? "primary" : "outline-secondary"
-                  }
+                  variant={rating.price === price ? "primary" : "outline-secondary"}
                   onClick={() => setRating({ ...rating, price })}
+                  style={{ 
+                    flex: "1 1 calc(33.333% - 0.5rem)",
+                    borderRadius: "8px",
+                    borderColor: rating.price === price ? "#1e6078" : "#ccc",
+                    backgroundColor: rating.price === price ? "#1e6078" : "transparent"
+                  }}
                 >
                   ${price}
                 </Button>
@@ -189,28 +202,50 @@ export default function Grade({ sessionId }: GradeProps) {
             </div>
           </div>
 
-          {/* Поле отзыва */}
+          {/* Feedback */}
           <div className="mb-4" style={{ width: "100%" }}>
-            <h6 className="small mb-2">Ваш отзыв (по желанию)</h6>
+            <h6 className="small mb-2 fw-bold">Ваш отзыв (по желанию)</h6>
             <Form.Control
               as="textarea"
-              rows={4}
+              rows={3}
               placeholder="Поделитесь своими впечатлениями..."
               value={feedback}
               onChange={(e) => setFeedback(e.target.value)}
-              style={{ width: "100%" }}
+              style={{ width: "100%", borderRadius: "10px", padding: "10px" }}
+              disabled={status === "success"}
             />
           </div>
 
-          {/* Кнопка отправки */}
-          <Button
-            variant="success"
-            onClick={submitRatingAndFeedback}
-            disabled={!rating.clarity && !feedback}
-            style={{ width: "100%" }}
-          >
-            Отправить оценку и отзыв
-          </Button>
+          {/* Submit Button & Messages */}
+          <div className="d-grid gap-2">
+            {status === "success" ? (
+              <Alert variant="success" className="text-center py-3 border-0" style={{ borderRadius: "12px", backgroundColor: "#e8f5e9" }}>
+                <div className="h4 mb-2">✅ Спасибо!</div>
+                <div className="small">Ваш отзыв получен и помогает нам становиться лучше.</div>
+              </Alert>
+            ) : (
+              <>
+                <Button
+                  onClick={submitRatingAndFeedback}
+                  disabled={(!rating.clarity && !feedback) || status === "submitting"}
+                  className="contact-btn w-100"
+                  style={{ 
+                    backgroundColor: "#1e6078", 
+                    color: "white", 
+                    border: "none",
+                    height: "48px",
+                    borderRadius: "10px",
+                    fontSize: "1rem"
+                  }}
+                >
+                  {status === "submitting" ? "Отправка..." : "Отправить отзыв"}
+                </Button>
+                {status === "error" && (
+                  <div className="text-danger small text-center mt-2">{errorMessage}</div>
+                )}
+              </>
+            )}
+          </div>
         </div>
       </Card.Body>
     </Card>

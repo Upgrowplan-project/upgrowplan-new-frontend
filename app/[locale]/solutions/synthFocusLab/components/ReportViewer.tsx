@@ -19,23 +19,43 @@ export default function ReportViewer({ report, researchId }: ReportViewerProps) 
     setExportSuccess(null);
 
     try {
-      const response = await fetch(
-        `http://localhost:8004/api/research/${researchId}/export?output_format=${format}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      // [FIX] Use GET request to instant download endpoint for pre-generated DOCX
+      const endpoint = format === "docx"
+        ? `http://localhost:8004/api/research/${researchId}/export/docx`
+        : `http://localhost:8004/api/research/${researchId}/export?output_format=${format}`;
+
+      const response = await fetch(endpoint, {
+        method: "GET",  // [FIX] Changed from POST to GET
+      });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || "Export failed");
+        const errorText = await response.text();
+        let errorMessage = "Export failed";
+        try {
+          const errorJson = JSON.parse(errorText);
+          errorMessage = errorJson.detail || errorMessage;
+        } catch {
+          errorMessage = errorText || errorMessage;
+        }
+        throw new Error(errorMessage);
       }
 
-      const result = await response.json();
-      setExportSuccess(`Документ успешно сгенерирован! URL: ${result.document_url}`);
+      // [FIX] Handle file download instead of JSON response
+      const blob = await response.blob();
+
+      // Create download link and trigger download
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `research_${researchId}_report.${format}`;
+      document.body.appendChild(a);
+      a.click();
+
+      // Cleanup
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      setExportSuccess(`Документ успешно скачан!`);
     } catch (error: any) {
       setExportError(error.message || "Ошибка экспорта");
     } finally {

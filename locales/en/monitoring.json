@@ -1,0 +1,52 @@
+{
+    "title": "System Monitor",
+    "subtitle": "Real-time monitoring and feedback analysis",
+    "tabs": {
+        "health": "System Health",
+        "ratings": "User Ratings"
+    },
+    "status": {
+        "overall": "Overall System Status",
+        "live": "Live",
+        "connecting": "Connecting..."
+    },
+    "stats": {
+        "services": "Monitored Services",
+        "alerts": "Active Alerts",
+        "checks": "Total Checks",
+        "uptime": "System Uptime"
+    },
+    "buttons": {
+        "check_now": "Check Now",
+        "checking": "Checking...",
+        "refresh": "Refresh"
+    },
+    "sections": {
+        "alerts": "Active Alerts",
+        "services": "Services Status",
+        "activity": "User Activity",
+        "ratings": "Ratings & Feedback"
+    },
+    "activity": {
+        "users": "Active Users (24h)",
+        "requests": "Total Requests (24h)",
+        "response_time": "Avg Response Time"
+    },
+    "ratings": {
+        "average": "Overall Average",
+        "nps": "NPS Score",
+        "total": "Total Ratings",
+        "price": "Avg. Price Point",
+        "breakdown": "Categories Breakdown",
+        "distribution": "Score Distribution",
+        "timeline": "Ratings Timeline",
+        "recent": "Recent Feedback & Comments",
+        "no_feedback": "No text feedback received yet",
+        "all_services": "All Services",
+        "period": {
+            "7": "Last 7 Days",
+            "30": "Last 30 Days",
+            "90": "Last 90 Days"
+        }
+    }
+}

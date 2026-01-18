@@ -11,7 +11,7 @@ export interface Service {
   response_time?: number;
   last_checked: string;
   error?: string;
-  metadata?: {
+  additional_info?: {
     deployment_url?: string;
     state?: string;
     dynos_running?: number;
@@ -66,4 +66,53 @@ export interface MonitoringStats {
   active_alerts: number;
   monitored_services: number;
   uptime_percentage: number;
+}
+
+export interface RatingStats {
+  period_days: number;
+  total_ratings: number;
+  averages: {
+    clarity: number;
+    usefulness: number;
+    accuracy: number;
+    usability: number;
+    speed: number;
+    design: number;
+    overall: number;
+    recommend: number;
+    price: number;
+  };
+  nps: number;
+  distribution: {
+    [key: number]: number;
+  };
+  recent_feedback: Array<{
+    id: number;
+    overall: number;
+    feedback: string;
+    service_name?: string;
+    created_at: string;
+  }>;
+}
+
+export interface RatingTimelinePoint {
+  date: string;
+  avg_rating: number;
+  count: number;
+}
+
+export interface RatingTimeline {
+  period_days: number;
+  data_points: RatingTimelinePoint[];
+}
+
+export interface ServiceRating {
+  service_name: string;
+  total_ratings: number;
+  avg_rating: number;
+}
+
+export interface ServicesRatings {
+  period_days: number;
+  services: ServiceRating[];
 }

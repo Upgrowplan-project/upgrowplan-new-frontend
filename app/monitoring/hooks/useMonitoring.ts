@@ -1,9 +1,11 @@
+"use client";
+
 import { useState, useEffect, useCallback } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 import { MonitoringData, ServiceHistory, MonitoringStats } from '../types/monitoring';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
-const WS_URL = process.env.REACT_APP_WS_URL || 'ws://localhost:8000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_MONITORING_API_URL || 'http://localhost:8000';
+const WS_URL = process.env.NEXT_PUBLIC_MONITORING_WS_URL || 'ws://localhost:8000';
 
 export const useMonitoring = () => {
   const [data, setData] = useState<MonitoringData | null>(null);
@@ -22,11 +24,11 @@ export const useMonitoring = () => {
     try {
       setLoading(true);
       const response = await fetch(`${API_BASE_URL}/api/monitoring/overview`);
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const result = await response.json();
       setData(result);
       setError(null);
@@ -61,11 +63,11 @@ export const useMonitoring = () => {
       const response = await fetch(`${API_BASE_URL}/api/monitoring/check-now`, {
         method: 'POST',
       });
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       return await response.json();
     } catch (err) {
       console.error('Error triggering health check:', err);
@@ -86,14 +88,14 @@ export const useMonitoring = () => {
           body: JSON.stringify({ resolved_by: resolvedBy }),
         }
       );
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       // Обновляем данные после resolve
       await fetchMonitoringData();
-      
+
       return await response.json();
     } catch (err) {
       console.error('Error resolving alert:', err);
@@ -125,11 +127,11 @@ export const useServiceHistory = (serviceName: string, hours: number = 24) => {
         const response = await fetch(
           `${API_BASE_URL}/api/monitoring/service/${encodeURIComponent(serviceName)}/history?hours=${hours}`
         );
-        
+
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
+
         const result = await response.json();
         setHistory(result);
         setError(null);
@@ -159,11 +161,11 @@ export const useMonitoringStats = () => {
       try {
         setLoading(true);
         const response = await fetch(`${API_BASE_URL}/api/monitoring/stats`);
-        
+
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
+
         const result = await response.json();
         setStats(result);
         setError(null);

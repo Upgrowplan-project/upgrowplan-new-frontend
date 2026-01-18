@@ -19,6 +19,8 @@ interface GradeProps {
 export default function EnGrade({ sessionId }: GradeProps) {
   const [rating, setRating] = useState<Rating>({});
   const [feedback, setFeedback] = useState("");
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const calculateOverallRating = () => {
     const ratings = [
@@ -38,8 +40,13 @@ export default function EnGrade({ sessionId }: GradeProps) {
 
   const submitRatingAndFeedback = async () => {
     try {
+      setStatus("submitting");
+      setErrorMessage("");
       const overallRating = calculateOverallRating();
-      const response = await fetch("http://localhost:8000/api/rating", {
+
+      const apiUrl = process.env.NEXT_PUBLIC_MONITORING_API_URL || "http://localhost:8000";
+
+      const response = await fetch(`${apiUrl}/api/rating`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -47,16 +54,21 @@ export default function EnGrade({ sessionId }: GradeProps) {
           overall: overallRating,
           feedback,
           session_id: sessionId,
+          service_name: "synth_focus_lab",
+          page_url: typeof window !== 'undefined' ? window.location.href : undefined
         }),
       });
 
       if (response.ok) {
-        alert("✅ Thank you for your feedback!");
-        setRating({});
-        setFeedback("");
+        setStatus("success");
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || "Failed to submit rating");
       }
     } catch (error) {
       console.error("Error sending rating:", error);
+      setStatus("error");
+      setErrorMessage("An error occurred. Please try again later.");
     }
   };
 
@@ -78,7 +90,7 @@ export default function EnGrade({ sessionId }: GradeProps) {
   );
 
   return (
-    <Card className="shadow-sm h-100" style={{ borderRadius: "16px" }}>
+    <Card className="shadow-sm h-100" style={{ borderRadius: "16px", border: "1px solid #eee" }}>
       <Card.Header
         style={{
           backgroundColor: "transparent",
@@ -92,7 +104,7 @@ export default function EnGrade({ sessionId }: GradeProps) {
         style={{ maxHeight: "650px", overflowY: "auto", padding: "1.5rem" }}
       >
         <div style={{ width: "100%" }}>
-          <Alert variant="light" className="mb-4" style={{ width: "100%" }}>
+          <Alert variant="light" className="mb-4" style={{ width: "100%", backgroundColor: "#f8f9fb", border: "none" }}>
             <p className="small mb-2">
               🎁 The service is in beta and fully free!
             </p>
@@ -105,43 +117,43 @@ export default function EnGrade({ sessionId }: GradeProps) {
 
           {/* Clarity */}
           <div className="mb-4" style={{ width: "100%" }}>
-            <h6 className="small mb-2">Result Clarity</h6>
+            <h6 className="small mb-2 fw-bold">Result Clarity</h6>
             {renderStars("clarity", rating.clarity)}
           </div>
 
           {/* Usefulness */}
           <div className="mb-4" style={{ width: "100%" }}>
-            <h6 className="small mb-2">Service Usefulness</h6>
+            <h6 className="small mb-2 fw-bold">Service Usefulness</h6>
             {renderStars("usefulness", rating.usefulness)}
           </div>
 
           {/* Accuracy */}
           <div className="mb-4" style={{ width: "100%" }}>
-            <h6 className="small mb-2">Accuracy and Logic</h6>
+            <h6 className="small mb-2 fw-bold">Accuracy and Logic</h6>
             {renderStars("accuracy", rating.accuracy)}
           </div>
 
           {/* Usability */}
           <div className="mb-4" style={{ width: "100%" }}>
-            <h6 className="small mb-2">Ease of Use</h6>
+            <h6 className="small mb-2 fw-bold">Ease of Use</h6>
             {renderStars("usability", rating.usability)}
           </div>
 
           {/* Speed */}
           <div className="mb-4" style={{ width: "100%" }}>
-            <h6 className="small mb-2">Generation Speed</h6>
+            <h6 className="small mb-2 fw-bold">Generation Speed</h6>
             {renderStars("speed", rating.speed)}
           </div>
 
           {/* Design */}
           <div className="mb-4" style={{ width: "100%" }}>
-            <h6 className="small mb-2">Design and Structure</h6>
+            <h6 className="small mb-2 fw-bold">Design and Structure</h6>
             {renderStars("design", rating.design)}
           </div>
 
           {/* Overall Rating */}
-          <div className="mb-4 p-3 bg-light rounded" style={{ width: "100%" }}>
-            <h6 className="small mb-2 text-center">
+          <div className="mb-4 p-3 rounded" style={{ width: "100%", backgroundColor: "#f0f7fa" }}>
+            <h6 className="small mb-2 text-center text-brand">
               <strong>Overall Rating</strong>
             </h6>
             <div className="d-flex w-100 justify-content-center gap-1">
@@ -158,7 +170,7 @@ export default function EnGrade({ sessionId }: GradeProps) {
 
           {/* Recommendation */}
           <div className="mb-4" style={{ width: "100%" }}>
-            <h6 className="small mb-2">
+            <h6 className="small mb-2 fw-bold">
               How likely are you to recommend us to friends?
             </h6>
             {renderStars("recommend", rating.recommend)}
@@ -166,7 +178,7 @@ export default function EnGrade({ sessionId }: GradeProps) {
 
           {/* Price */}
           <div className="mb-4" style={{ width: "100%" }}>
-            <h6 className="small mb-2">
+            <h6 className="small mb-2 fw-bold">
               What would be a fair price for this service (one-time)?
             </h6>
             <div className="d-flex flex-wrap gap-2" style={{ width: "100%" }}>
@@ -174,11 +186,14 @@ export default function EnGrade({ sessionId }: GradeProps) {
                 <Button
                   key={price}
                   size="sm"
-                  style={{ flex: "1 1 calc(33.333% - 0.5rem)" }}
-                  variant={
-                    rating.price === price ? "primary" : "outline-secondary"
-                  }
+                  variant={rating.price === price ? "primary" : "outline-secondary"}
                   onClick={() => setRating({ ...rating, price })}
+                  style={{ 
+                    flex: "1 1 calc(33.333% - 0.5rem)",
+                    borderRadius: "8px",
+                    borderColor: rating.price === price ? "#1e6078" : "#ccc",
+                    backgroundColor: rating.price === price ? "#1e6078" : "transparent"
+                  }}
                 >
                   ${price}
                 </Button>
@@ -188,26 +203,48 @@ export default function EnGrade({ sessionId }: GradeProps) {
 
           {/* Feedback */}
           <div className="mb-4" style={{ width: "100%" }}>
-            <h6 className="small mb-2">Your Feedback (optional)</h6>
+            <h6 className="small mb-2 fw-bold">Your Feedback (optional)</h6>
             <Form.Control
               as="textarea"
-              rows={4}
+              rows={3}
               placeholder="Share your impressions..."
               value={feedback}
               onChange={(e) => setFeedback(e.target.value)}
-              style={{ width: "100%" }}
+              style={{ width: "100%", borderRadius: "10px", padding: "10px" }}
+              disabled={status === "success"}
             />
           </div>
 
-          {/* Submit Button */}
-          <Button
-            variant="success"
-            onClick={submitRatingAndFeedback}
-            disabled={!rating.clarity && !feedback}
-            style={{ width: "100%" }}
-          >
-            Submit Feedback
-          </Button>
+          {/* Submit Button & Messages */}
+          <div className="d-grid gap-2">
+            {status === "success" ? (
+              <Alert variant="success" className="text-center py-3 border-0" style={{ borderRadius: "12px", backgroundColor: "#e8f5e9" }}>
+                <div className="h4 mb-2">✅ Thank you!</div>
+                <div className="small">Your feedback has been received and helps us improve.</div>
+              </Alert>
+            ) : (
+              <>
+                <Button
+                  onClick={submitRatingAndFeedback}
+                  disabled={(!rating.clarity && !feedback) || status === "submitting"}
+                  className="contact-btn w-100"
+                  style={{ 
+                    backgroundColor: "#1e6078", 
+                    color: "white", 
+                    border: "none",
+                    height: "48px",
+                    borderRadius: "10px",
+                    fontSize: "1rem"
+                  }}
+                >
+                  {status === "submitting" ? "Sending..." : "Submit Feedback"}
+                </Button>
+                {status === "error" && (
+                  <div className="text-danger small text-center mt-2">{errorMessage}</div>
+                )}
+              </>
+            )}
+          </div>
         </div>
       </Card.Body>
     </Card>

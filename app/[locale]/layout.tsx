@@ -26,9 +26,11 @@ export default async function LocaleLayout({
   try {
     const common = await import(`../../locales/${locale}/common.json`);
     const header = await import(`../../locales/${locale}/header.json`);
+    const monitoring = await import(`../../locales/${locale}/monitoring.json`);
     messages = {
       ...common?.default,
       header: header?.default ?? {},
+      monitoring: monitoring?.default ?? {},
     };
   } catch (err) {
     // если нет переводов — оставляем пустые сообщения
@@ -42,7 +44,7 @@ export default async function LocaleLayout({
         <main>{children}</main>
         <Footer />
       </NextIntlClientProvider>
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
     </>
   );
 }
-

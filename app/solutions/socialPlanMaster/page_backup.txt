@@ -1,0 +1,45 @@
+# Social Plan Master Page - Backup
+
+## Структура страницы
+
+### Hero Section
+- Заголовок: "🚀 Генератор социального плана"
+- Описание: "Создайте комплексный социальный план для вашего бизнеса..."
+
+### Form Section
+Поля формы:
+1. **Business Idea** - Описание идеи бизнеса (text)
+2. **Target Market** - Целевой рынок (textarea)
+3. **Business Category** - Категория бизнеса (text)
+4. **Region** - Регион (text)
+5. **Business Types** - Тип бизнеса (toggle buttons: B2B, B2C, B2B2C, C2C, D2C)
+6. **Product Types** - Тип продукта (toggle buttons)
+7. **Initial Investment** - Начальные инвестиции (number)
+8. **Planned Headcount** - Плановая численность (number)
+9. **Has Social Impact** - Социальное воздействие (checkbox)
+
+### Results Section
+После отправки формы:
+- Progress Card с прогресс-баром
+- Success Card с временем выполнения
+- Results Tabs (Overview, Technology, Marketing, Social)
+- Download DOCX и Reset buttons
+
+### Data Flow
+1. User fills form → POST /api/synthesis/plan
+2. Polling GET /api/synthesis/{id} every 2 seconds
+3. On complete → GET /api/synthesis/{id}/result
+4. Display results in tabs
+5. Download option: GET /api/synthesis/download/{id}
+
+## API Endpoints
+- POST http://localhost:8004/api/synthesis/plan
+- GET http://localhost:8004/api/synthesis/{id}
+- GET http://localhost:8004/api/synthesis/{id}/result
+- GET http://localhost:8004/api/synthesis/download/{id}
+- GET http://localhost:8004/api/health (health check)
+
+## Styles
+- Uses socialPlanMaster.module.css
+- Responsive design (mobile-first)
+- Color scheme: #1e6078 (primary), #0785f6 (accent)

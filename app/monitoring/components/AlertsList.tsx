@@ -1,3 +1,5 @@
+"use client";
+
 import React from 'react';
 import { Alert, Button, Badge } from 'react-bootstrap';
 import { SystemAlert, AlertSeverity } from '../types/monitoring';

@@ -1,12 +1,18 @@
+"use client";
+
 import React, { useState } from 'react';
-import { Container, Row, Col, Card, Badge, Alert, Button, Spinner, Modal } from 'react-bootstrap';
+import { Container, Row, Col, Card, Badge, Alert, Button, Spinner, Modal, Tabs, Tab } from 'react-bootstrap';
+import { useTranslations } from 'next-intl';
 import { useMonitoring, useMonitoringStats } from '../hooks/useMonitoring';
 import { ServiceCard } from '../components/ServiceCard';
 import { AlertsList } from '../components/AlertsList';
 import { ServiceHistoryChart } from '../components/ServiceHistoryChart';
+import { RatingsDashboard } from '../components/RatingsDashboard';
 import { Service } from '../types/monitoring';
+import Header from '@/components/Header';
 
 export const MonitoringDashboard: React.FC = () => {
+  const t = useTranslations('monitoring');
   const { 
     data, 
     loading, 
@@ -19,18 +25,20 @@ export const MonitoringDashboard: React.FC = () => {
   
   const { stats } = useMonitoringStats();
 
-  const [checkingNow, setCheckingNow] = useState(false);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
-  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>('health');
+  const [checkingNow, setCheckingNow] = useState(false);
 
   const getStatusColor = (status: string) => {
-    switch (status) {
+    switch (status.toLowerCase()) {
+      case 'up':
       case 'healthy':
         return 'success';
       case 'degraded':
+      case 'warning':
         return 'warning';
-      case 'critical':
       case 'down':
+      case 'critical':
         return 'danger';
       default:
         return 'secondary';
@@ -38,14 +46,16 @@ export const MonitoringDashboard: React.FC = () => {
   };
 
   const getStatusIcon = (status: string) => {
-    switch (status) {
+    switch (status.toLowerCase()) {
+      case 'up':
       case 'healthy':
         return '✅';
       case 'degraded':
+      case 'warning':
         return '⚠️';
-      case 'critical':
       case 'down':
-        return '🔴';
+      case 'critical':
+        return '❌';
       default:
         return '❓';
     }
@@ -55,256 +65,250 @@ export const MonitoringDashboard: React.FC = () => {
     setCheckingNow(true);
     try {
       await triggerHealthCheck();
-      // Данные обновятся автоматически через WebSocket
-    } catch (err) {
-      console.error('Error triggering health check:', err);
     } finally {
       setCheckingNow(false);
     }
   };
 
-  const handleResolveAlert = async (alertId: number) => {
-    try {
-      await resolveAlert(alertId);
-    } catch (err) {
-      console.error('Error resolving alert:', err);
-    }
+  const handleResolveAlert = async (alertId: string) => {
+    await resolveAlert(alertId);
   };
 
   const handleServiceClick = (service: Service) => {
     setSelectedService(service);
-    setShowHistoryModal(true);
   };
 
-  if (loading) {
+  if (loading && !data) {
     return (
-      <Container fluid className="p-4">
-        <div className="text-center mt-5">
-          <Spinner animation="border" role="status">
-            <span className="visually-hidden">Loading...</span>
-          </Spinner>
-          <p className="mt-3">Loading monitoring data...</p>
-        </div>
+      <Container className="d-flex justify-content-center align-items-center" style={{ minHeight: '100vh' }}>
+        <Spinner animation="grow" variant="primary" />
       </Container>
     );
   }
 
-  if (error) {
+  if (error || !data) {
     return (
-      <Container fluid className="p-4">
+      <Container className="mt-5">
         <Alert variant="danger">
-          <Alert.Heading>Error Loading Monitoring Data</Alert.Heading>
-          <p>{error}</p>
-          <Button variant="outline-danger" onClick={refresh}>
-            Retry
-          </Button>
+          <Alert.Title>Error Loading Dashboard</Alert.Title>
+          {error || 'An unknown error occurred while connecting to the monitoring service.'}
+          <div className="mt-3">
+            <Button variant="outline-danger" onClick={refresh}>Try Again</Button>
+          </div>
         </Alert>
       </Container>
     );
   }
 
-  if (!data) {
-    return (
-      <Container fluid className="p-4">
-        <Alert variant="info">No monitoring data available</Alert>
-      </Container>
-    );
-  }
-
   return (
-    <Container fluid className="p-4">
-      {/* Header */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h1 className="mb-1">Upgrowplan System Monitor</h1>
-          <p className="text-muted mb-0">
-            Real-time monitoring of all services
-            {wsConnected && (
-              <Badge bg="success" className="ms-2">
-                ● Live
-              </Badge>
-            )}
-            {!wsConnected && (
-              <Badge bg="warning" className="ms-2">
-                ○ Connecting...
-              </Badge>
-            )}
-          </p>
-        </div>
-        
-        <div>
-          <Button
-            variant="primary"
-            onClick={handleCheckNow}
-            disabled={checkingNow}
-            className="me-2"
-          >
-            {checkingNow ? (
-              <>
-                <Spinner
-                  as="span"
-                  animation="border"
-                  size="sm"
-                  role="status"
-                  aria-hidden="true"
-                  className="me-2"
-                />
-                Checking...
-              </>
-            ) : (
-              <>🔄 Check Now</>
-            )}
-          </Button>
+    <>
+      <Header />
+      <Container fluid className="p-4" style={{ backgroundColor: "#f8f9fb", minHeight: "100vh" }}>
+        {/* Header */}
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h1 className="mb-1 text-brand">{t('title')}</h1>
+            <p className="text-muted mb-0">
+              {t('subtitle')}
+              {wsConnected && (
+                <Badge bg="success" className="ms-2">
+                  ● {t('status.live')}
+                </Badge>
+              )}
+              {!wsConnected && (
+                <Badge bg="warning" className="ms-2">
+                  ○ {t('status.connecting')}
+                </Badge>
+              )}
+            </p>
+          </div>
           
-          <Button variant="outline-secondary" onClick={refresh}>
-            Refresh
-          </Button>
+          <div className="d-flex gap-2">
+            {activeTab === 'health' && (
+              <Button
+                variant="primary"
+                onClick={handleCheckNow}
+                disabled={checkingNow}
+                style={{ backgroundColor: "#1e6078", border: "none" }}
+              >
+                {checkingNow ? (
+                  <>
+                    <Spinner
+                      as="span"
+                      animation="border"
+                      size="sm"
+                      role="status"
+                      aria-hidden="true"
+                      className="me-2"
+                    />
+                    {t('buttons.checking')}
+                  </>
+                ) : (
+                  <>🔄 {t('buttons.check_now')}</>
+                )}
+              </Button>
+            )}
+            
+            <Button variant="outline-secondary" onClick={refresh}>
+              {t('buttons.refresh')}
+            </Button>
+          </div>
         </div>
-      </div>
 
-      {/* Overall Status */}
-      <Row className="mb-4">
-        <Col md={12}>
-          <Card className={`border-${getStatusColor(data.overall_health)} shadow-sm`}>
-            <Card.Body>
-              <div className="text-center py-3">
-                <h2 className="mb-0">
-                  {getStatusIcon(data.overall_health)} Overall System Status:{' '}
-                  <Badge 
-                    bg={getStatusColor(data.overall_health)}
-                    style={{ fontSize: '1.2rem' }}
-                  >
-                    {data.overall_health.toUpperCase()}
-                  </Badge>
-                </h2>
-              </div>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
+        <Tabs
+          activeKey={activeTab}
+          onSelect={(k) => setActiveTab(k || 'health')}
+          className="mb-4 custom-tabs"
+        >
+          <Tab eventKey="health" title={`🏥 ${t('tabs.health')}`}>
+            <div className="mt-4">
+              {/* Overall Status */}
+              <Row className="mb-4">
+                <Col md={12}>
+                  <Card className={`border-0 shadow-sm border-start border-4 border-${getStatusColor(data.overall_health)}`}>
+                    <Card.Body>
+                      <div className="text-center py-2">
+                        <h2 className="mb-0">
+                          {getStatusIcon(data.overall_health)} {t('status.overall')}:{' '}
+                          <Badge 
+                            bg={getStatusColor(data.overall_health)}
+                            style={{ fontSize: '1.2rem' }}
+                          >
+                            {data.overall_health.toUpperCase()}
+                          </Badge>
+                        </h2>
+                      </div>
+                    </Card.Body>
+                  </Card>
+                </Col>
+              </Row>
 
-      {/* Stats Cards */}
-      {stats && (
-        <Row className="mb-4">
-          <Col md={3}>
-            <Card className="shadow-sm">
-              <Card.Body>
-                <h6 className="text-muted">Monitored Services</h6>
-                <div className="display-6">{stats.monitored_services}</div>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col md={3}>
-            <Card className="shadow-sm">
-              <Card.Body>
-                <h6 className="text-muted">Active Alerts</h6>
-                <div className="display-6 text-danger">{stats.active_alerts}</div>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col md={3}>
-            <Card className="shadow-sm">
-              <Card.Body>
-                <h6 className="text-muted">Total Checks</h6>
-                <div className="display-6">{stats.total_health_checks.toLocaleString()}</div>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col md={3}>
-            <Card className="shadow-sm">
-              <Card.Body>
-                <h6 className="text-muted">System Uptime</h6>
-                <div className="display-6 text-success">{stats.uptime_percentage}%</div>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-      )}
+              {/* Stats Cards */}
+              {stats && (
+                <Row className="mb-4 g-3">
+                  <Col md={3}>
+                    <Card className="shadow-sm border-0 h-100">
+                      <Card.Body>
+                        <h6 className="text-muted">{t('stats.services')}</h6>
+                        <div className="display-6 fw-bold">{stats.monitored_services}</div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                  <Col md={3}>
+                    <Card className="shadow-sm border-0 h-100">
+                      <Card.Body>
+                        <h6 className="text-muted">{t('stats.alerts')}</h6>
+                        <div className="display-6 fw-bold text-danger">{stats.active_alerts}</div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                  <Col md={3}>
+                    <Card className="shadow-sm border-0 h-100">
+                      <Card.Body>
+                        <h6 className="text-muted">{t('stats.checks')}</h6>
+                        <div className="h2 fw-bold">{stats.total_health_checks.toLocaleString()}</div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                  <Col md={3}>
+                    <Card className="shadow-sm border-0 h-100">
+                      <Card.Body>
+                        <h6 className="text-muted">{t('stats.uptime')}</h6>
+                        <div className="display-6 fw-bold text-success">{stats.uptime_percentage}%</div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                </Row>
+              )}
 
-      {/* Active Alerts */}
-      {data.alerts.length > 0 && (
-        <Row className="mb-4">
-          <Col md={12}>
-            <h4 className="mb-3">🚨 Active Alerts</h4>
-            <AlertsList
-              alerts={data.alerts}
-              onResolve={handleResolveAlert}
-              showResolveButton={true}
-            />
-          </Col>
-        </Row>
-      )}
+              {/* Active Alerts */}
+              {data.alerts.length > 0 && (
+                <Row className="mb-4">
+                  <Col md={12}>
+                    <h4 className="mb-3 text-brand">{t('sections.alerts')}</h4>
+                    <AlertsList
+                      alerts={data.alerts}
+                      onResolve={handleResolveAlert}
+                      showResolveButton={true}
+                    />
+                  </Col>
+                </Row>
+              )}
 
-      {/* Services Status */}
-      <Row className="mb-4">
-        <Col md={12}>
-          <h4 className="mb-3">Services Status</h4>
-        </Col>
-        {data.services.map((service, idx) => (
-          <Col md={4} lg={3} key={idx} className="mb-3">
-            <ServiceCard
-              service={service}
-              onClick={() => handleServiceClick(service)}
-            />
-          </Col>
-        ))}
-      </Row>
+              {/* Services Status */}
+              <Row className="mb-4">
+                <Col md={12}>
+                  <h4 className="mb-3 text-brand">{t('sections.services')}</h4>
+                </Col>
+                {data.services.map((service, idx) => (
+                  <Col md={4} lg={3} key={idx} className="mb-3">
+                    <ServiceCard
+                      service={service}
+                      onClick={() => handleServiceClick(service)}
+                    />
+                  </Col>
+                ))}
+              </Row>
 
-      {/* User Activity */}
-      <Row>
-        <Col md={4}>
-          <Card className="shadow-sm">
-            <Card.Body>
-              <h5>Active Users (24h)</h5>
-              <div className="display-4">{data.activity.total_users_24h}</div>
-              <small className="text-muted">Total active users</small>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={4}>
-          <Card className="shadow-sm">
-            <Card.Body>
-              <h5>Total Requests (24h)</h5>
-              <div className="display-4">{data.activity.total_requests_24h}</div>
-              <small className="text-muted">API requests</small>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={4}>
-          <Card className="shadow-sm">
-            <Card.Body>
-              <h5>Avg Response Time</h5>
-              <div className="display-4">
-                {data.activity.avg_response_time.toFixed(2)}ms
-              </div>
-              <small className="text-muted">Average across all services</small>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
+              {/* User Activity */}
+              <h4 className="mb-3 text-brand">{t('sections.activity')}</h4>
+              <Row>
+                <Col md={4}>
+                  <Card className="shadow-sm border-0 mb-3">
+                    <Card.Body>
+                      <h6 className="text-muted">{t('activity.users')}</h6>
+                      <div className="display-5 fw-bold">{data.activity.total_users_24h}</div>
+                    </Card.Body>
+                  </Card>
+                </Col>
+                <Col md={4}>
+                  <Card className="shadow-sm border-0 mb-3">
+                    <Card.Body>
+                      <h6 className="text-muted">{t('activity.requests')}</h6>
+                      <div className="display-5 fw-bold">{data.activity.total_requests_24h}</div>
+                    </Card.Body>
+                  </Card>
+                </Col>
+                <Col md={4}>
+                  <Card className="shadow-sm border-0 mb-3">
+                    <Card.Body>
+                      <h6 className="text-muted">{t('activity.response_time')}</h6>
+                      <div className="display-5 fw-bold text-brand">
+                        {data.activity.avg_response_time.toFixed(0)}ms
+                      </div>
+                    </Card.Body>
+                  </Card>
+                </Col>
+              </Row>
+            </div>
+          </Tab>
+          
+          <Tab eventKey="ratings" title={`⭐ ${t('tabs.ratings')}`}>
+            <div className="mt-4">
+              <RatingsDashboard />
+            </div>
+          </Tab>
+        </Tabs>
+      </Container>
 
       {/* Service History Modal */}
-      <Modal
-        show={showHistoryModal}
-        onHide={() => setShowHistoryModal(false)}
+      <Modal 
+        show={!!selectedService} 
+        onHide={() => setSelectedService(null)}
         size="lg"
+        centered
       >
         <Modal.Header closeButton>
           <Modal.Title>
-            {selectedService?.name} - Performance History
+            {selectedService?.name} History
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {selectedService && (
-            <ServiceHistoryChart serviceName={selectedService.name} hours={24} />
+            <ServiceHistoryChart serviceName={selectedService.name} />
           )}
         </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowHistoryModal(false)}>
-            Close
-          </Button>
-        </Modal.Footer>
       </Modal>
-    </Container>
+    </>
   );
 };
