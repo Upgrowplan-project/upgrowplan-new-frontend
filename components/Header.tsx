@@ -17,7 +17,7 @@ const translations = {
     login: "Log In",
     logout: "Logout",
     account: "Account",
-    menu: "Menu"
+    menu: "Menu",
   },
   ru: {
     products: "Продукты",
@@ -28,8 +28,8 @@ const translations = {
     login: "Вход",
     logout: "Выход",
     account: "Кабинет",
-    menu: "Меню"
-  }
+    menu: "Меню",
+  },
 };
 
 export default function Header() {
@@ -39,12 +39,12 @@ export default function Header() {
   const router = useRouter();
   const pathname = usePathname() || "/";
   const searchParams = useSearchParams();
-  
+
   // Determine locale from pathname
   const isRussian = pathname.startsWith("/ru");
   const locale = isRussian ? "ru" : "en";
   const t = translations[locale];
-  
+
   const query = searchParams
     ? searchParams.toString()
       ? `?${searchParams.toString()}`
@@ -63,14 +63,14 @@ export default function Header() {
   // Function to switch locale while preserving current path
   const switchLocale = (newLocale: string) => {
     // For 'en', don't add prefix; for 'ru', add /ru prefix
-    const localePrefix = newLocale === 'en' ? '' : `/${newLocale}`;
+    const localePrefix = newLocale === "en" ? "" : `/${newLocale}`;
     // If baseHref is "/", we want just the locale prefix (or empty for en)
     const pathPart = baseHref === "/" ? "" : baseHref;
-    const newPath = `${localePrefix}${pathPart}${query}` || '/';
+    const newPath = `${localePrefix}${pathPart}${query}` || "/";
     router.push(newPath);
   };
 
-  const homeLink = locale === 'en' ? '/' : '/ru';
+  const homeLink = locale === "en" ? "/" : "/ru";
 
   return (
     <header style={{ position: "sticky", top: 0, zIndex: 1000, margin: 0 }}>
@@ -79,7 +79,10 @@ export default function Header() {
         style={{ backgroundColor: "#d7ecf6", margin: 0, padding: "0.5rem 0" }}
       >
         <div className="container">
-          <Link href={homeLink} className="navbar-brand d-flex align-items-center">
+          <Link
+            href={homeLink}
+            className="navbar-brand d-flex align-items-center"
+          >
             <Image
               src="/LogoUpGrowSmall2.png"
               alt="Up&Grow Logo"
@@ -110,35 +113,60 @@ export default function Header() {
           >
             <ul className="navbar-nav ms-auto mb-2 mb-md-0">
               <li className="nav-item">
-                <Link href={locale === 'en' ? '/products' : '/ru/products'} className="nav-link" style={{ color: "#0785f6" }}>
+                <Link
+                  href={locale === "en" ? "/products" : "/ru/products"}
+                  className="nav-link"
+                  style={{ color: "#0785f6" }}
+                >
                   {t.products}
                 </Link>
               </li>
               <li className="nav-item">
-                <Link href={locale === 'en' ? '/solutions' : '/ru/solutions'} className="nav-link" style={{ color: "#0785f6" }}>
+                <Link
+                  href={locale === "en" ? "/solutions" : "/ru/solutions"}
+                  className="nav-link"
+                  style={{ color: "#0785f6" }}
+                >
                   {t.solutions}
                 </Link>
               </li>
               <li className="nav-item">
-                <Link href={locale === 'en' ? '/blog' : '/ru/blog'} className="nav-link" style={{ color: "#0785f6" }}>
+                <Link
+                  href={locale === "en" ? "/blog" : "/ru/blog"}
+                  className="nav-link"
+                  style={{ color: "#0785f6" }}
+                >
                   {t.blog}
                 </Link>
               </li>
               <li className="nav-item">
-                <Link href={locale === 'en' ? '/about' : '/ru/about'} className="nav-link" style={{ color: "#0785f6" }}>
+                <Link
+                  href={locale === "en" ? "/about" : "/ru/about"}
+                  className="nav-link"
+                  style={{ color: "#0785f6" }}
+                >
                   {t.about}
                 </Link>
               </li>
               <li className="nav-item">
-                <Link href={locale === 'en' ? '/contacts' : '/ru/contacts'} className="nav-link" style={{ color: "#0785f6" }}>
+                <Link
+                  href={locale === "en" ? "/contacts" : "/ru/contacts"}
+                  className="nav-link"
+                  style={{ color: "#0785f6" }}
+                >
                   {t.contact}
                 </Link>
               </li>
               <li className="nav-item">
                 <Link
-                  href={isLoggedIn 
-                    ? (locale === 'en' ? '/account' : '/ru/account')
-                    : (locale === 'en' ? '/auth' : '/ru/auth')
+                  href={
+                    isLoggedIn
+                      ? locale === "en"
+                        ? "/account"
+                        : "/ru/account"
+                      : locale === "en"
+                        ? "/auth"
+                        : "/ru/auth"
                   }
                   className="nav-link"
                   style={{ color: "#0785f6" }}

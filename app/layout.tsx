@@ -9,7 +9,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Upgrowplan | Business plans, Financial models, Analytics, Market research",
+  title:
+    "Upgrowplan | Business plans, Financial models, Analytics, Market research",
   description: "Upgrowplan — future planning service",
   icons: {
     icon: "/favicon.ico",
@@ -25,13 +26,11 @@ export default async function RootLayout({
   children,
   params,
 }: RootLayoutProps) {
-  const locale = params?.locale || 'en';
-  
+  const locale = params?.locale || "en";
+
   return (
     <html lang={locale} suppressHydrationWarning>
-      <body className={`${inter.variable} antialiased`}>
-        {children}
-      </body>
+      <body className={`${inter.variable} antialiased`}>{children}</body>
     </html>
   );
 }
