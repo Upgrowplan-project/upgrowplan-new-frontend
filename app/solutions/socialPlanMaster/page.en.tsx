@@ -285,8 +285,12 @@ export default function SocialPlanMasterPageEN() {
     e.preventDefault();
     setError(null);
     setIsSubmitting(true);
-    setSynthesisStartTime(Date.now());
+
+    // Clear previous results and reset timer for new generation
+    setSynthesisResult(null);
     setSynthesisDuration(null);
+    setSynthesisStartTime(Date.now());  // Set NEW start time
+
     console.log("[Social Plan Master] Starting synthesis submission...");
     console.log("[Social Plan Master] Form data:", formData);
 
@@ -543,6 +547,8 @@ export default function SocialPlanMasterPageEN() {
     setSynthesisResult(null);
     setError(null);
     setActiveSection("overview");
+    setSynthesisStartTime(null);  // Reset timer
+    setSynthesisDuration(null);   // Clear duration
   };
 
   return (

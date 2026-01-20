@@ -244,8 +244,12 @@ export default function SocialPlanMasterPage() {
     e.preventDefault();
     setError(null);
     setIsSubmitting(true);
-    setSynthesisStartTime(Date.now());
+
+    // Clear previous results and reset timer for new generation
+    setSynthesisResult(null);
     setSynthesisDuration(null);
+    setSynthesisStartTime(Date.now());  // Set NEW start time
+
     console.log("[Social Plan Master] Starting synthesis submission...");
     console.log("[Social Plan Master] Form data:", formData);
 
@@ -557,6 +561,8 @@ export default function SocialPlanMasterPage() {
     setSynthesisResult(null);
     setError(null);
     setActiveSection("overview");
+    setSynthesisStartTime(null);  // Reset timer
+    setSynthesisDuration(null);   // Clear duration
   };
 
   return (
@@ -684,95 +690,27 @@ export default function SocialPlanMasterPage() {
                   )}
                 </div>
 
-                {/* Tabs for Results */}
-                <div className={styles.tabs}>
-                  <button
-                    className={`${styles.tab} ${
-                      activeSection === "overview" ? styles.activeTab : ""
-                    }`}
-                    onClick={() => setActiveSection("overview")}
-                  >
-                    📝 Обзор
-                  </button>
-                  <button
-                    className={`${styles.tab} ${
-                      activeSection === "financials" ? styles.activeTab : ""
-                    }`}
-                    onClick={() => setActiveSection("financials")}
-                  >
-                    💰 Финансы
-                  </button>
-                </div>
-
-                {/* Results Content */}
+                {/* Results Content - ТОЛЬКО РЕЗЮМЕ */}
                 <div className={styles.resultsContent}>
-                  {activeSection === "overview" ? (
-                    <div className={styles.resultCard}>
-                      <h3>Резюме бизнес-плана</h3>
-                      <div className={styles.synthesisTextContainer}>
-                        {synthesisResult.synthesis_text ? (
-                          <div
-                            className={styles.synthesisText}
-                            dangerouslySetInnerHTML={{
-                              __html: synthesisResult.synthesis_text
-                                .replace(/\n/g, "<br />")
-                                .replace(/### (.*?)<br \/>/g, "<h4>$1</h4>")
-                                .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-                                .replace(/- /g, "• "),
-                            }}
-                          />
-                        ) : (
-                          <p>Текст синтеза недоступен</p>
-                        )}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className={styles.resultCard}>
-                      <h3>Финансовые показатели</h3>
-                      {synthesisResult.financials ? (
-                        <div className={styles.financialsGrid}>
-                          <div className={styles.finItem}>
-                            <span className={styles.finLabel}>Выручка (год)</span>
-                            <span className={styles.finValue}>
-                              {synthesisResult.financials.annual_revenue?.toLocaleString()} ₽
-                            </span>
-                          </div>
-                          <div className={styles.finItem}>
-                            <span className={styles.finLabel}>Чистая прибыль (год)</span>
-                            <span className={styles.finValue}>
-                              {synthesisResult.financials.net_profit_annual?.toLocaleString()} ₽
-                            </span>
-                          </div>
-                          <div className={styles.finItem}>
-                            <span className={styles.finLabel}>Рентабельность</span>
-                            <span className={styles.finValue}>
-                              {synthesisResult.financials.profitability_percent}%
-                            </span>
-                          </div>
-                          <div className={styles.finItem}>
-                            <span className={styles.finLabel}>Окупаемость</span>
-                            <span className={styles.finValue}>
-                              {synthesisResult.financials.breakeven_months} мес.
-                            </span>
-                          </div>
-                          <div className={styles.finItem}>
-                            <span className={styles.finLabel}>Налоги (год)</span>
-                            <span className={styles.finValue}>
-                              {synthesisResult.financials.tax_amount_annual?.toLocaleString()} ₽
-                            </span>
-                          </div>
-                          <div className={styles.finItem}>
-                            <span className={styles.finLabel}>Система</span>
-                            <span className={styles.finValue}>
-                              {synthesisResult.financials.tax_system}
-                            </span>
-                          </div>
-                        </div>
+                  <div className={styles.resultCard}>
+                    <h3>Резюме проекта</h3>
+                    <div className={styles.synthesisTextContainer}>
+                      {synthesisResult.synthesis_text ? (
+                        <div
+                          className={styles.synthesisText}
+                          dangerouslySetInnerHTML={{
+                            __html: synthesisResult.synthesis_text
+                              .replace(/\n/g, "<br />")
+                              .replace(/### (.*?)<br \/>/g, "<h4>$1</h4>")
+                              .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+                              .replace(/- /g, "• "),
+                          }}
+                        />
                       ) : (
-                        <p>Финансовые данные недоступны</p>
+                        <p>Текст синтеза недоступен</p>
                       )}
                     </div>
-                  )}
+                  </div>
                 </div>
 
                 {/* Download and Reset Buttons */}

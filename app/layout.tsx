@@ -16,13 +16,19 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
-  children,
-}: {
+interface RootLayoutProps {
   children: React.ReactNode;
-}) {
+  params?: { locale?: string };
+}
+
+export default async function RootLayout({
+  children,
+  params,
+}: RootLayoutProps) {
+  const locale = params?.locale || 'en';
+  
   return (
-    <html lang="en">
+    <html lang={locale} suppressHydrationWarning>
       <body className={`${inter.variable} antialiased`}>
         {children}
       </body>

@@ -1,7 +1,9 @@
+"use client";
+
 import HomePageEn from "./page.en";
 import HomePageRu from "./page.ru";
 
-export default async function HomePage({
+export default function HomePage({
   params,
 }: {
   params: { locale: string };

@@ -38,13 +38,13 @@ export default async function LocaleLayout({
   }
 
   return (
-    <>
+    <div suppressHydrationWarning>
       <AOSWrapper />
       <NextIntlClientProvider locale={locale} messages={messages}>
         <main>{children}</main>
         <Footer />
       </NextIntlClientProvider>
       <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
-    </>
+    </div>
   );
 }
