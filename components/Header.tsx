@@ -62,6 +62,9 @@ export default function Header() {
 
   // Function to switch locale while preserving current path
   const switchLocale = (newLocale: string) => {
+    // Save locale preference to cookie
+    document.cookie = `NEXT_LOCALE=${newLocale}; path=/; max-age=31536000`; // 1 year
+    
     // For 'en', don't add prefix; for 'ru', add /ru prefix
     const localePrefix = newLocale === "en" ? "" : `/${newLocale}`;
     // If baseHref is "/", we want just the locale prefix (or empty for en)
