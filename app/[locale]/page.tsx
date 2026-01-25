@@ -2,9 +2,10 @@
 
 import HomePageEn from "./page.en";
 import HomePageRu from "./page.ru";
-import { use } from "react";
+import { usePathname } from "next/navigation";
 
-export default function HomePage({ params }: { params: Promise<{ locale: string }> }) {
-  const { locale } = use(params);
+export default function HomePage() {
+  const pathname = usePathname();
+  const locale = pathname.startsWith("/ru") ? "ru" : "en";
   return locale === "ru" ? <HomePageRu /> : <HomePageEn />;
 }
