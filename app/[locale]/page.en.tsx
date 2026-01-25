@@ -3,12 +3,13 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useLocale } from "next-intl";
+import { usePathname } from "next/navigation";
 import Header from "../../components/Header";
 
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const locale = useLocale();
+  const pathname = usePathname();
+  const locale = pathname.startsWith("/ru") ? "ru" : "en";
 
   // Helper to create locale-aware path (en = no prefix, ru = /ru prefix)
   const getLocalePath = (path: string) => {

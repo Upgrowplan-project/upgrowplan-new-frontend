@@ -109,7 +109,7 @@ export default function AboutPage() {
         <div className="row justify-content-center">
           <FullWidthCard>
             <h2 className="text-center mb-4" style={{ color: "#1e6078" }}>
-              🧠 Who we are
+              Our Team
             </h2>
             <p className="mb-4 text-center">
               Upgrowplan is a small independent team of experts combining deep

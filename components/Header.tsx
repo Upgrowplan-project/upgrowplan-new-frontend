@@ -94,7 +94,7 @@ export default function Header() {
               className="ms-2"
               style={{ color: "#1e6078", fontWeight: "bold" }}
             >
-              UpGrow
+              Upgrowplan
             </span>
           </Link>
           <button

@@ -273,3 +273,127 @@ footer {
   }
 }
 
+/* -------------------------- */
+/*   COOKIE BANNER STYLING   */
+/* -------------------------- */
+
+/* Ensure cookie banner is responsive on mobile */
+@media (max-width: 767px) {
+
+  /* GDPR banner (English) */
+  .cookie-banner-gdpr {
+    padding: 1rem !important;
+  }
+
+  .cookie-banner-gdpr>div {
+    flex-direction: column !important;
+  }
+
+  .cookie-banner-buttons {
+    flex-direction: column !important;
+    width: 100%;
+  }
+
+  .cookie-banner-buttons button {
+    width: 100%;
+  }
+
+  /* Russian banner */
+  .cookie-banner-ru {
+    padding: 0.75rem 1rem !important;
+  }
+
+  .cookie-banner-ru>div {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+
+  .cookie-banner-ru p {
+    font-size: 0.85rem !important;
+  }
+
+  .cookie-banner-ru .cookie-banner-buttons {
+    width: 100%;
+    justify-content: stretch !important;
+  }
+
+  .cookie-banner-ru button {
+    flex: 1;
+  }
+}
+
+/* Accessibility improvements */
+button:focus-visible {
+  outline: 2px solid #0785f6;
+  outline-offset: 2px;
+}
+
+/* Smooth animations */
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.cookie-banner-enter {
+  animation: slideUp 0.3s ease-out;
+}
+
+/* -------------------------- */
+/*   PRIVACY PAGE TABS       */
+/* -------------------------- */
+
+/* Ensure tabs are responsive on mobile */
+@media (max-width: 767px) {
+  .privacy-tabs {
+    flex-direction: column !important;
+  }
+
+  .privacy-tabs button {
+    width: 100%;
+    text-align: left;
+    border-radius: 8px !important;
+    margin-bottom: 0.25rem;
+  }
+
+  .privacy-content {
+    padding: 1rem !important;
+    font-size: 0.9rem;
+  }
+}
+
+/* Policy text formatting */
+.policy-text {
+  color: #333;
+  font-size: 0.95rem;
+}
+
+.policy-text h2,
+.policy-text h3 {
+  color: #1e6078;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+/* Smooth tab transitions */
+.tab-content-enter {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

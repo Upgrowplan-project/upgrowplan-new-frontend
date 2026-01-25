@@ -23,6 +23,8 @@ interface FormData {
   businessIdea: string;
   region: string;
   city: string;
+  hasExactAddress: boolean;
+  exactAddress: string;
   businessTypes: BusinessType[];
   fundingPurposes: FundingPurpose[];
   ownCapital: string;
@@ -85,6 +87,8 @@ export default function SocialPlanMasterPage() {
     businessIdea: "",
     region: "",
     city: "",
+    hasExactAddress: false,
+    exactAddress: "",
     businessTypes: [],
     fundingPurposes: [],
     ownCapital: "",
@@ -273,6 +277,9 @@ export default function SocialPlanMasterPage() {
         business_idea: formData.businessIdea,
         region: formData.region,
         city: formData.city,
+        exact_address: formData.hasExactAddress && formData.exactAddress.trim()
+          ? formData.exactAddress.trim()
+          : undefined,
         business_types: formData.businessTypes,
         funding_purposes: formData.fundingPurposes,
         own_capital: parseInt(formData.ownCapital),
@@ -773,6 +780,44 @@ export default function SocialPlanMasterPage() {
                       className={styles.input}
                     />
                   </div>
+                </div>
+
+                {/* Exact Address */}
+                <div className={styles.section}>
+                  <div className={styles.checkboxRow}>
+                    <input
+                      type="checkbox"
+                      id="hasExactAddress"
+                      name="hasExactAddress"
+                      checked={formData.hasExactAddress}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          hasExactAddress: e.target.checked,
+                          exactAddress: e.target.checked ? prev.exactAddress : "",
+                        }))
+                      }
+                      className={styles.checkbox}
+                    />
+                    <label htmlFor="hasExactAddress" className={styles.checkboxLabel}>
+                      📍 Есть точный адрес бизнеса
+                    </label>
+                  </div>
+                  {formData.hasExactAddress && (
+                    <div className={styles.addressField}>
+                      <input
+                        type="text"
+                        name="exactAddress"
+                        placeholder="Например: ул. Ленина, д. 15"
+                        value={formData.exactAddress}
+                        onChange={handleInputChange}
+                        className={styles.input}
+                      />
+                      <p className={styles.hint}>
+                        Укажите точный адрес для расчёта расстояния до конкурентов
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Business Types */}
