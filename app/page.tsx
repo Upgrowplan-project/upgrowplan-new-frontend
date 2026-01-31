@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import HomeEn from "./[locale]/page.en";
 
 function getCookie(name: string) {
   if (typeof document === "undefined") return null;
@@ -45,5 +46,6 @@ export default function RootPage() {
     }
   }, [router]);
 
-  return null;
+  // Render English homepage on root
+  return <HomeEn />;
 }
