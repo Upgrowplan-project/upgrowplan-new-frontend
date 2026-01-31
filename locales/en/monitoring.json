@@ -3,7 +3,8 @@
     "subtitle": "Real-time monitoring and feedback analysis",
     "tabs": {
         "health": "System Health",
-        "ratings": "User Ratings"
+        "ratings": "User Ratings",
+        "emails": "Mail Monitoring"
     },
     "status": {
         "overall": "Overall System Status",

@@ -45,9 +45,18 @@ interface SynthesisStatus {
   progress: number;
   error?: string;
   logs?: string[];
-  status?: "pending" | "in_progress" | "completed" | "failed" | "needs_adjustment";
+  status?:
+    | "pending"
+    | "in_progress"
+    | "completed"
+    | "failed"
+    | "needs_adjustment";
   recommendations?: Array<{ type: string; text: string; action: string }>;
-  financials_preview?: { annual_loss: number; profit_per_emp: number; min_wage: number };
+  financials_preview?: {
+    annual_loss: number;
+    profit_per_emp: number;
+    min_wage: number;
+  };
 }
 
 interface SynthesisResult {
@@ -113,7 +122,7 @@ export default function SocialPlanMasterPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [synthesisStartTime, setSynthesisStartTime] = useState<number | null>(
-    null
+    null,
   );
   const [synthesisDuration, setSynthesisDuration] = useState<{
     minutes: number;
@@ -135,7 +144,7 @@ export default function SocialPlanMasterPage() {
     return () => {
       if (pollingIntervalRef.current) {
         console.log(
-          "[Social Plan Master] Cleaning up polling interval on unmount"
+          "[Social Plan Master] Cleaning up polling interval on unmount",
         );
         clearInterval(pollingIntervalRef.current);
         pollingIntervalRef.current = null;
@@ -149,7 +158,7 @@ export default function SocialPlanMasterPage() {
         const healthApiBaseUrl = "http://localhost:8004";
         console.log(
           "[Health Check] Fetching from:",
-          `${healthApiBaseUrl}/api/health`
+          `${healthApiBaseUrl}/api/health`,
         );
         const response = await fetch(`${healthApiBaseUrl}/api/health`);
 
@@ -160,7 +169,7 @@ export default function SocialPlanMasterPage() {
         } else {
           console.error(
             "[Health Check] Failed to fetch health status:",
-            response.status
+            response.status,
           );
         }
       } catch (error) {
@@ -209,7 +218,7 @@ export default function SocialPlanMasterPage() {
   const handleInputChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    >,
   ) => {
     const { name, value, type } = e.target;
     if (type === "checkbox") {
@@ -252,7 +261,7 @@ export default function SocialPlanMasterPage() {
     // Clear previous results and reset timer for new generation
     setSynthesisResult(null);
     setSynthesisDuration(null);
-    setSynthesisStartTime(Date.now());  // Set NEW start time
+    setSynthesisStartTime(Date.now()); // Set NEW start time
 
     console.log("[Social Plan Master] Starting synthesis submission...");
     console.log("[Social Plan Master] Form data:", formData);
@@ -277,9 +286,10 @@ export default function SocialPlanMasterPage() {
         business_idea: formData.businessIdea,
         region: formData.region,
         city: formData.city,
-        exact_address: formData.hasExactAddress && formData.exactAddress.trim()
-          ? formData.exactAddress.trim()
-          : undefined,
+        exact_address:
+          formData.hasExactAddress && formData.exactAddress.trim()
+            ? formData.exactAddress.trim()
+            : undefined,
         business_types: formData.businessTypes,
         funding_purposes: formData.fundingPurposes,
         own_capital: parseInt(formData.ownCapital),
@@ -297,7 +307,7 @@ export default function SocialPlanMasterPage() {
       };
 
       console.log(
-        "[Social Plan Master] Sending request to synthesis-service..."
+        "[Social Plan Master] Sending request to synthesis-service...",
       );
       console.log("[Social Plan Master] Request data:", requestData);
 
@@ -330,7 +340,7 @@ export default function SocialPlanMasterPage() {
         } catch (parseError) {
           console.error(
             "[Social Plan Master] Failed to parse 422 response:",
-            parseError
+            parseError,
           );
           const errorText = await response.text().catch(() => "Unknown error");
           setError(`⚠️ Бизнес-план отклонен валидацией:\n\n${errorText}`);
@@ -346,14 +356,14 @@ export default function SocialPlanMasterPage() {
         throw new Error(
           `Ошибка запуска синтеза (${response.status}). ` +
             `Проверьте, что бэкенд сервис запущен на ${apiBaseUrl}. ` +
-            `Ошибка: ${errorText.substring(0, 200)}`
+            `Ошибка: ${errorText.substring(0, 200)}`,
         );
       }
 
       const result = await response.json();
       console.log(
         "[Social Plan Master] Synthesis started with ID:",
-        result.synthesis_id
+        result.synthesis_id,
       );
       console.log("[Social Plan Master] Initial status:", result);
 
@@ -372,7 +382,7 @@ export default function SocialPlanMasterPage() {
         setError(
           `Не удалось подключиться к бэкенд сервису. ` +
             `Убедитесь, что сервис синтеза запущен на http://localhost:8004. ` +
-            `Ошибка: ${err.message || "Соединение отклонено"}`
+            `Ошибка: ${err.message || "Соединение отклонено"}`,
         );
       } else {
         setError(err.message || "Ошибка при запуске синтеза");
@@ -388,7 +398,7 @@ export default function SocialPlanMasterPage() {
 
     if (pollingIntervalRef.current) {
       console.log(
-        "⚠️ [POLLING] Clearing existing interval before starting new one"
+        "⚠️ [POLLING] Clearing existing interval before starting new one",
       );
       clearInterval(pollingIntervalRef.current);
       pollingIntervalRef.current = null;
@@ -452,12 +462,15 @@ export default function SocialPlanMasterPage() {
             const seconds = totalSeconds % 60;
             setSynthesisDuration({ minutes, seconds });
             console.log(
-              `[Social Plan Master] Duration: ${minutes} min ${seconds} sec`
+              `[Social Plan Master] Duration: ${minutes} min ${seconds} sec`,
             );
           }
 
           fetchSynthesisResult(id);
-        } else if (status.status === "failed" || status.status === "needs_adjustment") {
+        } else if (
+          status.status === "failed" ||
+          status.status === "needs_adjustment"
+        ) {
           if (pollingIntervalRef.current) {
             clearInterval(pollingIntervalRef.current);
             pollingIntervalRef.current = null;
@@ -471,7 +484,7 @@ export default function SocialPlanMasterPage() {
             setError(
               `Синтез не удалось выполнить: ${
                 status.error || "Неизвестная ошибка"
-              }`
+              }`,
             );
           }
           setSynthesisStartTime(null); // Сброс времени при ошибке синтеза
@@ -482,7 +495,7 @@ export default function SocialPlanMasterPage() {
 
         if (retries >= maxRetries) {
           console.error(
-            `❌ [POLLING] Max retries (${maxRetries}) reached. Stopping polling.`
+            `❌ [POLLING] Max retries (${maxRetries}) reached. Stopping polling.`,
           );
           if (pollingIntervalRef.current) {
             clearInterval(pollingIntervalRef.current);
@@ -535,13 +548,13 @@ export default function SocialPlanMasterPage() {
         `${apiBaseUrl}/api/synthesis/download/${synthesisId}`,
         {
           method: "POST",
-        }
+        },
       );
 
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(
-          errorData.error || `Ошибка скачивания: ${response.status}`
+          errorData.error || `Ошибка скачивания: ${response.status}`,
         );
       }
 
@@ -568,8 +581,8 @@ export default function SocialPlanMasterPage() {
     setSynthesisResult(null);
     setError(null);
     setActiveSection("overview");
-    setSynthesisStartTime(null);  // Reset timer
-    setSynthesisDuration(null);   // Clear duration
+    setSynthesisStartTime(null); // Reset timer
+    setSynthesisDuration(null); // Clear duration
   };
 
   return (
@@ -616,7 +629,9 @@ export default function SocialPlanMasterPage() {
                     <p className={styles.stageText}>
                       {synthesisStatus.current_stage || "Инициализация..."}
                     </p>
-                    <span className={styles.progressPercent}>{synthesisStatus.progress}%</span>
+                    <span className={styles.progressPercent}>
+                      {synthesisStatus.progress}%
+                    </span>
                   </div>
                   <div className={styles.progressBarWrapper}>
                     <div
@@ -626,60 +641,118 @@ export default function SocialPlanMasterPage() {
                       }}
                     />
                   </div>
-                  
-                  {/* Milestones / Key Logs */}
-                  <div className={styles.milestonesList}>
-                    {synthesisStatus.logs?.slice(-3).map((log, idx) => (
-                      <div key={idx} className={styles.milestoneMini}>
-                        {log}
-                      </div>
-                    ))}
+
+                  {/* Key Progress Events */}
+                  <div className={styles.progressEventsContainer}>
+                    <h4 className={styles.eventsTitle}>📊 Ключевые этапы:</h4>
+                    <div className={styles.progressEventsList}>
+                      {/* Extract key progress from logs */}
+                      {synthesisStatus.logs &&
+                        synthesisStatus.logs.length > 0 && (
+                          <>
+                            {synthesisStatus.logs
+                              .filter((log) =>
+                                /\[INFO\]|ЭТАП|Архетип|Deep Research|DOCX|Финан|ГОТОВ/.test(
+                                  log,
+                                ),
+                              )
+                              .slice(-5)
+                              .map((log, idx) => {
+                                const match = log.match(/\[([^\]]+)\]/);
+                                const timestamp = match ? match[1] : "";
+                                const message = log
+                                  .replace(/\[[^\]]*\]/g, "")
+                                  .trim();
+                                return (
+                                  <div
+                                    key={idx}
+                                    className={styles.progressEvent}
+                                  >
+                                    <span className={styles.eventTime}>
+                                      {timestamp}
+                                    </span>
+                                    <span className={styles.eventMessage}>
+                                      {message}
+                                    </span>
+                                  </div>
+                                );
+                              })}
+                          </>
+                        )}
+                    </div>
                   </div>
                 </div>
-                
-                  {/* Debug Logs */}
-                  {synthesisStatus.logs && synthesisStatus.logs.length > 0 && (
-                    <div className={styles.logsContainer}>
-                      <h4>Развернутые логи (debug):</h4>
-                      <div className={styles.logsList}>
-                        {synthesisStatus.logs.map((log, idx) => (
-                          <div key={idx} className={styles.logItem}>
-                            <span className={styles.logBullet}>•</span> {log}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
 
-                  {/* Smart Adjuster Recommendations */}
-                  {synthesisStatus.status === "needs_adjustment" && (
-                    <div className={styles.adjustmentCard}>
-                      <div className={styles.adjustmentHeader}>
-                        <FiAlertCircle className={styles.adjustmentIcon} />
-                        <h3>⚠️ Требуется корректировка модели</h3>
-                      </div>
-                      <p className={styles.adjustmentError}>{synthesisStatus.error}</p>
-                      
-                      <div className={styles.recommendationsList}>
-                        {synthesisStatus.recommendations?.map((rec, idx) => (
-                          <div key={idx} className={styles.recItem}>
-                            <div className={styles.recText}>{rec.text}</div>
-                            <div className={styles.recAction}>{rec.action}</div>
-                          </div>
-                        ))}
-                      </div>
-
-                      <div className={styles.adjustmentActions}>
-                        <button className={styles.fixManuallyBtn} onClick={handleReset}>
-                          Исправить вручную
-                        </button>
-                        <button className={styles.autoFixBtn} disabled>
-                          Довериться ИИ (в разработке)
-                        </button>
-                      </div>
+                {/* Full Logs */}
+                {synthesisStatus.logs && synthesisStatus.logs.length > 0 && (
+                  <div className={styles.fullLogsContainer}>
+                    <div className={styles.logsHeader}>
+                      <h4>📝 Полные логи синтеза:</h4>
+                      <span className={styles.logCount}>
+                        ({synthesisStatus.logs.length} событий)
+                      </span>
                     </div>
-                  )}
-                </div>
+                    <div className={styles.logsScroll}>
+                      {synthesisStatus.logs.map((log, idx) => {
+                        const isError = log.includes("[ERROR]");
+                        const isWarning = log.includes("[WARNING]");
+                        const isDeepSearch = log.includes("[DEEP_SEARCH]");
+                        return (
+                          <div
+                            key={idx}
+                            className={`${styles.logLine} ${
+                              isError
+                                ? styles.logError
+                                : isWarning
+                                  ? styles.logWarning
+                                  : isDeepSearch
+                                    ? styles.logDeepSearch
+                                    : ""
+                            }`}
+                          >
+                            <span className={styles.logNumber}>{idx + 1}</span>
+                            <span className={styles.logText}>{log}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Smart Adjuster Recommendations */}
+                {synthesisStatus.status === "needs_adjustment" && (
+                  <div className={styles.adjustmentCard}>
+                    <div className={styles.adjustmentHeader}>
+                      <FiAlertCircle className={styles.adjustmentIcon} />
+                      <h3>⚠️ Требуется корректировка модели</h3>
+                    </div>
+                    <p className={styles.adjustmentError}>
+                      {synthesisStatus.error}
+                    </p>
+
+                    <div className={styles.recommendationsList}>
+                      {synthesisStatus.recommendations?.map((rec, idx) => (
+                        <div key={idx} className={styles.recItem}>
+                          <div className={styles.recText}>{rec.text}</div>
+                          <div className={styles.recAction}>{rec.action}</div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className={styles.adjustmentActions}>
+                      <button
+                        className={styles.fixManuallyBtn}
+                        onClick={handleReset}
+                      >
+                        Исправить вручную
+                      </button>
+                      <button className={styles.autoFixBtn} disabled>
+                        Довериться ИИ (в разработке)
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
 
             {synthesisResult && (
@@ -794,12 +867,17 @@ export default function SocialPlanMasterPage() {
                         setFormData((prev) => ({
                           ...prev,
                           hasExactAddress: e.target.checked,
-                          exactAddress: e.target.checked ? prev.exactAddress : "",
+                          exactAddress: e.target.checked
+                            ? prev.exactAddress
+                            : "",
                         }))
                       }
                       className={styles.checkbox}
                     />
-                    <label htmlFor="hasExactAddress" className={styles.checkboxLabel}>
+                    <label
+                      htmlFor="hasExactAddress"
+                      className={styles.checkboxLabel}
+                    >
                       📍 Есть точный адрес бизнеса
                     </label>
                   </div>
@@ -814,7 +892,8 @@ export default function SocialPlanMasterPage() {
                         className={styles.input}
                       />
                       <p className={styles.hint}>
-                        Укажите точный адрес для расчёта расстояния до конкурентов
+                        Укажите точный адрес для расчёта расстояния до
+                        конкурентов
                       </p>
                     </div>
                   )}
@@ -1032,7 +1111,8 @@ export default function SocialPlanMasterPage() {
                 <div className={styles.section}>
                   <h3>🎯 Данные об инициаторе проекта *</h3>
                   <label className={styles.label}>
-                    Опишите ваш опыт, навыки, образование, дайте ссылкии на профили в соцсетях или ваши каналы, все что поможет для
+                    Опишите ваш опыт, навыки, образование, дайте ссылкии на
+                    профили в соцсетях или ваши каналы, все что поможет для
                     реализации проекта
                   </label>
                   <textarea

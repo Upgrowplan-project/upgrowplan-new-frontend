@@ -115,7 +115,7 @@ export default function SocialPlanMasterPageEN() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [synthesisStartTime, setSynthesisStartTime] = useState<number | null>(
-    null
+    null,
   );
   const [synthesisDuration, setSynthesisDuration] = useState<{
     minutes: number;
@@ -137,7 +137,7 @@ export default function SocialPlanMasterPageEN() {
     return () => {
       if (pollingIntervalRef.current) {
         console.log(
-          "[Social Plan Master] Cleaning up polling interval on unmount"
+          "[Social Plan Master] Cleaning up polling interval on unmount",
         );
         clearInterval(pollingIntervalRef.current);
         pollingIntervalRef.current = null;
@@ -151,7 +151,7 @@ export default function SocialPlanMasterPageEN() {
         const healthApiBaseUrl = "http://localhost:8004";
         console.log(
           "[Health Check] Fetching from:",
-          `${healthApiBaseUrl}/api/health`
+          `${healthApiBaseUrl}/api/health`,
         );
         const response = await fetch(`${healthApiBaseUrl}/api/health`);
 
@@ -162,7 +162,7 @@ export default function SocialPlanMasterPageEN() {
         } else {
           console.error(
             "[Health Check] Failed to fetch health status:",
-            response.status
+            response.status,
           );
         }
       } catch (error) {
@@ -246,7 +246,7 @@ export default function SocialPlanMasterPageEN() {
   const handleInputChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    >,
   ) => {
     const { name, value, type } = e.target;
     if (type === "checkbox") {
@@ -289,7 +289,7 @@ export default function SocialPlanMasterPageEN() {
     // Clear previous results and reset timer for new generation
     setSynthesisResult(null);
     setSynthesisDuration(null);
-    setSynthesisStartTime(Date.now());  // Set NEW start time
+    setSynthesisStartTime(Date.now()); // Set NEW start time
 
     console.log("[Social Plan Master] Starting synthesis submission...");
     console.log("[Social Plan Master] Form data:", formData);
@@ -323,7 +323,7 @@ export default function SocialPlanMasterPageEN() {
       };
 
       console.log(
-        "[Social Plan Master] Sending request to synthesis-service..."
+        "[Social Plan Master] Sending request to synthesis-service...",
       );
       console.log("[Social Plan Master] Request data:", requestData);
 
@@ -342,14 +342,14 @@ export default function SocialPlanMasterPageEN() {
         throw new Error(
           `Synthesis error (${response.status}). ` +
             `Make sure backend service is running on ${apiBaseUrl}. ` +
-            `Error: ${errorText.substring(0, 200)}`
+            `Error: ${errorText.substring(0, 200)}`,
         );
       }
 
       const result = await response.json();
       console.log(
         "[Social Plan Master] Synthesis started with ID:",
-        result.synthesis_id
+        result.synthesis_id,
       );
       console.log("[Social Plan Master] Initial status:", result);
 
@@ -367,7 +367,7 @@ export default function SocialPlanMasterPageEN() {
         setError(
           `Failed to connect to backend service. ` +
             `Make sure synthesis service is running on http://localhost:8004. ` +
-            `Error: ${err.message || "Connection refused"}`
+            `Error: ${err.message || "Connection refused"}`,
         );
       } else {
         setError(err.message || "Error starting synthesis");
@@ -383,7 +383,7 @@ export default function SocialPlanMasterPageEN() {
 
     if (pollingIntervalRef.current) {
       console.log(
-        "⚠️ [POLLING] Clearing existing interval before starting new one"
+        "⚠️ [POLLING] Clearing existing interval before starting new one",
       );
       clearInterval(pollingIntervalRef.current);
       pollingIntervalRef.current = null;
@@ -447,7 +447,7 @@ export default function SocialPlanMasterPageEN() {
             const seconds = totalSeconds % 60;
             setSynthesisDuration({ minutes, seconds });
             console.log(
-              `[Social Plan Master] Duration: ${minutes} min ${seconds} sec`
+              `[Social Plan Master] Duration: ${minutes} min ${seconds} sec`,
             );
           }
 
@@ -467,7 +467,7 @@ export default function SocialPlanMasterPageEN() {
 
         if (retries >= maxRetries) {
           console.error(
-            `❌ [POLLING] Max retries (${maxRetries}) reached. Stopping polling.`
+            `❌ [POLLING] Max retries (${maxRetries}) reached. Stopping polling.`,
           );
           if (pollingIntervalRef.current) {
             clearInterval(pollingIntervalRef.current);
@@ -519,7 +519,7 @@ export default function SocialPlanMasterPageEN() {
         `${apiBaseUrl}/api/synthesis/download/${synthesisId}`,
         {
           method: "GET",
-        }
+        },
       );
 
       if (!response.ok) {
@@ -547,8 +547,8 @@ export default function SocialPlanMasterPageEN() {
     setSynthesisResult(null);
     setError(null);
     setActiveSection("overview");
-    setSynthesisStartTime(null);  // Reset timer
-    setSynthesisDuration(null);   // Clear duration
+    setSynthesisStartTime(null); // Reset timer
+    setSynthesisDuration(null); // Clear duration
   };
 
   return (
@@ -591,23 +591,99 @@ export default function SocialPlanMasterPageEN() {
                 </div>
 
                 <div className={styles.progressDetails}>
-                  <div className={styles.progressBar}>
+                  <div className={styles.progressHeaderInfo}>
+                    <p className={styles.stageText}>
+                      {synthesisStatus.current_stage || "Initializing..."}
+                    </p>
+                    <span className={styles.progressPercent}>
+                      {synthesisStatus.progress}%
+                    </span>
+                  </div>
+                  <div className={styles.progressBarWrapper}>
                     <div
-                      className={styles.progressFill}
+                      className={styles.progressBar}
                       style={{
                         width: `${Math.min(synthesisStatus.progress, 100)}%`,
                       }}
                     />
                   </div>
-                  <p className={styles.progressText}>
-                    Progress: {Math.min(synthesisStatus.progress, 100)}%
-                  </p>
-                  {synthesisStatus.current_stage && (
-                    <p className={styles.stageText}>
-                      Current stage: {synthesisStatus.current_stage}
-                    </p>
-                  )}
+
+                  {/* Key Progress Events */}
+                  <div className={styles.progressEventsContainer}>
+                    <h4 className={styles.eventsTitle}>📊 Key Stages:</h4>
+                    <div className={styles.progressEventsList}>
+                      {/* Extract key progress from logs */}
+                      {synthesisStatus.logs &&
+                        synthesisStatus.logs.length > 0 && (
+                          <>
+                            {synthesisStatus.logs
+                              .filter((log) =>
+                                /\[INFO\]|STAGE|Archetype|Deep Research|DOCX|Financial|READY/.test(
+                                  log,
+                                ),
+                              )
+                              .slice(-5)
+                              .map((log, idx) => {
+                                const match = log.match(/\[([^\]]+)\]/);
+                                const timestamp = match ? match[1] : "";
+                                const message = log
+                                  .replace(/\[[^\]]*\]/g, "")
+                                  .trim();
+                                return (
+                                  <div
+                                    key={idx}
+                                    className={styles.progressEvent}
+                                  >
+                                    <span className={styles.eventTime}>
+                                      {timestamp}
+                                    </span>
+                                    <span className={styles.eventMessage}>
+                                      {message}
+                                    </span>
+                                  </div>
+                                );
+                              })}
+                          </>
+                        )}
+                    </div>
+                  </div>
                 </div>
+
+                {/* Full Logs */}
+                {synthesisStatus.logs && synthesisStatus.logs.length > 0 && (
+                  <div className={styles.fullLogsContainer}>
+                    <div className={styles.logsHeader}>
+                      <h4>📝 Full Synthesis Logs:</h4>
+                      <span className={styles.logCount}>
+                        ({synthesisStatus.logs.length} events)
+                      </span>
+                    </div>
+                    <div className={styles.logsScroll}>
+                      {synthesisStatus.logs.map((log, idx) => {
+                        const isError = log.includes("[ERROR]");
+                        const isWarning = log.includes("[WARNING]");
+                        const isDeepSearch = log.includes("[DEEP_SEARCH]");
+                        return (
+                          <div
+                            key={idx}
+                            className={`${styles.logLine} ${
+                              isError
+                                ? styles.logError
+                                : isWarning
+                                  ? styles.logWarning
+                                  : isDeepSearch
+                                    ? styles.logDeepSearch
+                                    : ""
+                            }`}
+                          >
+                            <span className={styles.logNumber}>{idx + 1}</span>
+                            <span className={styles.logText}>{log}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 

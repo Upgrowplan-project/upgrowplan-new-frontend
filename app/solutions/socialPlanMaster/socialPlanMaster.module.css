@@ -877,9 +877,236 @@
   box-shadow: 0 4px 12px rgba(30, 96, 120, 0.2);
 }
 
+/* Progress Events and Logs Styles */
+.progressHeaderInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.stageText {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e6078;
+  margin: 0;
+}
+
+.progressPercent {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #0785f6;
+  background: white;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(7, 133, 246, 0.15);
+}
+
+.progressBarWrapper {
+  width: 100%;
+  height: 8px;
+  background: #e9ecef;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.progressBar {
+  height: 100%;
+  background: linear-gradient(90deg, #0785f6 0%, #0d68d3 100%);
+  transition: width 0.3s ease;
+  border-radius: 4px;
+}
+
+.progressEventsContainer {
+  margin-top: 2rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #0785f6;
+}
+
+.eventsTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e6078;
+  margin-bottom: 1rem;
+}
+
+.progressEventsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.progressEvent {
+  display: flex;
+  gap: 1rem;
+  padding: 0.75rem;
+  background: white;
+  border-radius: 6px;
+  border-left: 3px solid #0785f6;
+  transition: all 0.2s ease;
+}
+
+.progressEvent:hover {
+  box-shadow: 0 2px 8px rgba(7, 133, 246, 0.15);
+  transform: translateX(4px);
+}
+
+.eventTime {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #0785f6;
+  min-width: 60px;
+  font-family: "Courier New", monospace;
+}
+
+.eventMessage {
+  font-size: 0.95rem;
+  color: #333;
+  flex: 1;
+  word-break: break-word;
+}
+
+.fullLogsContainer {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.logsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #0785f6;
+}
+
+.logsHeader h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e6078;
+  margin: 0;
+}
+
+.logCount {
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.logsScroll {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  background: #fafafa;
+  font-family: "Courier New", monospace;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.logLine {
+  display: flex;
+  gap: 1rem;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid #f0f0f0;
+  align-items: flex-start;
+}
+
+.logLine:last-child {
+  border-bottom: none;
+}
+
+.logNumber {
+  color: #999;
+  min-width: 30px;
+  text-align: right;
+  font-weight: 600;
+  padding-top: 2px;
+}
+
+.logText {
+  color: #333;
+  flex: 1;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.logLine.logError {
+  background: #fff5f5;
+  border-left: 3px solid #dc3545;
+}
+
+.logLine.logError .logText {
+  color: #dc3545;
+  font-weight: 500;
+}
+
+.logLine.logWarning {
+  background: #fffbf0;
+  border-left: 3px solid #ffc107;
+}
+
+.logLine.logWarning .logText {
+  color: #ff9800;
+  font-weight: 500;
+}
+
+.logLine.logDeepSearch {
+  background: #f0f7ff;
+  border-left: 3px solid #0785f6;
+}
+
+.logLine.logDeepSearch .logText {
+  color: #0785f6;
+  font-weight: 500;
+}
+
+/* Scrollbar Styling */
+.logsScroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.logsScroll::-webkit-scrollbar-track {
+  background: #f0f0f0;
+  border-radius: 4px;
+}
+
+.logsScroll::-webkit-scrollbar-thumb {
+  background: #0785f6;
+  border-radius: 4px;
+}
+
+.logsScroll::-webkit-scrollbar-thumb:hover {
+  background: #0d68d3;
+}
+
 /* Responsive Design */
 /* Note: Bootstrap breakpoints - lg: 992px, md: 768px, sm: 576px */
 @media (max-width: 768px) {
+  .progressHeaderInfo {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .eventTime {
+    min-width: auto;
+    display: inline-block;
+  }
+
+  .logsScroll {
+    max-height: 300px;
+    font-size: 0.85rem;
+  }
   .heroContent h1 {
     font-size: 1.75rem;
   }

@@ -15,7 +15,7 @@ export default function ContactsPage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
@@ -23,8 +23,31 @@ export default function ContactsPage() {
       return;
     }
     setError("");
-    console.log("Sending message:", { name, email, message });
-    alert("Message sent! (simulation)");
+
+    try {
+      const API_BASE =
+        process.env.NEXT_PUBLIC_MONITORING_API_URL || "http://localhost:8000";
+      const res = await fetch(`${API_BASE}/api/monitoring/contact`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, message }),
+      });
+
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        throw new Error(text || `HTTP ${res.status}`);
+      }
+
+      // Clear form and show success
+      setName("");
+      setEmail("");
+      setMessage("");
+      setIsChecked(false);
+      alert("Message sent! We will get back to you soon.");
+    } catch (err) {
+      console.error("Error sending contact message:", err);
+      alert("Failed to send message. Please try again later.");
+    }
   };
 
   return (
