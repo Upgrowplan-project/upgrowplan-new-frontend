@@ -6,59 +6,58 @@ const defaultLocale = 'en';
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  // Check if pathname already has a locale prefix
-  const hasLocalePrefix = locales.some(locale =>
-    pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
-  );
+  // If someone visits /en or /en/* - redirect to path without /en (canonicalize)
+  if (pathname === '/en' || pathname.startsWith('/en/')) {
+    const cleanPath = pathname === '/en' ? '/' : pathname.replace(/^\/en/, '');
+    const url = new URL(`${cleanPath}${request.nextUrl.search}`, request.url);
+    const response = NextResponse.redirect(url, { status: 307 });
+    // remember preference
+    response.cookies.set('NEXT_LOCALE', 'en', { path: '/', maxAge: 31536000 });
+    return response;
+  }
 
-  if (hasLocalePrefix) {
+  // If path is already Russian, continue
+  if (pathname === '/ru' || pathname.startsWith('/ru/')) {
     return NextResponse.next();
   }
 
-  // Handle root path
+  // Root path handling
   if (pathname === '/') {
-    // Check for explicit lang parameter in URL
+    // Respect explicit lang param
     const langParam = request.nextUrl.searchParams.get('lang');
-    if (langParam && locales.includes(langParam)) {
-      const response = NextResponse.redirect(
-        new URL(`/${langParam}`, request.url),
-        { status: 307 }
-      );
-      // Save preference
-      response.cookies.set('NEXT_LOCALE', langParam, {
-        path: '/',
-        maxAge: 31536000, // 1 year
-      });
+    if (langParam === 'ru') {
+      const response = NextResponse.redirect(new URL('/ru', request.url), { status: 307 });
+      response.cookies.set('NEXT_LOCALE', 'ru', { path: '/', maxAge: 31536000 });
+      return response;
+    }
+    if (langParam === 'en') {
+      const response = NextResponse.next();
+      response.cookies.set('NEXT_LOCALE', 'en', { path: '/', maxAge: 31536000 });
       return response;
     }
 
-    // Check if user has a locale preference cookie
+    // Respect cookie preference (ru -> redirect to /ru, en -> stay at /)
     const localeCookie = request.cookies.get('NEXT_LOCALE')?.value;
-
-    if (localeCookie && locales.includes(localeCookie)) {
-      // Use saved preference
-      return NextResponse.redirect(
-        new URL(`/${localeCookie}`, request.url),
-        { status: 307 }
-      );
+    if (localeCookie === 'ru') {
+      return NextResponse.redirect(new URL('/ru', request.url), { status: 307 });
+    }
+    if (localeCookie === 'en') {
+      return NextResponse.next();
     }
 
-    // Only auto-detect language if no preference is saved
+    // Auto-detect only if no preference saved
     const acceptLanguage = request.headers.get('accept-language') || '';
     const isRussian = acceptLanguage.includes('ru');
-    const locale = isRussian ? 'ru' : defaultLocale;
+    if (isRussian) {
+      return NextResponse.redirect(new URL('/ru', request.url), { status: 307 });
+    }
 
-    return NextResponse.redirect(
-      new URL(`/${locale}`, request.url),
-      { status: 307 }
-    );
+    // Default: stay on root (English)
+    return NextResponse.next();
   }
 
-  // Add default locale prefix to all other paths
-  return NextResponse.redirect(
-    new URL(`/${defaultLocale}${pathname}`, request.url),
-    { status: 307 }
-  );
+  // For all other non-prefixed paths (English pages), just continue
+  return NextResponse.next();
 }
 
 export const config = {

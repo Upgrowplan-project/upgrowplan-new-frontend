@@ -105,7 +105,6 @@ export default function AboutPage() {
           About Upgrowplan
         </h1>
 
-        {/* "Who we are" — full-width block */}
         <div className="row justify-content-center">
           <FullWidthCard>
             <h2 className="text-center mb-4" style={{ color: "#1e6078" }}>
