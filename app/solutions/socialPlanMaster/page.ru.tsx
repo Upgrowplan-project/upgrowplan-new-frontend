@@ -169,7 +169,9 @@ export default function SocialPlanMasterPage() {
   useEffect(() => {
     const fetchHealthStatus = async () => {
       try {
-        const healthApiBaseUrl = "http://localhost:8004";
+        const healthApiBaseUrl =
+          process.env.NEXT_PUBLIC_BACKEND_PLANMASTER_URL ||
+          "http://localhost:8004";
         console.log(
           "[Health Check] Fetching from:",
           `${healthApiBaseUrl}/api/health`,

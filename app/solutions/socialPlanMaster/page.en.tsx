@@ -56,7 +56,12 @@ interface FormData {
 
 interface SynthesisStatus {
   synthesis_id: string;
-  status: "pending" | "in_progress" | "completed" | "failed" | "needs_adjustment";
+  status:
+    | "pending"
+    | "in_progress"
+    | "completed"
+    | "failed"
+    | "needs_adjustment";
   progress: number;
   current_stage: string;
   error?: string;
@@ -155,7 +160,9 @@ export default function SocialPlanMasterPageEN() {
   useEffect(() => {
     const fetchHealthStatus = async () => {
       try {
-        const healthApiBaseUrl = "http://localhost:8004";
+        const healthApiBaseUrl =
+          process.env.NEXT_PUBLIC_BACKEND_PLANMASTER_URL ||
+          "http://localhost:8004";
         console.log(
           "[Health Check] Fetching from:",
           `${healthApiBaseUrl}/api/health`,
