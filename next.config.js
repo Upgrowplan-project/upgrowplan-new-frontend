@@ -24,6 +24,10 @@ const CLICK_ANALYTICS_API_URL = isDev
   ? "http://localhost:8002" // click-analytics service
   : "https://click-analytics-production.herokuapp.com"; // TODO: добавить продакшн URL
 
+const BACKEND_PLANMASTER_URL = isDev
+  ? "http://localhost:8004" // social-plan-master service
+  : "https://social-plan-master-production.herokuapp.com"; // TODO: добавить продакшн URL
+
 const nextConfig = {
   // Позволяет сборке продолжаться, даже если в проекте есть TypeScript/ESLint ошибки.
   // Это временная настройка для `upgrowplan_new` while we iterate on i18n integration.
@@ -39,6 +43,7 @@ const nextConfig = {
     NEXT_PUBLIC_WS_BLOG_URL: WS_BLOG_URL,
     NEXT_PUBLIC_OPEN_ABROAD_API_URL: OPEN_ABROAD_API_URL,
     NEXT_PUBLIC_CLICK_ANALYTICS_API_URL: CLICK_ANALYTICS_API_URL,
+    NEXT_PUBLIC_BACKEND_PLANMASTER_URL: BACKEND_PLANMASTER_URL,
   },
   async rewrites() {
     return [
@@ -54,9 +59,9 @@ const nextConfig = {
   },
 };
 
-const withNextIntl = require('next-intl/plugin')(
+const withNextIntl = require("next-intl/plugin")(
   // This is the default (also the `src` folder is supported out of the box)
-  './i18n/request.ts'
+  "./i18n/request.ts",
 );
 
 module.exports = withNextIntl(nextConfig);
