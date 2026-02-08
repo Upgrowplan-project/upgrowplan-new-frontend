@@ -26,7 +26,7 @@ const CLICK_ANALYTICS_API_URL = isDev
 
 const BACKEND_PLANMASTER_URL = isDev
   ? "http://localhost:8004" // social-plan-master service
-  : "https://social-plan-master-production.herokuapp.com"; // TODO: добавить продакшн URL
+  : "https://social-plan-master-service-7433f88d4db3.herokuapp.com"; // TODO: добавить продакшн URL
 
 const nextConfig = {
   // Позволяет сборке продолжаться, даже если в проекте есть TypeScript/ESLint ошибки.
