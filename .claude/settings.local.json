@@ -50,7 +50,8 @@
       "Bash(timeout /t 5)",
       "Bash(timeout:*)",
       "Bash(tree:*)",
-      "Bash(for i in {1..6})"
+      "Bash(for i in {1..6})",
+      "Bash(cd:*)"
     ],
     "deny": [],
     "ask": []

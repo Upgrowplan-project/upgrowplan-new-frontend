@@ -51,11 +51,24 @@ interface SynthesisStatus {
     | "completed"
     | "failed"
     | "needs_adjustment";
-  recommendations?: Array<{ type: string; text: string; action: string }>;
+  recommendations?: Array<{
+    type: string;
+    text: string;
+    action: string;
+    adjustment?: any;
+  }>;
+  problems?: Array<{
+    type: string;
+    severity: string;
+    reality_check: string;
+    expert_risk: string;
+    context: any;
+  }>;
   financials_preview?: {
-    annual_loss: number;
-    profit_per_emp: number;
-    min_wage: number;
+    net_profit_monthly: number;
+    ebitda_monthly: number;
+    total_investment: number;
+    payback_months: number;
   };
 }
 
@@ -120,6 +133,7 @@ export default function SocialPlanMasterPage() {
   const [activeSection, setActiveSection] = useState<string>("overview");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedAdjustments, setSelectedAdjustments] = useState<string[]>([]);
 
   const [synthesisStartTime, setSynthesisStartTime] = useState<number | null>(
     null,
@@ -575,14 +589,61 @@ export default function SocialPlanMasterPage() {
     }
   };
 
+  const handleContinueGeneration = async () => {
+    if (!synthesisId || selectedAdjustments.length === 0) return;
+
+    // Если выбран «вручную» / «пересмотреть концепцию» — возврат к форме
+    const manualActions = ["manual_fix", "stop_generation", "add_funds"];
+    if (selectedAdjustments.some((a) => manualActions.includes(a))) {
+      handleReset();
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      setError(null);
+      setSelectedAdjustments([]);
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_PLANMASTER_URL || "http://localhost:8004"}/api/synthesis/${synthesisId}/continue`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            selected_actions: selectedAdjustments,
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error(`Ошибка: ${response.status}`);
+      }
+
+      // Перезапускаем polling
+      pollSynthesisStatus(synthesisId);
+    } catch (err: any) {
+      setError(`Ошибка при продолжении генерации: ${err.message}`);
+      setIsSubmitting(false);
+    }
+  };
+
+  const toggleAdjustment = (actionType: string) => {
+    setSelectedAdjustments((prev) =>
+      prev.includes(actionType)
+        ? prev.filter((t) => t !== actionType)
+        : [...prev, actionType],
+    );
+  };
+
   const handleReset = () => {
     setSynthesisId(null);
     setSynthesisStatus(null);
     setSynthesisResult(null);
     setError(null);
     setActiveSection("overview");
-    setSynthesisStartTime(null); // Reset timer
-    setSynthesisDuration(null); // Clear duration
+    setSynthesisStartTime(null);
+    setSynthesisDuration(null);
+    setSelectedAdjustments([]);
   };
 
   return (
@@ -601,8 +662,8 @@ export default function SocialPlanMasterPage() {
           </div>
         </section>
 
-        {/* Error Display */}
-        {error && (
+        {/* Error Display (только для реальных ошибок, НЕ для needs_adjustment) */}
+        {error && synthesisStatus?.status !== "needs_adjustment" && (
           <div className={styles.errorBox}>
             <div className={styles.errorContent}>
               <FiAlertCircle className={styles.errorIcon} />
@@ -722,18 +783,62 @@ export default function SocialPlanMasterPage() {
                 {/* Smart Adjuster Recommendations */}
                 {synthesisStatus.status === "needs_adjustment" && (
                   <div className={styles.adjustmentCard}>
+                    {/* Заголовок */}
                     <div className={styles.adjustmentHeader}>
                       <FiAlertCircle className={styles.adjustmentIcon} />
-                      <h3>⚠️ Требуется корректировка модели</h3>
+                      <h3>Внимание: {synthesisStatus.error}</h3>
                     </div>
-                    <p className={styles.adjustmentError}>
-                      {synthesisStatus.error}
-                    </p>
 
+                    {/* Блок 1: Reality Check — что не сходится */}
+                    {synthesisStatus.problems?.map((problem, idx) => (
+                      <div key={idx} className={styles.problemBlock}>
+                        <div className={styles.realityCheck}>
+                          <p>{problem.reality_check}</p>
+                        </div>
+                        {/* Блок 2: Expert Risk — почему это плохо */}
+                        <div className={styles.expertRisk}>
+                          <p style={{ fontWeight: 500, marginBottom: "4px" }}>
+                            Почему это важно:
+                          </p>
+                          <p>{problem.expert_risk}</p>
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* Блок 3: Варианты решения */}
+                    <p
+                      style={{
+                        margin: "16px 0 8px",
+                        fontWeight: 600,
+                        fontSize: "1.05rem",
+                      }}
+                    >
+                      Что мы можем сделать?
+                    </p>
                     <div className={styles.recommendationsList}>
                       {synthesisStatus.recommendations?.map((rec, idx) => (
-                        <div key={idx} className={styles.recItem}>
-                          <div className={styles.recText}>{rec.text}</div>
+                        <div
+                          key={idx}
+                          className={`${styles.recItem} ${selectedAdjustments.includes(rec.type) ? styles.recItemSelected : ""}`}
+                          onClick={() => toggleAdjustment(rec.type)}
+                          style={{ cursor: "pointer" }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "8px",
+                            }}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selectedAdjustments.includes(rec.type)}
+                              onChange={() => toggleAdjustment(rec.type)}
+                              onClick={(e) => e.stopPropagation()}
+                              style={{ accentColor: "#4f46e5" }}
+                            />
+                            <div className={styles.recText}>{rec.text}</div>
+                          </div>
                           <div className={styles.recAction}>{rec.action}</div>
                         </div>
                       ))}
@@ -746,8 +851,14 @@ export default function SocialPlanMasterPage() {
                       >
                         Исправить вручную
                       </button>
-                      <button className={styles.autoFixBtn} disabled>
-                        Довериться ИИ (в разработке)
+                      <button
+                        className={styles.autoFixBtn}
+                        onClick={handleContinueGeneration}
+                        disabled={
+                          selectedAdjustments.length === 0 || isSubmitting
+                        }
+                      >
+                        {isSubmitting ? "Генерация..." : "Продолжить генерацию"}
                       </button>
                     </div>
                   </div>

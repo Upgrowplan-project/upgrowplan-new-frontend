@@ -56,10 +56,17 @@ interface FormData {
 
 interface SynthesisStatus {
   synthesis_id: string;
-  status: "pending" | "in_progress" | "completed" | "failed";
+  status: "pending" | "in_progress" | "completed" | "failed" | "needs_adjustment";
   progress: number;
   current_stage: string;
   error?: string;
+  recommendations?: Array<{ type: string; text: string; action: string }>;
+  financials_preview?: {
+    net_profit_monthly: number;
+    ebitda_monthly: number;
+    total_investment: number;
+    payback_months: number;
+  };
 }
 
 interface SynthesisResult {
@@ -452,6 +459,14 @@ export default function SocialPlanMasterPageEN() {
           }
 
           fetchSynthesisResult(id);
+        } else if (status.status === "needs_adjustment") {
+          if (pollingIntervalRef.current) {
+            clearInterval(pollingIntervalRef.current);
+            pollingIntervalRef.current = null;
+          }
+          clearInterval(interval);
+          setIsSubmitting(false);
+          setError(status.error || "Business plan requires adjustment");
         } else if (status.status === "failed") {
           if (pollingIntervalRef.current) {
             clearInterval(pollingIntervalRef.current);
