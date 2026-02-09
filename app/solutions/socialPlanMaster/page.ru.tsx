@@ -331,7 +331,9 @@ export default function SocialPlanMasterPage() {
       );
       console.log("[Social Plan Master] Request data:", requestData);
 
-      const apiBaseUrl = PLANMASTER_BASE_URL;
+      const apiBaseUrl =
+        process.env.NEXT_PUBLIC_BACKEND_PLANMASTER_URL ||
+        "http://localhost:8004";
 
       const response = await fetch(`${apiBaseUrl}/api/synthesis/plan`, {
         method: "POST",
@@ -433,7 +435,8 @@ export default function SocialPlanMasterPage() {
     let previousProgress = -1;
     let previousStage = "";
 
-    const apiBaseUrl = PLANMASTER_BASE_URL;
+    const apiBaseUrl =
+      process.env.NEXT_PUBLIC_BACKEND_PLANMASTER_URL || "http://localhost:8004";
 
     const interval = setInterval(async () => {
       pollCount++;
@@ -535,7 +538,9 @@ export default function SocialPlanMasterPage() {
 
   const fetchSynthesisResult = async (id: string) => {
     try {
-      const apiBaseUrl = PLANMASTER_BASE_URL;
+      const apiBaseUrl =
+        process.env.NEXT_PUBLIC_BACKEND_PLANMASTER_URL ||
+        "http://localhost:8004";
 
       const response = await fetch(`${apiBaseUrl}/api/synthesis/${id}/result`, {
         headers: {
@@ -564,7 +569,9 @@ export default function SocialPlanMasterPage() {
     }
 
     try {
-      const apiBaseUrl = PLANMASTER_BASE_URL;
+      const apiBaseUrl =
+        process.env.NEXT_PUBLIC_BACKEND_PLANMASTER_URL ||
+        "http://localhost:8004";
       const response = await fetch(
         `${apiBaseUrl}/api/synthesis/download/${synthesisId}`,
         {
