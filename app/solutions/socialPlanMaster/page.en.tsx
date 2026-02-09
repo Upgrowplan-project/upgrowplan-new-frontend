@@ -86,6 +86,9 @@ interface SynthesisResult {
   created_at?: string;
 }
 
+const PLANMASTER_BASE_URL =
+  process.env.NEXT_PUBLIC_BACKEND_PLANMASTER_URL || "http://localhost:8004";
+
 const cleanMarkdown = (text: string): string => {
   if (!text) return "";
 
@@ -160,14 +163,11 @@ export default function SocialPlanMasterPageEN() {
   useEffect(() => {
     const fetchHealthStatus = async () => {
       try {
-        const healthApiBaseUrl =
-          process.env.NEXT_PUBLIC_BACKEND_PLANMASTER_URL ||
-          "http://localhost:8004";
         console.log(
           "[Health Check] Fetching from:",
-          `${healthApiBaseUrl}/api/health`,
+          `${PLANMASTER_BASE_URL}/api/health`,
         );
-        const response = await fetch(`${healthApiBaseUrl}/api/health`);
+        const response = await fetch(`${PLANMASTER_BASE_URL}/api/health`);
 
         if (response.ok) {
           const data = await response.json();
@@ -341,10 +341,7 @@ export default function SocialPlanMasterPageEN() {
       );
       console.log("[Social Plan Master] Request data:", requestData);
 
-      const apiBaseUrl =
-        process.env.NEXT_PUBLIC_BACKEND_PLANMASTER_URL ||
-        "http://localhost:8004";
-      const response = await fetch(`${apiBaseUrl}/api/synthesis/plan`, {
+      const response = await fetch(`${PLANMASTER_BASE_URL}/api/synthesis/plan`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestData),
@@ -356,7 +353,7 @@ export default function SocialPlanMasterPageEN() {
         const errorText = await response.text().catch(() => "Unknown error");
         throw new Error(
           `Synthesis error (${response.status}). ` +
-            `Make sure backend service is running on ${apiBaseUrl}. ` +
+            `Make sure backend service is running on ${PLANMASTER_BASE_URL}. ` +
             `Error: ${errorText.substring(0, 200)}`,
         );
       }
@@ -413,13 +410,11 @@ export default function SocialPlanMasterPageEN() {
     let previousProgress = -1;
     let previousStage = "";
 
-    const apiBaseUrl =
-      process.env.NEXT_PUBLIC_BACKEND_PLANMASTER_URL || "http://localhost:8004";
     const interval = setInterval(async () => {
       pollCount++;
 
       try {
-        const response = await fetch(`${apiBaseUrl}/api/synthesis/${id}`, {
+        const response = await fetch(`${PLANMASTER_BASE_URL}/api/synthesis/${id}`, {
           cache: "no-store",
           headers: {
             "Cache-Control": "no-cache, no-store, must-revalidate",
@@ -508,10 +503,7 @@ export default function SocialPlanMasterPageEN() {
 
   const fetchSynthesisResult = async (id: string) => {
     try {
-      const apiBaseUrl =
-        process.env.NEXT_PUBLIC_BACKEND_PLANMASTER_URL ||
-        "http://localhost:8004";
-      const response = await fetch(`${apiBaseUrl}/api/synthesis/${id}/result`, {
+      const response = await fetch(`${PLANMASTER_BASE_URL}/api/synthesis/${id}/result`, {
         headers: {
           "Cache-Control": "no-cache, no-store, must-revalidate",
           Pragma: "no-cache",
@@ -538,11 +530,8 @@ export default function SocialPlanMasterPageEN() {
     }
 
     try {
-      const apiBaseUrl =
-        process.env.NEXT_PUBLIC_BACKEND_PLANMASTER_URL ||
-        "http://localhost:8004";
       const response = await fetch(
-        `${apiBaseUrl}/api/synthesis/download/${synthesisId}`,
+        `${PLANMASTER_BASE_URL}/api/synthesis/download/${synthesisId}`,
         {
           method: "GET",
         },

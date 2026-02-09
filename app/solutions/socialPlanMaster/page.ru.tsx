@@ -173,14 +173,11 @@ export default function SocialPlanMasterPage() {
   useEffect(() => {
     const fetchHealthStatus = async () => {
       try {
-        const healthApiBaseUrl =
-          process.env.NEXT_PUBLIC_BACKEND_PLANMASTER_URL ||
-          "http://localhost:8004";
         console.log(
           "[Health Check] Fetching from:",
-          `${healthApiBaseUrl}/api/health`,
+          `${PLANMASTER_BASE_URL}/api/health`,
         );
-        const response = await fetch(`${healthApiBaseUrl}/api/health`);
+        const response = await fetch(`${PLANMASTER_BASE_URL}/api/health`);
 
         if (response.ok) {
           const data = await response.json();
@@ -331,11 +328,7 @@ export default function SocialPlanMasterPage() {
       );
       console.log("[Social Plan Master] Request data:", requestData);
 
-      const apiBaseUrl =
-        process.env.NEXT_PUBLIC_BACKEND_PLANMASTER_URL ||
-        "http://localhost:8004";
-
-      const response = await fetch(`${apiBaseUrl}/api/synthesis/plan`, {
+      const response = await fetch(`${PLANMASTER_BASE_URL}/api/synthesis/plan`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestData),
@@ -377,7 +370,7 @@ export default function SocialPlanMasterPage() {
         setSynthesisStartTime(null); // Сброс времени при ошибке
         throw new Error(
           `Ошибка запуска синтеза (${response.status}). ` +
-            `Проверьте, что бэкенд сервис запущен на ${apiBaseUrl}. ` +
+            `Проверьте, что бэкенд сервис запущен на ${PLANMASTER_BASE_URL}. ` +
             `Ошибка: ${errorText.substring(0, 200)}`,
         );
       }
@@ -435,14 +428,11 @@ export default function SocialPlanMasterPage() {
     let previousProgress = -1;
     let previousStage = "";
 
-    const apiBaseUrl =
-      process.env.NEXT_PUBLIC_BACKEND_PLANMASTER_URL || "http://localhost:8004";
-
     const interval = setInterval(async () => {
       pollCount++;
 
       try {
-        const response = await fetch(`${apiBaseUrl}/api/synthesis/${id}`, {
+        const response = await fetch(`${PLANMASTER_BASE_URL}/api/synthesis/${id}`, {
           cache: "no-store",
           headers: {
             "Cache-Control": "no-cache, no-store, must-revalidate",
@@ -538,11 +528,7 @@ export default function SocialPlanMasterPage() {
 
   const fetchSynthesisResult = async (id: string) => {
     try {
-      const apiBaseUrl =
-        process.env.NEXT_PUBLIC_BACKEND_PLANMASTER_URL ||
-        "http://localhost:8004";
-
-      const response = await fetch(`${apiBaseUrl}/api/synthesis/${id}/result`, {
+      const response = await fetch(`${PLANMASTER_BASE_URL}/api/synthesis/${id}/result`, {
         headers: {
           "Cache-Control": "no-cache, no-store, must-revalidate",
           Pragma: "no-cache",
@@ -569,11 +555,8 @@ export default function SocialPlanMasterPage() {
     }
 
     try {
-      const apiBaseUrl =
-        process.env.NEXT_PUBLIC_BACKEND_PLANMASTER_URL ||
-        "http://localhost:8004";
       const response = await fetch(
-        `${apiBaseUrl}/api/synthesis/download/${synthesisId}`,
+        `${PLANMASTER_BASE_URL}/api/synthesis/download/${synthesisId}`,
         {
           method: "POST",
         },
@@ -623,7 +606,7 @@ export default function SocialPlanMasterPage() {
       setSynthesisStartTime(Date.now());
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_PLANMASTER_URL || "http://localhost:8004"}/api/synthesis/${synthesisId}/continue`,
+        `${PLANMASTER_BASE_URL}/api/synthesis/${synthesisId}/continue`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
