@@ -341,8 +341,9 @@ export default function SocialPlanMasterPageEN() {
       );
       console.log("[Social Plan Master] Request data:", requestData);
 
-      const apiBaseUrl = "http://localhost:8004";
-
+      const apiBaseUrl =
+        process.env.NEXT_PUBLIC_BACKEND_PLANMASTER_URL ||
+        "http://localhost:8004";
       const response = await fetch(`${apiBaseUrl}/api/synthesis/plan`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -412,8 +413,8 @@ export default function SocialPlanMasterPageEN() {
     let previousProgress = -1;
     let previousStage = "";
 
-    const apiBaseUrl = "http://localhost:8004";
-
+    const apiBaseUrl =
+      process.env.NEXT_PUBLIC_BACKEND_PLANMASTER_URL || "http://localhost:8004";
     const interval = setInterval(async () => {
       pollCount++;
 
@@ -507,8 +508,9 @@ export default function SocialPlanMasterPageEN() {
 
   const fetchSynthesisResult = async (id: string) => {
     try {
-      const apiBaseUrl = "http://localhost:8004";
-
+      const apiBaseUrl =
+        process.env.NEXT_PUBLIC_BACKEND_PLANMASTER_URL ||
+        "http://localhost:8004";
       const response = await fetch(`${apiBaseUrl}/api/synthesis/${id}/result`, {
         headers: {
           "Cache-Control": "no-cache, no-store, must-revalidate",
@@ -536,7 +538,9 @@ export default function SocialPlanMasterPageEN() {
     }
 
     try {
-      const apiBaseUrl = "http://localhost:8004";
+      const apiBaseUrl =
+        process.env.NEXT_PUBLIC_BACKEND_PLANMASTER_URL ||
+        "http://localhost:8004";
       const response = await fetch(
         `${apiBaseUrl}/api/synthesis/download/${synthesisId}`,
         {
@@ -603,7 +607,9 @@ export default function SocialPlanMasterPageEN() {
         )}
 
         {/* Loading / Results */}
-        {isSubmitting || synthesisResult || synthesisStatus?.status === "needs_adjustment" ? (
+        {isSubmitting ||
+        synthesisResult ||
+        synthesisStatus?.status === "needs_adjustment" ? (
           <section className={styles.resultsSection}>
             {isSubmitting && synthesisStatus && (
               <div className={styles.progressCard}>
