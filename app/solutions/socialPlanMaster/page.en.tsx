@@ -603,7 +603,7 @@ export default function SocialPlanMasterPageEN() {
         )}
 
         {/* Loading / Results */}
-        {isSubmitting || synthesisResult ? (
+        {isSubmitting || synthesisResult || synthesisStatus?.status === "needs_adjustment" ? (
           <section className={styles.resultsSection}>
             {isSubmitting && synthesisStatus && (
               <div className={styles.progressCard}>
