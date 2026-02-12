@@ -51,7 +51,8 @@
       "Bash(timeout:*)",
       "Bash(tree:*)",
       "Bash(for i in {1..6})",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(chcp:*)"
     ],
     "deny": [],
     "ask": []

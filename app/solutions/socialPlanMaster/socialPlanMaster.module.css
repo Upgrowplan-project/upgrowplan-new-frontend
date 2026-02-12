@@ -11,6 +11,40 @@
   padding-bottom: 3rem;
 }
 
+.twoColumnLayout {
+  display: flex;
+  max-width: 1400px;
+  margin: 0 auto;
+  gap: 2rem;
+  padding: 0 1rem;
+}
+
+.mainContent {
+  flex: 3;
+  min-width: 0; /* Prevents overflow issues */
+}
+
+.sideContent {
+  flex: 1;
+  min-width: 300px;
+  position: sticky;
+  top: 100px;
+  height: calc(100vh - 120px);
+}
+
+@media (max-width: 1200px) {
+  .twoColumnLayout {
+    flex-direction: column;
+    padding: 0 1rem;
+  }
+  
+  .sideContent {
+    position: static;
+    height: auto;
+    width: 100%;
+  }
+}
+
 /* Hero Section */
 .hero {
   text-align: left;
@@ -688,6 +722,87 @@
   gap: 1rem;
 }
 
+.marginPreviewCard {
+  background: #ffffff;
+  border: 1px solid #f1d5a8;
+  border-radius: 10px;
+  padding: 0.9rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.marginPreviewHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+  color: #7c2d12;
+}
+
+.iterationBadge {
+  background: #ffedd5;
+  color: #9a3412;
+  border: 1px solid #fed7aa;
+  border-radius: 999px;
+  padding: 0.15rem 0.6rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.marginValues {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.marginArrow {
+  color: #ea580c;
+}
+
+.marginTarget {
+  margin-left: 0.25rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.previewMessageRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.previewMessage {
+  margin: 0;
+  color: #475569;
+  font-size: 0.9rem;
+}
+
+.smallSpinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(30, 96, 120, 0.2);
+  border-top-color: #1e6078;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+.recImpact {
+  margin-top: 0.45rem;
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  font-size: 0.83rem;
+  font-weight: 600;
+  color: #334155;
+}
+
 .fixManuallyBtn {
   flex: 1;
   padding: 0.75rem;
@@ -976,60 +1091,9 @@
   border-radius: 4px;
 }
 
-.progressEventsContainer {
-  margin-top: 2rem;
-  padding: 1rem;
-  background: #f8f9fa;
-  border-radius: 8px;
-  border-left: 4px solid #0785f6;
-}
-
-.eventsTitle {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #1e6078;
-  margin-bottom: 1rem;
-}
-
-.progressEventsList {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.progressEvent {
-  display: flex;
-  gap: 1rem;
-  padding: 0.75rem;
-  background: white;
-  border-radius: 6px;
-  border-left: 3px solid #0785f6;
-  transition: all 0.2s ease;
-}
-
-.progressEvent:hover {
-  box-shadow: 0 2px 8px rgba(7, 133, 246, 0.15);
-  transform: translateX(4px);
-}
-
-.eventTime {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #0785f6;
-  min-width: 60px;
-  font-family: "Courier New", monospace;
-}
-
-.eventMessage {
-  font-size: 0.95rem;
-  color: #333;
-  flex: 1;
-  word-break: break-word;
-}
-
 .fullLogsContainer {
-  margin-top: 2rem;
-  padding: 1.5rem;
+  margin-top: 1.25rem;
+  padding: 1rem;
   background: white;
   border-radius: 8px;
   border: 1px solid #e0e0e0;
@@ -1058,20 +1122,20 @@
 }
 
 .logsScroll {
-  max-height: 400px;
+  max-height: 7.8rem;
   overflow-y: auto;
   border: 1px solid #e0e0e0;
   border-radius: 6px;
   background: #fafafa;
   font-family: "Courier New", monospace;
-  font-size: 0.9rem;
-  line-height: 1.6;
+  font-size: 0.85rem;
+  line-height: 1.4;
 }
 
 .logLine {
   display: flex;
-  gap: 1rem;
-  padding: 0.5rem 0.75rem;
+  gap: 0.75rem;
+  padding: 0.35rem 0.65rem;
   border-bottom: 1px solid #f0f0f0;
   align-items: flex-start;
 }
@@ -1082,10 +1146,10 @@
 
 .logNumber {
   color: #999;
-  min-width: 30px;
+  min-width: 24px;
   text-align: right;
   font-weight: 600;
-  padding-top: 2px;
+  padding-top: 1px;
 }
 
 .logText {
@@ -1152,14 +1216,9 @@
     gap: 0.5rem;
   }
 
-  .eventTime {
-    min-width: auto;
-    display: inline-block;
-  }
-
   .logsScroll {
-    max-height: 300px;
-    font-size: 0.85rem;
+    max-height: 7.8rem;
+    font-size: 0.8rem;
   }
   .heroContent h1 {
     font-size: 1.75rem;

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Header from "../../../components/Header";
+import EnGrade from "../../../components/EnGrade";
 import styles from "./socialPlanMaster.module.css";
 import {
   FiBarChart2,
@@ -52,6 +53,7 @@ interface FormData {
   initialInvestment: string;
   plannedHeadcount: string;
   hasSocialImpact: boolean;
+  initiatorProfile: string;
 }
 
 interface SynthesisStatus {
@@ -64,6 +66,7 @@ interface SynthesisStatus {
     | "needs_adjustment";
   progress: number;
   current_stage: string;
+  logs?: string[];
   error?: string;
   recommendations?: Array<{ type: string; text: string; action: string }>;
   financials_preview?: {
@@ -82,6 +85,7 @@ interface SynthesisResult {
   tech_chain?: any;
   marketing_plan?: any;
   social_analysis?: any;
+  synthesis_text?: string;
   docx_path?: string;
   created_at?: string;
 }
@@ -118,6 +122,7 @@ export default function SocialPlanMasterPageEN() {
     initialInvestment: "",
     plannedHeadcount: "",
     hasSocialImpact: false,
+    initiatorProfile: "",
   });
 
   const [synthesisId, setSynthesisId] = useState<string | null>(null);
@@ -128,6 +133,7 @@ export default function SocialPlanMasterPageEN() {
   const [activeSection, setActiveSection] = useState<string>("overview");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
 
   const [synthesisStartTime, setSynthesisStartTime] = useState<number | null>(
     null,
@@ -140,7 +146,7 @@ export default function SocialPlanMasterPageEN() {
   const [healthStatus, setHealthStatus] = useState<any>(null);
   const [isLoadingHealth, setIsLoadingHealth] = useState(true);
 
-  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const pollingIntervalRef = useRef<any>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -334,6 +340,7 @@ export default function SocialPlanMasterPageEN() {
         initial_investment: parseInt(formData.initialInvestment),
         planned_headcount: parseInt(formData.plannedHeadcount),
         has_social_impact: formData.hasSocialImpact,
+        initiator_profile: formData.initiatorProfile,
       };
 
       console.log(
@@ -564,6 +571,7 @@ export default function SocialPlanMasterPageEN() {
     setActiveSection("overview");
     setSynthesisStartTime(null); // Reset timer
     setSynthesisDuration(null); // Clear duration
+    setPrivacyAccepted(false); // Reset privacy checkbox
   };
 
   return (
@@ -582,337 +590,384 @@ export default function SocialPlanMasterPageEN() {
           </div>
         </section>
 
-        {/* Error Display */}
-        {error && (
-          <div className={styles.errorBox}>
-            <div className={styles.errorContent}>
-              <FiAlertCircle className={styles.errorIcon} />
-              <div>
-                <h3>Error</h3>
-                <p>{error}</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Loading / Results */}
-        {isSubmitting ||
-        synthesisResult ||
-        synthesisStatus?.status === "needs_adjustment" ? (
-          <section className={styles.resultsSection}>
-            {isSubmitting && synthesisStatus && (
-              <div className={styles.progressCard}>
-                <div className={styles.progressHeader}>
-                  <FiBarChart2 className={styles.progressIcon} />
-                  <h2>Synthesis in progress...</h2>
-                </div>
-
-                <div className={styles.progressDetails}>
-                  <div className={styles.progressHeaderInfo}>
-                    <p className={styles.stageText}>
-                      {synthesisStatus.current_stage || "Initializing..."}
-                    </p>
-                    <span className={styles.progressPercent}>
-                      {synthesisStatus.progress}%
-                    </span>
-                  </div>
-                  <div className={styles.progressBarWrapper}>
-                    <div
-                      className={styles.progressBar}
-                      style={{
-                        width: `${Math.min(synthesisStatus.progress, 100)}%`,
-                      }}
-                    />
-                  </div>
-
-                  {/* Key Progress Events */}
-                  <div className={styles.progressEventsContainer}>
-                    <h4 className={styles.eventsTitle}>📊 Key Stages:</h4>
-                    <div className={styles.progressEventsList}>
-                      {/* Extract key progress from logs */}
-                      {synthesisStatus.logs &&
-                        synthesisStatus.logs.length > 0 && (
-                          <>
-                            {synthesisStatus.logs
-                              .filter((log) =>
-                                /\[INFO\]|STAGE|Archetype|Deep Research|DOCX|Financial|READY/.test(
-                                  log,
-                                ),
-                              )
-                              .slice(-5)
-                              .map((log, idx) => {
-                                const match = log.match(/\[([^\]]+)\]/);
-                                const timestamp = match ? match[1] : "";
-                                const message = log
-                                  .replace(/\[[^\]]*\]/g, "")
-                                  .trim();
-                                return (
-                                  <div
-                                    key={idx}
-                                    className={styles.progressEvent}
-                                  >
-                                    <span className={styles.eventTime}>
-                                      {timestamp}
-                                    </span>
-                                    <span className={styles.eventMessage}>
-                                      {message}
-                                    </span>
-                                  </div>
-                                );
-                              })}
-                          </>
-                        )}
-                    </div>
+        <div className={styles.twoColumnLayout}>
+          <div className={styles.mainContent}>
+            {/* Error Display */}
+            {error && (
+              <div className={styles.errorBox}>
+                <div className={styles.errorContent}>
+                  <FiAlertCircle className={styles.errorIcon} />
+                  <div>
+                    <h3>Error</h3>
+                    <p>{error}</p>
                   </div>
                 </div>
-
-                {/* Full Logs */}
-                {synthesisStatus.logs && synthesisStatus.logs.length > 0 && (
-                  <div className={styles.fullLogsContainer}>
-                    <div className={styles.logsHeader}>
-                      <h4>📝 Full Synthesis Logs:</h4>
-                      <span className={styles.logCount}>
-                        ({synthesisStatus.logs.length} events)
-                      </span>
-                    </div>
-                    <div className={styles.logsScroll}>
-                      {synthesisStatus.logs.map((log, idx) => {
-                        const isError = log.includes("[ERROR]");
-                        const isWarning = log.includes("[WARNING]");
-                        const isDeepSearch = log.includes("[DEEP_SEARCH]");
-                        return (
-                          <div
-                            key={idx}
-                            className={`${styles.logLine} ${
-                              isError
-                                ? styles.logError
-                                : isWarning
-                                  ? styles.logWarning
-                                  : isDeepSearch
-                                    ? styles.logDeepSearch
-                                    : ""
-                            }`}
-                          >
-                            <span className={styles.logNumber}>{idx + 1}</span>
-                            <span className={styles.logText}>{log}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
               </div>
             )}
 
-            {synthesisResult && (
-              <>
-                <div className={styles.successCard}>
-                  <div className={styles.successHeader}>
-                    <FiCheck className={styles.successIcon} />
-                    <h2>Synthesis completed successfully!</h2>
-                  </div>
-                  {synthesisDuration && (
-                    <p className={styles.durationText}>
-                      ⏱️ Synthesis time: {synthesisDuration.minutes} min{" "}
-                      {synthesisDuration.seconds} sec
-                    </p>
-                  )}
-                </div>
+            {/* Loading / Results */}
+            {isSubmitting ||
+            synthesisResult ||
+            synthesisStatus?.status === "needs_adjustment" ? (
+              <section className={styles.resultsSection}>
+                {isSubmitting && synthesisStatus && (
+                  <div className={styles.progressCard}>
+                    <div className={styles.progressHeader}>
+                      <FiBarChart2 className={styles.progressIcon} />
+                      <h2>Synthesis in progress...</h2>
+                    </div>
 
-                {/* Results Content - Summary */}
-                <div className={styles.resultsContent}>
-                  <div className={styles.resultCard}>
-                    <h3>Business Plan Summary</h3>
-                    <div className={styles.synthesisTextContainer}>
-                      {synthesisResult.synthesis_text ? (
+                    <div className={styles.progressDetails}>
+                      <div className={styles.progressHeaderInfo}>
+                        <p className={styles.stageText}>
+                          {synthesisStatus.current_stage || "Initializing..."}
+                        </p>
+                        <span className={styles.progressPercent}>
+                          {synthesisStatus.progress}%
+                        </span>
+                      </div>
+                      <div className={styles.progressBarWrapper}>
                         <div
-                          className={styles.synthesisText}
-                          dangerouslySetInnerHTML={{
-                            __html: synthesisResult.synthesis_text
-                              .replace(/\n/g, "<br />")
-                              .replace(/### (.*?)<br \/>/g, "<h4>$1</h4>")
-                              .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-                              .replace(/- /g, "• "),
+                          className={styles.progressBar}
+                          style={{
+                            width: `${Math.min(synthesisStatus.progress, 100)}%`,
                           }}
                         />
-                      ) : (
-                        <p>Synthesis text is not available</p>
+                      </div>
+
+                      {/* Key Progress Events */}
+                      <div className={styles.progressEventsContainer}>
+                        <h4 className={styles.eventsTitle}>📊 Key Stages:</h4>
+                        <div className={styles.progressEventsList}>
+                          {/* Extract key progress from logs */}
+                          {synthesisStatus.logs &&
+                            synthesisStatus.logs.length > 0 && (
+                              <>
+                                {synthesisStatus.logs
+                                  .filter((log) =>
+                                    /\[INFO\]|STAGE|Archetype|Deep Research|DOCX|Financial|READY/.test(
+                                      log,
+                                    ),
+                                  )
+                                  .slice(-5)
+                                  .map((log, idx) => {
+                                    const match = log.match(/\[([^\]]+)\]/);
+                                    const timestamp = match ? match[1] : "";
+                                    const message = log
+                                      .replace(/\[[^\]]*\]/g, "")
+                                      .trim();
+                                    return (
+                                      <div
+                                        key={idx}
+                                        className={styles.progressEvent}
+                                      >
+                                        <span className={styles.eventTime}>
+                                          {timestamp}
+                                        </span>
+                                        <span className={styles.eventMessage}>
+                                          {message}
+                                        </span>
+                                      </div>
+                                    );
+                                  })}
+                              </>
+                            )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Full Logs */}
+                    {synthesisStatus.logs && synthesisStatus.logs.length > 0 && (
+                      <div className={styles.fullLogsContainer}>
+                        <div className={styles.logsHeader}>
+                          <h4>📝 Full Synthesis Logs:</h4>
+                          <span className={styles.logCount}>
+                            ({synthesisStatus.logs.length} events)
+                          </span>
+                        </div>
+                        <div className={styles.logsScroll}>
+                          {synthesisStatus.logs.map((log, idx) => {
+                            const isError = log.includes("[ERROR]");
+                            const isWarning = log.includes("[WARNING]");
+                            const isDeepSearch = log.includes("[DEEP_SEARCH]");
+                            return (
+                              <div
+                                key={idx}
+                                className={`${styles.logLine} ${
+                                  isError
+                                    ? styles.logError
+                                    : isWarning
+                                      ? styles.logWarning
+                                      : isDeepSearch
+                                        ? styles.logDeepSearch
+                                        : ""
+                                }`}
+                              >
+                                <span className={styles.logNumber}>{idx + 1}</span>
+                                <span className={styles.logText}>{log}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {synthesisResult && (
+                  <>
+                    <div className={styles.successCard}>
+                      <div className={styles.successHeader}>
+                        <FiCheck className={styles.successIcon} />
+                        <h2>Synthesis completed successfully!</h2>
+                      </div>
+                      {synthesisDuration && (
+                        <p className={styles.durationText}>
+                          ⏱️ Synthesis time: {synthesisDuration.minutes} min{" "}
+                          {synthesisDuration.seconds} sec
+                        </p>
                       )}
                     </div>
-                  </div>
-                </div>
 
-                {/* Download and Reset Buttons */}
-                <div className={styles.actionButtons}>
-                  <button
-                    className={styles.downloadBtn}
-                    onClick={handleDownloadDocx}
-                  >
-                    <FiDownload /> Download DOCX
-                  </button>
-                  <button className={styles.resetBtn} onClick={handleReset}>
-                    <FiRefreshCw /> Start Over
-                  </button>
+                    {/* Results Content - Summary */}
+                    <div className={styles.resultsContent}>
+                      <div className={styles.resultCard}>
+                        <h3>Business Plan Summary</h3>
+                        <div className={styles.synthesisTextContainer}>
+                          {synthesisResult.synthesis_text ? (
+                            <div
+                              className={styles.synthesisText}
+                              dangerouslySetInnerHTML={{
+                                __html: synthesisResult.synthesis_text
+                                  .replace(/\n/g, "<br />")
+                                  .replace(/### (.*?)<br \/>/g, "<h4>$1</h4>")
+                                  .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+                                  .replace(/- /g, "• "),
+                              }}
+                            />
+                          ) : (
+                            <p>Synthesis text is not available</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Download and Reset Buttons */}
+                    <div className={styles.actionButtons}>
+                      <button
+                        className={styles.downloadBtn}
+                        onClick={handleDownloadDocx}
+                      >
+                        <FiDownload /> Download DOCX
+                      </button>
+                      <button className={styles.resetBtn} onClick={handleReset}>
+                        <FiRefreshCw /> Start Over
+                      </button>
+                    </div>
+                  </>
+                )}
+              </section>
+            ) : (
+              /* Form Section */
+              <section className={styles.formSection}>
+                <div className={styles.card}>
+                  <h2>Synthesis Parameters</h2>
+
+                  <form className={styles.form} onSubmit={handleSubmit}>
+                    {/* Business Idea */}
+                    <div className={styles.section}>
+                      <h3>📋 Business Idea Description *</h3>
+                      <input
+                        ref={businessIdeaInputRef}
+                        type="text"
+                        name="businessIdea"
+                        placeholder="Description of your business idea"
+                        value={formData.businessIdea}
+                        onChange={handleInputChange}
+                        className={styles.input}
+                      />
+                    </div>
+
+                    {/* Target Market */}
+                    <div className={styles.section}>
+                      <h3>🎯 Target Market *</h3>
+                      <textarea
+                        name="targetMarket"
+                        placeholder="Description of target market and audience"
+                        value={formData.targetMarket}
+                        onChange={handleInputChange}
+                        className={styles.textarea}
+                        rows={3}
+                      />
+                    </div>
+
+                    {/* Business Category */}
+                    <div className={styles.section}>
+                      <h3>🏭 Business Category *</h3>
+                      <input
+                        type="text"
+                        name="businessCategory"
+                        placeholder="E.g., specialty coffee, e-commerce, saas"
+                        value={formData.businessCategory}
+                        onChange={handleInputChange}
+                        className={styles.input}
+                      />
+                    </div>
+
+                    {/* Region */}
+                    <div className={styles.section}>
+                      <h3>📍 Region *</h3>
+                      <input
+                        type="text"
+                        name="region"
+                        placeholder="E.g., Kaliningrad, Russia"
+                        value={formData.region}
+                        onChange={handleInputChange}
+                        className={styles.input}
+                      />
+                    </div>
+
+                    {/* Business Types */}
+                    <div className={styles.section}>
+                      <h3>💼 Business Type *</h3>
+                      <div className={styles.buttonGroup}>
+                        {businessTypeOptions.map((option) => (
+                          <button
+                            key={option.value}
+                            type="button"
+                            className={`${styles.toggleButton} ${
+                              formData.businessTypes.includes(option.value)
+                                ? styles.active
+                                : ""
+                            }`}
+                            onClick={() => handleBusinessTypeToggle(option.value)}
+                          >
+                            {option.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Product Types */}
+                    <div className={styles.section}>
+                      <h3>📦 Product Type *</h3>
+                      <div className={styles.buttonGroup}>
+                        {productTypeOptions.map((option) => (
+                          <button
+                            key={option.value}
+                            type="button"
+                            className={`${styles.toggleButton} ${
+                              formData.productTypes.includes(option.value)
+                                ? styles.active
+                                : ""
+                            }`}
+                            onClick={() => handleProductTypeToggle(option.value)}
+                          >
+                            {option.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Investment */}
+                    <div className={styles.section}>
+                      <h3>💰 Initial Investment ($) *</h3>
+                      <input
+                        type="number"
+                        name="initialInvestment"
+                        placeholder="E.g., 50000"
+                        value={formData.initialInvestment}
+                        onChange={handleInputChange}
+                        className={styles.input}
+                      />
+                    </div>
+
+                    {/* Headcount */}
+                    <div className={styles.section}>
+                      <h3>👥 Planned Team Size *</h3>
+                      <input
+                        type="number"
+                        name="plannedHeadcount"
+                        placeholder="Number of employees"
+                        value={formData.plannedHeadcount}
+                        onChange={handleInputChange}
+                        className={styles.input}
+                      />
+                    </div>
+
+                    {/* Initiator Profile */}
+                    <div className={styles.section}>
+                      <h3>🎯 Project Initiator Profile *</h3>
+                      <label className={styles.label}>
+                        Enter your full name, describe your experience, skills, education, and provide links to
+                        social media profiles or channels that will help in project realization.
+                      </label>
+                      <textarea
+                        name="initiatorProfile"
+                        placeholder="E.g.: pastry chef education, baker experience, link to portfolio..."
+                        value={formData.initiatorProfile}
+                        onChange={handleInputChange}
+                        className={styles.textarea}
+                        rows={4}
+                      />
+                    </div>
+
+                    {/* Social Impact */}
+                    <div className={styles.section}>
+                      <h3>🌱 Social Impact</h3>
+                      <label className={styles.checkboxLabel}>
+                        <input
+                          type="checkbox"
+                          name="hasSocialImpact"
+                          checked={formData.hasSocialImpact}
+                          onChange={handleInputChange}
+                        />
+                        <span>Business has social / environmental impact</span>
+                      </label>
+                    </div>
+
+                    {/* Privacy Policy */}
+                    <div className={styles.section}>
+                      <label className={styles.checkboxLabel}>
+                        <input
+                          type="checkbox"
+                          checked={privacyAccepted}
+                          onChange={(e) => setPrivacyAccepted(e.target.checked)}
+                        />
+                        <span>
+                          I have read and agree to the{" "}
+                          <a 
+                            href="/privacy" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            style={{ color: '#0785f6', textDecoration: 'underline' }}
+                          >
+                            terms of use of the service
+                          </a>
+                        </span>
+                      </label>
+                    </div>
+
+                    {/* Submit Button */}
+                    <div className={styles.submitSection}>
+                      <button
+                        type="submit"
+                        className={styles.submitButton}
+                        disabled={isSubmitting || !privacyAccepted}
+                      >
+                        {isSubmitting ? "Processing..." : "🚀 Start Synthesis"}
+                      </button>
+                    </div>
+                  </form>
                 </div>
-              </>
+              </section>
             )}
-          </section>
-        ) : (
-          /* Form Section */
-          <section className={styles.formSection}>
-            <div className={styles.card}>
-              <h2>Synthesis Parameters</h2>
-
-              <form className={styles.form} onSubmit={handleSubmit}>
-                {/* Business Idea */}
-                <div className={styles.section}>
-                  <h3>📋 Business Idea Description *</h3>
-                  <input
-                    ref={businessIdeaInputRef}
-                    type="text"
-                    name="businessIdea"
-                    placeholder="Description of your business idea"
-                    value={formData.businessIdea}
-                    onChange={handleInputChange}
-                    className={styles.input}
-                  />
-                </div>
-
-                {/* Target Market */}
-                <div className={styles.section}>
-                  <h3>🎯 Target Market *</h3>
-                  <textarea
-                    name="targetMarket"
-                    placeholder="Description of target market and audience"
-                    value={formData.targetMarket}
-                    onChange={handleInputChange}
-                    className={styles.textarea}
-                    rows={3}
-                  />
-                </div>
-
-                {/* Business Category */}
-                <div className={styles.section}>
-                  <h3>🏭 Business Category *</h3>
-                  <input
-                    type="text"
-                    name="businessCategory"
-                    placeholder="E.g., specialty coffee, e-commerce, saas"
-                    value={formData.businessCategory}
-                    onChange={handleInputChange}
-                    className={styles.input}
-                  />
-                </div>
-
-                {/* Region */}
-                <div className={styles.section}>
-                  <h3>📍 Region *</h3>
-                  <input
-                    type="text"
-                    name="region"
-                    placeholder="E.g., Kaliningrad, Russia"
-                    value={formData.region}
-                    onChange={handleInputChange}
-                    className={styles.input}
-                  />
-                </div>
-
-                {/* Business Types */}
-                <div className={styles.section}>
-                  <h3>💼 Business Type *</h3>
-                  <div className={styles.buttonGroup}>
-                    {businessTypeOptions.map((option) => (
-                      <button
-                        key={option.value}
-                        type="button"
-                        className={`${styles.toggleButton} ${
-                          formData.businessTypes.includes(option.value)
-                            ? styles.active
-                            : ""
-                        }`}
-                        onClick={() => handleBusinessTypeToggle(option.value)}
-                      >
-                        {option.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Product Types */}
-                <div className={styles.section}>
-                  <h3>📦 Product Type *</h3>
-                  <div className={styles.buttonGroup}>
-                    {productTypeOptions.map((option) => (
-                      <button
-                        key={option.value}
-                        type="button"
-                        className={`${styles.toggleButton} ${
-                          formData.productTypes.includes(option.value)
-                            ? styles.active
-                            : ""
-                        }`}
-                        onClick={() => handleProductTypeToggle(option.value)}
-                      >
-                        {option.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Investment */}
-                <div className={styles.section}>
-                  <h3>💰 Initial Investment ($) *</h3>
-                  <input
-                    type="number"
-                    name="initialInvestment"
-                    placeholder="E.g., 50000"
-                    value={formData.initialInvestment}
-                    onChange={handleInputChange}
-                    className={styles.input}
-                  />
-                </div>
-
-                {/* Headcount */}
-                <div className={styles.section}>
-                  <h3>👥 Planned Team Size *</h3>
-                  <input
-                    type="number"
-                    name="plannedHeadcount"
-                    placeholder="Number of employees"
-                    value={formData.plannedHeadcount}
-                    onChange={handleInputChange}
-                    className={styles.input}
-                  />
-                </div>
-
-                {/* Social Impact */}
-                <div className={styles.section}>
-                  <h3>🌱 Social Impact</h3>
-                  <label className={styles.checkboxLabel}>
-                    <input
-                      type="checkbox"
-                      name="hasSocialImpact"
-                      checked={formData.hasSocialImpact}
-                      onChange={handleInputChange}
-                    />
-                    <span>Business has social / environmental impact</span>
-                  </label>
-                </div>
-
-                {/* Submit Button */}
-                <div className={styles.submitSection}>
-                  <button
-                    type="submit"
-                    className={styles.submitButton}
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? "Processing..." : "🚀 Start Synthesis"}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </section>
-        )}
+          </div>
+          
+          <aside className={styles.sideContent}>
+            <EnGrade sessionId={synthesisId || "social-plan-en"} />
+          </aside>
+        </div>
       </main>
     </div>
   );
