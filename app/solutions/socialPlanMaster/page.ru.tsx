@@ -844,14 +844,25 @@ export default function SocialPlanMasterPage() {
           `${PLANMASTER_BASE_URL}/api/synthesis/${id}`,
           {
             cache: "no-store",
-            headers: {
-              "Cache-Control": "no-cache, no-store, must-revalidate",
-              Pragma: "no-cache",
-            },
           },
         );
 
         if (!response.ok) {
+          if (response.status === 404) {
+            // На production статус может временно отсутствовать в памяти worker'а.
+            // Продолжаем polling, ожидая восстановление из БД/другого worker.
+            setSynthesisStatus((prev) =>
+              prev
+                ? {
+                    ...prev,
+                    current_stage: "Синхронизируем статус генерации...",
+                  }
+                : prev,
+            );
+            transientFailures++;
+            if (!firstTransientAt) firstTransientAt = Date.now();
+            return;
+          }
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
@@ -987,10 +998,7 @@ export default function SocialPlanMasterPage() {
       const response = await fetch(
         `${PLANMASTER_BASE_URL}/api/synthesis/${id}/result`,
         {
-          headers: {
-            "Cache-Control": "no-cache, no-store, must-revalidate",
-            Pragma: "no-cache",
-          },
+          cache: "no-store",
         },
       );
 
