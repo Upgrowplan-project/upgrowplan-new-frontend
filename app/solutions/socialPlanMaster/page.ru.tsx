@@ -657,8 +657,30 @@ export default function SocialPlanMasterPage() {
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const resetSynthesisStateKeepForm = () => {
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+    setSynthesisId(null);
+    setSynthesisStatus(null);
+    setSynthesisResult(null);
+    setError(null);
+    setSynthesisDuration(null);
+    setSynthesisStartTime(null);
+    setSelectedAdjustments([]);
+    setNeedsAdjustment(false);
+    setIsContinuingGeneration(false);
+    setManualFunds({ ownCapital: "", loanCapital: "" });
+    setLeverValues({});
+    setInitialLeverValues({});
+    setAdjustmentPreview(null);
+    setIsPreviewLoading(false);
+    setIsSubmitting(false);
+    lastProgressRef.current = 0;
+  };
+
+  const startSynthesis = async () => {
     setError(null);
     setIsSubmitting(true);
     lastProgressRef.current = 0;
@@ -811,6 +833,16 @@ export default function SocialPlanMasterPage() {
     }
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await startSynthesis();
+  };
+
+  const handleStopAndRestart = async () => {
+    resetSynthesisStateKeepForm();
+    await startSynthesis();
+  };
+
   const pollSynthesisStatus = async (id: string) => {
     console.log("=".repeat(80));
     console.log("🔄 [POLLING] Starting status polling for ID:", id);
@@ -948,10 +980,10 @@ export default function SocialPlanMasterPage() {
           setSynthesisStartTime(null); // Сброс времени при ошибке синтеза
         }
       } catch (err: any) {
-        console.error(`❌ [POLLING #${pollCount}] Error:`, err);
         const transient = isTransientNetworkError(err);
 
         if (transient) {
+          console.warn(`⚠️ [POLLING #${pollCount}] transient issue:`, err);
           transientFailures++;
           if (!firstTransientAt) firstTransientAt = Date.now();
           setSynthesisStatus((prev) =>
@@ -987,6 +1019,8 @@ export default function SocialPlanMasterPage() {
           }
           return;
         }
+
+        console.error(`❌ [POLLING #${pollCount}] Error:`, err);
 
         hardFailures++;
         if (hardFailures >= maxHardFailures) {
@@ -1283,8 +1317,14 @@ export default function SocialPlanMasterPage() {
                   </div>
                 </div>
                 <div className={styles.errorActions}>
+                  <button
+                    className={styles.downloadBtn}
+                    onClick={handleStopAndRestart}
+                  >
+                    <FiRefreshCw /> Стоп и запустить заново
+                  </button>
                   <button className={styles.resetBtn} onClick={handleReset}>
-                    <FiRefreshCw /> Запустить заново
+                    <FiRefreshCw /> К форме (сохранить данные)
                   </button>
                 </div>
               </div>
