@@ -863,6 +863,21 @@ export default function SocialPlanMasterPage() {
             if (!firstTransientAt) firstTransientAt = Date.now();
             return;
           }
+          if (response.status === 503 || response.status === 502 || response.status === 504) {
+            // Платформа/сервер временно недоступны под нагрузкой.
+            // Не роняем сессию генерации, продолжаем polling.
+            setSynthesisStatus((prev) =>
+              prev
+                ? {
+                    ...prev,
+                    current_stage: "Сервер временно занят, продолжаем ожидание...",
+                  }
+                : prev,
+            );
+            transientFailures++;
+            if (!firstTransientAt) firstTransientAt = Date.now();
+            return;
+          }
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
