@@ -102,6 +102,21 @@ interface SynthesisStatus {
     consistency_ok?: boolean;
     consistency_errors?: string[];
   };
+  archetype?: {
+    id: string;
+    name: string;
+    confidence: number;
+    profitability_levers?: Array<{
+      key: string;
+      label: string;
+      unit?: string;
+      min_value?: number | null;
+      max_value?: number | null;
+      step?: number | null;
+      description?: string;
+      current_value?: number | null;
+    }>;
+  };
 }
 
 interface SynthesisResult {
@@ -116,6 +131,12 @@ interface SynthesisResult {
   created_at?: string;
   synthesis_text?: string;
   financials?: any;
+  reliable_sources_count?: number;
+  _grounding_sources?: Array<{
+    category?: string;
+    title?: string;
+    url?: string;
+  }>;
 }
 
 interface AdjustmentPreview {
@@ -140,6 +161,16 @@ interface AdjustmentPreview {
 const PLANMASTER_BASE_URL =
   process.env.NEXT_PUBLIC_BACKEND_PLANMASTER_URL || "http://localhost:8004";
 
+const isTransientNetworkError = (err: unknown): boolean => {
+  const msg = String((err as any)?.message || err || "").toLowerCase();
+  return (
+    msg.includes("failed to fetch") ||
+    msg.includes("networkerror") ||
+    msg.includes("err_network_changed") ||
+    msg.includes("network changed")
+  );
+};
+
 const cleanMarkdown = (text: string): string => {
   if (!text) return "";
 
@@ -154,6 +185,130 @@ const cleanMarkdown = (text: string): string => {
     .replace(/```[\s\S]*?```/g, "")
     .replace(/`(.+?)`/g, "$1")
     .trim();
+};
+
+const normalizeSummaryText = (text: string): string => {
+  if (!text) return "";
+  return cleanMarkdown(text)
+    .replace(/\u00A0/g, " ")
+    .split("\n")
+    .map((line) => line.trim())
+    .join("\n")
+    .replace(/[ \t]{2,}/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+};
+
+const toSummaryHtml = (text: string): string => {
+  const normalized = normalizeSummaryText(text);
+  if (!normalized) return "";
+  const blocks = normalized
+    .split(/\n{2,}/)
+    .map((p) => p.replace(/\n/g, "<br />"))
+    .filter(Boolean);
+  return blocks
+    .map(
+      (p) =>
+        `<div style="margin:0 0 8px 0; line-height:1.5;">${p}</div>`,
+    )
+    .join("");
+};
+
+const getReliableSourcesCount = (result: SynthesisResult | null): number => {
+  if (!result) return 0;
+
+  const explicit = Number((result as any)?.reliable_sources_count);
+  if (Number.isFinite(explicit) && explicit >= 0) {
+    return Math.round(explicit);
+  }
+
+  const urls = new Set<string>();
+  const pushUrl = (value: unknown) => {
+    if (typeof value !== "string") return;
+    const v = value.trim();
+    if (/^https?:\/\//i.test(v)) urls.add(v);
+  };
+
+  const grounding = (result as any)?._grounding_sources;
+  if (Array.isArray(grounding)) {
+    grounding.forEach((item) => pushUrl(item?.url));
+  }
+
+  const candidateCollections = [
+    (result as any)?.grounding_sources,
+    (result as any)?.sources,
+    (result as any)?.source_registry,
+    (result as any)?.appendix_2_sources,
+    (result as any)?.references,
+  ];
+
+  candidateCollections.forEach((collection) => {
+    if (Array.isArray(collection)) {
+      collection.forEach((item) => {
+        if (typeof item === "string") pushUrl(item);
+        if (item && typeof item === "object") {
+          pushUrl((item as any).url);
+          pushUrl((item as any).source_url);
+          pushUrl((item as any).link);
+        }
+      });
+      return;
+    }
+    if (collection && typeof collection === "object") {
+      Object.entries(collection).forEach(([key, value]) => {
+        pushUrl(key);
+        if (typeof value === "string") pushUrl(value);
+        if (value && typeof value === "object") {
+          pushUrl((value as any).url);
+          pushUrl((value as any).source_url);
+          pushUrl((value as any).link);
+        }
+      });
+    }
+  });
+
+  return urls.size;
+};
+
+const isMainBackendLogLine = (log: string): boolean => {
+  const line = String(log || "").trim();
+  if (!line) return false;
+  if (/ЭТАП:\s/.test(line) && /\[\d{2}:\d{2}:\d{2}\]/.test(line)) return true;
+  if (/^\d{4}-\d{2}-\d{2}/.test(line)) return false;
+  if (/^\s*INFO:\s+\d+\.\d+\.\d+\.\d+/.test(line)) return false;
+  if (/\[DEEP_SEARCH\]|\[HYBRID_SYNTHESIS\]/.test(line)) return false;
+  if (!/\[BACKEND\]/.test(line) && !/\[\d{2}:\d{2}:\d{2}\]/.test(line))
+    return false;
+  if (!/\[\d{2}:\d{2}:\d{2}\]/.test(line)) return false;
+  if (/\[INFO\]|\[WARNING\]|\[ERROR\]/.test(line)) {
+    return /ЭТАП:/.test(line) || /\[WARNING\]|\[ERROR\]/.test(line);
+  }
+  return /ЭТАП:|НАЧАЛО ГЕНЕРАЦИИ|ЗАВЕРШЕНИЕ|БИЗНЕС-ПЛАН ГОТОВ/i.test(line);
+};
+
+const dedupeLogs = (logs: string[]): string[] => {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  logs.forEach((line) => {
+    const normalized = String(line || "").trim();
+    if (!normalized || seen.has(normalized)) return;
+    seen.add(normalized);
+    out.push(normalized);
+  });
+  return out;
+};
+
+const extractProgressFromMainLogs = (logs: string[]): number | null => {
+  for (let i = logs.length - 1; i >= 0; i -= 1) {
+    const match = logs[i].match(/\((\d{1,3})%\)/);
+    if (match) {
+      const value = Number(match[1]);
+      if (Number.isFinite(value)) {
+        return Math.max(0, Math.min(100, value));
+      }
+    }
+  }
+  return null;
 };
 
 export default function SocialPlanMasterPage() {
@@ -200,6 +355,10 @@ export default function SocialPlanMasterPage() {
   const [adjustmentPreview, setAdjustmentPreview] =
     useState<AdjustmentPreview | null>(null);
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
+  const [leverValues, setLeverValues] = useState<Record<string, string>>({});
+  const [initialLeverValues, setInitialLeverValues] = useState<
+    Record<string, string>
+  >({});
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
 
   const [synthesisStartTime, setSynthesisStartTime] = useState<number | null>(
@@ -212,10 +371,36 @@ export default function SocialPlanMasterPage() {
 
   const [healthStatus, setHealthStatus] = useState<any>(null);
   const [isLoadingHealth, setIsLoadingHealth] = useState(true);
+  const [archetypesCatalog, setArchetypesCatalog] = useState<
+    Record<
+      string,
+      Array<{
+        key: string;
+        label: string;
+        unit?: string;
+        min_value?: number | null;
+        max_value?: number | null;
+        step?: number | null;
+        description?: string;
+      }>
+    >
+  >({});
 
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const logsScrollRef = useRef<HTMLDivElement | null>(null);
+  const lastProgressRef = useRef<number>(0);
   const previewDebounceRef = useRef<NodeJS.Timeout | null>(null);
+
+  const buildLeverPayload = () => {
+    const payload: Record<string, number> = {};
+    for (const [key, value] of Object.entries(leverValues)) {
+      const normalized = String(value).replace(",", ".");
+      const parsed = parseFloat(normalized);
+      if (!Number.isFinite(parsed)) continue;
+      payload[key] = parsed;
+    }
+    return payload;
+  };
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -240,9 +425,59 @@ export default function SocialPlanMasterPage() {
   }, []);
 
   useEffect(() => {
+    const loadArchetypesCatalog = async () => {
+      try {
+        const response = await fetch(`${PLANMASTER_BASE_URL}/api/archetypes`);
+        if (!response.ok) return;
+        const data = await response.json();
+        if (!Array.isArray(data)) return;
+        const map: Record<string, any[]> = {};
+        for (const item of data) {
+          if (
+            item &&
+            typeof item.id === "string" &&
+            Array.isArray(item.profitability_levers)
+          ) {
+            map[item.id] = item.profitability_levers;
+          }
+        }
+        setArchetypesCatalog(map);
+      } catch (err) {
+        console.warn("[Archetypes Catalog] Failed to load:", err);
+      }
+    };
+    loadArchetypesCatalog();
+  }, []);
+
+  useEffect(() => {
     if (!logsScrollRef.current) return;
     logsScrollRef.current.scrollTop = logsScrollRef.current.scrollHeight;
   }, [synthesisStatus?.logs]);
+
+  useEffect(() => {
+    if (!needsAdjustment || synthesisStatus?.status !== "needs_adjustment") {
+      setLeverValues({});
+      setInitialLeverValues({});
+      return;
+    }
+    const levers = synthesisStatus?.archetype?.profitability_levers ?? [];
+    const next: Record<string, string> = {};
+    for (const lever of levers) {
+      if (
+        typeof lever.current_value === "number" &&
+        Number.isFinite(lever.current_value)
+      ) {
+        next[lever.key] = String(lever.current_value);
+      }
+    }
+    setLeverValues(next);
+    setInitialLeverValues(next);
+  }, [
+    needsAdjustment,
+    synthesisStatus?.status,
+    synthesisStatus?.adjustment_iteration,
+    synthesisStatus?.archetype?.id,
+  ]);
 
   useEffect(() => {
     if (
@@ -259,6 +494,8 @@ export default function SocialPlanMasterPage() {
     if (previewDebounceRef.current) {
       clearTimeout(previewDebounceRef.current);
     }
+
+    const changedLeversPayload = buildLeverPayload();
 
     previewDebounceRef.current = setTimeout(async () => {
       setIsPreviewLoading(true);
@@ -278,6 +515,7 @@ export default function SocialPlanMasterPage() {
                   ? parseInt(manualFunds.loanCapital, 10)
                   : undefined,
               },
+              lever_updates: changedLeversPayload,
             }),
           },
         );
@@ -309,6 +547,8 @@ export default function SocialPlanMasterPage() {
     selectedAdjustments,
     manualFunds.ownCapital,
     manualFunds.loanCapital,
+    leverValues,
+    initialLeverValues,
   ]);
 
   useEffect(() => {
@@ -331,7 +571,13 @@ export default function SocialPlanMasterPage() {
           );
         }
       } catch (error) {
-        console.error("[Health Check] Error fetching health status:", error);
+        if (isTransientNetworkError(error)) {
+          console.warn(
+            "[Health Check] Temporary network issue while checking backend",
+          );
+        } else {
+          console.error("[Health Check] Error fetching health status:", error);
+        }
       } finally {
         setIsLoadingHealth(false);
       }
@@ -415,6 +661,7 @@ export default function SocialPlanMasterPage() {
     e.preventDefault();
     setError(null);
     setIsSubmitting(true);
+    lastProgressRef.current = 0;
 
     // Clear previous results and reset timer for new generation
     setSynthesisResult(null);
@@ -577,8 +824,11 @@ export default function SocialPlanMasterPage() {
       pollingIntervalRef.current = null;
     }
 
-    let retries = 0;
-    const maxRetries = 3;
+    let hardFailures = 0;
+    const maxHardFailures = 30;
+    let transientFailures = 0;
+    const maxTransientFailures = 300; // ~10 мин при pollInterval=2с
+    let firstTransientAt: number | null = null;
     const pollInterval = 2000;
     let pollCount = 0;
 
@@ -607,7 +857,9 @@ export default function SocialPlanMasterPage() {
 
         const status: SynthesisStatus = await response.json();
 
-        retries = 0;
+        hardFailures = 0;
+        transientFailures = 0;
+        firstTransientAt = null;
 
         previousStatus = status.status || "";
         previousProgress = status.progress;
@@ -629,6 +881,7 @@ export default function SocialPlanMasterPage() {
           setIsSubmitting(false);
           setIsContinuingGeneration(false);
           setNeedsAdjustment(false);
+          setError(null);
 
           if (synthesisStartTime) {
             const endTime = Date.now();
@@ -670,11 +923,49 @@ export default function SocialPlanMasterPage() {
         }
       } catch (err: any) {
         console.error(`❌ [POLLING #${pollCount}] Error:`, err);
-        retries++;
+        const transient = isTransientNetworkError(err);
 
-        if (retries >= maxRetries) {
+        if (transient) {
+          transientFailures++;
+          if (!firstTransientAt) firstTransientAt = Date.now();
+          setSynthesisStatus((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  current_stage: "Ожидание восстановления соединения...",
+                }
+              : prev,
+          );
+          // Временные сетевые сбои не должны останавливать генерацию.
+          // Останавливаемся только при очень длительной недоступности.
+          const transientDurationMs = firstTransientAt
+            ? Date.now() - firstTransientAt
+            : 0;
+          if (
+            transientFailures >= maxTransientFailures ||
+            transientDurationMs > 15 * 60 * 1000
+          ) {
+            console.error(
+              `❌ [POLLING] Transient failures limit reached (${transientFailures}). Stopping polling.`,
+            );
+            if (pollingIntervalRef.current) {
+              clearInterval(pollingIntervalRef.current);
+              pollingIntervalRef.current = null;
+            }
+            clearInterval(interval);
+            setIsSubmitting(false);
+            setSynthesisStartTime(null);
+            setError(
+              "Длительная потеря соединения с backend. Проверьте сервис и нажмите «Продолжить генерацию» повторно.",
+            );
+          }
+          return;
+        }
+
+        hardFailures++;
+        if (hardFailures >= maxHardFailures) {
           console.error(
-            `❌ [POLLING] Max retries (${maxRetries}) reached. Stopping polling.`,
+            `❌ [POLLING] Max hard failures (${maxHardFailures}) reached. Stopping polling.`,
           );
           if (pollingIntervalRef.current) {
             clearInterval(pollingIntervalRef.current);
@@ -717,31 +1008,56 @@ export default function SocialPlanMasterPage() {
   };
 
   const handleDownloadDocx = async () => {
-    if (!synthesisId) {
+    const idsToTry = Array.from(
+      new Set(
+        [
+          synthesisId,
+          synthesisStatus?.synthesis_id,
+          synthesisResult?.synthesis_id,
+          (() => {
+            const path = synthesisResult?.docx_path || "";
+            const match = path.match(/business_plan_([a-zA-Z0-9_-]+)\.docx/i);
+            return match?.[1] || null;
+          })(),
+        ].filter((id): id is string => Boolean(id && id.trim())),
+      ),
+    );
+
+    if (idsToTry.length === 0) {
       setError("ID генерации не найден");
       return;
     }
 
     try {
-      const response = await fetch(
-        `${PLANMASTER_BASE_URL}/api/synthesis/download/${synthesisId}`,
-        {
-          method: "POST",
-        },
-      );
+      let successBlob: Blob | null = null;
+      let successId: string | null = null;
+      let lastError = "";
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(
-          errorData.error || `Ошибка скачивания: ${response.status}`,
+      for (const id of idsToTry) {
+        const response = await fetch(
+          `${PLANMASTER_BASE_URL}/api/synthesis/download/${id}`,
+          { method: "GET" },
         );
+        if (response.ok) {
+          successBlob = await response.blob();
+          successId = id;
+          break;
+        }
+        const errorData = await response.json().catch(() => ({}));
+        lastError =
+          errorData.message ||
+          errorData.error ||
+          `Ошибка скачивания: ${response.status}`;
       }
 
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
+      if (!successBlob || !successId) {
+        throw new Error(lastError || "DOCX файл не найден");
+      }
+
+      const url = window.URL.createObjectURL(successBlob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `social-plan-${synthesisId}.docx`;
+      a.download = `social-plan-${successId}.docx`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -756,19 +1072,13 @@ export default function SocialPlanMasterPage() {
 
   const handleContinueGeneration = async () => {
     if (!synthesisId) return;
-    const isForceFinalize = isIterationLimitReached;
-    if (!isForceFinalize && selectedAdjustments.length === 0) return;
-    const wantsManualFunds =
-      selectedAdjustments.includes("add_funds") ||
-      selectedAdjustments.includes("manual_fix");
-    if (
-      wantsManualFunds &&
-      !manualFunds.ownCapital &&
-      !manualFunds.loanCapital
-    ) {
-      setError("Укажите новый объём собственных и/или заёмных средств.");
-      return;
-    }
+    const canFinalizeByPreview = Boolean(
+      adjustmentPreview && !adjustmentPreview.needs_more_adjustment,
+    );
+    const isForceFinalize = isIterationLimitReached || canFinalizeByPreview;
+    const changedLeversPayload = buildLeverPayload();
+    const hasLeverChanges = Object.keys(changedLeversPayload).length > 0;
+    if (!isForceFinalize && !hasLeverChanges) return;
 
     // В этом флоу при нажатии "Продолжить генерацию" всегда продолжаем текущую сессию
     // через /continue, без возврата на стартовый экран формы.
@@ -797,6 +1107,7 @@ export default function SocialPlanMasterPage() {
                 ? parseInt(manualFunds.loanCapital, 10)
                 : undefined,
             },
+            lever_updates: changedLeversPayload,
             force_finalize_with_negative: isForceFinalize,
           }),
         },
@@ -835,9 +1146,12 @@ export default function SocialPlanMasterPage() {
     setNeedsAdjustment(false);
     setIsContinuingGeneration(false);
     setManualFunds({ ownCapital: "", loanCapital: "" });
+    setLeverValues({});
+    setInitialLeverValues({});
     setAdjustmentPreview(null);
     setIsPreviewLoading(false);
     setPrivacyAccepted(false);
+    lastProgressRef.current = 0;
   };
 
   const showResultsScreen =
@@ -847,15 +1161,18 @@ export default function SocialPlanMasterPage() {
     Boolean(synthesisStatus) ||
     Boolean(synthesisId);
 
+  const rawStatusLogs = synthesisStatus?.logs ?? [];
+  const mainServiceLogs = dedupeLogs(rawStatusLogs.filter(isMainBackendLogLine));
   const progressValueRaw = Number(synthesisStatus?.progress ?? 0);
-  const progressValue = Number.isFinite(progressValueRaw)
-    ? Math.max(0, Math.min(100, Math.round(progressValueRaw)))
-    : 0;
-  const mainServiceLogs =
-    synthesisStatus?.logs?.filter(
-      (log) => !/\[DEEP_SEARCH\]|\[HYBRID_SYNTHESIS\]/.test(log),
-    ) ?? [];
+  const logProgress = extractProgressFromMainLogs(dedupeLogs(rawStatusLogs));
+  const combinedProgressRaw = Math.max(
+    Number.isFinite(progressValueRaw) ? progressValueRaw : 0,
+    logProgress ?? 0,
+  );
+  const combinedProgress = Math.max(0, Math.min(100, Math.round(combinedProgressRaw)));
+  const progressValue = Math.max(lastProgressRef.current, combinedProgress);
   const visibleMainServiceLogs = mainServiceLogs.slice(-5);
+  const reliableSourcesCount = getReliableSourcesCount(synthesisResult);
   const currentIteration =
     adjustmentPreview?.iteration ?? synthesisStatus?.adjustment_iteration ?? 0;
   const maxIterations =
@@ -871,46 +1188,18 @@ export default function SocialPlanMasterPage() {
     adjustmentPreview?.base.target_profitability ??
     synthesisStatus?.financials_preview?.target_profitability ??
     15;
-  const selectedRecs =
-    synthesisStatus?.recommendations?.filter((rec) =>
-      selectedAdjustments.includes(rec.type),
-    ) ?? [];
-  const hasImpactData = selectedRecs.some(
-    (rec) => typeof rec.impact?.delta_margin === "number",
-  );
-  const selectedImpactDelta =
-    selectedRecs.reduce(
-      (acc, rec) => acc + Number(rec.impact?.delta_margin || 0),
-      0,
-    ) ?? 0;
-  const heuristicDeltaByType: Record<string, number> = {
-    downsize: 2.5,
-    used_equipment: 3.5,
-    change_model: 4.0,
-    add_funds: 1.0,
-    manual_fix: 1.0,
-    rebalance_to_equipment: 1.5,
-    reduce_rent_area: 2.0,
-    change_location: 2.5,
-    cheaper_location: 2.5,
-    expand_menu: 2.5,
-    expand_assortment: 2.5,
-    optimize_staff: 2.0,
-    reduce_staff: 2.0,
-    simplified_model: 3.0,
-  };
-  const selectedHeuristicDelta = selectedAdjustments.reduce(
-    (acc, actionType) => acc + (heuristicDeltaByType[actionType] || 0.7),
-    0,
-  );
-  const ownFundsNum = parseInt(manualFunds.ownCapital || "0", 10) || 0;
-  const loanFundsNum = parseInt(manualFunds.loanCapital || "0", 10) || 0;
-  const manualFundsBoost = Math.min(8, (ownFundsNum + loanFundsNum) / 100000);
-  const selectedDeltaMargin = hasImpactData
-    ? selectedImpactDelta
-    : selectedHeuristicDelta + manualFundsBoost;
+  const statusArchetypeId = synthesisStatus?.archetype?.id;
+  const profitabilityLevers =
+    (synthesisStatus?.archetype?.profitability_levers &&
+    synthesisStatus.archetype.profitability_levers.length > 0
+      ? synthesisStatus.archetype.profitability_levers
+      : statusArchetypeId
+        ? archetypesCatalog[statusArchetypeId] || []
+        : []) ?? [];
+  const changedLeversPayload = buildLeverPayload();
+  const hasLeverChanges = Object.keys(changedLeversPayload).length > 0;
   const projectedMargin =
-    adjustmentPreview?.projected.net_margin ?? baseMargin + selectedDeltaMargin;
+    adjustmentPreview?.projected.net_margin ?? baseMargin;
   const correctionCycleStatus = synthesisStatus?.correction_cycle_status;
   const correctionCycleText: Record<string, string> = {
     initial_generation: "Первичная генерация",
@@ -925,6 +1214,10 @@ export default function SocialPlanMasterPage() {
     correctionCycleStatus && correctionCycleText[correctionCycleStatus]
       ? correctionCycleText[correctionCycleStatus]
       : "";
+  const adjustmentTitle =
+    correctionCycleStatus === "financial_recalc_failed"
+      ? "Технический сбой финансового пересчёта"
+      : "Требуется дополнительная корректировка";
   const pipelineIssue =
     synthesisStatus?.pipeline_status?.stage46_failed ||
     synthesisStatus?.pipeline_status?.consistency_ok === false;
@@ -933,6 +1226,10 @@ export default function SocialPlanMasterPage() {
     `${value >= 0 ? "+" : ""}${Number.isFinite(value) ? value.toFixed(1) : "0.0"}%`;
   const formatMoney = (value?: number) =>
     `${Math.round(value || 0).toLocaleString("ru-RU")} ₽/мес`;
+
+  useEffect(() => {
+    lastProgressRef.current = progressValue;
+  }, [progressValue]);
 
   return (
     <div className={styles.container}>
@@ -961,6 +1258,11 @@ export default function SocialPlanMasterPage() {
                     <h3>Ошибка</h3>
                     <p>{error}</p>
                   </div>
+                </div>
+                <div className={styles.errorActions}>
+                  <button className={styles.resetBtn} onClick={handleReset}>
+                    <FiRefreshCw /> Запустить заново
+                  </button>
                 </div>
               </div>
             )}
@@ -1051,7 +1353,7 @@ export default function SocialPlanMasterPage() {
                     {/* Заголовок */}
                     <div className={styles.adjustmentHeader}>
                       <FiAlertCircle className={styles.adjustmentIcon} />
-                      <h3>Внимание: {synthesisStatus.error}</h3>
+                      <h3>{adjustmentTitle}</h3>
                     </div>
 
                     {isContinuingGeneration && (
@@ -1112,91 +1414,15 @@ export default function SocialPlanMasterPage() {
                         <p className={styles.previewMessage}>
                           {isPreviewLoading
                             ? "Пересчитываем финансовую модель..."
-                            : adjustmentPreview?.message ||
-                              (selectedAdjustments.length > 0
+                              : adjustmentPreview?.message ||
+                              (selectedAdjustments.length > 0 || hasLeverChanges
                                 ? "Показана локальная оценка по выбранным корректировкам."
-                                : "Выберите корректировки, чтобы увидеть обновлённую рентабельность.")}
+                                : "Измените ключевые параметры модели, чтобы увидеть обновлённую рентабельность.")}
                         </p>
                       </div>
                     </div>
 
-                    {/* Блок 1: Reality Check — что не сходится */}
-                    {synthesisStatus.problems?.map((problem, idx) => (
-                      <div key={idx} className={styles.problemBlock}>
-                        <div className={styles.realityCheck}>
-                          <p>{problem.reality_check}</p>
-                        </div>
-                        {/* Блок 2: Expert Risk — почему это плохо */}
-                        <div className={styles.expertRisk}>
-                          <p style={{ fontWeight: 500, marginBottom: "4px" }}>
-                            Почему это важно:
-                          </p>
-                          <p>{problem.expert_risk}</p>
-                        </div>
-                      </div>
-                    ))}
-
-                    {/* Блок 3: Варианты решения */}
-                    <p
-                      style={{
-                        margin: "16px 0 8px",
-                        fontWeight: 600,
-                        fontSize: "1.05rem",
-                      }}
-                    >
-                      Что мы можем сделать?
-                    </p>
-                    <div className={styles.recommendationsList}>
-                      {synthesisStatus.recommendations?.map((rec, idx) => (
-                        <div
-                          key={idx}
-                          className={`${styles.recItem} ${selectedAdjustments.includes(rec.type) ? styles.recItemSelected : ""}`}
-                          onClick={() => toggleAdjustment(rec.type)}
-                          style={{ cursor: "pointer" }}
-                        >
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "8px",
-                            }}
-                          >
-                            <input
-                              type="checkbox"
-                              checked={selectedAdjustments.includes(rec.type)}
-                              onChange={() => toggleAdjustment(rec.type)}
-                              onClick={(e) => e.stopPropagation()}
-                              style={{ accentColor: "#4f46e5" }}
-                            />
-                            <div className={styles.recText}>{rec.text}</div>
-                          </div>
-                          <div className={styles.recAction}>{rec.action}</div>
-                          {rec.impact && (
-                            <div className={styles.recImpact}>
-                              {typeof rec.impact.delta_margin === "number" && (
-                                <span>
-                                  Δ рентабельности:{" "}
-                                  {formatPct(rec.impact.delta_margin)}
-                                </span>
-                              )}
-                              {typeof rec.impact.cost_saving_monthly ===
-                                "number" &&
-                                rec.impact.cost_saving_monthly > 0 && (
-                                  <span>
-                                    Экономия:{" "}
-                                    {formatMoney(
-                                      rec.impact.cost_saving_monthly,
-                                    )}
-                                  </span>
-                                )}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-
-                    {(selectedAdjustments.includes("add_funds") ||
-                      selectedAdjustments.includes("manual_fix")) && (
+                    {profitabilityLevers.length > 0 && (
                       <div className={styles.problemBlock}>
                         <p
                           style={{
@@ -1205,53 +1431,73 @@ export default function SocialPlanMasterPage() {
                             fontSize: "0.98rem",
                           }}
                         >
-                          Уточните новый объём капитала (в тыс. ₽):
+                          Ключевые параметры модели (можно уточнить вручную):
                         </p>
                         <div className={styles.doubleRow}>
-                          <div
-                            className={styles.section}
-                            style={{
-                              marginBottom: 0,
-                              paddingBottom: 0,
-                              borderBottom: "none",
-                            }}
-                          >
-                            <input
-                              type="number"
-                              min="0"
-                              placeholder="Собственные средства"
-                              value={manualFunds.ownCapital}
-                              onChange={(e) =>
-                                setManualFunds((prev) => ({
-                                  ...prev,
-                                  ownCapital: e.target.value,
-                                }))
-                              }
-                              className={styles.input}
-                            />
-                          </div>
-                          <div
-                            className={styles.section}
-                            style={{
-                              marginBottom: 0,
-                              paddingBottom: 0,
-                              borderBottom: "none",
-                            }}
-                          >
-                            <input
-                              type="number"
-                              min="0"
-                              placeholder="Заёмные средства"
-                              value={manualFunds.loanCapital}
-                              onChange={(e) =>
-                                setManualFunds((prev) => ({
-                                  ...prev,
-                                  loanCapital: e.target.value,
-                                }))
-                              }
-                              className={styles.input}
-                            />
-                          </div>
+                          {profitabilityLevers.map((lever) => (
+                            <div
+                              key={lever.key}
+                              className={styles.section}
+                              style={{
+                                marginBottom: 0,
+                                paddingBottom: 0,
+                                borderBottom: "none",
+                              }}
+                            >
+                              <label
+                                style={{
+                                  display: "block",
+                                  fontSize: "0.9rem",
+                                  marginBottom: "6px",
+                                }}
+                              >
+                                {lever.label}
+                                {lever.unit ? ` (${lever.unit})` : ""}
+                              </label>
+                              <input
+                                type="number"
+                                min={
+                                  typeof lever.min_value === "number"
+                                    ? lever.min_value
+                                    : undefined
+                                }
+                                max={
+                                  typeof lever.max_value === "number"
+                                    ? lever.max_value
+                                    : undefined
+                                }
+                                step={
+                                  typeof lever.step === "number"
+                                    ? lever.step
+                                    : "any"
+                                }
+                                placeholder={
+                                  typeof lever.current_value === "number"
+                                    ? String(lever.current_value)
+                                    : "Введите значение"
+                                }
+                                value={leverValues[lever.key] ?? ""}
+                                onChange={(e) =>
+                                  setLeverValues((prev) => ({
+                                    ...prev,
+                                    [lever.key]: e.target.value,
+                                  }))
+                                }
+                                className={styles.input}
+                              />
+                              {lever.description && (
+                                <p
+                                  style={{
+                                    fontSize: "0.82rem",
+                                    opacity: 0.8,
+                                    marginTop: "4px",
+                                  }}
+                                >
+                                  {lever.description}
+                                </p>
+                              )}
+                            </div>
+                          ))}
                         </div>
                       </div>
                     )}
@@ -1291,8 +1537,7 @@ export default function SocialPlanMasterPage() {
                         className={styles.autoFixBtn}
                         onClick={handleContinueGeneration}
                         disabled={
-                          (!isIterationLimitReached &&
-                            selectedAdjustments.length === 0) ||
+                          (!isIterationLimitReached && !hasLeverChanges) ||
                           isSubmitting
                         }
                       >
@@ -1353,14 +1598,10 @@ export default function SocialPlanMasterPage() {
                             <div
                               className={styles.synthesisText}
                               dangerouslySetInnerHTML={{
-                                __html: synthesisResult.synthesis_text
-                                  .replace(/\n/g, "<br />")
-                                  .replace(/### (.*?)<br \/>/g, "<h4>$1</h4>")
-                                  .replace(
-                                    /\*\*(.*?)\*\*/g,
-                                    "<strong>$1</strong>",
-                                  )
-                                  .replace(/- /g, "• "),
+                                __html: [
+                                  `<p><strong>Сервис обработал ${reliableSourcesCount} надежных источников для получения актуальной информации и анализа рынка.</strong></p>`,
+                                  toSummaryHtml(synthesisResult.synthesis_text),
+                                ].join(""),
                               }}
                             />
                           ) : (

@@ -398,6 +398,12 @@
   margin-top: 2px;
 }
 
+.errorActions {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
 /* Results Section */
 .resultsSection {
   max-width: 1000px;

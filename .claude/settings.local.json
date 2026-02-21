@@ -52,7 +52,18 @@
       "Bash(tree:*)",
       "Bash(for i in {1..6})",
       "Bash(cd:*)",
-      "Bash(chcp:*)"
+      "Bash(chcp:*)",
+      "Bash(python3 -c \" from docx import Document doc = Document\\(''test_reports/social-plan-4c2b512a.docx''\\) for i, para in enumerate\\(doc.paragraphs\\): text = para.text.strip\\(\\) if text: print\\(f''[{i}] {text[:250]}''\\) \")",
+      "Bash(pip show:*)",
+      "Bash(ls:*)",
+      "Bash(pyproject)",
+      "Bash(setup \")",
+      "Bash(grep:*)",
+      "Bash(playwright install:*)",
+      "Bash(where:*)",
+      "Bash(pip:*)",
+      "Bash(d:/UpgrowPlan/deep-research-agent/DeepResearch/venv/Scripts/pip.exe install playwright)",
+      "Bash(d:/UpgrowPlan/deep-research-agent/DeepResearch/venv/Scripts/python.exe:*)"
     ],
     "deny": [],
     "ask": []
