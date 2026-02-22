@@ -382,6 +382,7 @@ export default function SocialPlanMasterPage() {
         max_value?: number | null;
         step?: number | null;
         description?: string;
+        current_value?: number | null;
       }>
     >
   >({});
@@ -390,6 +391,16 @@ export default function SocialPlanMasterPage() {
   const logsScrollRef = useRef<HTMLDivElement | null>(null);
   const lastProgressRef = useRef<number>(0);
   const previewDebounceRef = useRef<NodeJS.Timeout | null>(null);
+  const activeSynthesisIdRef = useRef<string | null>(null);
+  const pollingTokenRef = useRef<string | null>(null);
+
+  const stopPolling = () => {
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+    pollingTokenRef.current = null;
+  };
 
   const buildLeverPayload = () => {
     const payload: Record<string, number> = {};
@@ -410,13 +421,8 @@ export default function SocialPlanMasterPage() {
     }
 
     return () => {
-      if (pollingIntervalRef.current) {
-        console.log(
-          "[Social Plan Master] Cleaning up polling interval on unmount",
-        );
-        clearInterval(pollingIntervalRef.current);
-        pollingIntervalRef.current = null;
-      }
+      console.log("[Social Plan Master] Cleaning up polling interval on unmount");
+      stopPolling();
       if (previewDebounceRef.current) {
         clearTimeout(previewDebounceRef.current);
         previewDebounceRef.current = null;
@@ -658,10 +664,8 @@ export default function SocialPlanMasterPage() {
   };
 
   const resetSynthesisStateKeepForm = () => {
-    if (pollingIntervalRef.current) {
-      clearInterval(pollingIntervalRef.current);
-      pollingIntervalRef.current = null;
-    }
+    stopPolling();
+    activeSynthesisIdRef.current = null;
     setSynthesisId(null);
     setSynthesisStatus(null);
     setSynthesisResult(null);
@@ -681,8 +685,12 @@ export default function SocialPlanMasterPage() {
   };
 
   const startSynthesis = async () => {
+    stopPolling();
+    activeSynthesisIdRef.current = null;
     setError(null);
     setIsSubmitting(true);
+    setNeedsAdjustment(false);
+    setSelectedAdjustments([]);
     lastProgressRef.current = 0;
 
     // Clear previous results and reset timer for new generation
@@ -809,9 +817,19 @@ export default function SocialPlanMasterPage() {
       );
       console.log("[Social Plan Master] Initial status:", result);
 
-      setSynthesisId(result.synthesis_id);
-      setSynthesisStatus(result);
-      pollSynthesisStatus(result.synthesis_id);
+      const newId = String(result.synthesis_id || "").trim();
+      activeSynthesisIdRef.current = newId || null;
+      setSynthesisId(newId);
+      setNeedsAdjustment(false);
+      setSelectedAdjustments([]);
+      setSynthesisStatus({
+        synthesis_id: newId,
+        status: "in_progress",
+        progress: 0,
+        current_stage: "Генерация запущена",
+        logs: [],
+      });
+      pollSynthesisStatus(newId);
     } catch (err: any) {
       console.error("[Social Plan Master] Error starting synthesis:", err);
       setSynthesisStartTime(null); // Сброс времени при любой ошибке
@@ -848,13 +866,11 @@ export default function SocialPlanMasterPage() {
     console.log("🔄 [POLLING] Starting status polling for ID:", id);
     console.log("=".repeat(80));
 
-    if (pollingIntervalRef.current) {
-      console.log(
-        "⚠️ [POLLING] Clearing existing interval before starting new one",
-      );
-      clearInterval(pollingIntervalRef.current);
-      pollingIntervalRef.current = null;
-    }
+    console.log("⚠️ [POLLING] Clearing existing interval before starting new one");
+    stopPolling();
+    activeSynthesisIdRef.current = id;
+    const pollingToken = `${id}:${Date.now()}`;
+    pollingTokenRef.current = pollingToken;
 
     let hardFailures = 0;
     const maxHardFailures = 30;
@@ -864,11 +880,13 @@ export default function SocialPlanMasterPage() {
     const pollInterval = 2000;
     let pollCount = 0;
 
-    let previousStatus = "";
-    let previousProgress = -1;
-    let previousStage = "";
-
     const interval = setInterval(async () => {
+      if (
+        pollingTokenRef.current !== pollingToken ||
+        activeSynthesisIdRef.current !== id
+      ) {
+        return;
+      }
       pollCount++;
 
       try {
@@ -914,16 +932,47 @@ export default function SocialPlanMasterPage() {
         }
 
         const status: SynthesisStatus = await response.json();
+        let mergedLogs: string[] = Array.isArray(status.logs) ? status.logs : [];
+
+        if (pollCount % 3 === 0) {
+          try {
+            const logsResp = await fetch(
+              `${PLANMASTER_BASE_URL}/api/synthesis/${id}/logs?limit=250`,
+              { cache: "no-store" },
+            );
+            if (logsResp.ok) {
+              const logsPayload = await logsResp.json();
+              const inMemoryLogs = Array.isArray(logsPayload?.in_memory_logs)
+                ? logsPayload.in_memory_logs.map((x: any) => String(x || ""))
+                : [];
+              const dbLogs = Array.isArray(logsPayload?.db_logs)
+                ? logsPayload.db_logs.map((x: any) => {
+                    const ts = String(x?.created_at || "").trim();
+                    const lvl = String(x?.level || "INFO").trim().toUpperCase();
+                    const msg = String(x?.message || "").trim();
+                    if (!msg) return "";
+                    return `[${ts}] [BACKEND] [${lvl}] ${msg}`;
+                  })
+                : [];
+              mergedLogs = dedupeLogs([
+                ...mergedLogs,
+                ...inMemoryLogs,
+                ...dbLogs,
+              ]).filter(Boolean);
+            }
+          } catch {
+            // ignore /logs errors, polling should continue
+          }
+        }
 
         hardFailures = 0;
         transientFailures = 0;
         firstTransientAt = null;
 
-        previousStatus = status.status || "";
-        previousProgress = status.progress;
-        previousStage = status.current_stage || "";
-
-        setSynthesisStatus(status);
+        setSynthesisStatus({
+          ...status,
+          logs: mergedLogs,
+        });
 
         if (status.status === "completed") {
           console.log("=".repeat(80));
@@ -931,10 +980,7 @@ export default function SocialPlanMasterPage() {
           console.log("=".repeat(80));
           console.log("[Social Plan Master] Fetching result...");
 
-          if (pollingIntervalRef.current) {
-            clearInterval(pollingIntervalRef.current);
-            pollingIntervalRef.current = null;
-          }
+          stopPolling();
           clearInterval(interval);
           setIsSubmitting(false);
           setIsContinuingGeneration(false);
@@ -958,10 +1004,7 @@ export default function SocialPlanMasterPage() {
           status.status === "failed" ||
           status.status === "needs_adjustment"
         ) {
-          if (pollingIntervalRef.current) {
-            clearInterval(pollingIntervalRef.current);
-            pollingIntervalRef.current = null;
-          }
+          stopPolling();
           clearInterval(interval);
           setIsSubmitting(false);
 
@@ -1006,10 +1049,7 @@ export default function SocialPlanMasterPage() {
             console.error(
               `❌ [POLLING] Transient failures limit reached (${transientFailures}). Stopping polling.`,
             );
-            if (pollingIntervalRef.current) {
-              clearInterval(pollingIntervalRef.current);
-              pollingIntervalRef.current = null;
-            }
+            stopPolling();
             clearInterval(interval);
             setIsSubmitting(false);
             setSynthesisStartTime(null);
@@ -1027,10 +1067,7 @@ export default function SocialPlanMasterPage() {
           console.error(
             `❌ [POLLING] Max hard failures (${maxHardFailures}) reached. Stopping polling.`,
           );
-          if (pollingIntervalRef.current) {
-            clearInterval(pollingIntervalRef.current);
-            pollingIntervalRef.current = null;
-          }
+          stopPolling();
           clearInterval(interval);
           setIsSubmitting(false);
           setSynthesisStartTime(null); // Сброс времени при ошибке поллинга
@@ -1144,10 +1181,30 @@ export default function SocialPlanMasterPage() {
       setIsSubmitting(true);
       setIsContinuingGeneration(true);
       setError(null);
-      // Оставляем карточку корректировок на экране во время continuation.
+      // После "Продолжить генерацию" уходим из режима предупреждений обратно в progress.
+      setNeedsAdjustment(false);
       setSynthesisResult(null);
       setSynthesisDuration(null);
       setSynthesisStartTime(Date.now());
+      setSynthesisStatus((prev) => {
+        const prevLogs = Array.isArray(prev?.logs) ? prev!.logs : [];
+        const ts = new Date().toLocaleTimeString("ru-RU", { hour12: false });
+        const continueMsg = `[${ts}] [BACKEND] [INFO] Сервис продолжает генерацию бизнес-плана с новыми параметрами`;
+        return {
+          ...(prev || {
+            synthesis_id: synthesisId,
+            progress: 75,
+            current_stage: "Продолжение генерации",
+          }),
+          status: "in_progress",
+          current_stage:
+            "Сервис продолжает генерацию бизнес-плана с новыми параметрами",
+          progress: Math.max(Number(prev?.progress || 0), 75),
+          logs: dedupeLogs([...prevLogs, continueMsg]),
+        };
+      });
+      stopPolling();
+      activeSynthesisIdRef.current = synthesisId;
 
       const response = await fetch(
         `${PLANMASTER_BASE_URL}/api/synthesis/${synthesisId}/continue`,
@@ -1174,8 +1231,14 @@ export default function SocialPlanMasterPage() {
         throw new Error(`Ошибка: ${response.status}`);
       }
 
-      // Перезапускаем polling
-      pollSynthesisStatus(synthesisId);
+      const continuePayload = await response.json().catch(() => ({}));
+      const nextId = String(
+        continuePayload?.synthesis_id || synthesisId,
+      ).trim();
+      activeSynthesisIdRef.current = nextId;
+      setSynthesisId(nextId);
+      // Перезапускаем polling строго по актуальному id.
+      pollSynthesisStatus(nextId);
     } catch (err: any) {
       setIsContinuingGeneration(false);
       setError(`Ошибка при продолжении генерации: ${err.message}`);
@@ -1192,6 +1255,8 @@ export default function SocialPlanMasterPage() {
   };
 
   const handleReset = () => {
+    stopPolling();
+    activeSynthesisIdRef.current = null;
     setSynthesisId(null);
     setSynthesisStatus(null);
     setSynthesisResult(null);
