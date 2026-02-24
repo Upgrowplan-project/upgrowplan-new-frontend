@@ -366,6 +366,7 @@ const normalizeSummaryText = (text: string): string => {
 
   return lines
     .join("\n")
+    .replace(/(Ключевые показатели:\s*)\n{2,}/gi, "$1\n")
     .replace(/[ \t]{2,}/g, " ")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
@@ -616,6 +617,29 @@ export default function SocialPlanMasterPage() {
     return payload;
   };
 
+  const buildChangedLeverPayload = () => {
+    const allLevers = buildLeverPayload();
+    const changed: Record<string, number> = {};
+
+    for (const [key, value] of Object.entries(allLevers)) {
+      const initialRaw = initialLeverValues[key];
+      const initialParsed = Number.parseFloat(
+        String(initialRaw ?? "").replace(",", "."),
+      );
+
+      if (!Number.isFinite(initialParsed)) {
+        changed[key] = value;
+        continue;
+      }
+
+      if (Math.abs(value - initialParsed) > 1e-9) {
+        changed[key] = value;
+      }
+    }
+
+    return changed;
+  };
+
   useEffect(() => {
     window.scrollTo(0, 0);
 
@@ -721,7 +745,7 @@ export default function SocialPlanMasterPage() {
       previewAbortControllerRef.current = null;
     }
 
-    const changedLeversPayload = buildLeverPayload();
+    const changedLeversPayload = buildChangedLeverPayload();
 
     previewDebounceRef.current = setTimeout(async () => {
       const requestSeq = previewRequestSeqRef.current + 1;
@@ -1522,13 +1546,15 @@ export default function SocialPlanMasterPage() {
       synthesisStatus?.synthesis_id || synthesisId || activeSynthesisIdRef.current || "",
     ).trim();
     if (!currentSynthesisId) return;
-    const canFinalizeByPreview = Boolean(
-      adjustmentPreview && !adjustmentPreview.needs_more_adjustment,
-    );
-    const isForceFinalize = isIterationLimitReached || canFinalizeByPreview;
-    const changedLeversPayload = buildLeverPayload();
+    const isForceFinalize = isIterationLimitReached;
+    const changedLeversPayload = buildChangedLeverPayload();
     const hasLeverChanges = Object.keys(changedLeversPayload).length > 0;
-    if (!isForceFinalize && !hasLeverChanges) return;
+    const canRetryWithoutLeverChanges =
+      synthesisStatus?.correction_cycle_status === "financial_recalc_failed" ||
+      Boolean(synthesisStatus?.pipeline_status?.stage46_failed) ||
+      synthesisStatus?.pipeline_status?.consistency_ok === false;
+    if (!isForceFinalize && !hasLeverChanges && !canRetryWithoutLeverChanges)
+      return;
 
     // В этом флоу при нажатии "Продолжить генерацию" всегда продолжаем текущую сессию
     // через /continue, без возврата на стартовый экран формы.
@@ -1717,7 +1743,7 @@ export default function SocialPlanMasterPage() {
       : statusArchetypeId
         ? archetypesCatalog[statusArchetypeId] || []
         : []) ?? [];
-  const changedLeversPayload = buildLeverPayload();
+  const changedLeversPayload = buildChangedLeverPayload();
   const hasLeverChanges = Object.keys(changedLeversPayload).length > 0;
   const projectedMargin =
     adjustmentPreview?.projected.net_margin ?? baseMargin;
@@ -1742,6 +1768,8 @@ export default function SocialPlanMasterPage() {
   const pipelineIssue =
     synthesisStatus?.pipeline_status?.stage46_failed ||
     synthesisStatus?.pipeline_status?.consistency_ok === false;
+  const canRetryWithoutLeverChanges =
+    correctionCycleStatus === "financial_recalc_failed" || pipelineIssue;
 
   const formatPct = (value: number) =>
     `${value >= 0 ? "+" : ""}${Number.isFinite(value) ? value.toFixed(1) : "0.0"}%`;
@@ -2127,7 +2155,9 @@ export default function SocialPlanMasterPage() {
                         className={styles.autoFixBtn}
                         onClick={handleContinueGeneration}
                         disabled={
-                          (!isIterationLimitReached && !hasLeverChanges) ||
+                          (!isIterationLimitReached &&
+                            !hasLeverChanges &&
+                            !canRetryWithoutLeverChanges) ||
                           isSubmitting
                         }
                       >
