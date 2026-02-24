@@ -140,7 +140,7 @@ interface SynthesisResult {
 }
 
 interface AdjustmentPreview {
-  status: "ok" | "error";
+  status: "ok" | "error" | "unavailable";
   synthesis_id: string;
   iteration: number;
   max_iterations: number;
@@ -171,6 +171,16 @@ const isTransientNetworkError = (err: unknown): boolean => {
   );
 };
 
+const getErrorStatusCode = (err: unknown): number => {
+  const explicit = Number((err as any)?.status || 0);
+  if (Number.isFinite(explicit) && explicit > 0) return explicit;
+  const msg = String((err as any)?.message || "");
+  const match = msg.match(/\((\d{3})\)/) || msg.match(/\bstatus:\s*(\d{3})\b/i);
+  if (!match) return 0;
+  const parsed = Number(match[1]);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
 const cleanMarkdown = (text: string): string => {
   if (!text) return "";
 
@@ -189,10 +199,26 @@ const cleanMarkdown = (text: string): string => {
 
 const normalizeSummaryText = (text: string): string => {
   if (!text) return "";
-  return cleanMarkdown(text)
+  const lines = cleanMarkdown(text)
     .replace(/\u00A0/g, " ")
     .split("\n")
     .map((line) => line.trim())
+    .map((line) => {
+      // Markdown-table row -> compact inline representation.
+      if (/^\|.*\|$/.test(line)) {
+        const cells = line
+          .split("|")
+          .map((cell) => cell.trim())
+          .filter(Boolean);
+        return cells.join(" — ");
+      }
+      return line;
+    })
+    // Drop separator/empty technical rows from markdown tables.
+    .filter((line) => !/^[-:|\s]+$/.test(line))
+    .filter((line) => line.replace(/[|\s]/g, "").length > 0);
+
+  return lines
     .join("\n")
     .replace(/[ \t]{2,}/g, " ")
     .replace(/\n{3,}/g, "\n\n")
@@ -393,6 +419,9 @@ export default function SocialPlanMasterPage() {
   const previewDebounceRef = useRef<NodeJS.Timeout | null>(null);
   const activeSynthesisIdRef = useRef<string | null>(null);
   const pollingTokenRef = useRef<string | null>(null);
+  const previewUnavailableForSynthesisRef = useRef<string | null>(null);
+  const previewRequestSeqRef = useRef<number>(0);
+  const previewAbortControllerRef = useRef<AbortController | null>(null);
 
   const stopPolling = () => {
     if (pollingIntervalRef.current) {
@@ -426,6 +455,10 @@ export default function SocialPlanMasterPage() {
       if (previewDebounceRef.current) {
         clearTimeout(previewDebounceRef.current);
         previewDebounceRef.current = null;
+      }
+      if (previewAbortControllerRef.current) {
+        previewAbortControllerRef.current.abort();
+        previewAbortControllerRef.current = null;
       }
     };
   }, []);
@@ -486,9 +519,13 @@ export default function SocialPlanMasterPage() {
   ]);
 
   useEffect(() => {
+    const effectiveSynthesisId = String(
+      synthesisStatus?.synthesis_id || synthesisId || activeSynthesisIdRef.current || "",
+    ).trim();
+
     if (
       !needsAdjustment ||
-      !synthesisId ||
+      !effectiveSynthesisId ||
       !synthesisStatus ||
       synthesisStatus.status !== "needs_adjustment"
     ) {
@@ -497,20 +534,34 @@ export default function SocialPlanMasterPage() {
       return;
     }
 
+    if (previewUnavailableForSynthesisRef.current === effectiveSynthesisId) {
+      setIsPreviewLoading(false);
+      return;
+    }
+
     if (previewDebounceRef.current) {
       clearTimeout(previewDebounceRef.current);
+    }
+    if (previewAbortControllerRef.current) {
+      previewAbortControllerRef.current.abort();
+      previewAbortControllerRef.current = null;
     }
 
     const changedLeversPayload = buildLeverPayload();
 
     previewDebounceRef.current = setTimeout(async () => {
+      const requestSeq = previewRequestSeqRef.current + 1;
+      previewRequestSeqRef.current = requestSeq;
+      const controller = new AbortController();
+      previewAbortControllerRef.current = controller;
       setIsPreviewLoading(true);
       try {
         const response = await fetch(
-          `${PLANMASTER_BASE_URL}/api/synthesis/${synthesisId}/adjustments/preview`,
+          `${PLANMASTER_BASE_URL}/api/synthesis/${effectiveSynthesisId}/adjustments/preview`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
+            signal: controller.signal,
             body: JSON.stringify({
               selected_actions: selectedAdjustments,
               funds_update: {
@@ -527,16 +578,38 @@ export default function SocialPlanMasterPage() {
         );
 
         if (!response.ok) {
-          throw new Error(`Preview HTTP ${response.status}`);
+          const err: any = new Error(`Preview HTTP ${response.status}`);
+          err.status = response.status;
+          throw err;
         }
 
         const data: AdjustmentPreview = await response.json();
+        if (previewRequestSeqRef.current !== requestSeq) {
+          return;
+        }
+        if ((data as any)?.status === "unavailable") {
+          previewUnavailableForSynthesisRef.current = effectiveSynthesisId;
+          return;
+        }
         setAdjustmentPreview(data);
-      } catch (err) {
+      } catch (err: any) {
+        if (err?.name === "AbortError") {
+          return;
+        }
+        const statusCode = Number(err?.status || 0);
+        if (statusCode === 404 || statusCode === 409) {
+          previewUnavailableForSynthesisRef.current = effectiveSynthesisId;
+          console.warn("[Adjustment Preview] Endpoint unavailable, disabling preview for current synthesis");
+          return;
+        }
+        if (previewRequestSeqRef.current !== requestSeq) {
+          return;
+        }
         console.error("[Adjustment Preview] Failed:", err);
-        setAdjustmentPreview(null);
       } finally {
-        setIsPreviewLoading(false);
+        if (previewRequestSeqRef.current === requestSeq) {
+          setIsPreviewLoading(false);
+        }
       }
     }, 450);
 
@@ -545,10 +618,15 @@ export default function SocialPlanMasterPage() {
         clearTimeout(previewDebounceRef.current);
         previewDebounceRef.current = null;
       }
+      if (previewAbortControllerRef.current) {
+        previewAbortControllerRef.current.abort();
+        previewAbortControllerRef.current = null;
+      }
     };
   }, [
     needsAdjustment,
     synthesisId,
+    synthesisStatus?.synthesis_id,
     synthesisStatus?.status,
     selectedAdjustments,
     manualFunds.ownCapital,
@@ -663,6 +741,60 @@ export default function SocialPlanMasterPage() {
     }));
   };
 
+  const buildPlanRequestData = (overrides?: {
+    ownCapital?: number;
+    loanCapital?: number;
+  }) => {
+    const ownCapitalValue =
+      typeof overrides?.ownCapital === "number" &&
+      Number.isFinite(overrides.ownCapital)
+        ? Math.max(0, Math.round(overrides.ownCapital))
+        : parseInt(formData.ownCapital);
+
+    const loanCapitalValue =
+      typeof overrides?.loanCapital === "number" &&
+      Number.isFinite(overrides.loanCapital)
+        ? Math.max(0, Math.round(overrides.loanCapital))
+        : parseInt(formData.loanCapital);
+
+    return {
+      business_idea: formData.businessIdea,
+      region: formData.region,
+      city: formData.city,
+      exact_address:
+        formData.hasExactAddress && formData.exactAddress.trim()
+          ? formData.exactAddress.trim()
+          : undefined,
+      business_types: formData.businessTypes,
+      funding_purposes: formData.fundingPurposes,
+      own_capital: ownCapitalValue,
+      invested_own: parseInt(formData.investedOwn) || 0,
+      loan_capital: loanCapitalValue,
+      invested_loan: parseInt(formData.investedLoan) || 0,
+      spending_period_months: parseInt(formData.spendingPeriod),
+      team_count: formData.plannedHeadcount
+        ? parseInt(formData.plannedHeadcount)
+        : undefined,
+      business_registered: formData.businessRegistered === "yes",
+      business_legal_form: formData.businessLegalForm,
+      initiator_profile: formData.initiatorProfile,
+      okvad_code: formData.okvadCode,
+      has_existing_loan: formData.hasExistingLoan || false,
+      existing_loan_debt: formData.existingLoanDebt
+        ? parseInt(formData.existingLoanDebt)
+        : undefined,
+      existing_loan_rate: formData.existingLoanRate
+        ? parseFloat(formData.existingLoanRate)
+        : undefined,
+      existing_loan_term: formData.existingLoanTerm
+        ? parseInt(formData.existingLoanTerm)
+        : undefined,
+      existing_loan_monthly_payment: formData.existingLoanMonthlyPayment
+        ? parseInt(formData.existingLoanMonthlyPayment)
+        : undefined,
+    };
+  };
+
   const resetSynthesisStateKeepForm = () => {
     stopPolling();
     activeSynthesisIdRef.current = null;
@@ -680,18 +812,43 @@ export default function SocialPlanMasterPage() {
     setInitialLeverValues({});
     setAdjustmentPreview(null);
     setIsPreviewLoading(false);
+    previewUnavailableForSynthesisRef.current = null;
+    previewRequestSeqRef.current = 0;
+    if (previewDebounceRef.current) {
+      clearTimeout(previewDebounceRef.current);
+      previewDebounceRef.current = null;
+    }
+    if (previewAbortControllerRef.current) {
+      previewAbortControllerRef.current.abort();
+      previewAbortControllerRef.current = null;
+    }
     setIsSubmitting(false);
     lastProgressRef.current = 0;
   };
 
-  const startSynthesis = async () => {
+  const startSynthesis = async (options?: {
+    ownCapitalOverride?: number;
+    loanCapitalOverride?: number;
+    fallbackFromContinue?: boolean;
+  }) => {
     stopPolling();
     activeSynthesisIdRef.current = null;
     setError(null);
     setIsSubmitting(true);
+    setIsContinuingGeneration(Boolean(options?.fallbackFromContinue));
     setNeedsAdjustment(false);
     setSelectedAdjustments([]);
     lastProgressRef.current = 0;
+    previewUnavailableForSynthesisRef.current = null;
+    previewRequestSeqRef.current = 0;
+    if (previewDebounceRef.current) {
+      clearTimeout(previewDebounceRef.current);
+      previewDebounceRef.current = null;
+    }
+    if (previewAbortControllerRef.current) {
+      previewAbortControllerRef.current.abort();
+      previewAbortControllerRef.current = null;
+    }
 
     // Clear previous results and reset timer for new generation
     setSynthesisResult(null);
@@ -713,47 +870,15 @@ export default function SocialPlanMasterPage() {
     ) {
       setError("Пожалуйста, заполните все обязательные поля");
       setIsSubmitting(false);
+      setIsContinuingGeneration(false);
       return;
     }
 
     try {
-      const requestData = {
-        business_idea: formData.businessIdea,
-        region: formData.region,
-        city: formData.city,
-        exact_address:
-          formData.hasExactAddress && formData.exactAddress.trim()
-            ? formData.exactAddress.trim()
-            : undefined,
-        business_types: formData.businessTypes,
-        funding_purposes: formData.fundingPurposes,
-        own_capital: parseInt(formData.ownCapital),
-        invested_own: parseInt(formData.investedOwn) || 0,
-        loan_capital: parseInt(formData.loanCapital),
-        invested_loan: parseInt(formData.investedLoan) || 0,
-        spending_period_months: parseInt(formData.spendingPeriod),
-        team_count: formData.plannedHeadcount
-          ? parseInt(formData.plannedHeadcount)
-          : undefined,
-        business_registered: formData.businessRegistered === "yes",
-        business_legal_form: formData.businessLegalForm,
-        initiator_profile: formData.initiatorProfile,
-        okvad_code: formData.okvadCode,
-        // Existing loan data
-        has_existing_loan: formData.hasExistingLoan || false,
-        existing_loan_debt: formData.existingLoanDebt
-          ? parseInt(formData.existingLoanDebt)
-          : undefined,
-        existing_loan_rate: formData.existingLoanRate
-          ? parseFloat(formData.existingLoanRate)
-          : undefined,
-        existing_loan_term: formData.existingLoanTerm
-          ? parseInt(formData.existingLoanTerm)
-          : undefined,
-        existing_loan_monthly_payment: formData.existingLoanMonthlyPayment
-          ? parseInt(formData.existingLoanMonthlyPayment)
-          : undefined,
-      };
+      const requestData = buildPlanRequestData({
+        ownCapital: options?.ownCapitalOverride,
+        loanCapital: options?.loanCapitalOverride,
+      });
 
       console.log(
         "[Social Plan Master] Sending request to synthesis-service...",
@@ -785,6 +910,7 @@ export default function SocialPlanMasterPage() {
 
           setError(`⚠️ Бизнес-план отклонен валидацией:\n\n${errorMessage}`);
           setIsSubmitting(false);
+          setIsContinuingGeneration(false);
           setSynthesisStartTime(null); // Сброс времени при ошибке
           return;
         } catch (parseError) {
@@ -795,6 +921,7 @@ export default function SocialPlanMasterPage() {
           const errorText = await response.text().catch(() => "Unknown error");
           setError(`⚠️ Бизнес-план отклонен валидацией:\n\n${errorText}`);
           setIsSubmitting(false);
+          setIsContinuingGeneration(false);
           setSynthesisStartTime(null); // Сброс времени при ошибке
           return;
         }
@@ -826,8 +953,14 @@ export default function SocialPlanMasterPage() {
         synthesis_id: newId,
         status: "in_progress",
         progress: 0,
-        current_stage: "Генерация запущена",
-        logs: [],
+        current_stage: options?.fallbackFromContinue
+          ? "Продолжаем генерацию в совместимом режиме"
+          : "Генерация запущена",
+        logs: options?.fallbackFromContinue
+          ? [
+              `[${new Date().toLocaleTimeString("ru-RU", { hour12: false })}] [BACKEND] [INFO] Продолжаем генерацию в совместимом режиме`,
+            ]
+          : [],
       });
       pollSynthesisStatus(newId);
     } catch (err: any) {
@@ -848,6 +981,7 @@ export default function SocialPlanMasterPage() {
         setError(err.message || "Ошибка при запуске генерации бизнес-плана");
       }
       setIsSubmitting(false);
+      setIsContinuingGeneration(false);
     }
   };
 
@@ -1164,8 +1298,56 @@ export default function SocialPlanMasterPage() {
     }
   };
 
+  const postContinueWithRetry = async (
+    synthesisIdValue: string,
+    payload: any,
+    attempts: number = 3,
+  ) => {
+    let lastErr: any = null;
+    for (let i = 1; i <= attempts; i++) {
+      try {
+        const response = await fetch(
+          `${PLANMASTER_BASE_URL}/api/synthesis/${synthesisIdValue}/continue`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          },
+        );
+
+        if (response.ok) {
+          return await response.json().catch(() => ({}));
+        }
+
+        const errText = await response.text().catch(() => "");
+        const err = new Error(
+          `Ошибка продолжения (${response.status})${errText ? `: ${errText.slice(0, 160)}` : ""}`,
+        );
+        (err as any).status = response.status;
+
+        if (response.status >= 500 && i < attempts) {
+          await new Promise((r) => setTimeout(r, 800 * i));
+          lastErr = err;
+          continue;
+        }
+
+        throw err;
+      } catch (err: any) {
+        lastErr = err;
+        if (isTransientNetworkError(err) && i < attempts) {
+          await new Promise((r) => setTimeout(r, 800 * i));
+          continue;
+        }
+        throw err;
+      }
+    }
+    throw lastErr || new Error("Не удалось отправить продолжение генерации");
+  };
   const handleContinueGeneration = async () => {
-    if (!synthesisId) return;
+    const currentSynthesisId = String(
+      synthesisStatus?.synthesis_id || synthesisId || activeSynthesisIdRef.current || "",
+    ).trim();
+    if (!currentSynthesisId) return;
     const canFinalizeByPreview = Boolean(
       adjustmentPreview && !adjustmentPreview.needs_more_adjustment,
     );
@@ -1192,7 +1374,7 @@ export default function SocialPlanMasterPage() {
         const continueMsg = `[${ts}] [BACKEND] [INFO] Сервис продолжает генерацию бизнес-плана с новыми параметрами`;
         return {
           ...(prev || {
-            synthesis_id: synthesisId,
+            synthesis_id: currentSynthesisId,
             progress: 75,
             current_stage: "Продолжение генерации",
           }),
@@ -1204,45 +1386,78 @@ export default function SocialPlanMasterPage() {
         };
       });
       stopPolling();
-      activeSynthesisIdRef.current = synthesisId;
+      activeSynthesisIdRef.current = currentSynthesisId;
 
-      const response = await fetch(
-        `${PLANMASTER_BASE_URL}/api/synthesis/${synthesisId}/continue`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            selected_actions: selectedAdjustments,
-            funds_update: {
-              own_capital: manualFunds.ownCapital
-                ? parseInt(manualFunds.ownCapital, 10)
-                : undefined,
-              loan_capital: manualFunds.loanCapital
-                ? parseInt(manualFunds.loanCapital, 10)
-                : undefined,
-            },
-            lever_updates: changedLeversPayload,
-            force_finalize_with_negative: isForceFinalize,
-          }),
+      const continuePayload = await postContinueWithRetry(currentSynthesisId, {
+        selected_actions: selectedAdjustments,
+        funds_update: {
+          own_capital: manualFunds.ownCapital
+            ? parseInt(manualFunds.ownCapital, 10)
+            : undefined,
+          loan_capital: manualFunds.loanCapital
+            ? parseInt(manualFunds.loanCapital, 10)
+            : undefined,
         },
-      );
-
-      if (!response.ok) {
-        throw new Error(`Ошибка: ${response.status}`);
-      }
-
-      const continuePayload = await response.json().catch(() => ({}));
+        lever_updates: changedLeversPayload,
+        force_finalize_with_negative: isForceFinalize,
+      });
       const nextId = String(
-        continuePayload?.synthesis_id || synthesisId,
+        continuePayload?.synthesis_id || currentSynthesisId,
       ).trim();
       activeSynthesisIdRef.current = nextId;
       setSynthesisId(nextId);
       // Перезапускаем polling строго по актуальному id.
       pollSynthesisStatus(nextId);
     } catch (err: any) {
+      const statusCode = getErrorStatusCode(err);
+      if (statusCode === 404) {
+        const ownOverride = manualFunds.ownCapital
+          ? parseInt(manualFunds.ownCapital, 10)
+          : undefined;
+        const loanOverride = manualFunds.loanCapital
+          ? parseInt(manualFunds.loanCapital, 10)
+          : undefined;
+
+        setSynthesisStatus((prev) => {
+          const prevLogs = Array.isArray(prev?.logs) ? prev!.logs : [];
+          const ts = new Date().toLocaleTimeString("ru-RU", {
+            hour12: false,
+          });
+          const compatMsg = `[${ts}] [BACKEND] [INFO] Режим корректировок недоступен на сервере. Запускаем генерацию в совместимом режиме`;
+          return {
+            ...(prev || {
+              synthesis_id: currentSynthesisId,
+              progress: 75,
+              current_stage: "Совместимый режим",
+            }),
+            status: "in_progress",
+            current_stage:
+              "Режим корректировок недоступен, запускаем совместимую генерацию",
+            progress: Math.max(Number(prev?.progress || 0), 75),
+            logs: dedupeLogs([...prevLogs, compatMsg]),
+          };
+        });
+        await startSynthesis({
+          ownCapitalOverride: ownOverride,
+          loanCapitalOverride: loanOverride,
+          fallbackFromContinue: true,
+        });
+        return;
+      }
+
+      // На prod возможны кратковременные сетевые/маршрутизационные сбои.
+      // Не роняем сессию в тупик: возвращаемся к polling текущего ID.
+      const fallbackMsg =
+        "Связь временно потеряна при отправке продолжения. Проверяем статус генерации...";
+      setError(
+        isTransientNetworkError(err)
+          ? fallbackMsg
+          : `Ошибка при продолжении генерации: ${err.message}`,
+      );
       setIsContinuingGeneration(false);
-      setError(`Ошибка при продолжении генерации: ${err.message}`);
-      setIsSubmitting(false);
+      setIsSubmitting(true);
+      activeSynthesisIdRef.current = currentSynthesisId;
+      pollSynthesisStatus(currentSynthesisId);
     }
   };
 
@@ -1273,6 +1488,16 @@ export default function SocialPlanMasterPage() {
     setAdjustmentPreview(null);
     setIsPreviewLoading(false);
     setPrivacyAccepted(false);
+    previewUnavailableForSynthesisRef.current = null;
+    previewRequestSeqRef.current = 0;
+    if (previewDebounceRef.current) {
+      clearTimeout(previewDebounceRef.current);
+      previewDebounceRef.current = null;
+    }
+    if (previewAbortControllerRef.current) {
+      previewAbortControllerRef.current.abort();
+      previewAbortControllerRef.current = null;
+    }
     lastProgressRef.current = 0;
   };
 
@@ -2211,3 +2436,4 @@ export default function SocialPlanMasterPage() {
     </div>
   );
 }
+
