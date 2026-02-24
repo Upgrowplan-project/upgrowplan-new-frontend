@@ -11,6 +11,8 @@ import {
   FiDownload,
   FiFile,
   FiRefreshCw,
+  FiChevronDown,
+  FiChevronUp,
 } from "react-icons/fi";
 
 type BusinessType = "B2B" | "B2C" | "B2B2C" | "C2C" | "D2C";
@@ -161,6 +163,98 @@ interface AdjustmentPreview {
 const PLANMASTER_BASE_URL =
   process.env.NEXT_PUBLIC_BACKEND_PLANMASTER_URL || "http://localhost:8004";
 
+const INFO_SECTIONS = [
+  {
+    id: 1,
+    title: "Как работает сервис",
+    content: (
+      <>
+        <p style={{ marginBottom: "0.6rem" }}>
+          Сервис строит бизнес-план по этапам, чтобы итоговые расчеты и текст
+          были согласованы между собой.
+        </p>
+        <ul style={{ paddingLeft: "1.4rem", listStyle: "disc", color: "#334155" }}>
+          <li style={{ marginBottom: "0.45rem" }}>
+            Анализирует идею, формат бизнеса, город, источники финансирования и
+            вводные по проекту.
+          </li>
+          <li style={{ marginBottom: "0.45rem" }}>
+            Собирает данные по рынку и конкурентам, чтобы обосновать средний чек
+            и спрос.
+          </li>
+          <li style={{ marginBottom: "0.45rem" }}>
+            Строит финансовую модель: выручка, расходы, прибыль, налоги,
+            рентабельность и срок окупаемости.
+          </li>
+          <li style={{ marginBottom: "0.45rem" }}>
+            Формирует итоговый документ с разделами, источниками и готовым
+            выводом для подачи на соцконтракт.
+          </li>
+        </ul>
+      </>
+    ),
+  },
+  {
+    id: 2,
+    title: "Что заполнить",
+    content: (
+      <>
+        <p style={{ marginBottom: "0.6rem" }}>
+          Чем точнее вводные, тем выше качество рынка, конкурентов и
+          финансовых расчетов.
+        </p>
+        <ul style={{ paddingLeft: "1.4rem", listStyle: "disc", color: "#334155" }}>
+          <li style={{ marginBottom: "0.45rem" }}>
+            Опишите идею конкретно: продукт/услуга, формат, ключевая фишка,
+            площадь и особенности точки.
+          </li>
+          <li style={{ marginBottom: "0.45rem" }}>
+            Укажите географию (регион, город и при наличии точный адрес) для
+            корректного конкурентного анализа.
+          </li>
+          <li style={{ marginBottom: "0.45rem" }}>
+            Внесите структуру финансирования: собственные средства, поддержка,
+            уже вложенные суммы и период освоения.
+          </li>
+          <li style={{ marginBottom: "0.45rem" }}>
+            Заполните профиль инициатора и организационные параметры, чтобы
+            документ выглядел полностью оформленным.
+          </li>
+        </ul>
+      </>
+    ),
+  },
+  {
+    id: 3,
+    title: "Что получите",
+    content: (
+      <>
+        <p style={{ marginBottom: "0.6rem" }}>
+          На выходе вы получаете готовый бизнес-план и прозрачную логику
+          расчетов.
+        </p>
+        <ul style={{ paddingLeft: "1.4rem", listStyle: "disc", color: "#334155" }}>
+          <li style={{ marginBottom: "0.45rem" }}>
+            Резюме проекта с ключевыми метриками: инвестиции, прибыль,
+            рентабельность, налоги и окупаемость.
+          </li>
+          <li style={{ marginBottom: "0.45rem" }}>
+            Разделы по рынку, конкурентам, целевой аудитории, организации,
+            производству и финансовому плану.
+          </li>
+          <li style={{ marginBottom: "0.45rem" }}>
+            Источники данных в тексте и в приложении, чтобы обоснования были
+            проверяемыми.
+          </li>
+          <li style={{ marginBottom: "0.45rem" }}>
+            DOCX-файл для дальнейшей доработки и подачи в пакет документов.
+          </li>
+        </ul>
+      </>
+    ),
+  },
+];
+
 const isTransientNetworkError = (err: unknown): boolean => {
   const msg = String((err as any)?.message || err || "").toLowerCase();
   return (
@@ -197,9 +291,50 @@ const cleanMarkdown = (text: string): string => {
     .trim();
 };
 
+const decodeHtmlEntities = (text: string): string =>
+  text
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">");
+
+const htmlToPlainText = (html: string): string =>
+  decodeHtmlEntities(
+    html
+      .replace(/<br\s*\/?>/gi, "\n")
+      .replace(/<\/(p|div|li|ul|ol|h[1-6])>/gi, "\n")
+      .replace(/<[^>]+>/g, " "),
+  )
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n[ \t]+/g, "\n")
+    .replace(/[ \t]+\n/g, "\n");
+
 const normalizeSummaryText = (text: string): string => {
   if (!text) return "";
-  const lines = cleanMarkdown(text)
+  // API may return HTML with <table>. Flatten it first to avoid visual gaps on frontend.
+  const flattenedTables = text.replace(
+    /<table[\s\S]*?<\/table>/gi,
+    (tableHtml) => {
+      const rows = tableHtml.match(/<tr[\s\S]*?<\/tr>/gi) || [];
+      const rowLines = rows
+        .map((rowHtml) => {
+          const cells = Array.from(
+            rowHtml.matchAll(/<(td|th)[^>]*>([\s\S]*?)<\/\1>/gi),
+          )
+            .map((m) => htmlToPlainText(m[2]).replace(/\s+/g, " ").trim())
+            .filter(Boolean);
+          return cells.join(" — ");
+        })
+        .filter(Boolean);
+      return rowLines.join("\n");
+    },
+  );
+
+  const plainText = htmlToPlainText(flattenedTables);
+
+  const lines = cleanMarkdown(plainText)
     .replace(/\u00A0/g, " ")
     .split("\n")
     .map((line) => line.trim())
@@ -366,6 +501,9 @@ export default function SocialPlanMasterPage() {
   const [synthesisResult, setSynthesisResult] =
     useState<SynthesisResult | null>(null);
   const [activeSection, setActiveSection] = useState<string>("overview");
+  const [activeInfoSection, setActiveInfoSection] = useState<number | null>(
+    null,
+  );
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedAdjustments, setSelectedAdjustments] = useState<string[]>([]);
@@ -429,6 +567,10 @@ export default function SocialPlanMasterPage() {
       pollingIntervalRef.current = null;
     }
     pollingTokenRef.current = null;
+  };
+
+  const toggleInfoSection = (id: number) => {
+    setActiveInfoSection((prev) => (prev === id ? null : id));
   };
 
   const buildLeverPayload = () => {
@@ -1591,6 +1733,69 @@ export default function SocialPlanMasterPage() {
               Создайте комплексный бизнес-план для вашего бизнеса с анализом
               рынка, целевой аудитории и стратегическими рекомендациями
             </p>
+            <div style={{ marginTop: "1.5rem" }}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                  gap: "0.75rem",
+                }}
+              >
+                {INFO_SECTIONS.map((section) => (
+                  <button
+                    key={section.id}
+                    onClick={() => toggleInfoSection(section.id)}
+                    type="button"
+                    style={{
+                      padding: "0.9rem 1rem",
+                      background:
+                        activeInfoSection === section.id ? "#1e6078" : "white",
+                      color:
+                        activeInfoSection === section.id ? "white" : "#1e6078",
+                      border: "2px solid #1e6078",
+                      borderRadius: "8px",
+                      cursor: "pointer",
+                      fontSize: "0.98rem",
+                      fontWeight: 600,
+                      transition: "all 0.2s ease",
+                      textAlign: "center",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "0.45rem",
+                    }}
+                  >
+                    {section.title}
+                    {activeInfoSection === section.id ? (
+                      <FiChevronUp />
+                    ) : (
+                      <FiChevronDown />
+                    )}
+                  </button>
+                ))}
+              </div>
+
+              {activeInfoSection !== null && (
+                <div
+                  style={{
+                    marginTop: "0.9rem",
+                    padding: "1.2rem",
+                    background: "white",
+                    borderRadius: "10px",
+                    border: "1px solid #e2e8f0",
+                    boxShadow: "0 4px 6px rgba(0,0,0,0.05)",
+                    color: "#334155",
+                    fontSize: "0.98rem",
+                    lineHeight: "1.6",
+                  }}
+                >
+                  {
+                    INFO_SECTIONS.find((s) => s.id === activeInfoSection)
+                      ?.content
+                  }
+                </div>
+              )}
+            </div>
           </div>
         </section>
 
