@@ -134,6 +134,17 @@ interface SynthesisResult {
   synthesis_text?: string;
   financials?: any;
   reliable_sources_count?: number;
+  appendix_2_sources?: Array<
+    | string
+    | {
+        title?: string;
+        name?: string;
+        source_name?: string;
+        url?: string;
+        source_url?: string;
+        link?: string;
+      }
+  >;
   _grounding_sources?: Array<{
     category?: string;
     title?: string;
@@ -377,6 +388,27 @@ const toSummaryHtml = (text: string): string => {
 
 const getReliableSourcesCount = (result: SynthesisResult | null): number => {
   if (!result) return 0;
+
+  const appendix = (result as any)?.appendix_2_sources;
+  if (Array.isArray(appendix)) {
+    const appendixCount = appendix.filter((item) => {
+      if (typeof item === "string") return item.trim().length > 0;
+      if (item && typeof item === "object") {
+        const url =
+          (item as any).url || (item as any).source_url || (item as any).link;
+        const title =
+          (item as any).title ||
+          (item as any).name ||
+          (item as any).source_name;
+        return (
+          (typeof url === "string" && url.trim().length > 0) ||
+          (typeof title === "string" && title.trim().length > 0)
+        );
+      }
+      return false;
+    }).length;
+    if (appendixCount > 0) return appendixCount;
+  }
 
   const explicit = Number((result as any)?.reliable_sources_count);
   if (Number.isFinite(explicit) && explicit >= 0) {
@@ -2151,15 +2183,18 @@ export default function SocialPlanMasterPage() {
                     <div className={styles.resultsContent}>
                       <div className={styles.resultCard}>
                         <h3>Резюме проекта</h3>
+                        <p style={{ margin: "0 0 8px 0", color: "#475569" }}>
+                          Источников данных (Приложение 2):{" "}
+                          <strong>{reliableSourcesCount}</strong>
+                        </p>
                         <div className={styles.synthesisTextContainer}>
                           {synthesisResult.synthesis_text ? (
                             <div
                               className={styles.synthesisText}
                               dangerouslySetInnerHTML={{
-                                __html: [
-                                  `<p><strong>Сервис обработал ${reliableSourcesCount} надежных источников для получения актуальной информации и анализа рынка.</strong></p>`,
-                                  toSummaryHtml(synthesisResult.synthesis_text),
-                                ].join(""),
+                                __html: toSummaryHtml(
+                                  synthesisResult.synthesis_text,
+                                ),
                               }}
                             />
                           ) : (
