@@ -63,7 +63,10 @@
       "Bash(where:*)",
       "Bash(pip:*)",
       "Bash(d:/UpgrowPlan/deep-research-agent/DeepResearch/venv/Scripts/pip.exe install playwright)",
-      "Bash(d:/UpgrowPlan/deep-research-agent/DeepResearch/venv/Scripts/python.exe:*)"
+      "Bash(d:/UpgrowPlan/deep-research-agent/DeepResearch/venv/Scripts/python.exe:*)",
+      "Bash(git reset:*)",
+      "Bash(git pull:*)",
+      "Bash(python3:*)"
     ],
     "deny": [],
     "ask": []

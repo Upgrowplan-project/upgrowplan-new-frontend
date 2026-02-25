@@ -184,18 +184,30 @@ const INFO_SECTIONS = [
           Сервис строит бизнес-план по этапам, чтобы итоговые расчеты и текст
           были согласованы между собой.
         </p>
-        <ul style={{ paddingLeft: "1.4rem", listStyle: "disc", color: "#334155" }}>
+        <ul
+          style={{ paddingLeft: "1.4rem", listStyle: "disc", color: "#334155" }}
+        >
           <li style={{ marginBottom: "0.45rem" }}>
             Анализирует идею, формат бизнеса, город, источники финансирования и
             вводные по проекту.
           </li>
           <li style={{ marginBottom: "0.45rem" }}>
             Собирает данные по рынку и конкурентам, чтобы обосновать средний чек
-            и спрос.
+            и спрос. Деалвет подробный анализ ваших конкурентов и целевой
+            аудитории. Предлагает стратегию маркетинга исходя из текущих
+            актуальных данных по рынку. Собирает свежие данные по аренде,
+            зарплатам, налогам в вашем регионе.
           </li>
           <li style={{ marginBottom: "0.45rem" }}>
             Строит финансовую модель: выручка, расходы, прибыль, налоги,
             рентабельность и срок окупаемости.
+          </li>
+          <li style={{ marginBottom: "0.45rem" }}>
+            В случае недостаточной рентабельности проекта сервис прерывает
+            работу, информирует вас о критическом финансовом показателе и
+            предлагает откорректировать ключевые показатели бизнеса, чтобы
+            достигнуть рекомендуемого уровня рентабельности После этого
+            бизнес-план будет создан с учетом обновленных данных.
           </li>
           <li style={{ marginBottom: "0.45rem" }}>
             Формирует итоговый документ с разделами, источниками и готовым
@@ -211,10 +223,12 @@ const INFO_SECTIONS = [
     content: (
       <>
         <p style={{ marginBottom: "0.6rem" }}>
-          Чем точнее вводные, тем выше качество рынка, конкурентов и
-          финансовых расчетов.
+          Чем точнее вводные, тем выше качество рынка, конкурентов и финансовых
+          расчетов.
         </p>
-        <ul style={{ paddingLeft: "1.4rem", listStyle: "disc", color: "#334155" }}>
+        <ul
+          style={{ paddingLeft: "1.4rem", listStyle: "disc", color: "#334155" }}
+        >
           <li style={{ marginBottom: "0.45rem" }}>
             Опишите идею конкретно: продукт/услуга, формат, ключевая фишка,
             площадь и особенности точки.
@@ -244,7 +258,9 @@ const INFO_SECTIONS = [
           На выходе вы получаете готовый бизнес-план и прозрачную логику
           расчетов.
         </p>
-        <ul style={{ paddingLeft: "1.4rem", listStyle: "disc", color: "#334155" }}>
+        <ul
+          style={{ paddingLeft: "1.4rem", listStyle: "disc", color: "#334155" }}
+        >
           <li style={{ marginBottom: "0.45rem" }}>
             Резюме проекта с ключевыми метриками: инвестиции, прибыль,
             рентабельность, налоги и окупаемость.
@@ -380,10 +396,7 @@ const toSummaryHtml = (text: string): string => {
     .map((p) => p.replace(/\n/g, "<br />"))
     .filter(Boolean);
   return blocks
-    .map(
-      (p) =>
-        `<div style="margin:0 0 8px 0; line-height:1.5;">${p}</div>`,
-    )
+    .map((p) => `<div style="margin:0 0 8px 0; line-height:1.5;">${p}</div>`)
     .join("");
 };
 
@@ -648,7 +661,9 @@ export default function SocialPlanMasterPage() {
     }
 
     return () => {
-      console.log("[Social Plan Master] Cleaning up polling interval on unmount");
+      console.log(
+        "[Social Plan Master] Cleaning up polling interval on unmount",
+      );
       stopPolling();
       if (previewDebounceRef.current) {
         clearTimeout(previewDebounceRef.current);
@@ -718,7 +733,10 @@ export default function SocialPlanMasterPage() {
 
   useEffect(() => {
     const effectiveSynthesisId = String(
-      synthesisStatus?.synthesis_id || synthesisId || activeSynthesisIdRef.current || "",
+      synthesisStatus?.synthesis_id ||
+        synthesisId ||
+        activeSynthesisIdRef.current ||
+        "",
     ).trim();
 
     if (
@@ -797,7 +815,9 @@ export default function SocialPlanMasterPage() {
         const statusCode = Number(err?.status || 0);
         if (statusCode === 404 || statusCode === 409) {
           previewUnavailableForSynthesisRef.current = effectiveSynthesisId;
-          console.warn("[Adjustment Preview] Endpoint unavailable, disabling preview for current synthesis");
+          console.warn(
+            "[Adjustment Preview] Endpoint unavailable, disabling preview for current synthesis",
+          );
           return;
         }
         if (previewRequestSeqRef.current !== requestSeq) {
@@ -1198,7 +1218,9 @@ export default function SocialPlanMasterPage() {
     console.log("🔄 [POLLING] Starting status polling for ID:", id);
     console.log("=".repeat(80));
 
-    console.log("⚠️ [POLLING] Clearing existing interval before starting new one");
+    console.log(
+      "⚠️ [POLLING] Clearing existing interval before starting new one",
+    );
     stopPolling();
     activeSynthesisIdRef.current = id;
     const pollingToken = `${id}:${Date.now()}`;
@@ -1245,14 +1267,19 @@ export default function SocialPlanMasterPage() {
             if (!firstTransientAt) firstTransientAt = Date.now();
             return;
           }
-          if (response.status === 503 || response.status === 502 || response.status === 504) {
+          if (
+            response.status === 503 ||
+            response.status === 502 ||
+            response.status === 504
+          ) {
             // Платформа/сервер временно недоступны под нагрузкой.
             // Не роняем сессию генерации, продолжаем polling.
             setSynthesisStatus((prev) =>
               prev
                 ? {
                     ...prev,
-                    current_stage: "Сервер временно занят, продолжаем ожидание...",
+                    current_stage:
+                      "Сервер временно занят, продолжаем ожидание...",
                   }
                 : prev,
             );
@@ -1264,7 +1291,9 @@ export default function SocialPlanMasterPage() {
         }
 
         const status: SynthesisStatus = await response.json();
-        let mergedLogs: string[] = Array.isArray(status.logs) ? status.logs : [];
+        let mergedLogs: string[] = Array.isArray(status.logs)
+          ? status.logs
+          : [];
 
         if (pollCount % 3 === 0) {
           try {
@@ -1280,7 +1309,9 @@ export default function SocialPlanMasterPage() {
               const dbLogs = Array.isArray(logsPayload?.db_logs)
                 ? logsPayload.db_logs.map((x: any) => {
                     const ts = String(x?.created_at || "").trim();
-                    const lvl = String(x?.level || "INFO").trim().toUpperCase();
+                    const lvl = String(x?.level || "INFO")
+                      .trim()
+                      .toUpperCase();
                     const msg = String(x?.message || "").trim();
                     if (!msg) return "";
                     return `[${ts}] [BACKEND] [${lvl}] ${msg}`;
@@ -1543,7 +1574,10 @@ export default function SocialPlanMasterPage() {
   };
   const handleContinueGeneration = async () => {
     const currentSynthesisId = String(
-      synthesisStatus?.synthesis_id || synthesisId || activeSynthesisIdRef.current || "",
+      synthesisStatus?.synthesis_id ||
+        synthesisId ||
+        activeSynthesisIdRef.current ||
+        "",
     ).trim();
     if (!currentSynthesisId) return;
     const isForceFinalize = isIterationLimitReached;
@@ -1709,14 +1743,19 @@ export default function SocialPlanMasterPage() {
     Boolean(synthesisId);
 
   const rawStatusLogs = synthesisStatus?.logs ?? [];
-  const mainServiceLogs = dedupeLogs(rawStatusLogs.filter(isMainBackendLogLine));
+  const mainServiceLogs = dedupeLogs(
+    rawStatusLogs.filter(isMainBackendLogLine),
+  );
   const progressValueRaw = Number(synthesisStatus?.progress ?? 0);
   const logProgress = extractProgressFromMainLogs(dedupeLogs(rawStatusLogs));
   const combinedProgressRaw = Math.max(
     Number.isFinite(progressValueRaw) ? progressValueRaw : 0,
     logProgress ?? 0,
   );
-  const combinedProgress = Math.max(0, Math.min(100, Math.round(combinedProgressRaw)));
+  const combinedProgress = Math.max(
+    0,
+    Math.min(100, Math.round(combinedProgressRaw)),
+  );
   const progressValue = Math.max(lastProgressRef.current, combinedProgress);
   const visibleMainServiceLogs = mainServiceLogs.slice(-5);
   const reliableSourcesCount = getReliableSourcesCount(synthesisResult);
@@ -1745,8 +1784,7 @@ export default function SocialPlanMasterPage() {
         : []) ?? [];
   const changedLeversPayload = buildChangedLeverPayload();
   const hasLeverChanges = Object.keys(changedLeversPayload).length > 0;
-  const projectedMargin =
-    adjustmentPreview?.projected.net_margin ?? baseMargin;
+  const projectedMargin = adjustmentPreview?.projected.net_margin ?? baseMargin;
   const correctionCycleStatus = synthesisStatus?.correction_cycle_status;
   const correctionCycleText: Record<string, string> = {
     initial_generation: "Первичная генерация",
@@ -1926,7 +1964,7 @@ export default function SocialPlanMasterPage() {
                     {mainServiceLogs.length > 0 && (
                       <div className={styles.fullLogsContainer}>
                         <div className={styles.logsHeader}>
-                          <h4>📝 Логи social-plan-master (realtime):</h4>
+                          <h4>📝 Логи сервиса:</h4>
                           <span className={styles.logCount}>
                             (последние {visibleMainServiceLogs.length} из{" "}
                             {mainServiceLogs.length})
@@ -2032,7 +2070,7 @@ export default function SocialPlanMasterPage() {
                         <p className={styles.previewMessage}>
                           {isPreviewLoading
                             ? "Пересчитываем финансовую модель..."
-                              : adjustmentPreview?.message ||
+                            : adjustmentPreview?.message ||
                               (selectedAdjustments.length > 0 || hasLeverChanges
                                 ? "Показана локальная оценка по выбранным корректировкам."
                                 : "Измените ключевые параметры модели, чтобы увидеть обновлённую рентабельность.")}
@@ -2333,8 +2371,7 @@ export default function SocialPlanMasterPage() {
                             className={styles.input}
                           />
                           <p className={styles.hint}>
-                            Укажите точный адрес для расчёта расстояния до
-                            конкурентов
+                            Укажите точный адрес для точного анализа конкурентов
                           </p>
                         </div>
                       )}
@@ -2689,7 +2726,7 @@ export default function SocialPlanMasterPage() {
                         className={styles.submitButton}
                         disabled={isSubmitting || !privacyAccepted}
                       >
-                        {isSubmitting ? "Обработка..." : "🚀 Начать генерацию"}
+                        {isSubmitting ? "Обработка..." : "Начать генерацию"}
                       </button>
                     </div>
                   </form>
@@ -2706,4 +2743,3 @@ export default function SocialPlanMasterPage() {
     </div>
   );
 }
-
