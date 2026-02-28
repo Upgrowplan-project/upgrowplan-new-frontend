@@ -2467,7 +2467,7 @@ export default function SocialPlanMasterPage() {
                       <div className={styles.doubleRow}>
                         <div>
                           <label className={styles.label}>
-                            Заемные средства (тыс. ₽) *
+                            Средства по соцконтракту (тыс. ₽) *
                           </label>
                           <input
                             type="number"
