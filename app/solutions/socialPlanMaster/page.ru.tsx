@@ -245,7 +245,8 @@ const INFO_SECTIONS = [
           </li>
           <li style={{ marginBottom: "0.45rem" }}>
             Внесите структуру финансирования: собственные средства, поддержка,
-            уже вложенные суммы и период освоения.
+            уже вложенные суммы и период освоения. Добавьте текущую кредитную
+            нагрузку, если она у вас есть.
           </li>
           <li style={{ marginBottom: "0.45rem" }}>
             Заполните профиль инициатора. Укажите опыт в бизнесе, образование,
@@ -399,12 +400,18 @@ const normalizeSummaryText = (text: string): string => {
 const toSummaryHtml = (text: string): string => {
   const normalized = normalizeSummaryText(text);
   if (!normalized) return "";
-  const blocks = normalized
-    .split(/\n{2,}/)
-    .map((p) => p.replace(/\n/g, "<br />"))
-    .filter(Boolean);
+  const blocks = normalized.split(/\n{2,}/).filter(Boolean);
   return blocks
-    .map((p) => `<div style="margin:0 0 8px 0; line-height:1.5;">${p}</div>`)
+    .map((block) => {
+      const lines = block.split(/\n/);
+      const first = lines[0].trim();
+      const rest = lines.slice(1).map((l) => l.trim());
+      // Bold section header: first line ending with ":" and ≤60 chars
+      const isHeader = first.length <= 60 && /:\s*$/.test(first);
+      const formattedFirst = isHeader ? `<strong>${first}</strong>` : first;
+      const content = [formattedFirst, ...rest].filter(Boolean).join("<br />");
+      return `<div style="margin:0 0 20px 0; line-height:1.6;">${content}</div>`;
+    })
     .join("");
 };
 
@@ -2259,10 +2266,6 @@ export default function SocialPlanMasterPage() {
                     <div className={styles.resultsContent}>
                       <div className={styles.resultCard}>
                         <h3>Резюме проекта</h3>
-                        <p style={{ margin: "0 0 8px 0", color: "#475569" }}>
-                          Источников данных (Приложение 2):{" "}
-                          <strong>{reliableSourcesCount}</strong>
-                        </p>
                         <div className={styles.synthesisTextContainer}>
                           {synthesisResult.synthesis_text ? (
                             <div
@@ -2275,6 +2278,26 @@ export default function SocialPlanMasterPage() {
                             />
                           ) : (
                             <p>Текст бизнес-плана недоступен</p>
+                          )}
+                        </div>
+                        <div
+                          style={{
+                            marginTop: "16px",
+                            borderTop: "1px solid #e2e8f0",
+                            paddingTop: "12px",
+                            color: "#64748b",
+                            fontSize: "0.85rem",
+                          }}
+                        >
+                          <p style={{ margin: "0 0 4px 0" }}>
+                            Источников данных (Приложение 2):{" "}
+                            <strong>{reliableSourcesCount}</strong>
+                          </p>
+                          {synthesisDuration && (
+                            <p style={{ margin: "0" }}>
+                              Время генерации: {synthesisDuration.minutes} мин{" "}
+                              {synthesisDuration.seconds} сек
+                            </p>
                           )}
                         </div>
                       </div>
