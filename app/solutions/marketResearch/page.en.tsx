@@ -303,6 +303,7 @@ export default function MarketResearchPage() {
   const [activeSection, setActiveSection] = useState<string>("executive");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isResearchPaused, setIsResearchPaused] = useState(false);
 
   // Таймер и метрики исследования
   const [researchStartTime, setResearchStartTime] = useState<number | null>(
@@ -316,6 +317,7 @@ export default function MarketResearchPage() {
   // Health status state
   const [healthStatus, setHealthStatus] = useState<any>(null);
   const [isLoadingHealth, setIsLoadingHealth] = useState(true);
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Автофокус на первое поле формы и предотвращение автоскролла
   useEffect(() => {
@@ -326,6 +328,12 @@ export default function MarketResearchPage() {
     if (productNameInputRef.current) {
       productNameInputRef.current.focus();
     }
+    return () => {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
+      }
+    };
   }, []);
 
   // Load health status on mount and refresh every 30 seconds
@@ -588,6 +596,7 @@ export default function MarketResearchPage() {
     e.preventDefault();
     setError(null);
     setIsSubmitting(true);
+    setIsResearchPaused(false);
     setResearchStartTime(Date.now()); // Запуск таймера
     setResearchDuration(null); // Сброс предыдущей длительности
     console.log("[Market Research] Starting research submission...");
@@ -753,7 +762,13 @@ export default function MarketResearchPage() {
   };
 
   const pollResearchStatus = async (id: string) => {
+    if (isResearchPaused) return;
+
     console.log("[Market Research] Starting status polling for ID:", id);
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
 
     let retries = 0;
     const maxRetries = 3;
@@ -790,6 +805,7 @@ export default function MarketResearchPage() {
           console.log("=".repeat(80));
           console.log("[Market Research] Fetching report...");
           clearInterval(interval);
+          pollingIntervalRef.current = null;
           setIsSubmitting(false);
 
           // Вычисляем длительность исследования
@@ -808,10 +824,12 @@ export default function MarketResearchPage() {
           fetchResearchReport(id);
         } else if (status.status === "failed") {
           clearInterval(interval);
+          pollingIntervalRef.current = null;
           setIsSubmitting(false);
+          setIsResearchPaused(false);
           setError(
             `Исследование не удалось выполнить: ${
-              status.error || "Неизвестная ошибка"
+              status.error || status.current_stage || "Неизвестная ошибка"
             }`
           );
         } else if (status.status === "in_progress" && status.progress >= 65) {
@@ -826,7 +844,9 @@ export default function MarketResearchPage() {
 
         if (retries >= maxRetries) {
           clearInterval(interval);
+          pollingIntervalRef.current = null;
           setIsSubmitting(false);
+          setIsResearchPaused(false);
           // Network error or other fetch error
           if (
             err.message?.includes("fetch") ||
@@ -853,12 +873,17 @@ export default function MarketResearchPage() {
         }
       }
     }, pollInterval);
+    pollingIntervalRef.current = interval;
 
     // Безопасный таймаут
     setTimeout(() => {
       clearInterval(interval);
+      if (pollingIntervalRef.current === interval) {
+        pollingIntervalRef.current = null;
+      }
       if (researchStatus?.status === "in_progress") {
         setIsSubmitting(false);
+        setIsResearchPaused(false);
         setError(
           "Исследование занимает больше времени, чем ожидалось. Попробуйте обновить страницу позже."
         );
@@ -1062,6 +1087,10 @@ export default function MarketResearchPage() {
   };
 
   const handleReset = () => {
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
     setFormData({
       productName: "",
       productDescription: "",
@@ -1081,6 +1110,39 @@ export default function MarketResearchPage() {
     setActiveSection("executive");
     setError(null);
     setIsSubmitting(false);
+    setIsResearchPaused(false);
+  };
+
+  const handlePauseResearch = () => {
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+    setIsSubmitting(false);
+    setIsResearchPaused(true);
+  };
+
+  const handleResumeResearch = () => {
+    if (!researchId) return;
+    setError(null);
+    setIsResearchPaused(false);
+    setIsSubmitting(true);
+    pollResearchStatus(researchId);
+  };
+
+  const handleRestartResearch = async () => {
+    try {
+      if (researchId) {
+        const apiBaseUrl = "http://localhost:8005";
+        await fetch(`${apiBaseUrl}/api/v1/research/${researchId}`, {
+          method: "DELETE",
+        });
+      }
+    } catch (e) {
+      console.warn("Could not cancel current research on backend:", e);
+    } finally {
+      handleReset();
+    }
   };
 
   return (
@@ -1401,28 +1463,58 @@ export default function MarketResearchPage() {
                 </div>
               </div>
 
-              <button
-                type="submit"
-                className={styles.submitButton}
-                disabled={isSubmitting || !healthStatus?.all_ready}
-              >
-                {isSubmitting ? (
-                  <>
-                    <div className={styles.spinner} />
-                    Gathering and analyzing data...
-                  </>
-                ) : !healthStatus?.all_ready ? (
-                  <>
-                    <FiAlertCircle />
-                    System Not Ready
-                  </>
-                ) : (
-                  <>
-                    <FiBarChart2 />
-                    Start Research
-                  </>
-                )}
-              </button>
+              {!isResearchPaused ? (
+                <div className={styles.submitActionsRow}>
+                  <button
+                    type="submit"
+                    className={styles.submitButton}
+                    disabled={isSubmitting || !healthStatus?.all_ready}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <div className={styles.spinner} />
+                        Gathering and analyzing data...
+                      </>
+                    ) : !healthStatus?.all_ready ? (
+                      <>
+                        <FiAlertCircle />
+                        System Not Ready
+                      </>
+                    ) : (
+                      <>
+                        <FiBarChart2 />
+                        Start Research
+                      </>
+                    )}
+                  </button>
+                  {isSubmitting && (
+                    <button
+                      type="button"
+                      className={styles.stopButton}
+                      onClick={handlePauseResearch}
+                    >
+                      Stop
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <div className={styles.pausedActionsRow}>
+                  <button
+                    type="button"
+                    className={styles.resumeButton}
+                    onClick={handleResumeResearch}
+                  >
+                    Resume Research
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.restartButton}
+                    onClick={handleRestartResearch}
+                  >
+                    Start Over
+                  </button>
+                </div>
+              )}
             </form>
           </div>
         </div>

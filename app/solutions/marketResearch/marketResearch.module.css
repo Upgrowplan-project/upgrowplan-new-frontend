@@ -206,6 +206,82 @@
   margin-top: 2rem;
 }
 
+.submitActionsRow {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 2rem;
+  align-items: stretch;
+}
+
+.submitActionsRow .submitButton {
+  flex: 2;
+  width: auto;
+  margin-top: 0;
+}
+
+.stopButton {
+  flex: 1;
+  border: 2px solid #dc3545;
+  background: #ffffff;
+  color: #dc3545;
+  border-radius: 8px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  padding: 1rem 1rem;
+}
+
+.stopButton:hover {
+  background: #dc3545;
+  color: #fff;
+}
+
+.pausedActionsRow {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+
+.resumeButton,
+.restartButton {
+  flex: 1;
+  padding: 1rem 1rem;
+  border-radius: 8px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.resumeButton {
+  border: none;
+  background: #0785f6;
+  color: #fff;
+}
+
+.resumeButton:hover {
+  background: #1e6078;
+}
+
+.restartButton {
+  border: 2px solid #6c757d;
+  background: #fff;
+  color: #6c757d;
+}
+
+.restartButton:hover {
+  background: #6c757d;
+  color: #fff;
+}
+
+@media (max-width: 768px) {
+  .submitActionsRow,
+  .pausedActionsRow {
+    flex-direction: column;
+  }
+}
+
 .submitButton:hover:not(:disabled) {
   background: #1e6078;
   transform: translateY(-2px);
@@ -306,6 +382,37 @@
   padding: 1.5rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   border: 1px solid #e0e0e0;
+}
+
+.healthRefreshButton {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid #d0d7de;
+  background: #fff;
+  color: #1e6078;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.35rem 0.7rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.healthRefreshButton:hover:not(:disabled) {
+  border-color: #0785f6;
+  color: #0785f6;
+  background: #f5faff;
+}
+
+.healthRefreshButton:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.spin {
+  animation: spin 0.8s linear infinite;
 }
 
 /* Progress Section */

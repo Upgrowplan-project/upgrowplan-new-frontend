@@ -18,7 +18,9 @@ interface GradeProps {
 
 export default function RuGrade({ sessionId }: GradeProps) {
   const [rating, setRating] = useState<Rating>({});
-  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [status, setStatus] = useState<
+    "idle" | "submitting" | "success" | "error"
+  >("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [feedback, setFeedback] = useState("");
 
@@ -34,7 +36,7 @@ export default function RuGrade({ sessionId }: GradeProps) {
 
     if (ratings.length === 0) return 0;
     return Math.round(
-      ratings.reduce((sum, r) => sum + (r || 0), 0) / ratings.length
+      ratings.reduce((sum, r) => sum + (r || 0), 0) / ratings.length,
     );
   };
 
@@ -44,7 +46,8 @@ export default function RuGrade({ sessionId }: GradeProps) {
       setErrorMessage("");
       const overallRating = calculateOverallRating();
 
-      const apiUrl = process.env.NEXT_PUBLIC_MONITORING_API_URL || "http://localhost:8000";
+      const apiUrl =
+        process.env.NEXT_PUBLIC_MONITORING_API_URL || "http://localhost:8000";
 
       const response = await fetch(`${apiUrl}/api/rating`, {
         method: "POST",
@@ -55,7 +58,8 @@ export default function RuGrade({ sessionId }: GradeProps) {
           feedback,
           session_id: sessionId,
           service_name: "synth_focus_lab",
-          page_url: typeof window !== 'undefined' ? window.location.href : undefined
+          page_url:
+            typeof window !== "undefined" ? window.location.href : undefined,
         }),
       });
 
@@ -68,13 +72,15 @@ export default function RuGrade({ sessionId }: GradeProps) {
     } catch (error) {
       console.error("Ошибка отправки рейтинга:", error);
       setStatus("error");
-      setErrorMessage("Произошла ошибка при отправке оценки. Попробуйте позже.");
+      setErrorMessage(
+        "Произошла ошибка при отправке оценки. Попробуйте позже.",
+      );
     }
   };
 
   const renderStars = (
     category: keyof Rating,
-    currentValue: number | undefined
+    currentValue: number | undefined,
   ) => (
     <div className="d-flex w-100 justify-content-between">
       {[1, 2, 3, 4, 5].map((star) => (
@@ -90,7 +96,10 @@ export default function RuGrade({ sessionId }: GradeProps) {
   );
 
   return (
-    <Card className="shadow-sm h-100" style={{ borderRadius: "16px", border: "1px solid #eee" }}>
+    <Card
+      className="shadow-sm h-100"
+      style={{ borderRadius: "16px", border: "1px solid #eee" }}
+    >
       <Card.Header
         style={{
           backgroundColor: "transparent",
@@ -104,15 +113,24 @@ export default function RuGrade({ sessionId }: GradeProps) {
         style={{ maxHeight: "650px", overflowY: "auto", padding: "1.5rem" }}
       >
         <div style={{ width: "100%" }}>
-          <Alert variant="light" className="mb-4" style={{ width: "100%", backgroundColor: "#f8f9fb", border: "none" }}>
+          <Alert
+            variant="light"
+            className="mb-4"
+            style={{
+              width: "100%",
+              backgroundColor: "#f8f9fb",
+              border: "none",
+            }}
+          >
             <p className="small mb-2">
-              🎁 Сервис запущен в тестовом режиме и полностью бесплатен!
+              Сервис запущен в тестовом режиме (бэта-версия) и полностью
+              бесплатен!
             </p>
             <p className="small mb-0">
               Мы собираем отзывы - это анонимно и конфиденциально. Вы можете
               оценить сервис по окончании ознакомления с результатом. Спасибо,
               это помогает проекту улучшать свою работу и лучше помогать
-              предпринимателям! 🙏
+              предпринимателям!
             </p>
           </Alert>
 
@@ -153,7 +171,10 @@ export default function RuGrade({ sessionId }: GradeProps) {
           </div>
 
           {/* Overall Rating */}
-          <div className="mb-4 p-3 rounded" style={{ width: "100%", backgroundColor: "#f0f7fa" }}>
+          <div
+            className="mb-4 p-3 rounded"
+            style={{ width: "100%", backgroundColor: "#f0f7fa" }}
+          >
             <h6 className="small mb-2 text-center text-brand">
               <strong>Общая оценка</strong>
             </h6>
@@ -187,13 +208,16 @@ export default function RuGrade({ sessionId }: GradeProps) {
                 <Button
                   key={price}
                   size="sm"
-                  variant={rating.price === price ? "primary" : "outline-secondary"}
+                  variant={
+                    rating.price === price ? "primary" : "outline-secondary"
+                  }
                   onClick={() => setRating({ ...rating, price })}
-                  style={{ 
+                  style={{
                     flex: "1 1 calc(33.333% - 0.5rem)",
                     borderRadius: "8px",
                     borderColor: rating.price === price ? "#1e6078" : "#ccc",
-                    backgroundColor: rating.price === price ? "#1e6078" : "transparent"
+                    backgroundColor:
+                      rating.price === price ? "#1e6078" : "transparent",
                   }}
                 >
                   ${price}
@@ -219,29 +243,39 @@ export default function RuGrade({ sessionId }: GradeProps) {
           {/* Submit Button & Messages */}
           <div className="d-grid gap-2">
             {status === "success" ? (
-              <Alert variant="success" className="text-center py-3 border-0" style={{ borderRadius: "12px", backgroundColor: "#e8f5e9" }}>
+              <Alert
+                variant="success"
+                className="text-center py-3 border-0"
+                style={{ borderRadius: "12px", backgroundColor: "#e8f5e9" }}
+              >
                 <div className="h4 mb-2">✅ Спасибо!</div>
-                <div className="small">Ваш отзыв получен и помогает нам становиться лучше.</div>
+                <div className="small">
+                  Ваш отзыв получен и помогает нам становиться лучше.
+                </div>
               </Alert>
             ) : (
               <>
                 <Button
                   onClick={submitRatingAndFeedback}
-                  disabled={(!rating.clarity && !feedback) || status === "submitting"}
+                  disabled={
+                    (!rating.clarity && !feedback) || status === "submitting"
+                  }
                   className="contact-btn w-100"
-                  style={{ 
-                    backgroundColor: "#1e6078", 
-                    color: "white", 
+                  style={{
+                    backgroundColor: "#1e6078",
+                    color: "white",
                     border: "none",
                     height: "48px",
                     borderRadius: "10px",
-                    fontSize: "1rem"
+                    fontSize: "1rem",
                   }}
                 >
                   {status === "submitting" ? "Отправка..." : "Отправить отзыв"}
                 </Button>
                 {status === "error" && (
-                  <div className="text-danger small text-center mt-2">{errorMessage}</div>
+                  <div className="text-danger small text-center mt-2">
+                    {errorMessage}
+                  </div>
                 )}
               </>
             )}

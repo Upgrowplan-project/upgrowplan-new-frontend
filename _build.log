@@ -1,0 +1,418 @@
+
+> upgrowplan@0.1.0 build
+> next build
+
+- info Loaded env from D:\UpgrowPlan\upgrowplan_new\.env.local
+- info Loaded env from D:\UpgrowPlan\upgrowplan_new\.env.production
+- info Creating an optimized production build...
+(node:188680) [DEP_WEBPACK_MODULE_UPDATE_HASH] DeprecationWarning: Module.updateHash: Use new ChunkGraph API
+(Use `node --trace-deprecation ...` to show where the warning was created)
+- info Compiled successfully
+- info Skipping validation of types
+- info Skipping linting
+- info Collecting page data...
+
+<--- Last few GCs --->
+
+[192708:000001C9B6807000]      209 ms: Scavenge 8.6 (11.5) -> 7.4 (12.0) MB, pooled: 0 MB, 0.57 / 0.01 ms  (average mu = 1.000, current mu = 1.000) task; 
+[192708:000001C9B6807000]     8235 ms: Mark-Compact (reduce) 7.4 (12.0) -> 6.8 (8.8) MB, pooled: 0 MB, 3.41 / 0.00 ms  (+ 3.9 ms in 0 steps since start of marking, biggest step 0.0 ms, walltime since start of marking 8 ms) (average mu = 0.999, current mu 
+
+<--- JS stacktrace --->
+
+FATAL ERROR: Committing semi space failed. Allocation failed - JavaScript heap out of memory
+----- Native stack trace -----
+
+ 1: 00007FF6182D20AD 
+ 2: 00007FF61823A4D8 
+ 3: 00007FF618DBA1B1 
+ 4: 00007FF618DA7096 
+ 5: 00007FF618BF6920 
+ 6: 00007FF618BAF6C3 
+ 7: 00007FF618BFFA1C 
+ 8: 00007FF618BF02E9 
+ 9: 00007FF618BEBCF5 
+10: 00007FF6185713BD 
+Static worker unexpectedly exited with code: 3221225773 and signal: null
+Static worker unexpectedly exited with code: 3221225773 and signal: null
+
+
+#
+# Fatal process out of memory: Re-embedded builtins: set permissions
+#
+----- Native stack trace -----
+
+ 1: 00007FF6182D20AD 
+ 2: 00007FF6181B62CF 
+ 3: 00007FF6193816E6 
+ 4: 00007FF618DBA203 
+ 5: 00007FF618DA7096 
+ 6: 00007FF618C42C6A 
+ 7: 00007FF618C6A24A 
+ 8: 00007FF618C68293 
+ 9: 00007FF618897F5E 
+10: 00007FF618DAFEA1 
+11: 00007FF6183117ED 
+12: 00007FF6181E50B3 
+13: 00007FF618281E52 
+14: 00007FF618280BC7 
+15: 00007FF617FAE66C 
+16: 00007FF619A72094 
+17: 00007FFB94D5E8D7 BaseThreadInitThunk+23
+18: 00007FFB9624C40C 
+
+
+#
+# Fatal process out of memory: Re-embedded builtins: set permissions
+#
+----- Native stack trace -----
+
+ 1: 00007FF6182D20AD 
+ 2: 00007FF6181B62CF 
+ 3: 00007FF6193816E6 
+ 4: 00007FF618DBA203 
+ 5: 00007FF618DA7096 
+ 6: 00007FF618C42C6A 
+ 7: 00007FF618C6A24A 
+ 8: 00007FF618C68293 
+ 9: 00007FF618897F5E 
+10: 00007FF618DAFEA1 
+11: 00007FF6183117ED 
+12: 00007FF6181E50B3 
+13: 00007FF618281E52 
+14: 00007FF618280BC7 
+15: 00007FF617FAE66C 
+16: 00007FF619A72094 
+17: 00007FFB94D5E8D7 
+18: 00007FFB9624C40C 
+
+
+#
+# Fatal JavaScript out of memory: MemoryChunk allocation failed during deserialization.
+#
+----- Native stack trace -----
+
+ 1: 00007FF6182D20AD 
+ 2: 00007FF6181B62CF 
+ 3: 00007FF6193816E6 
+ 4: 00007FF618DBA203 
+ 5: 00007FF618DA7096 
+ 6: 00007FF618BF6920 
+ 7: 00007FF618BBEADA 
+ 8: 00007FF618BBF0F0 
+ 9: 00007FF618BBEDF5 
+10: 00007FF618BAE86B 
+11: 00007FF618BADE2A 
+12: 00007FF618C046E2 
+13: 00007FF618C682C7 
+14: 00007FF618897F5E 
+15: 00007FF618DAFEA1 
+16: 00007FF6183117ED 
+17: 00007FF6181E50B3 
+18: 00007FF618281E52 
+19: 00007FF618280BC7 
+20: 00007FF617FAE66C 
+21: 00007FF619A72094 
+22: 00007FFB94D5E8D7 BaseThreadInitThunk+23
+23: 00007FFB9624C40C RtlUserThreadStart+44
+
+<--- Last few GCs --->
+
+
+<--- JS stacktrace --->
+
+
+
+#
+# Fatal JavaScript out of memory: MemoryChunk allocation failed during deserialization.
+#
+----- Native stack trace -----
+
+ 1: 00007FF6182D20AD 
+ 2: 00007FF6181B62CF 
+ 3: 00007FF6193816E6 
+ 4: 00007FF618DBA203 
+ 5: 00007FF618DA7096 
+ 6: 00007FF618BF6920 
+ 7: 00007FF618BBEADA 
+ 8: 00007FF618BBF0F0 
+ 9: 00007FF618BBEDF5 
+10: 00007FF618BA4933 
+11: 00007FF618BE4C66 
+12: 00007FF618BE48ED 
+13: 00007FF618BE4038 
+14: 00007FF618BE3791 
+15: 00007FF6188B2D63 
+16: 00007FF6188B46E3 
+17: 00007FF6188AFFE7 
+18: 00007FF6188B4DDF 
+19: 00007FF61888FB64 
+20: 00007FF6188A7F8A 
+21: 00007FF61888FFCA 
+22: 00007FF618C6871F 
+23: 00007FF618897F5E 
+24: 00007FF618DAFEA1 
+25: 00007FF6183117ED 
+26: 00007FF6181E50B3 
+27: 00007FF618281E52 
+28: 00007FF618280BC7 
+29: 00007FF617FAE66C 
+30: 00007FF619A72094 
+31: 00007FFB94D5E8D7 
+32: 00007FFB9624C40C RtlUserThreadStart+44
+Static worker unexpectedly exited with code: 2147483651 and signal: null
+
+<--- Last few GCs --->
+
+
+<--- JS stacktrace --->
+
+
+
+#
+# Fatal JavaScript out of memory: MemoryChunk allocation failed during deserialization.
+#
+----- Native stack trace -----
+
+ 1: 00007FF6182D20AD 
+ 2: 00007FF6181B62CF 
+ 3: 00007FF6193816E6 
+ 4: 00007FF618DBA203 
+ 5: 00007FF618DA7096 
+ 6: 00007FF618BF6920 
+ 7: 00007FF618BBEADA 
+ 8: 00007FF618BBF0F0 
+ 9: 00007FF618BBEDF5 
+10: 00007FF618BA4933 
+11: 00007FF618BE4C66 
+12: 00007FF618BE48ED 
+13: 00007FF618BE4038 
+14: 00007FF618BE3791 
+15: 00007FF6188B2D63 
+16: 00007FF6188B46E3 
+17: 00007FF6188AF0E5 
+18: 00007FF6188B3F8C 
+19: 00007FF6188B47FC 
+20: 00007FF6188AF0E5 
+21: 00007FF6188B3F8C 
+22: 00007FF6188B47FC 
+23: 00007FF6188AF0E5 
+24: 00007FF6188B3F8C 
+25: 00007FF6188B47FC 
+26: 00007FF6188AF0E5 
+27: 00007FF6188B3F8C 
+28: 00007FF6188B47FC 
+29: 00007FF6188AF0E5 
+30: 00007FF6188B3F8C 
+31: 00007FF6188B47FC 
+32: 00007FF6188AFFE7 
+33: 00007FF6188B4DDF 
+34: 00007FF618BFC7DD 
+35: 00007FF61888FFBE 
+36: 00007FF618C6871F 
+37: 00007FF618897F5E 
+38: 00007FF618DAFEA1 
+39: 00007FF6183117ED 
+40: 00007FF6181E50B3 
+41: 00007FF618281E52 
+42: 00007FF618280BC7 
+43: 00007FF617FAE66C 
+44: 00007FF619A72094 
+45: 00007FFB94D5E8D7 
+46: 00007FFB9624C40C 
+Static worker unexpectedly exited with code: 2147483651 and signal: null
+
+<--- Last few GCs --->
+
+[186808:000002C9B11D1000]     9208 ms: Scavenge 8.4 (9.9) -> 8.0 (10.4) MB, pooled: 0 MB, 2013.91 / 0.00 ms  (average mu = 1.000, current mu = 1.000) allocation failure; 
+[186808:000002C9B11D1000]    14278 ms: Mark-Compact 8.8 (10.4) -> 7.7 (9.7) MB, pooled: 1 MB, 3.22 / 0.00 ms  (average mu = 1.000, current mu = 1.000) allocation failure; GC in old space requested
+
+
+<--- JS stacktrace --->
+
+FATAL ERROR: Zone Allocation failed - process out of memory
+----- Native stack trace -----
+
+Static worker unexpectedly exited with code: 2147483651 and signal: null
+Static worker unexpectedly exited with code: 2147483651 and signal: null
+Static worker unexpectedly exited with code: 2147483651 and signal: null
+ 1: 00007FF6182D20AD 
+ 2: 00007FF61823A4D8 
+ 3: 00007FF618DBA1B1 
+ 4: 00007FF618DA7096 
+ 5: 00007FF618878ECB 
+ 6: 00007FF618994173 
+ 7: 00007FF61897BBFB 
+ 8: 00007FF61897B604 
+ 9: 00007FF618980DEE 
+10: 00007FF6189812BE 
+11: 00007FF61898D2E7 
+12: 00007FF618984630 
+13: 00007FF61897B20B 
+14: 00007FF61897B7C7 
+15: 00007FF61897B604 
+16: 00007FF6189890AB 
+17: 00007FF6189886CD 
+18: 00007FF618988233 
+19: 00007FF618989C39 
+20: 00007FF618987229 
+21: 00007FF61897B5B7 
+22: 00007FF61898F049 
+23: 00007FF61898F4D5 
+24: 00007FF618984630 
+25: 00007FF61897B20B 
+26: 00007FF61897B7C7 
+27: 00007FF61897B604 
+28: 00007FF618980DEE 
+29: 00007FF618989D56 
+30: 00007FF618987229 
+31: 00007FF61897B5B7 
+32: 00007FF618980DEE 
+33: 00007FF6189812BE 
+34: 00007FF61898D2E7 
+35: 00007FF618984630 
+36: 00007FF6189838E5 
+37: 00007FF6189850A8 
+38: 00007FF618976026 
+39: 00007FF61898A28B 
+40: 00007FF61896F29C 
+41: 00007FF618D21B69 
+42: 00007FF618D2721A 
+43: 00007FF618DA1DE9 
+44: 00007FF618DA1B24 
+45: 00007FF618247FB8 
+46: 00007FF618248514 
+47: 000002C9D114FA64 
+Static worker unexpectedly exited with code: 134 and signal: null
+- info Generating static pages (0/49)
+- warn Entire page /[locale]/fin-model/model1 deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /[locale]/fin-model/model1
+- warn Entire page /[locale]/fin-model/model1 deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /[locale]/fin-model/model1
+- warn Entire page /[locale]/blog deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /[locale]/blog
+- warn Entire page /[locale]/blog deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /[locale]/blog
+- warn Entire page /[locale] deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /[locale]
+- warn Entire page /[locale]/auth deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /[locale]/auth
+- warn Entire page /[locale]/auth deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /[locale]/auth
+- warn Entire page /[locale] deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /[locale]
+Static worker unexpectedly exited with code: 3221226505 and signal: null
+- warn Entire page /[locale]/solutions/marketResearch deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /[locale]/solutions/marketResearch
+- warn Entire page /[locale]/solutions/marketResearch deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /[locale]/solutions/marketResearch
+- warn Entire page /[locale]/privacy deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /[locale]/privacy
+- info Generating static pages (12/49)
+- warn Entire page /[locale]/solutions/openAbroad deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /[locale]/solutions/openAbroad
+- warn Entire page /[locale]/solutions/openAbroad deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /[locale]/solutions/openAbroad
+- warn Entire page /[locale]/solutions/socialPlanMaster deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /[locale]/solutions/socialPlanMaster
+- warn Entire page /[locale]/solutions/socialPlanMaster deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /[locale]/solutions/socialPlanMaster
+- warn Entire page /[locale]/contacts deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /[locale]/contacts
+- warn Entire page /[locale]/contacts deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /[locale]/contacts
+- warn Entire page /[locale]/about deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /[locale]/about
+- warn Entire page /[locale]/products deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /[locale]/products
+- warn Entire page /[locale]/privacy deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /[locale]/privacy
+- warn Entire page /[locale]/about deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /[locale]/about
+- warn Entire page /[locale]/solutions deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /[locale]/solutions
+- info Generating static pages (24/49)
+- warn Entire page /[locale]/solutions/synthFocusLab deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /[locale]/solutions/synthFocusLab
+- warn Entire page /about deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /about
+- warn Entire page /contacts deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /contacts
+- warn Entire page /[locale]/solutions deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /[locale]/solutions
+- warn Entire page /solutions/openAbroad deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /solutions/openAbroad
+- warn Entire page /products deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /products
+- warn Entire page /fin-model/model1 deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /fin-model/model1
+- warn Entire page /[locale]/solutions/plan deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /[locale]/solutions/plan
+- warn Entire page /[locale]/solutions/plan deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /[locale]/solutions/plan
+- warn Entire page /solutions/marketResearch deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /solutions/marketResearch
+- warn Entire page /solutions/socialPlanMaster deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /solutions/socialPlanMaster
+- warn Entire page /[locale]/products deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /[locale]/products
+- warn Entire page /blog deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /blog
+- info Generating static pages (36/49)
+- warn Entire page /auth deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /auth
+- warn Entire page /solutions/synthFocusLab deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /solutions/synthFocusLab
+- warn Entire page /privacy deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /privacy
+- warn Entire page / deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /
+- warn Entire page /solutions/plan deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /solutions/plan
+- warn Entire page /solutions deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /solutions
+- warn Entire page /[locale]/solutions/synthFocusLab deopted into client-side rendering. https://nextjs.org/docs/messages/deopted-into-client-rendering /[locale]/solutions/synthFocusLab
+- info Generating static pages (49/49)
+- info Finalizing page optimization...
+
+Route (app)                                Size     First Load JS
+┌ ○ /                                      563 B          97.6 kB
+├ ● /[locale]                              3.37 kB         100 kB
+├   ├ /en
+├   └ /ru
+├ ● /[locale]/about                        194 B          96.8 kB
+├   ├ /en/about
+├   └ /ru/about
+├ ● /[locale]/account                      195 B           115 kB
+├   ├ /en/account
+├   └ /ru/account
+├ ● /[locale]/auth                         197 B           119 kB
+├   ├ /en/auth
+├   └ /ru/auth
+├ ● /[locale]/blog                         193 B           101 kB
+├   ├ /en/blog
+├   └ /ru/blog
+├ ● /[locale]/contacts                     188 B          93.3 kB
+├   ├ /en/contacts
+├   └ /ru/contacts
+├ ● /[locale]/fin-model/model1             189 B          99.2 kB
+├   ├ /en/fin-model/model1
+├   └ /ru/fin-model/model1
+├ ● /[locale]/monitoring                   92.5 kB         207 kB
+├   ├ /en/monitoring
+├   └ /ru/monitoring
+├ ● /[locale]/privacy                      190 B           101 kB
+├   ├ /en/privacy
+├   └ /ru/privacy
+├ ● /[locale]/products                     197 B          98.3 kB
+├   ├ /en/products
+├   └ /ru/products
+├ ● /[locale]/solutions                    198 B          99.3 kB
+├   ├ /en/solutions
+├   └ /ru/solutions
+├ ● /[locale]/solutions/marketResearch     193 B           116 kB
+├   ├ /en/solutions/marketResearch
+├   └ /ru/solutions/marketResearch
+├ ● /[locale]/solutions/openAbroad         190 B           101 kB
+├   ├ /en/solutions/openAbroad
+├   └ /ru/solutions/openAbroad
+├ ● /[locale]/solutions/plan               205 B           116 kB
+├   ├ /en/solutions/plan
+├   └ /ru/solutions/plan
+├ ● /[locale]/solutions/socialPlanMaster   205 B           126 kB
+├   ├ /en/solutions/socialPlanMaster
+├   └ /ru/solutions/socialPlanMaster
+├ ● /[locale]/solutions/synthFocusLab      202 B           121 kB
+├   ├ /en/solutions/synthFocusLab
+├   └ /ru/solutions/synthFocusLab
+├ ○ /about                                 317 B          96.9 kB
+├ ○ /account                               317 B           115 kB
+├ ○ /auth                                  321 B           119 kB
+├ ○ /blog                                  317 B           101 kB
+├ ○ /contacts                              310 B          93.4 kB
+├ ○ /fin-model/model1                      312 B          99.4 kB
+├ ○ /privacy                               313 B           101 kB
+├ ○ /products                              319 B          98.4 kB
+├ ○ /solutions                             318 B          99.4 kB
+├ ○ /solutions/marketResearch              313 B           116 kB
+├ ○ /solutions/openAbroad                  313 B           101 kB
+├ ○ /solutions/plan                        327 B           116 kB
+├ ○ /solutions/socialPlanMaster            325 B           126 kB
+└ ○ /solutions/synthFocusLab               325 B           122 kB
++ First Load JS shared by all              78.7 kB
+  ├ chunks/596-d6184741f1971e36.js         25.9 kB
+  ├ chunks/fd9d1056-6c1802acf5084eb5.js    50.6 kB
+  ├ chunks/main-app-eefc6cb4145b8cd0.js    215 B
+  └ chunks/webpack-0d0bf46628e30621.js     2 kB
+
+Route (pages)                              Size     First Load JS
+─ ○ /404                                   182 B          80.1 kB
++ First Load JS shared by all              80 kB
+  ├ chunks/framework-964c2d6016b0d731.js   45 kB
+  ├ chunks/main-dcd8466306d4dbf7.js        32.7 kB
+  ├ chunks/pages/_app-c39a67c97d2e85f6.js  196 B
+  └ chunks/webpack-0d0bf46628e30621.js     2 kB
+
+ƒ Middleware                               26.6 kB
+
+○  (Static)  automatically rendered as static HTML (uses no initial props)
+●  (SSG)     automatically generated as static HTML + JSON (uses getStaticProps)
+

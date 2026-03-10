@@ -32,21 +32,21 @@ export default function SolutionsPage() {
       description:
         "ИИ-агент поиска, анализа и выполнения полноценного маркетингового исследования. Верификация ресурсов и данных, адаптация под ваши ежедневные задачи.",
       icon: <FiCpu className="me-2 text-primary" />,
-      release: "осень 2025",
+      release: "весна 2026",
     },
     {
       title: "Сompetitors Research AI Agent",
       description:
         "ИИ-агент исследования ваших конкурентов. Фокус на локальном и точном анализе ниши и конкурентов.",
       icon: <FiUsers className="me-2 text-warning" />,
-      release: "осень 2025",
+      release: "весна 2026",
     },
     {
       title: "PlanMaster AI",
       description:
         "Генерация экспертного бизнес-плана на основе современной методологии, живого поиска и верифицированных данных. Нулевая толерантность к ИИ-галлюцинациям. Удобный чат запроса. Документ готов к презентации инвесторам.",
       icon: <FiFileText className="me-2 text-danger" />,
-      release: "осень 2025",
+      release: "весна 2026",
     },
     {
       title: "Relocation Service Free",
@@ -127,7 +127,10 @@ export default function SolutionsPage() {
                   </div>
                   {solution.hasCountrySelector && (
                     <div className="mt-3">
-                      <label htmlFor="country-select" className="form-label small text-muted">
+                      <label
+                        htmlFor="country-select"
+                        className="form-label small text-muted"
+                      >
                         Выберите страну:
                       </label>
                       <select
@@ -150,7 +153,7 @@ export default function SolutionsPage() {
                         onClick={() =>
                           trackClick(
                             solution.elementId || (solution.title ?? "unknown"),
-                            "card"
+                            "card",
                           )
                         }
                       >

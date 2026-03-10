@@ -277,8 +277,9 @@ const cleanMarkdown = (text: string): string => {
 
 export default function MarketResearchPage() {
   const productNameInputRef = useRef<HTMLInputElement>(null);
+  const LAST_REQUEST_FORM_DATA_KEY = "marketResearch:lastRequestFormData:ru";
 
-  const [formData, setFormData] = useState<FormData>({
+  const defaultFormData: FormData = {
     productName: "",
     productDescription: "",
     country: "",
@@ -289,7 +290,9 @@ export default function MarketResearchPage() {
     researchGoals: [],
     targetAudience: "",
     competitors: "",
-  });
+  };
+
+  const [formData, setFormData] = useState<FormData>(defaultFormData);
 
   const [researchId, setResearchId] = useState<string | null>(null);
   const [researchStatus, setResearchStatus] = useState<ResearchStatus | null>(
@@ -303,6 +306,7 @@ export default function MarketResearchPage() {
   const [activeSection, setActiveSection] = useState<string>("executive");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isResearchPaused, setIsResearchPaused] = useState(false);
 
   // Таймер и метрики исследования
   const [researchStartTime, setResearchStartTime] = useState<number | null>(
@@ -316,9 +320,11 @@ export default function MarketResearchPage() {
   // Health status state
   const [healthStatus, setHealthStatus] = useState<any>(null);
   const [isLoadingHealth, setIsLoadingHealth] = useState(true);
+  const [isRefreshingHealth, setIsRefreshingHealth] = useState(false);
 
   // Ref для хранения polling interval
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const pollingTokenRef = useRef<string | null>(null);
 
   // Автофокус на первое поле формы и предотвращение автоскролла
   useEffect(() => {
@@ -334,46 +340,112 @@ export default function MarketResearchPage() {
     return () => {
       if (pollingIntervalRef.current) {
         console.log("[Market Research] Cleaning up polling interval on unmount");
-        clearInterval(pollingIntervalRef.current);
+        clearTimeout(pollingIntervalRef.current);
         pollingIntervalRef.current = null;
       }
+      pollingTokenRef.current = null;
     };
   }, []);
+
+  useEffect(() => {
+    try {
+      const savedRaw = localStorage.getItem(LAST_REQUEST_FORM_DATA_KEY);
+      if (!savedRaw) return;
+
+      const saved = JSON.parse(savedRaw) as FormData;
+      if (saved && typeof saved === "object") {
+        setFormData((prev) => ({ ...prev, ...saved }));
+      }
+    } catch (e) {
+      console.warn("Не удалось восстановить данные последнего запроса:", e);
+    }
+  }, []);
+
+  const fetchHealthStatus = async (manualRefresh = false) => {
+    try {
+      if (manualRefresh) {
+        setIsRefreshingHealth(true);
+      }
+      // HARDCODED FOR NOW - env var not working
+      const healthApiBaseUrl = "http://localhost:8005";
+      console.log("[Health Check] Fetching from:", `${healthApiBaseUrl}/api/v1/agents/health`);
+      const response = await fetch(`${healthApiBaseUrl}/api/v1/agents/health`);
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("[Health Check] ✅ Data received:", data);
+        setHealthStatus(data);
+        console.log("[Health Check] State updated, isLoading will be set to false");
+      } else {
+        console.error("[Health Check] Failed to fetch health status:", response.status);
+      }
+    } catch (error) {
+      console.error("[Health Check] Error fetching health status:", error);
+    } finally {
+      setIsLoadingHealth(false);
+      if (manualRefresh) {
+        setIsRefreshingHealth(false);
+      }
+      console.log("[Health Check] isLoadingHealth set to false");
+    }
+  };
 
   // Load health status on mount and refresh every 30 seconds
   useEffect(() => {
-    const fetchHealthStatus = async () => {
-      try {
-        // HARDCODED FOR NOW - env var not working
-        const healthApiBaseUrl = "http://localhost:8005";
-        console.log("[Health Check] Fetching from:", `${healthApiBaseUrl}/api/v1/agents/health`);
-        const response = await fetch(`${healthApiBaseUrl}/api/v1/agents/health`);
-
-        if (response.ok) {
-          const data = await response.json();
-          console.log("[Health Check] ✅ Data received:", data);
-          setHealthStatus(data);
-          console.log("[Health Check] State updated, isLoading will be set to false");
-        } else {
-          console.error("[Health Check] Failed to fetch health status:", response.status);
-        }
-      } catch (error) {
-        console.error("[Health Check] Error fetching health status:", error);
-      } finally {
-        setIsLoadingHealth(false);
-        console.log("[Health Check] isLoadingHealth set to false");
-      }
-    };
 
     // Fetch immediately
     console.log("[Health Check] Component mounted, starting fetch...");
-    fetchHealthStatus();
+    fetchHealthStatus(false);
 
     // Refresh every 30 seconds
-    const interval = setInterval(fetchHealthStatus, 30000);
+    const interval = setInterval(() => fetchHealthStatus(false), 30000);
 
     return () => clearInterval(interval);
   }, []);
+
+  // Watchdog: if polling missed transition to completed, force-sync by research_id.
+  useEffect(() => {
+    if (!researchId || enhancedReport || researchReport || isResearchPaused) return;
+    if (!isSubmitting && researchStatus?.status !== "in_progress" && researchStatus?.status !== "pending") return;
+
+    const apiBaseUrl = "http://localhost:8005";
+    const watchdog = setInterval(async () => {
+      try {
+        const response = await fetch(`${apiBaseUrl}/api/v1/research/${researchId}`, {
+          cache: "no-store",
+          headers: {
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            Pragma: "no-cache",
+          },
+        });
+        if (!response.ok) return;
+        const status: ResearchStatus = await response.json();
+        setResearchStatus(status);
+
+        if (status.status === "completed") {
+          if (pollingIntervalRef.current) {
+            clearTimeout(pollingIntervalRef.current);
+            pollingIntervalRef.current = null;
+          }
+          pollingTokenRef.current = null;
+          setIsSubmitting(false);
+          await fetchResearchReport(researchId);
+        } else if (status.status === "failed") {
+          setIsSubmitting(false);
+          setIsResearchPaused(false);
+          setError(
+            `Исследование не удалось выполнить: ${
+              status.error || status.current_stage || "Неизвестная ошибка"
+            }`
+          );
+        }
+      } catch {
+        // ignore watchdog errors; main polling handles retries/logging
+      }
+    }, 10000);
+
+    return () => clearInterval(watchdog);
+  }, [researchId, enhancedReport, researchReport, isSubmitting, isResearchPaused, researchStatus?.status]);
 
   const businessTypeOptions = [
     {
@@ -605,6 +677,7 @@ export default function MarketResearchPage() {
     e.preventDefault();
     setError(null);
     setIsSubmitting(true);
+    setIsResearchPaused(false);
     setResearchStartTime(Date.now()); // Запуск таймера
     setResearchDuration(null); // Сброс предыдущей длительности
     console.log("[Market Research] Starting research submission...");
@@ -669,6 +742,12 @@ export default function MarketResearchPage() {
     }
 
     try {
+      try {
+        localStorage.setItem(LAST_REQUEST_FORM_DATA_KEY, JSON.stringify(formData));
+      } catch (e) {
+        console.warn("Не удалось сохранить данные последнего запроса:", e);
+      }
+
       const requestData = {
         session_id: `session_${Date.now()}`,
         answers: {
@@ -796,32 +875,64 @@ export default function MarketResearchPage() {
   };
 
   const pollResearchStatus = async (id: string) => {
+    if (isResearchPaused) return;
+
     console.log("=".repeat(80));
     console.log("🔄 [POLLING] Starting status polling for ID:", id);
     console.log("=".repeat(80));
 
-    // Clear any existing interval first
+    // Clear any existing timer first
     if (pollingIntervalRef.current) {
       console.log("⚠️ [POLLING] Clearing existing interval before starting new one");
-      clearInterval(pollingIntervalRef.current);
+      clearTimeout(pollingIntervalRef.current);
       pollingIntervalRef.current = null;
     }
+    const pollingToken = `${id}:${Date.now()}`;
+    pollingTokenRef.current = pollingToken;
 
-    let retries = 0;
-    const maxRetries = 3;
-    const pollInterval = 2000; // Fixed 2 second interval
+    const pollInterval = 2500;
+    const maxHardFailures = 15;
+    const maxTransientFailures = 180; // ~7.5 min with 2.5s interval
+    const maxPollingDurationMs = 45 * 60 * 1000; // 45 min
+    const startedAt = Date.now();
+
     let pollCount = 0;
-
-    // Track status changes for logging
-    let previousStatus = '';
-    let previousProgress = -1;
-    let previousStage = '';
+    let hardFailures = 0;
+    let transientFailures = 0;
 
     // Get API base URL from environment or use default
     const apiBaseUrl =
       "http://localhost:8005";
 
-    const interval = setInterval(async () => {
+    const stopPolling = () => {
+      if (pollingIntervalRef.current) {
+        clearTimeout(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
+      }
+      if (pollingTokenRef.current === pollingToken) {
+        pollingTokenRef.current = null;
+      }
+    };
+
+    const scheduleNext = () => {
+      if (pollingTokenRef.current !== pollingToken) return;
+      pollingIntervalRef.current = setTimeout(runPoll, pollInterval);
+    };
+
+    const runPoll = async () => {
+      if (pollingTokenRef.current !== pollingToken || isResearchPaused) return;
+
+      const elapsed = Date.now() - startedAt;
+      if (elapsed >= maxPollingDurationMs) {
+        stopPolling();
+        setIsSubmitting(false);
+        setIsResearchPaused(false);
+        setError(
+          "Исследование выполняется слишком долго. Выполните синхронизацию статуса или запустите заново."
+        );
+        return;
+      }
+
       pollCount++;
 
       try {
@@ -834,19 +945,33 @@ export default function MarketResearchPage() {
         });
 
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          if ([429, 502, 503, 504].includes(response.status)) {
+            transientFailures++;
+            if (transientFailures >= maxTransientFailures) {
+              stopPolling();
+              setIsSubmitting(false);
+              setIsResearchPaused(false);
+              setError("Временные ошибки сети/API. Попробуйте обновить статус или перезапустить исследование.");
+              return;
+            }
+            scheduleNext();
+            return;
+          }
+          hardFailures++;
+          if (hardFailures >= maxHardFailures) {
+            stopPolling();
+            setIsSubmitting(false);
+            setIsResearchPaused(false);
+            setError(`Не удается получить статус исследования (HTTP ${response.status}).`);
+            return;
+          }
+          scheduleNext();
+          return;
         }
 
         const status: ResearchStatus = await response.json();
-
-        // Сброс счетчика ошибок при успешном запросе
-        retries = 0;
-
-        // Agent workflow tracking - DISABLED per user request
-        // Обновляем предыдущие значения без логирования
-        previousStatus = status.status;
-        previousProgress = status.progress;
-        previousStage = status.current_stage || "";
+        hardFailures = 0;
+        transientFailures = 0;
 
         setResearchStatus(status);
 
@@ -856,12 +981,9 @@ export default function MarketResearchPage() {
           console.log("=".repeat(80));
           console.log("[Market Research] Fetching report...");
 
-          if (pollingIntervalRef.current) {
-            clearInterval(pollingIntervalRef.current);
-            pollingIntervalRef.current = null;
-          }
-          clearInterval(interval);
+          stopPolling();
           setIsSubmitting(false);
+          setIsResearchPaused(false);
 
           // Вычисляем длительность исследования
           if (researchStartTime) {
@@ -876,75 +998,61 @@ export default function MarketResearchPage() {
             );
           }
 
-          fetchResearchReport(id);
+          await fetchResearchReport(id);
+          return;
         } else if (status.status === "failed") {
-          if (pollingIntervalRef.current) {
-            clearInterval(pollingIntervalRef.current);
-            pollingIntervalRef.current = null;
-          }
-          clearInterval(interval);
+          stopPolling();
           setIsSubmitting(false);
+          setIsResearchPaused(false);
           setError(
             `Исследование не удалось выполнить: ${
-              status.error || "Неизвестная ошибка"
+              status.error || status.current_stage || "Неизвестная ошибка"
             }`
           );
+          return;
         }
+
+        scheduleNext();
       } catch (err: any) {
         console.error(`❌ [POLLING #${pollCount}] Error:`, err);
-        retries++;
+        const isTransient =
+          err?.message?.includes("fetch") ||
+          err?.message?.includes("network") ||
+          err?.message?.includes("Failed to fetch") ||
+          err?.name === "AbortError";
 
-        if (retries >= maxRetries) {
-          console.error(`❌ [POLLING] Max retries (${maxRetries}) reached. Stopping polling.`);
-          if (pollingIntervalRef.current) {
-            clearInterval(pollingIntervalRef.current);
-            pollingIntervalRef.current = null;
+        if (isTransient) {
+          transientFailures++;
+          if (transientFailures >= maxTransientFailures) {
+            stopPolling();
+            setIsSubmitting(false);
+            setIsResearchPaused(false);
+            setError(
+              `Не удается получить статус исследования. Проверьте сервис на ${apiBaseUrl}.`
+            );
+            return;
           }
-          clearInterval(interval);
-          setIsSubmitting(false);
-          // Network error or other fetch error
-          if (
-            err.message?.includes("fetch") ||
-            err.message?.includes("network") ||
-            err.code === "ECONNREFUSED" ||
-            err.message?.includes("Failed to fetch")
-          ) {
+        } else {
+          hardFailures++;
+          if (hardFailures >= maxHardFailures) {
+            stopPolling();
+            setIsSubmitting(false);
+            setIsResearchPaused(false);
             setError(
-              `Не удается получить статус исследования. ` +
-                `Проверьте, что бэкенд сервис запущен на ${apiBaseUrl}. ` +
-                `Ошибка: ${err.message || "Соединение отклонено"}`
+              `Не удается получить статус исследования. Ошибка: ${
+                err.message || "Неизвестная ошибка"
+              }`
             );
-          } else {
-            setError(
-              `Не удается получить статус исследования. ` +
-                `Пожалуйста, проверьте соединение. Ошибка: ${
-                  err.message || "Неизвестная ошибка"
-                }`
-            );
+            return;
           }
         }
-      }
-    }, pollInterval);
 
-    // Store interval in ref for cleanup
-    pollingIntervalRef.current = interval;
-    console.log("✅ [POLLING] Interval stored in ref. Polling every", pollInterval, "ms");
+        scheduleNext();
+      }
+    };
 
-    // Безопасный таймаут (10 минут максимум)
-    setTimeout(() => {
-      console.log("⏱️ [POLLING] Timeout reached (10 minutes). Stopping polling.");
-      if (pollingIntervalRef.current) {
-        clearInterval(pollingIntervalRef.current);
-        pollingIntervalRef.current = null;
-      }
-      clearInterval(interval);
-      if (researchStatus?.status === "in_progress") {
-        setIsSubmitting(false);
-        setError(
-          "Исследование занимает больше времени, чем ожидалось. Попробуйте обновить страницу позже."
-        );
-      }
-    }, 600000); // Увеличено до 10 минут
+    console.log("✅ [POLLING] Timer mode enabled. Polling every", pollInterval, "ms");
+    await runPoll();
   };
 
   const fetchResearchReport = async (id: string) => {
@@ -1103,6 +1211,39 @@ export default function MarketResearchPage() {
     }
   };
 
+  const handlePauseResearch = () => {
+    if (pollingIntervalRef.current) {
+      clearTimeout(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+    pollingTokenRef.current = null;
+    setIsSubmitting(false);
+    setIsResearchPaused(true);
+  };
+
+  const handleResumeResearch = () => {
+    if (!researchId) return;
+    setError(null);
+    setIsResearchPaused(false);
+    setIsSubmitting(true);
+    pollResearchStatus(researchId);
+  };
+
+  const handleRestartResearch = async () => {
+    try {
+      if (researchId) {
+        const apiBaseUrl = "http://localhost:8005";
+        await fetch(`${apiBaseUrl}/api/v1/research/${researchId}`, {
+          method: "DELETE",
+        });
+      }
+    } catch (e) {
+      console.warn("Не удалось отменить текущее исследование на сервере:", e);
+    } finally {
+      handleReset({ preserveFormData: true, useSavedFormData: true });
+    }
+  };
+
   const handleDownload = async (format: "docx" | "pdf") => {
     if ((!enhancedReport && !researchReport) || !researchId) return;
 
@@ -1142,19 +1283,35 @@ export default function MarketResearchPage() {
     }
   };
 
-  const handleReset = () => {
-    setFormData({
-      productName: "",
-      productDescription: "",
-      country: "",
-      region: "",
-      businessTypes: [],
-      productTypes: [],
-      localization: "",
-      researchGoals: [],
-      targetAudience: "",
-      competitors: "",
-    });
+  const handleReset = (options?: {
+    preserveFormData?: boolean;
+    useSavedFormData?: boolean;
+  }) => {
+    const preserveFormData = options?.preserveFormData ?? false;
+    const useSavedFormData = options?.useSavedFormData ?? false;
+
+    if (pollingIntervalRef.current) {
+      clearTimeout(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+    pollingTokenRef.current = null;
+
+    if (!preserveFormData) {
+      setFormData(defaultFormData);
+    } else if (useSavedFormData) {
+      try {
+        const savedRaw = localStorage.getItem(LAST_REQUEST_FORM_DATA_KEY);
+        if (savedRaw) {
+          const saved = JSON.parse(savedRaw) as FormData;
+          if (saved && typeof saved === "object") {
+            setFormData((prev) => ({ ...prev, ...saved }));
+          }
+        }
+      } catch (e) {
+        console.warn("Не удалось восстановить сохранённые поля:", e);
+      }
+    }
+
     setResearchId(null);
     setResearchStatus(null);
     setResearchReport(null);
@@ -1162,6 +1319,7 @@ export default function MarketResearchPage() {
     setActiveSection("executive");
     setError(null);
     setIsSubmitting(false);
+    setIsResearchPaused(false);
   };
 
   return (
@@ -1209,8 +1367,18 @@ export default function MarketResearchPage() {
               <h3 style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <span style={{ fontSize: '1.2rem' }}>🏥</span>
                 Состояние Системы
+                <button
+                  type="button"
+                  className={styles.healthRefreshButton}
+                  onClick={() => fetchHealthStatus(true)}
+                  disabled={isRefreshingHealth}
+                  title="Обновить статусы сервисов"
+                >
+                  <FiRefreshCw className={isRefreshingHealth ? styles.spin : ""} />
+                  Обновить
+                </button>
                 <span style={{
-                  marginLeft: 'auto',
+                  marginLeft: '0.5rem',
                   fontSize: '0.9rem',
                   padding: '0.25rem 0.75rem',
                   borderRadius: '12px',
@@ -1482,28 +1650,59 @@ export default function MarketResearchPage() {
                 </div>
               </div>
 
-              <button
-                type="submit"
-                className={styles.submitButton}
-                disabled={isSubmitting || !healthStatus?.all_ready}
-              >
-                {isSubmitting ? (
-                  <>
-                    <div className={styles.spinner} />
-                    Собираем и анализируем данные ...
-                  </>
-                ) : !healthStatus?.all_ready ? (
-                  <>
-                    <FiAlertCircle />
-                    Система не готова
-                  </>
-                ) : (
-                  <>
-                    <FiBarChart2 />
-                    Начать исследование
-                  </>
-                )}
-              </button>
+              {!isResearchPaused ? (
+                <div className={styles.submitActionsRow}>
+                  <button
+                    type="submit"
+                    className={styles.submitButton}
+                    disabled={isSubmitting || !healthStatus?.all_ready}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <div className={styles.spinner} />
+                        Собираем и анализируем данные ...
+                      </>
+                    ) : !healthStatus?.all_ready ? (
+                      <>
+                        <FiAlertCircle />
+                        Система не готова
+                      </>
+                    ) : (
+                      <>
+                        <FiBarChart2 />
+                        Начать исследование
+                      </>
+                    )}
+                  </button>
+
+                  {isSubmitting && (
+                    <button
+                      type="button"
+                      className={styles.stopButton}
+                      onClick={handlePauseResearch}
+                    >
+                      Остановить
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <div className={styles.pausedActionsRow}>
+                  <button
+                    type="button"
+                    className={styles.resumeButton}
+                    onClick={handleResumeResearch}
+                  >
+                    Продолжить исследование
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.restartButton}
+                    onClick={handleRestartResearch}
+                  >
+                    Начать заново
+                  </button>
+                </div>
+              )}
             </form>
           </div>
         </div>

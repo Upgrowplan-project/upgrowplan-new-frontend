@@ -1,0 +1,16 @@
+2026-03-06 08:45:32 - root - INFO - ================================================================================
+2026-03-06 08:45:32 - root - INFO - [OK] Logging configured:
+2026-03-06 08:45:32 - root - INFO -    - File: logs\service.log
+2026-03-06 08:45:32 - root - INFO -    - Console: stdout
+2026-03-06 08:45:32 - root - INFO - ================================================================================
+2026-03-06 08:45:32 - __main__ - INFO - [LOG] Logs will be written to: logs\service.log
+2026-03-06 08:45:32 - __main__ - INFO - Starting on port 8005
+2026-03-06 08:45:32 - __main__ - INFO - Docs available at: http://localhost:8005/docs
+2026-03-06 08:45:33 - __main__ - INFO - ================================================================================
+2026-03-06 08:45:33 - __main__ - INFO - [START] MARKET RESEARCH SERVICE STARTING
+2026-03-06 08:45:33 - __main__ - INFO - ================================================================================
+2026-03-06 08:45:33 - __main__ - INFO - Universal service for ANY business type
+2026-03-06 08:45:33 - __main__ - INFO - Supports: B2B, B2C, B2B2C, B2G, C2C, and more
+2026-03-06 08:45:33 - __main__ - INFO - ================================================================================
+2026-03-06 08:45:33 - __main__ - INFO - [OK] Redis client connected successfully
+2026-03-06 08:45:33 - __main__ - INFO - [OK] Redis PING successful

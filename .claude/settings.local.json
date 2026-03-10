@@ -71,7 +71,11 @@
       "Bash(unzip -q \"D:\\\\UpgrowPlan\\\\social-plan-master\\\\test_reports\\\\social-plan-b34b0774.docx\" -d docx_extract)",
       "Bash(pip3 list)",
       "Bash(pip3 show python-docx)",
-      "Bash(\"C:/Users/Lenovo/AppData/Local/Programs/Python/Python313/python.exe\" D:/UpgrowPlan/social-plan-master/extract_docx.py)"
+      "Bash(\"C:/Users/Lenovo/AppData/Local/Programs/Python/Python313/python.exe\" D:/UpgrowPlan/social-plan-master/extract_docx.py)",
+      "WebFetch(domain:developers.google.com)",
+      "Bash(unzip -l social-plan-788ce805.docx)",
+      "Bash(unzip -p social-plan-788ce805.docx word/document.xml)",
+      "Bash(docx2txt \"d:/UpgrowPlan/social-plan-master/test_reports/social-plan-5179bb98.docx\")"
     ],
     "deny": [],
     "ask": []

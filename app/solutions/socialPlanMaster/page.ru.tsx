@@ -5,7 +5,6 @@ import Header from "../../../components/Header";
 import Grade from "../../../components/Grade";
 import styles from "./socialPlanMaster.module.css";
 import {
-  FiBarChart2,
   FiCheck,
   FiAlertCircle,
   FiDownload,
@@ -117,6 +116,7 @@ interface SynthesisStatus {
       step?: number | null;
       description?: string;
       current_value?: number | null;
+      default_value?: number | null;
     }>;
   };
 }
@@ -398,6 +398,10 @@ const normalizeSummaryText = (text: string): string => {
 };
 
 const toSummaryHtml = (text: string): string => {
+  if (!text) return "";
+  // Backend returns fully-formed HTML — render it directly without stripping tags.
+  if (/<[a-z][\s\S]*?>/i.test(text)) return text;
+  // Fallback: plain-text conversion (legacy / edge cases without HTML)
   const normalized = normalizeSummaryText(text);
   if (!normalized) return "";
   const blocks = normalized.split(/\n{2,}/).filter(Boolean);
@@ -608,6 +612,7 @@ export default function SocialPlanMasterPage() {
         step?: number | null;
         description?: string;
         current_value?: number | null;
+        default_value?: number | null;
       }>
     >
   >({});
@@ -735,6 +740,11 @@ export default function SocialPlanMasterPage() {
         Number.isFinite(lever.current_value)
       ) {
         next[lever.key] = String(lever.current_value);
+      } else if (
+        typeof lever.default_value === "number" &&
+        Number.isFinite(lever.default_value)
+      ) {
+        next[lever.key] = String(lever.default_value);
       }
     }
     setLeverValues(next);
@@ -742,6 +752,7 @@ export default function SocialPlanMasterPage() {
   }, [
     needsAdjustment,
     synthesisStatus?.status,
+    synthesisStatus?.synthesis_id,
     synthesisStatus?.adjustment_iteration,
     synthesisStatus?.archetype?.id,
   ]);
@@ -833,6 +844,13 @@ export default function SocialPlanMasterPage() {
           console.warn(
             "[Adjustment Preview] Endpoint unavailable, disabling preview for current synthesis",
           );
+          return;
+        }
+        // ERR_CONNECTION_REFUSED (statusCode=0) — сервер недоступен
+        if (statusCode === 0) {
+          previewUnavailableForSynthesisRef.current = effectiveSynthesisId;
+          console.warn("[Adjustment Preview] Server unreachable (ERR_CONNECTION_REFUSED). Preview disabled.");
+          setAdjustmentPreview({ _unavailable: true } as any);
           return;
         }
         if (previewRequestSeqRef.current !== requestSeq) {
@@ -1817,7 +1835,7 @@ export default function SocialPlanMasterPage() {
   const adjustmentTitle =
     correctionCycleStatus === "financial_recalc_failed"
       ? "Технический сбой финансового пересчёта"
-      : "Требуется дополнительная корректировка";
+      : "Внимание! При расчете финансовой модели проекта определена рентабельность ниже средней для данного вида бизнеса. Предлагаем вам вручную отрегулировать ключевые параметры. Сервис автоматически рассчитает новую рентабельность и обновит финансовую модель бизнес-плана";
   const pipelineIssue =
     synthesisStatus?.pipeline_status?.stage46_failed ||
     synthesisStatus?.pipeline_status?.consistency_ok === false;
@@ -1826,6 +1844,10 @@ export default function SocialPlanMasterPage() {
 
   const formatPct = (value: number) =>
     `${value >= 0 ? "+" : ""}${Number.isFinite(value) ? value.toFixed(1) : "0.0"}%`;
+  const displayMargin = (value: number) =>
+    Number.isFinite(value) && value < -10
+      ? "отрицательная рентабельность"
+      : formatPct(value);
   const formatMoney = (value?: number) =>
     `${Math.round(value || 0).toLocaleString("ru-RU")} ₽/мес`;
 
@@ -1944,7 +1966,7 @@ export default function SocialPlanMasterPage() {
                 {isSubmitting && synthesisStatus && (
                   <div className={styles.progressCard}>
                     <div className={styles.progressHeader}>
-                      <FiBarChart2 className={styles.progressIcon} />
+                      <div className={styles.progressSpinner} />
                       <h2>Создаем ваш бизнес-план...</h2>
                     </div>
 
@@ -2066,16 +2088,16 @@ export default function SocialPlanMasterPage() {
                     <div className={styles.marginPreviewCard}>
                       <div className={styles.marginPreviewHeader}>
                         <strong>Рентабельность проекта</strong>
-                        <span className={styles.iterationBadge}>
-                          Итерация {currentIteration}/{maxIterations}
-                        </span>
                       </div>
+                      <p style={{ margin: "0 0 6px", fontSize: "0.9rem", opacity: 0.8 }}>
+                        На данный момент проект имеет следующий показатель:
+                      </p>
                       <div className={styles.marginValues}>
-                        <span>{formatPct(baseMargin)}</span>
+                        <span>{displayMargin(baseMargin)}</span>
                         <span className={styles.marginArrow}>→</span>
-                        <span>{formatPct(projectedMargin)}</span>
+                        <span>{displayMargin(projectedMargin)}</span>
                         <span className={styles.marginTarget}>
-                          Цель: {targetMargin.toFixed(1)}%
+                          Целевая рентабельность: {targetMargin.toFixed(1)}%
                         </span>
                       </div>
                       <div className={styles.previewMessageRow}>
@@ -2085,6 +2107,8 @@ export default function SocialPlanMasterPage() {
                         <p className={styles.previewMessage}>
                           {isPreviewLoading
                             ? "Пересчитываем финансовую модель..."
+                            : (adjustmentPreview as any)?._unavailable
+                            ? "⚠ Предпросмотр недоступен: сервер не отвечает. Нажмите «Применить» для пересчёта."
                             : adjustmentPreview?.message ||
                               (selectedAdjustments.length > 0 || hasLeverChanges
                                 ? "Показана локальная оценка по выбранным корректировкам."
@@ -2102,7 +2126,7 @@ export default function SocialPlanMasterPage() {
                             fontSize: "0.98rem",
                           }}
                         >
-                          Ключевые параметры модели (можно уточнить вручную):
+                          Откорректируйте параметры финансовой модели:
                         </p>
                         <div className={styles.doubleRow}>
                           {profitabilityLevers.map((lever) => (
@@ -2145,6 +2169,8 @@ export default function SocialPlanMasterPage() {
                                 placeholder={
                                   typeof lever.current_value === "number"
                                     ? String(lever.current_value)
+                                    : typeof lever.default_value === "number"
+                                    ? String(lever.default_value)
                                     : "Введите значение"
                                 }
                                 value={leverValues[lever.key] ?? ""}
@@ -2173,14 +2199,22 @@ export default function SocialPlanMasterPage() {
                       </div>
                     )}
 
-                    {adjustmentPreview?.needs_more_adjustment && (
+                    {!isPreviewLoading && projectedMargin >= targetMargin && (
                       <div
-                        className={styles.expertRisk}
-                        style={{ marginBottom: "12px" }}
+                        style={{
+                          background: "#e6f9ef",
+                          border: "1px solid #52c41a",
+                          borderRadius: "8px",
+                          padding: "12px 16px",
+                          marginBottom: "12px",
+                          fontSize: "0.95rem",
+                          color: "#237804",
+                        }}
                       >
-                        <p>
-                          Требуется дополнительная корректировка, чтобы выйти на
-                          целевую рентабельность.
+                        <p style={{ margin: 0 }}>
+                          ✅ Отлично! Теперь ваш бизнес план будет создан с рентабельностью{" "}
+                          <strong>{projectedMargin.toFixed(1)}%</strong>.{" "}
+                          Рекомендуем продолжить генерацию.
                         </p>
                       </div>
                     )}
@@ -2202,7 +2236,7 @@ export default function SocialPlanMasterPage() {
                         className={styles.fixManuallyBtn}
                         onClick={handleReset}
                       >
-                        Исправить вручную
+                        Изменить начальные данные
                       </button>
                       <button
                         className={styles.autoFixBtn}
@@ -2226,24 +2260,6 @@ export default function SocialPlanMasterPage() {
                       </button>
                     </div>
 
-                    <div
-                      className={styles.marginPreviewCard}
-                      style={{ marginTop: "12px" }}
-                    >
-                      <div className={styles.marginPreviewHeader}>
-                        <strong>
-                          Рентабельность проекта (контрольный расчёт)
-                        </strong>
-                      </div>
-                      <div className={styles.marginValues}>
-                        <span>{formatPct(baseMargin)}</span>
-                        <span className={styles.marginArrow}>→</span>
-                        <span>{formatPct(projectedMargin)}</span>
-                        <span className={styles.marginTarget}>
-                          Цель: {targetMargin.toFixed(1)}%
-                        </span>
-                      </div>
-                    </div>
                   </div>
                 )}
 
@@ -2327,7 +2343,7 @@ export default function SocialPlanMasterPage() {
                   <form className={styles.form} onSubmit={handleSubmit}>
                     {/* Business Idea */}
                     <div className={styles.section}>
-                      <h3>📋 Описание идеи бизнеса *</h3>
+                      <h3>Описание идеи бизнеса *</h3>
                       <textarea
                         ref={businessIdeaInputRef}
                         name="businessIdea"
@@ -2342,7 +2358,7 @@ export default function SocialPlanMasterPage() {
                     {/* Region and City */}
                     <div className={styles.doubleRow}>
                       <div className={styles.section}>
-                        <h3>🗺️ Регион *</h3>
+                        <h3>Регион *</h3>
                         <input
                           type="text"
                           name="region"
@@ -2353,7 +2369,7 @@ export default function SocialPlanMasterPage() {
                         />
                       </div>
                       <div className={styles.section}>
-                        <h3>🏙️ Город *</h3>
+                        <h3>Город *</h3>
                         <input
                           type="text"
                           name="city"
@@ -2388,7 +2404,7 @@ export default function SocialPlanMasterPage() {
                           htmlFor="hasExactAddress"
                           className={styles.checkboxLabel}
                         >
-                          📍 Есть точный адрес бизнеса
+                          Есть точный адрес бизнеса
                         </label>
                       </div>
                       {formData.hasExactAddress && (
@@ -2410,7 +2426,7 @@ export default function SocialPlanMasterPage() {
 
                     {/* Business Types */}
                     <div className={styles.section}>
-                      <h3>💼 Тип бизнеса *</h3>
+                      <h3>Тип бизнеса *</h3>
                       <div className={styles.buttonGroupInline}>
                         {businessTypeOptions.map((option) => (
                           <button
@@ -2433,7 +2449,7 @@ export default function SocialPlanMasterPage() {
 
                     {/* Funding Purposes */}
                     <div className={styles.section}>
-                      <h3>💸 На какие цели требуется финансирование *</h3>
+                      <h3>На какие цели требуется финансирование *</h3>
                       <div className={styles.buttonGroup}>
                         {fundingPurposeOptions.map((option) => (
                           <button
@@ -2456,7 +2472,7 @@ export default function SocialPlanMasterPage() {
 
                     {/* Financial Section */}
                     <div className={styles.section}>
-                      <h3>💰 Финансирование *</h3>
+                      <h3>Финансирование проекта *</h3>
 
                       <div className={styles.doubleRow}>
                         <div>
@@ -2518,7 +2534,7 @@ export default function SocialPlanMasterPage() {
 
                       <div className={styles.singleRow}>
                         <label className={styles.label}>
-                          Период расходования / возврата средств (месяцы) *
+                          Период расходования (месяцы) *
                         </label>
                         <input
                           type="number"
@@ -2533,7 +2549,7 @@ export default function SocialPlanMasterPage() {
 
                     {/* Headcount (Optional) */}
                     <div className={styles.section}>
-                      <h3>👥 Плановая численность команды (опционально)</h3>
+                      <h3>Плановая численность команды (опционально)</h3>
                       <input
                         type="number"
                         name="plannedHeadcount"
@@ -2546,7 +2562,7 @@ export default function SocialPlanMasterPage() {
 
                     {/* Existing Loan Section */}
                     <div className={styles.section}>
-                      <h3>💳 Непогашенный кредит</h3>
+                      <h3>Непогашенный кредит</h3>
                       <div className={styles.checkboxWrapper}>
                         <input
                           type="checkbox"
@@ -2633,7 +2649,7 @@ export default function SocialPlanMasterPage() {
 
                     {/* OKVAD Code */}
                     <div className={styles.section}>
-                      <h3>🔢 Ваш ОКВЭД (опционально)</h3>
+                      <h3>Ваш ОКВЭД (опционально)</h3>
                       <input
                         type="text"
                         name="okvadCode"
@@ -2646,7 +2662,7 @@ export default function SocialPlanMasterPage() {
 
                     {/* Business Registration Status */}
                     <div className={styles.section}>
-                      <h3>📋 Ваш бизнес зарегистрирован? *</h3>
+                      <h3>Ваш бизнес зарегистрирован? *</h3>
                       <div className={styles.buttonGroupInline}>
                         <button
                           type="button"
@@ -2688,7 +2704,7 @@ export default function SocialPlanMasterPage() {
                     {/* Legal Form (shown only if registered) */}
                     {formData.businessRegistered === "yes" && (
                       <div className={styles.section}>
-                        <h3>⚖️ Организационно-правовая форма *</h3>
+                        <h3>Организационно-правовая форма *</h3>
                         <select
                           name="businessLegalForm"
                           value={formData.businessLegalForm || ""}
@@ -2709,11 +2725,12 @@ export default function SocialPlanMasterPage() {
 
                     {/* Initiator Profile */}
                     <div className={styles.section}>
-                      <h3>🎯 Данные об инициаторе проекта *</h3>
+                      <h3>Данные об инициаторе проекта *</h3>
                       <label className={styles.label}>
                         Укажите ваше ФИО полностью, опишите ваш опыт, навыки,
-                        образование, дайте ссылки на профили в соцсетях или ваши
-                        каналы, все что поможет для реализации проекта
+                        образование, ссылку на профили в соцсетях или ваши
+                        каналы, все что поможет подчеркнуть вашу экспертность
+                        для реализации проекта
                       </label>
                       <textarea
                         name="initiatorProfile"

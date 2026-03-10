@@ -440,10 +440,14 @@
   margin-bottom: 2rem;
 }
 
-.progressIcon {
-  color: #0785f6;
+.progressSpinner {
   width: 32px;
   height: 32px;
+  border: 3px solid rgba(7, 133, 246, 0.2);
+  border-top-color: #0785f6;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
 }
 
 .progressHeader h2 {
@@ -916,6 +920,69 @@
 
 .resultCard {
   width: 100%;
+}
+
+/* ── Executive Summary HTML rendering ───────────────────────────────────── */
+.synthesisTextContainer {
+  font-size: 0.95rem;
+  color: #374151;
+  line-height: 1.65;
+}
+
+.synthesisText h1,
+.synthesisText h2 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1e3a5f;
+  margin: 1.2rem 0 0.4rem;
+}
+
+.synthesisText h3,
+.synthesisText h4 {
+  font-size: 0.97rem;
+  font-weight: 600;
+  color: #1e6078;
+  margin: 1rem 0 0.35rem;
+}
+
+.synthesisText p {
+  margin: 0 0 0.7rem;
+  line-height: 1.65;
+}
+
+.synthesisText ul,
+.synthesisText ol {
+  margin: 0.3rem 0 0.7rem 1.4rem;
+  padding: 0;
+}
+
+.synthesisText li {
+  margin-bottom: 0.3rem;
+  line-height: 1.6;
+}
+
+.synthesisText strong {
+  color: #1e3a5f;
+}
+
+.synthesisText table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.7rem 0 1rem;
+  font-size: 0.9rem;
+}
+
+.synthesisText table td,
+.synthesisText table th {
+  border: 1px solid #e2e8f0;
+  padding: 0.35rem 0.7rem;
+  text-align: left;
+}
+
+.synthesisText table th {
+  background: #f1f5f9;
+  font-weight: 600;
+  color: #1e3a5f;
 }
 
 .resultCard h3 {
