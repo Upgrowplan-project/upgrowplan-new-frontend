@@ -2599,7 +2599,12 @@ export default function MarketResearchPage() {
                   </div>
                 </div>
                 <div className={styles.resetSection}>
-                  <button className={styles.resetButton} onClick={handleReset}>
+                  <button
+                    className={styles.resetButton}
+                    onClick={() =>
+                      handleReset({ preserveFormData: true, useSavedFormData: true })
+                    }
+                  >
                     <FiRefreshCw /> Исследовать еще раз
                   </button>
                 </div>
@@ -2642,7 +2647,12 @@ export default function MarketResearchPage() {
                   </div>
                 </div>
                 <div className={styles.resetSection}>
-                  <button className={styles.resetButton} onClick={handleReset}>
+                  <button
+                    className={styles.resetButton}
+                    onClick={() =>
+                      handleReset({ preserveFormData: true, useSavedFormData: true })
+                    }
+                  >
                     <FiRefreshCw /> Исследовать еще раз
                   </button>
                 </div>

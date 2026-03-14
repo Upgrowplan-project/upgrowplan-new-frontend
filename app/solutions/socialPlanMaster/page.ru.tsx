@@ -589,6 +589,7 @@ export default function SocialPlanMasterPage() {
     Record<string, string>
   >({});
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
+  const [submitAttempted, setSubmitAttempted] = useState(false);
 
   const [synthesisStartTime, setSynthesisStartTime] = useState<number | null>(
     null,
@@ -849,7 +850,9 @@ export default function SocialPlanMasterPage() {
         // ERR_CONNECTION_REFUSED (statusCode=0) — сервер недоступен
         if (statusCode === 0) {
           previewUnavailableForSynthesisRef.current = effectiveSynthesisId;
-          console.warn("[Adjustment Preview] Server unreachable (ERR_CONNECTION_REFUSED). Preview disabled.");
+          console.warn(
+            "[Adjustment Preview] Server unreachable (ERR_CONNECTION_REFUSED). Preview disabled.",
+          );
           setAdjustmentPreview({ _unavailable: true } as any);
           return;
         }
@@ -927,23 +930,19 @@ export default function SocialPlanMasterPage() {
   const businessTypeOptions = [
     {
       value: "B2C" as BusinessType,
-      label: "B2C - Потребители",
+      label: "Частные лица (B2C)",
     },
     {
       value: "B2B" as BusinessType,
-      label: "B2B - Бизнес",
-    },
-    {
-      value: "B2B2C" as BusinessType,
-      label: "B2B2C - Комбо",
+      label: "Компании (B2B)",
     },
     {
       value: "C2C" as BusinessType,
-      label: "C2C - P2P",
+      label: "Между частными лицами (C2C)",
     },
     {
       value: "D2C" as BusinessType,
-      label: "D2C - Прямые продажи",
+      label: "От бренда — клиенту (D2C)",
     },
   ];
 
@@ -1238,6 +1237,7 @@ export default function SocialPlanMasterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitAttempted(true);
     await startSynthesis();
   };
 
@@ -1855,6 +1855,28 @@ export default function SocialPlanMasterPage() {
     lastProgressRef.current = progressValue;
   }, [progressValue]);
 
+  const isFormValid = Boolean(
+    formData.businessIdea.trim() &&
+    formData.region.trim() &&
+    formData.city.trim() &&
+    formData.businessTypes.length > 0 &&
+    formData.fundingPurposes.length > 0 &&
+    formData.ownCapital.trim() &&
+    formData.loanCapital.trim() &&
+    formData.spendingPeriod.trim() &&
+    (formData.businessRegistered !== "yes" || formData.businessLegalForm) &&
+    formData.initiatorProfile?.trim() &&
+    privacyAccepted &&
+    (!formData.hasExistingLoan ||
+      (formData.existingLoanDebt?.trim() &&
+        formData.existingLoanRate?.trim() &&
+        formData.existingLoanTerm?.trim() &&
+        formData.existingLoanMonthlyPayment?.trim())),
+  );
+
+  const fieldError = (filled: boolean) =>
+    submitAttempted && !filled ? { border: "2px solid #ef4444" } : undefined;
+
   return (
     <div className={styles.container}>
       <Header />
@@ -2089,7 +2111,13 @@ export default function SocialPlanMasterPage() {
                       <div className={styles.marginPreviewHeader}>
                         <strong>Рентабельность проекта</strong>
                       </div>
-                      <p style={{ margin: "0 0 6px", fontSize: "0.9rem", opacity: 0.8 }}>
+                      <p
+                        style={{
+                          margin: "0 0 6px",
+                          fontSize: "0.9rem",
+                          opacity: 0.8,
+                        }}
+                      >
                         На данный момент проект имеет следующий показатель:
                       </p>
                       <div className={styles.marginValues}>
@@ -2108,11 +2136,12 @@ export default function SocialPlanMasterPage() {
                           {isPreviewLoading
                             ? "Пересчитываем финансовую модель..."
                             : (adjustmentPreview as any)?._unavailable
-                            ? "⚠ Предпросмотр недоступен: сервер не отвечает. Нажмите «Применить» для пересчёта."
-                            : adjustmentPreview?.message ||
-                              (selectedAdjustments.length > 0 || hasLeverChanges
-                                ? "Показана локальная оценка по выбранным корректировкам."
-                                : "Измените ключевые параметры модели, чтобы увидеть обновлённую рентабельность.")}
+                              ? "⚠ Предпросмотр недоступен: сервер не отвечает. Нажмите «Применить» для пересчёта."
+                              : adjustmentPreview?.message ||
+                                (selectedAdjustments.length > 0 ||
+                                hasLeverChanges
+                                  ? "Показана локальная оценка по выбранным корректировкам."
+                                  : "Измените ключевые параметры модели, чтобы увидеть обновлённую рентабельность.")}
                         </p>
                       </div>
                     </div>
@@ -2170,8 +2199,8 @@ export default function SocialPlanMasterPage() {
                                   typeof lever.current_value === "number"
                                     ? String(lever.current_value)
                                     : typeof lever.default_value === "number"
-                                    ? String(lever.default_value)
-                                    : "Введите значение"
+                                      ? String(lever.default_value)
+                                      : "Введите значение"
                                 }
                                 value={leverValues[lever.key] ?? ""}
                                 onChange={(e) =>
@@ -2212,7 +2241,8 @@ export default function SocialPlanMasterPage() {
                         }}
                       >
                         <p style={{ margin: 0 }}>
-                          ✅ Отлично! Теперь ваш бизнес план будет создан с рентабельностью{" "}
+                          ✅ Отлично! Теперь ваш бизнес план будет создан с
+                          рентабельностью{" "}
                           <strong>{projectedMargin.toFixed(1)}%</strong>.{" "}
                           Рекомендуем продолжить генерацию.
                         </p>
@@ -2259,7 +2289,6 @@ export default function SocialPlanMasterPage() {
                               : "Продолжить генерацию"}
                       </button>
                     </div>
-
                   </div>
                 )}
 
@@ -2351,6 +2380,7 @@ export default function SocialPlanMasterPage() {
                         value={formData.businessIdea}
                         onChange={handleInputChange}
                         className={styles.textarea}
+                        style={fieldError(!formData.businessIdea.trim())}
                         rows={4}
                       />
                     </div>
@@ -2366,6 +2396,7 @@ export default function SocialPlanMasterPage() {
                           value={formData.region}
                           onChange={handleInputChange}
                           className={styles.input}
+                          style={fieldError(!formData.region.trim())}
                         />
                       </div>
                       <div className={styles.section}>
@@ -2377,6 +2408,7 @@ export default function SocialPlanMasterPage() {
                           value={formData.city}
                           onChange={handleInputChange}
                           className={styles.input}
+                          style={fieldError(!formData.city.trim())}
                         />
                       </div>
                     </div>
@@ -2426,8 +2458,19 @@ export default function SocialPlanMasterPage() {
 
                     {/* Business Types */}
                     <div className={styles.section}>
-                      <h3>Тип бизнеса *</h3>
-                      <div className={styles.buttonGroupInline}>
+                      <h3>Кто ваши клиенты *</h3>
+                      <div
+                        className={styles.buttonGroupInline}
+                        style={
+                          submitAttempted && formData.businessTypes.length === 0
+                            ? {
+                                border: "2px solid #ef4444",
+                                borderRadius: "8px",
+                                padding: "8px",
+                              }
+                            : undefined
+                        }
+                      >
                         {businessTypeOptions.map((option) => (
                           <button
                             key={option.value}
@@ -2450,7 +2493,19 @@ export default function SocialPlanMasterPage() {
                     {/* Funding Purposes */}
                     <div className={styles.section}>
                       <h3>На какие цели требуется финансирование *</h3>
-                      <div className={styles.buttonGroup}>
+                      <div
+                        className={styles.buttonGroup}
+                        style={
+                          submitAttempted &&
+                          formData.fundingPurposes.length === 0
+                            ? {
+                                border: "2px solid #ef4444",
+                                borderRadius: "8px",
+                                padding: "8px",
+                              }
+                            : undefined
+                        }
+                      >
                         {fundingPurposeOptions.map((option) => (
                           <button
                             key={option.value}
@@ -2486,6 +2541,7 @@ export default function SocialPlanMasterPage() {
                             value={formData.ownCapital}
                             onChange={handleInputChange}
                             className={styles.input}
+                            style={fieldError(!formData.ownCapital.trim())}
                           />
                         </div>
                         <div>
@@ -2515,6 +2571,7 @@ export default function SocialPlanMasterPage() {
                             value={formData.loanCapital}
                             onChange={handleInputChange}
                             className={styles.input}
+                            style={fieldError(!formData.loanCapital.trim())}
                           />
                         </div>
                         <div>
@@ -2543,6 +2600,7 @@ export default function SocialPlanMasterPage() {
                           value={formData.spendingPeriod}
                           onChange={handleInputChange}
                           className={styles.input}
+                          style={fieldError(!formData.spendingPeriod.trim())}
                         />
                       </div>
                     </div>
@@ -2598,6 +2656,9 @@ export default function SocialPlanMasterPage() {
                               value={formData.existingLoanDebt}
                               onChange={handleInputChange}
                               className={styles.input}
+                              style={fieldError(
+                                !formData.existingLoanDebt?.trim(),
+                              )}
                             />
                           </div>
 
@@ -2613,6 +2674,9 @@ export default function SocialPlanMasterPage() {
                               value={formData.existingLoanRate}
                               onChange={handleInputChange}
                               className={styles.input}
+                              style={fieldError(
+                                !formData.existingLoanRate?.trim(),
+                              )}
                             />
                           </div>
 
@@ -2627,6 +2691,9 @@ export default function SocialPlanMasterPage() {
                               value={formData.existingLoanTerm}
                               onChange={handleInputChange}
                               className={styles.input}
+                              style={fieldError(
+                                !formData.existingLoanTerm?.trim(),
+                              )}
                             />
                           </div>
 
@@ -2641,6 +2708,9 @@ export default function SocialPlanMasterPage() {
                               value={formData.existingLoanMonthlyPayment}
                               onChange={handleInputChange}
                               className={styles.input}
+                              style={fieldError(
+                                !formData.existingLoanMonthlyPayment?.trim(),
+                              )}
                             />
                           </div>
                         </div>
@@ -2710,6 +2780,7 @@ export default function SocialPlanMasterPage() {
                           value={formData.businessLegalForm || ""}
                           onChange={handleInputChange}
                           className={styles.input}
+                          style={fieldError(!formData.businessLegalForm)}
                         >
                           <option value="">Выберите форму</option>
                           <option value="self_employed">Самозанятый</option>
@@ -2738,13 +2809,25 @@ export default function SocialPlanMasterPage() {
                         value={formData.initiatorProfile}
                         onChange={handleInputChange}
                         className={styles.textarea}
+                        style={fieldError(!formData.initiatorProfile?.trim())}
                         rows={4}
                       />
                     </div>
 
                     {/* Privacy Policy */}
                     <div className={styles.section}>
-                      <label className={styles.checkboxLabel}>
+                      <label
+                        className={styles.checkboxLabel}
+                        style={
+                          submitAttempted && !privacyAccepted
+                            ? {
+                                outline: "2px solid #ef4444",
+                                borderRadius: "6px",
+                                padding: "4px 8px",
+                              }
+                            : undefined
+                        }
+                      >
                         <input
                           type="checkbox"
                           checked={privacyAccepted}
@@ -2772,7 +2855,7 @@ export default function SocialPlanMasterPage() {
                       <button
                         type="submit"
                         className={styles.submitButton}
-                        disabled={isSubmitting || !privacyAccepted}
+                        disabled={isSubmitting || !isFormValid}
                       >
                         {isSubmitting ? "Обработка..." : "Начать генерацию"}
                       </button>
