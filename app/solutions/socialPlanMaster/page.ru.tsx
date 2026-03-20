@@ -18,8 +18,7 @@ type BusinessType = "B2B" | "B2C" | "B2B2C" | "C2C" | "D2C";
 type FundingPurpose =
   | "working_capital"
   | "equipment"
-  | "transport"
-  | "property";
+  | "transport";
 
 interface FormData {
   businessIdea: string;
@@ -29,6 +28,7 @@ interface FormData {
   exactAddress: string;
   businessTypes: BusinessType[];
   fundingPurposes: FundingPurpose[];
+  fundingDescription: string;
   ownCapital: string;
   investedOwn: string;
   loanCapital: string;
@@ -58,7 +58,8 @@ interface SynthesisStatus {
     | "in_progress"
     | "completed"
     | "failed"
-    | "needs_adjustment";
+    | "needs_adjustment"
+    | "needs_goal_seek_review";
   recommendations?: Array<{
     type: string;
     text: string;
@@ -119,6 +120,7 @@ interface SynthesisStatus {
       default_value?: number | null;
     }>;
   };
+  _corrected_kpi?: Record<string, any>;
 }
 
 interface SynthesisResult {
@@ -165,6 +167,7 @@ interface AdjustmentPreview {
     net_margin: number;
     target_profitability: number;
   };
+  projected_profit_monthly?: number;
   needs_more_adjustment: boolean;
   selected_count: number;
   adjustment_log: string[];
@@ -548,6 +551,7 @@ export default function SocialPlanMasterPage() {
     exactAddress: "",
     businessTypes: [],
     fundingPurposes: [],
+    fundingDescription: "",
     ownCapital: "",
     investedOwn: "",
     loanCapital: "",
@@ -590,6 +594,9 @@ export default function SocialPlanMasterPage() {
   >({});
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [advancedPlanningMode, setAdvancedPlanningMode] = useState(false);
+  const [needsGoalSeekReview, setNeedsGoalSeekReview] = useState(false);
 
   const [synthesisStartTime, setSynthesisStartTime] = useState<number | null>(
     null,
@@ -601,6 +608,8 @@ export default function SocialPlanMasterPage() {
 
   const [healthStatus, setHealthStatus] = useState<any>(null);
   const [isLoadingHealth, setIsLoadingHealth] = useState(true);
+  const [isRefreshingHealth, setIsRefreshingHealth] = useState(false);
+  const [isGenerationPaused, setIsGenerationPaused] = useState(false);
   const [archetypesCatalog, setArchetypesCatalog] = useState<
     Record<
       string,
@@ -728,7 +737,10 @@ export default function SocialPlanMasterPage() {
   }, [synthesisStatus?.logs]);
 
   useEffect(() => {
-    if (!needsAdjustment || synthesisStatus?.status !== "needs_adjustment") {
+    const _isInReviewMode =
+      (needsAdjustment && synthesisStatus?.status === "needs_adjustment") ||
+      (needsGoalSeekReview && synthesisStatus?.status === "needs_goal_seek_review");
+    if (!_isInReviewMode) {
       setLeverValues({});
       setInitialLeverValues({});
       return;
@@ -748,10 +760,23 @@ export default function SocialPlanMasterPage() {
         next[lever.key] = String(lever.default_value);
       }
     }
+    // В расширенном режиме Goal Seek добавляем площадь и штат как виртуальные рычаги
+    if (needsGoalSeekReview && advancedPlanningMode) {
+      const ckpi = synthesisStatus?._corrected_kpi;
+      if (ckpi?.area_sqm && Number.isFinite(Number(ckpi.area_sqm))) {
+        next["area_sqm"] = String(Math.round(Number(ckpi.area_sqm)));
+      }
+      const staffVal = ckpi?.total_staff ?? ckpi?.staff_count;
+      if (staffVal && Number.isFinite(Number(staffVal))) {
+        next["staff_count"] = String(Math.round(Number(staffVal)));
+      }
+    }
     setLeverValues(next);
     setInitialLeverValues(next);
   }, [
     needsAdjustment,
+    needsGoalSeekReview,
+    advancedPlanningMode,
     synthesisStatus?.status,
     synthesisStatus?.synthesis_id,
     synthesisStatus?.adjustment_iteration,
@@ -766,11 +791,13 @@ export default function SocialPlanMasterPage() {
         "",
     ).trim();
 
+    const _isInReviewMode2 =
+      (needsAdjustment && synthesisStatus?.status === "needs_adjustment") ||
+      (needsGoalSeekReview && synthesisStatus?.status === "needs_goal_seek_review");
     if (
-      !needsAdjustment ||
+      !_isInReviewMode2 ||
       !effectiveSynthesisId ||
-      !synthesisStatus ||
-      synthesisStatus.status !== "needs_adjustment"
+      !synthesisStatus
     ) {
       setAdjustmentPreview(null);
       setIsPreviewLoading(false);
@@ -791,6 +818,7 @@ export default function SocialPlanMasterPage() {
     }
 
     const changedLeversPayload = buildChangedLeverPayload();
+    console.log("[Preview] leverValues:", leverValues, "initialLeverValues:", initialLeverValues, "changedPayload:", changedLeversPayload);
 
     previewDebounceRef.current = setTimeout(async () => {
       const requestSeq = previewRequestSeqRef.current + 1;
@@ -827,6 +855,7 @@ export default function SocialPlanMasterPage() {
         }
 
         const data: AdjustmentPreview = await response.json();
+        console.log("[Preview] response:", data?.status, "projected_margin:", data?.projected?.net_margin, "base_margin:", data?.base?.net_margin);
         if (previewRequestSeqRef.current !== requestSeq) {
           return;
         }
@@ -879,6 +908,7 @@ export default function SocialPlanMasterPage() {
     };
   }, [
     needsAdjustment,
+    needsGoalSeekReview,
     synthesisId,
     synthesisStatus?.synthesis_id,
     synthesisStatus?.status,
@@ -889,41 +919,32 @@ export default function SocialPlanMasterPage() {
     initialLeverValues,
   ]);
 
-  useEffect(() => {
-    const fetchHealthStatus = async () => {
-      try {
-        console.log(
-          "[Health Check] Fetching from:",
-          `${PLANMASTER_BASE_URL}/api/health`,
-        );
-        const response = await fetch(`${PLANMASTER_BASE_URL}/api/health`);
-
-        if (response.ok) {
-          const data = await response.json();
-          console.log("[Health Check] ✅ Data received:", data);
-          setHealthStatus(data);
-        } else {
-          console.error(
-            "[Health Check] Failed to fetch health status:",
-            response.status,
-          );
-        }
-      } catch (error) {
-        if (isTransientNetworkError(error)) {
-          console.warn(
-            "[Health Check] Temporary network issue while checking backend",
-          );
-        } else {
-          console.error("[Health Check] Error fetching health status:", error);
-        }
-      } finally {
-        setIsLoadingHealth(false);
+  const fetchHealthStatus = async (manualRefresh = false) => {
+    if (manualRefresh) setIsRefreshingHealth(true);
+    try {
+      const response = await fetch(`${PLANMASTER_BASE_URL}/api/health/services`, { cache: "no-store" });
+      if (response.ok) {
+        const data = await response.json();
+        setHealthStatus(data);
+      } else {
+        // Backend is up but endpoint unknown — mark as degraded
+        setHealthStatus({ all_ready: false, services: [
+          { id: "backend", name: "Сервер генерации", status: "error", error: `HTTP ${response.status}`, required: true },
+        ]});
       }
-    };
+    } catch {
+      setHealthStatus({ all_ready: false, services: [
+        { id: "backend", name: "Сервер генерации", status: "error", error: "Сервер недоступен", required: true },
+      ]});
+    } finally {
+      setIsLoadingHealth(false);
+      if (manualRefresh) setIsRefreshingHealth(false);
+    }
+  };
 
+  useEffect(() => {
     fetchHealthStatus();
-    const interval = setInterval(fetchHealthStatus, 30000);
-
+    const interval = setInterval(() => fetchHealthStatus(), 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -950,7 +971,6 @@ export default function SocialPlanMasterPage() {
     { value: "working_capital" as FundingPurpose, label: "Оборотные средства" },
     { value: "equipment" as FundingPurpose, label: "Оборудование" },
     { value: "transport" as FundingPurpose, label: "Транспорт" },
-    { value: "property" as FundingPurpose, label: "Недвижимость" },
   ];
 
   const handleInputChange = (
@@ -966,6 +986,30 @@ export default function SocialPlanMasterPage() {
       }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
+      // Inline numeric validations
+      if (type === "number" && value !== "") {
+        const num = parseFloat(value);
+        const errors: Record<string, string> = { ...fieldErrors };
+        if (num < 0) {
+          errors[name] = "Значение не может быть отрицательным";
+        } else if (name === "loanCapital" && (num < 50 || num > 350)) {
+          errors[name] = "Допустимый диапазон: 50–350 тыс. ₽";
+        } else if (name === "investedOwn") {
+          const ownVal = parseFloat(formData.ownCapital);
+          if (!isNaN(ownVal) && num > ownVal) {
+            errors[name] = "Не может превышать собственные средства";
+          } else {
+            delete errors[name];
+          }
+        } else {
+          delete errors[name];
+        }
+        setFieldErrors(errors);
+      } else if (type === "number" && value === "") {
+        const errors = { ...fieldErrors };
+        delete errors[name];
+        setFieldErrors(errors);
+      }
     }
   };
 
@@ -1017,6 +1061,7 @@ export default function SocialPlanMasterPage() {
           : undefined,
       business_types: formData.businessTypes,
       funding_purposes: formData.fundingPurposes,
+      funding_description: formData.fundingDescription || undefined,
       own_capital: ownCapitalValue,
       invested_own: parseInt(formData.investedOwn) || 0,
       loan_capital: loanCapitalValue,
@@ -1042,6 +1087,7 @@ export default function SocialPlanMasterPage() {
       existing_loan_monthly_payment: formData.existingLoanMonthlyPayment
         ? parseInt(formData.existingLoanMonthlyPayment)
         : undefined,
+      advanced_planning_mode: advancedPlanningMode,
     };
   };
 
@@ -1056,6 +1102,7 @@ export default function SocialPlanMasterPage() {
     setSynthesisStartTime(null);
     setSelectedAdjustments([]);
     setNeedsAdjustment(false);
+    setNeedsGoalSeekReview(false);
     setIsContinuingGeneration(false);
     setManualFunds({ ownCapital: "", loanCapital: "" });
     setLeverValues({});
@@ -1085,8 +1132,10 @@ export default function SocialPlanMasterPage() {
     activeSynthesisIdRef.current = null;
     setError(null);
     setIsSubmitting(true);
+    setIsGenerationPaused(false);
     setIsContinuingGeneration(Boolean(options?.fallbackFromContinue));
     setNeedsAdjustment(false);
+    setNeedsGoalSeekReview(false);
     setSelectedAdjustments([]);
     lastProgressRef.current = 0;
     previewUnavailableForSynthesisRef.current = null;
@@ -1119,6 +1168,13 @@ export default function SocialPlanMasterPage() {
       !formData.spendingPeriod
     ) {
       setError("Пожалуйста, заполните все обязательные поля");
+      setIsSubmitting(false);
+      setIsContinuingGeneration(false);
+      return;
+    }
+
+    if (Object.keys(fieldErrors).length > 0) {
+      setError("Исправьте ошибки в форме перед отправкой");
       setIsSubmitting(false);
       setIsContinuingGeneration(false);
       return;
@@ -1396,6 +1452,14 @@ export default function SocialPlanMasterPage() {
           }
 
           fetchSynthesisResult(id);
+        } else if (status.status === "needs_goal_seek_review") {
+          stopPolling();
+          clearInterval(interval);
+          setIsSubmitting(false);
+          setIsContinuingGeneration(false);
+          setNeedsGoalSeekReview(true);
+          setError(null);
+          setSynthesisStartTime(null);
         } else if (
           status.status === "failed" ||
           status.status === "needs_adjustment"
@@ -1620,7 +1684,8 @@ export default function SocialPlanMasterPage() {
       synthesisStatus?.correction_cycle_status === "financial_recalc_failed" ||
       Boolean(synthesisStatus?.pipeline_status?.stage46_failed) ||
       synthesisStatus?.pipeline_status?.consistency_ok === false;
-    if (!isForceFinalize && !hasLeverChanges && !canRetryWithoutLeverChanges)
+    const isGoalSeekContinue = needsGoalSeekReview;
+    if (!isForceFinalize && !hasLeverChanges && !canRetryWithoutLeverChanges && !isGoalSeekContinue)
       return;
 
     // В этом флоу при нажатии "Продолжить генерацию" всегда продолжаем текущую сессию
@@ -1632,6 +1697,7 @@ export default function SocialPlanMasterPage() {
       setError(null);
       // После "Продолжить генерацию" уходим из режима предупреждений обратно в progress.
       setNeedsAdjustment(false);
+      setNeedsGoalSeekReview(false);
       setSynthesisResult(null);
       setSynthesisDuration(null);
       setSynthesisStartTime(Date.now());
@@ -1748,6 +1814,7 @@ export default function SocialPlanMasterPage() {
     setSynthesisDuration(null);
     setSelectedAdjustments([]);
     setNeedsAdjustment(false);
+    setNeedsGoalSeekReview(false);
     setIsContinuingGeneration(false);
     setManualFunds({ ownCapital: "", loanCapital: "" });
     setLeverValues({});
@@ -1772,6 +1839,7 @@ export default function SocialPlanMasterPage() {
     isSubmitting ||
     Boolean(synthesisResult) ||
     needsAdjustment ||
+    needsGoalSeekReview ||
     Boolean(synthesisStatus) ||
     Boolean(synthesisId);
 
@@ -1855,7 +1923,10 @@ export default function SocialPlanMasterPage() {
     lastProgressRef.current = progressValue;
   }, [progressValue]);
 
+  const isSystemReady = Boolean(healthStatus?.all_ready);
+
   const isFormValid = Boolean(
+    isSystemReady &&
     formData.businessIdea.trim() &&
     formData.region.trim() &&
     formData.city.trim() &&
@@ -1874,8 +1945,19 @@ export default function SocialPlanMasterPage() {
         formData.existingLoanMonthlyPayment?.trim())),
   );
 
-  const fieldError = (filled: boolean) =>
-    submitAttempted && !filled ? { border: "2px solid #ef4444" } : undefined;
+  const fieldError = (filled: boolean, fieldName?: string) => {
+    if (fieldName && fieldErrors[fieldName]) {
+      return { border: "2px solid #ef4444" };
+    }
+    return submitAttempted && !filled ? { border: "2px solid #ef4444" } : undefined;
+  };
+
+  const fieldErrorMsg = (fieldName: string) =>
+    fieldErrors[fieldName] ? (
+      <span style={{ color: "#ef4444", fontSize: "12px", marginTop: "2px", display: "block" }}>
+        {fieldErrors[fieldName]}
+      </span>
+    ) : null;
 
   return (
     <div className={styles.container}>
@@ -1988,20 +2070,22 @@ export default function SocialPlanMasterPage() {
                 {isSubmitting && synthesisStatus && (
                   <div className={styles.progressCard}>
                     <div className={styles.progressHeader}>
-                      <div className={styles.progressSpinner} />
-                      <h2>Создаем ваш бизнес-план...</h2>
+                      {!isGenerationPaused && <div className={styles.progressSpinner} />}
+                      <h2>{isGenerationPaused ? "Генерация приостановлена" : "Создаем ваш бизнес-план..."}</h2>
                     </div>
 
                     <div className={styles.progressDetails}>
                       <div className={styles.progressHeaderInfo}>
                         <p className={styles.stageText}>
-                          {synthesisStatus.current_stage || "Инициализация..."}
+                          {isGenerationPaused
+                            ? "Сервер продолжает работу в фоне"
+                            : (synthesisStatus.current_stage || "Инициализация...")}
                         </p>
                         <span className={styles.progressPercent}>
                           {progressValue}%
                         </span>
                       </div>
-                      {cycleText && (
+                      {cycleText && !isGenerationPaused && (
                         <p
                           className={styles.stageText}
                           style={{ marginTop: "8px", opacity: 0.85 }}
@@ -2014,10 +2098,81 @@ export default function SocialPlanMasterPage() {
                           className={styles.progressBar}
                           style={{
                             width: `${progressValue}%`,
+                            opacity: isGenerationPaused ? 0.5 : 1,
                           }}
                         />
                       </div>
                     </div>
+
+                    {/* Pause / Resume Controls */}
+                    {!isGenerationPaused ? (
+                      <div style={{ marginTop: "16px", display: "flex", justifyContent: "flex-end" }}>
+                        <button
+                          onClick={() => {
+                            stopPolling();
+                            setIsGenerationPaused(true);
+                          }}
+                          style={{
+                            padding: "7px 16px",
+                            borderRadius: "6px",
+                            border: "1px solid #cbd5e1",
+                            background: "#f8fafc",
+                            color: "#475569",
+                            fontSize: "0.85rem",
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "6px",
+                          }}
+                        >
+                          ⏸ Остановить генерацию
+                        </button>
+                      </div>
+                    ) : (
+                      <div style={{ marginTop: "16px", display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+                        <button
+                          onClick={() => {
+                            // Обновить запрос: сброс всего, возврат на форму
+                            stopPolling();
+                            setIsGenerationPaused(false);
+                            setSynthesisId(null);
+                            setSynthesisStatus(null);
+                            setSynthesisResult(null);
+                            setIsSubmitting(false);
+                          }}
+                          style={{
+                            padding: "7px 16px",
+                            borderRadius: "6px",
+                            border: "1px solid #fca5a5",
+                            background: "#fef2f2",
+                            color: "#dc2626",
+                            fontSize: "0.85rem",
+                            cursor: "pointer",
+                          }}
+                        >
+                          🔄 Обновить запрос
+                        </button>
+                        <button
+                          onClick={() => {
+                            // Продолжить: возобновляем поллинг
+                            setIsGenerationPaused(false);
+                            const resumeId = synthesisId || synthesisStatus?.synthesis_id || activeSynthesisIdRef.current;
+                            if (resumeId) pollSynthesisStatus(resumeId);
+                          }}
+                          style={{
+                            padding: "7px 16px",
+                            borderRadius: "6px",
+                            border: "1px solid #86efac",
+                            background: "#f0fdf4",
+                            color: "#16a34a",
+                            fontSize: "0.85rem",
+                            cursor: "pointer",
+                          }}
+                        >
+                          ▶ Продолжить генерацию
+                        </button>
+                      </div>
+                    )}
 
                     {/* Full Logs */}
                     {mainServiceLogs.length > 0 && (
@@ -2059,6 +2214,178 @@ export default function SocialPlanMasterPage() {
                         </div>
                       </div>
                     )}
+                  </div>
+                )}
+
+                {/* Goal Seek Review Panel — Расширенные настройки планирования */}
+                {needsGoalSeekReview && synthesisStatus && (
+                  <div className={styles.adjustmentCard}>
+                    <div className={styles.adjustmentHeader}>
+                      <FiCheck className={styles.successIcon} style={{ color: "#0ea5e9" }} />
+                      <h3 style={{ color: "#0c4a6e" }}>
+                        Сервис сформировал финансовую модель вашего проекта
+                      </h3>
+                    </div>
+
+                    <p style={{ margin: "0 0 14px", fontSize: "0.93rem", color: "#475569" }}>
+                      Ниже представлены расчётные показатели и рычаги рентабельности.
+                      Вы можете скорректировать параметры и затем продолжить финальную генерацию.
+                    </p>
+
+                    <div className={styles.marginPreviewCard} style={{ background: "#f0f9ff", borderColor: "#7dd3fc" }}>
+                      <div className={styles.marginPreviewHeader}>
+                        <strong>Показатели финансовой модели</strong>
+                        {isPreviewLoading && <span className={styles.smallSpinner} style={{ marginLeft: "8px" }} />}
+                      </div>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px 20px", marginTop: "8px" }}>
+                        <div style={{ fontSize: "0.88rem", color: "#475569" }}>
+                          <span style={{ opacity: 0.75 }}>Рентабельность (прогноз):</span>
+                          <br />
+                          <strong style={{ fontSize: "1.05rem", color: projectedMargin >= 0 ? "#166534" : "#b91c1c" }}>
+                            {isPreviewLoading ? "..." : formatPct(projectedMargin)}
+                          </strong>
+                          {adjustmentPreview && !isPreviewLoading && projectedMargin !== baseMargin && (
+                            <span style={{ fontSize: "0.78rem", color: projectedMargin > baseMargin ? "#166534" : "#b91c1c", marginLeft: "6px" }}>
+                              ({projectedMargin > baseMargin ? "+" : ""}{(projectedMargin - baseMargin).toFixed(1)}%)
+                            </span>
+                          )}
+                        </div>
+                        <div style={{ fontSize: "0.88rem", color: "#475569" }}>
+                          <span style={{ opacity: 0.75 }}>Целевая рентабельность:</span>
+                          <br />
+                          <strong style={{ fontSize: "1.05rem", color: "#0c4a6e" }}>
+                            {targetMargin.toFixed(1)}%
+                          </strong>
+                        </div>
+                        <div style={{ fontSize: "0.88rem", color: "#475569" }}>
+                          <span style={{ opacity: 0.75 }}>Прибыль / мес:</span>
+                          <br />
+                          <strong>
+                            {isPreviewLoading
+                              ? "..."
+                              : adjustmentPreview?.projected_profit_monthly != null
+                                ? formatMoney(adjustmentPreview.projected_profit_monthly)
+                                : formatMoney(synthesisStatus?.financials_preview?.net_profit_monthly ?? 0)}
+                          </strong>
+                        </div>
+                        {synthesisStatus?.financials_preview?.payback_months != null && (
+                          <div style={{ fontSize: "0.88rem", color: "#475569" }}>
+                            <span style={{ opacity: 0.75 }}>Срок окупаемости:</span>
+                            <br />
+                            <strong>{Math.round(synthesisStatus.financials_preview.payback_months)} мес.</strong>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {(profitabilityLevers.length > 0 || advancedPlanningMode) && (
+                      <div className={styles.problemBlock}>
+                        <p style={{ margin: "4px 0 10px", fontWeight: 600, fontSize: "0.98rem" }}>
+                          Рычаги рентабельности — настройте при необходимости:
+                        </p>
+                        <div className={styles.doubleRow}>
+                          {profitabilityLevers.map((lever) => (
+                            <div
+                              key={lever.key}
+                              className={styles.section}
+                              style={{ marginBottom: 0, paddingBottom: 0, borderBottom: "none" }}
+                            >
+                              <label style={{ display: "block", fontSize: "0.9rem", marginBottom: "6px" }}>
+                                {lever.label}{lever.unit ? ` (${lever.unit})` : ""}
+                              </label>
+                              <input
+                                type="number"
+                                min={typeof lever.min_value === "number" ? lever.min_value : undefined}
+                                max={typeof lever.max_value === "number" ? lever.max_value : undefined}
+                                step={typeof lever.step === "number" ? lever.step : "any"}
+                                placeholder={
+                                  typeof lever.current_value === "number"
+                                    ? String(lever.current_value)
+                                    : typeof lever.default_value === "number"
+                                      ? String(lever.default_value)
+                                      : "Введите значение"
+                                }
+                                value={leverValues[lever.key] ?? ""}
+                                onChange={(e) =>
+                                  setLeverValues((prev) => ({ ...prev, [lever.key]: e.target.value }))
+                                }
+                                className={styles.input}
+                              />
+                              {lever.description && (
+                                <p style={{ fontSize: "0.82rem", opacity: 0.8, marginTop: "4px" }}>
+                                  {lever.description}
+                                </p>
+                              )}
+                            </div>
+                          ))}
+                          {advancedPlanningMode && (
+                            <>
+                              <div
+                                className={styles.section}
+                                style={{ marginBottom: 0, paddingBottom: 0, borderBottom: "none" }}
+                              >
+                                <label style={{ display: "block", fontSize: "0.9rem", marginBottom: "6px" }}>
+                                  Площадь помещения (м²)
+                                </label>
+                                <input
+                                  type="number"
+                                  min={5}
+                                  max={10000}
+                                  step={1}
+                                  placeholder="Площадь в м²"
+                                  value={leverValues["area_sqm"] ?? ""}
+                                  onChange={(e) =>
+                                    setLeverValues((prev) => ({ ...prev, area_sqm: e.target.value }))
+                                  }
+                                  className={styles.input}
+                                />
+                                <p style={{ fontSize: "0.82rem", opacity: 0.8, marginTop: "4px" }}>
+                                  Влияет на арендную плату и пропускную способность
+                                </p>
+                              </div>
+                              <div
+                                className={styles.section}
+                                style={{ marginBottom: 0, paddingBottom: 0, borderBottom: "none" }}
+                              >
+                                <label style={{ display: "block", fontSize: "0.9rem", marginBottom: "6px" }}>
+                                  Штат (чел.)
+                                </label>
+                                <input
+                                  type="number"
+                                  min={1}
+                                  max={100}
+                                  step={1}
+                                  placeholder="Количество сотрудников"
+                                  value={leverValues["staff_count"] ?? ""}
+                                  onChange={(e) =>
+                                    setLeverValues((prev) => ({ ...prev, staff_count: e.target.value }))
+                                  }
+                                  className={styles.input}
+                                />
+                                <p style={{ fontSize: "0.82rem", opacity: 0.8, marginTop: "4px" }}>
+                                  Влияет на ФОТ и выручку сервисного бизнеса
+                                </p>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className={styles.adjustmentActions}>
+                      <button className={styles.fixManuallyBtn} onClick={handleReset}>
+                        Изменить начальные данные
+                      </button>
+                      <button
+                        className={styles.autoFixBtn}
+                        onClick={handleContinueGeneration}
+                        disabled={isSubmitting}
+                      >
+                        {isContinuingGeneration
+                          ? "Запускаем генерацию..."
+                          : "Сгенерировать бизнес-план"}
+                      </button>
+                    </div>
                   </div>
                 )}
 
@@ -2366,6 +2693,83 @@ export default function SocialPlanMasterPage() {
             ) : (
               /* Form Section */
               <section className={styles.formSection}>
+                {/* ── Панель статуса сервисов ── */}
+                <div style={{
+                  marginBottom: "16px",
+                  padding: "12px 16px",
+                  borderRadius: "10px",
+                  border: `1px solid ${isLoadingHealth ? "#e2e8f0" : isSystemReady ? "#86efac" : "#fca5a5"}`,
+                  background: isLoadingHealth ? "#f8fafc" : isSystemReady ? "#f0fdf4" : "#fef2f2",
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "#334155" }}>Статус системы</span>
+                      {isLoadingHealth && <span style={{ fontSize: "0.78rem", color: "#64748b" }}>Проверка...</span>}
+                      {!isLoadingHealth && (
+                        <span style={{
+                          fontSize: "0.75rem",
+                          fontWeight: 600,
+                          padding: "2px 8px",
+                          borderRadius: "20px",
+                          background: isSystemReady ? "#dcfce7" : "#fee2e2",
+                          color: isSystemReady ? "#16a34a" : "#dc2626",
+                        }}>
+                          {isSystemReady ? "✅ Готов к работе" : "❌ Не готов"}
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => fetchHealthStatus(true)}
+                      disabled={isRefreshingHealth || isLoadingHealth}
+                      style={{
+                        padding: "3px 10px",
+                        borderRadius: "5px",
+                        border: "1px solid #cbd5e1",
+                        background: "transparent",
+                        fontSize: "0.75rem",
+                        color: "#64748b",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "4px",
+                      }}
+                    >
+                      <FiRefreshCw style={{ width: 11, height: 11, ...(isRefreshingHealth ? { animation: "spin 1s linear infinite" } : {}) }} />
+                      Обновить
+                    </button>
+                  </div>
+                  {healthStatus?.services && (
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                      {(healthStatus.services as any[]).map((svc: any) => {
+                        const isReady = svc.status === "ready";
+                        const isWarn = svc.status === "warning";
+                        return (
+                          <div key={svc.id} title={svc.error || svc.detail || ""} style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "5px",
+                            padding: "3px 10px",
+                            borderRadius: "20px",
+                            fontSize: "0.78rem",
+                            background: isReady ? "#dcfce7" : isWarn ? "#fef9c3" : "#fee2e2",
+                            color: isReady ? "#15803d" : isWarn ? "#854d0e" : "#b91c1c",
+                            border: `1px solid ${isReady ? "#86efac" : isWarn ? "#fde68a" : "#fca5a5"}`,
+                          }}>
+                            <span>{isReady ? "✅" : isWarn ? "⚠️" : "❌"}</span>
+                            <span>{svc.name}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                  {!isLoadingHealth && !isSystemReady && (
+                    <p style={{ marginTop: "8px", fontSize: "0.78rem", color: "#dc2626" }}>
+                      Генерация недоступна — устраните проблемы выше и нажмите «Обновить»
+                    </p>
+                  )}
+                </div>
+
                 <div className={styles.card}>
                   <h2>Внесите ваши данные</h2>
 
@@ -2383,6 +2787,53 @@ export default function SocialPlanMasterPage() {
                         style={fieldError(!formData.businessIdea.trim())}
                         rows={4}
                       />
+                    </div>
+
+                    {/* Advanced Planning Mode */}
+                    <div className={styles.section}>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "flex-start",
+                          gap: "10px",
+                          padding: "12px 14px",
+                          background: advancedPlanningMode ? "#eef6ff" : "#f8fafc",
+                          border: `1px solid ${advancedPlanningMode ? "#93c5fd" : "#e2e8f0"}`,
+                          borderRadius: "8px",
+                          cursor: "pointer",
+                          transition: "all 0.2s ease",
+                        }}
+                        onClick={() => setAdvancedPlanningMode((v) => !v)}
+                      >
+                        <input
+                          type="checkbox"
+                          id="advancedPlanningMode"
+                          checked={advancedPlanningMode}
+                          onChange={(e) => setAdvancedPlanningMode(e.target.checked)}
+                          onClick={(e) => e.stopPropagation()}
+                          className={styles.checkbox}
+                          style={{ marginTop: "2px", flexShrink: 0 }}
+                        />
+                        <div>
+                          <label
+                            htmlFor="advancedPlanningMode"
+                            style={{
+                              fontWeight: 600,
+                              fontSize: "0.95rem",
+                              color: advancedPlanningMode ? "#1e40af" : "#334155",
+                              cursor: "pointer",
+                              display: "block",
+                              marginBottom: "2px",
+                            }}
+                          >
+                            Расширенные настройки планирования
+                          </label>
+                          <p style={{ fontSize: "0.83rem", color: "#64748b", margin: 0 }}>
+                            Перед финальной генерацией сервис покажет финансовую модель и даст возможность
+                            тонко настроить ключевые параметры — средний чек, загрузку, аренду и другие рычаги.
+                          </p>
+                        </div>
+                      </div>
                     </div>
 
                     {/* Region and City */}
@@ -2523,6 +2974,20 @@ export default function SocialPlanMasterPage() {
                           </button>
                         ))}
                       </div>
+                      <div style={{ marginTop: "12px" }}>
+                        <label className={styles.label}>
+                          Опишите точно, на что вы планируете использовать финансирование
+                        </label>
+                        <textarea
+                          name="fundingDescription"
+                          placeholder="Например: приобретение швейного оборудования (3 машины), аренда помещения на 3 месяца, закупка тканей и фурнитуры..."
+                          value={formData.fundingDescription}
+                          onChange={handleInputChange}
+                          className={styles.textarea}
+                          rows={3}
+                          style={{ width: "100%", resize: "vertical" }}
+                        />
+                      </div>
                     </div>
 
                     {/* Financial Section */}
@@ -2541,8 +3006,10 @@ export default function SocialPlanMasterPage() {
                             value={formData.ownCapital}
                             onChange={handleInputChange}
                             className={styles.input}
-                            style={fieldError(!formData.ownCapital.trim())}
+                            min={0}
+                            style={fieldError(!formData.ownCapital.trim(), "ownCapital")}
                           />
+                          {fieldErrorMsg("ownCapital")}
                         </div>
                         <div>
                           <label className={styles.label}>
@@ -2555,7 +3022,10 @@ export default function SocialPlanMasterPage() {
                             value={formData.investedOwn}
                             onChange={handleInputChange}
                             className={styles.input}
+                            min={0}
+                            style={fieldError(true, "investedOwn")}
                           />
+                          {fieldErrorMsg("investedOwn")}
                         </div>
                       </div>
 
@@ -2567,41 +3037,32 @@ export default function SocialPlanMasterPage() {
                           <input
                             type="number"
                             name="loanCapital"
-                            placeholder="Например: 300"
+                            placeholder="50–350"
                             value={formData.loanCapital}
                             onChange={handleInputChange}
                             className={styles.input}
-                            style={fieldError(!formData.loanCapital.trim())}
+                            min={50}
+                            max={350}
+                            style={fieldError(!formData.loanCapital.trim(), "loanCapital")}
                           />
+                          {fieldErrorMsg("loanCapital")}
                         </div>
                         <div>
                           <label className={styles.label}>
-                            Из них уже вложено (тыс. ₽)
+                            Период расходования (месяцы) *
                           </label>
                           <input
                             type="number"
-                            name="investedLoan"
-                            placeholder="Например: 50"
-                            value={formData.investedLoan}
+                            name="spendingPeriod"
+                            placeholder="Например: 24"
+                            value={formData.spendingPeriod}
                             onChange={handleInputChange}
                             className={styles.input}
+                            min={1}
+                            style={fieldError(!formData.spendingPeriod.trim(), "spendingPeriod")}
                           />
+                          {fieldErrorMsg("spendingPeriod")}
                         </div>
-                      </div>
-
-                      <div className={styles.singleRow}>
-                        <label className={styles.label}>
-                          Период расходования (месяцы) *
-                        </label>
-                        <input
-                          type="number"
-                          name="spendingPeriod"
-                          placeholder="Например: 24"
-                          value={formData.spendingPeriod}
-                          onChange={handleInputChange}
-                          className={styles.input}
-                          style={fieldError(!formData.spendingPeriod.trim())}
-                        />
                       </div>
                     </div>
 
