@@ -14,11 +14,22 @@ import {
   FiChevronUp,
 } from "react-icons/fi";
 
-type BusinessType = "B2B" | "B2C" | "B2B2C" | "C2C" | "D2C";
-type FundingPurpose =
-  | "working_capital"
-  | "equipment"
-  | "transport";
+type BusinessType = "B2B" | "B2C" | "B2B2C" | "C2C";
+type BusinessCategory = "retail" | "services" | "production" | "horeca" | "it_saas";
+
+interface ClassifyOption {
+  archetype_id: string;
+  archetype_subtype: string;
+  display_name: string;
+  business_model: string;
+  confidence: number;
+}
+interface ClassifyResult {
+  detected: ClassifyOption;
+  alternatives: ClassifyOption[];
+  elapsed_ms: number;
+}
+type FundingPurpose = "working_capital" | "equipment" | "transport";
 
 interface FormData {
   businessIdea: string;
@@ -27,6 +38,7 @@ interface FormData {
   hasExactAddress: boolean;
   exactAddress: string;
   businessTypes: BusinessType[];
+  businessCategory?: BusinessCategory;
   fundingPurposes: FundingPurpose[];
   fundingDescription: string;
   ownCapital: string;
@@ -550,6 +562,7 @@ export default function SocialPlanMasterPage() {
     hasExactAddress: false,
     exactAddress: "",
     businessTypes: [],
+    businessCategory: undefined,
     fundingPurposes: [],
     fundingDescription: "",
     ownCapital: "",
@@ -610,6 +623,11 @@ export default function SocialPlanMasterPage() {
   const [isLoadingHealth, setIsLoadingHealth] = useState(true);
   const [isRefreshingHealth, setIsRefreshingHealth] = useState(false);
   const [isGenerationPaused, setIsGenerationPaused] = useState(false);
+
+  // [CLASSIFY] Pre-flight архетип-классификация
+  const [isClassifying, setIsClassifying] = useState(false);
+  const [classifyResult, setClassifyResult] = useState<ClassifyResult | null>(null);
+  const [showClassifyModal, setShowClassifyModal] = useState(false);
   const [archetypesCatalog, setArchetypesCatalog] = useState<
     Record<
       string,
@@ -739,7 +757,8 @@ export default function SocialPlanMasterPage() {
   useEffect(() => {
     const _isInReviewMode =
       (needsAdjustment && synthesisStatus?.status === "needs_adjustment") ||
-      (needsGoalSeekReview && synthesisStatus?.status === "needs_goal_seek_review");
+      (needsGoalSeekReview &&
+        synthesisStatus?.status === "needs_goal_seek_review");
     if (!_isInReviewMode) {
       setLeverValues({});
       setInitialLeverValues({});
@@ -793,12 +812,9 @@ export default function SocialPlanMasterPage() {
 
     const _isInReviewMode2 =
       (needsAdjustment && synthesisStatus?.status === "needs_adjustment") ||
-      (needsGoalSeekReview && synthesisStatus?.status === "needs_goal_seek_review");
-    if (
-      !_isInReviewMode2 ||
-      !effectiveSynthesisId ||
-      !synthesisStatus
-    ) {
+      (needsGoalSeekReview &&
+        synthesisStatus?.status === "needs_goal_seek_review");
+    if (!_isInReviewMode2 || !effectiveSynthesisId || !synthesisStatus) {
       setAdjustmentPreview(null);
       setIsPreviewLoading(false);
       return;
@@ -818,7 +834,14 @@ export default function SocialPlanMasterPage() {
     }
 
     const changedLeversPayload = buildChangedLeverPayload();
-    console.log("[Preview] leverValues:", leverValues, "initialLeverValues:", initialLeverValues, "changedPayload:", changedLeversPayload);
+    console.log(
+      "[Preview] leverValues:",
+      leverValues,
+      "initialLeverValues:",
+      initialLeverValues,
+      "changedPayload:",
+      changedLeversPayload,
+    );
 
     previewDebounceRef.current = setTimeout(async () => {
       const requestSeq = previewRequestSeqRef.current + 1;
@@ -855,7 +878,14 @@ export default function SocialPlanMasterPage() {
         }
 
         const data: AdjustmentPreview = await response.json();
-        console.log("[Preview] response:", data?.status, "projected_margin:", data?.projected?.net_margin, "base_margin:", data?.base?.net_margin);
+        console.log(
+          "[Preview] response:",
+          data?.status,
+          "projected_margin:",
+          data?.projected?.net_margin,
+          "base_margin:",
+          data?.base?.net_margin,
+        );
         if (previewRequestSeqRef.current !== requestSeq) {
           return;
         }
@@ -922,20 +952,41 @@ export default function SocialPlanMasterPage() {
   const fetchHealthStatus = async (manualRefresh = false) => {
     if (manualRefresh) setIsRefreshingHealth(true);
     try {
-      const response = await fetch(`${PLANMASTER_BASE_URL}/api/health/services`, { cache: "no-store" });
+      const response = await fetch(
+        `${PLANMASTER_BASE_URL}/api/health/services`,
+        { cache: "no-store" },
+      );
       if (response.ok) {
         const data = await response.json();
         setHealthStatus(data);
       } else {
         // Backend is up but endpoint unknown — mark as degraded
-        setHealthStatus({ all_ready: false, services: [
-          { id: "backend", name: "Сервер генерации", status: "error", error: `HTTP ${response.status}`, required: true },
-        ]});
+        setHealthStatus({
+          all_ready: false,
+          services: [
+            {
+              id: "backend",
+              name: "Сервер генерации",
+              status: "error",
+              error: `HTTP ${response.status}`,
+              required: true,
+            },
+          ],
+        });
       }
     } catch {
-      setHealthStatus({ all_ready: false, services: [
-        { id: "backend", name: "Сервер генерации", status: "error", error: "Сервер недоступен", required: true },
-      ]});
+      setHealthStatus({
+        all_ready: false,
+        services: [
+          {
+            id: "backend",
+            name: "Сервер генерации",
+            status: "error",
+            error: "Сервер недоступен",
+            required: true,
+          },
+        ],
+      });
     } finally {
       setIsLoadingHealth(false);
       if (manualRefresh) setIsRefreshingHealth(false);
@@ -949,22 +1000,17 @@ export default function SocialPlanMasterPage() {
   }, []);
 
   const businessTypeOptions = [
-    {
-      value: "B2C" as BusinessType,
-      label: "Частные лица (B2C)",
-    },
-    {
-      value: "B2B" as BusinessType,
-      label: "Компании (B2B)",
-    },
-    {
-      value: "C2C" as BusinessType,
-      label: "Между частными лицами (C2C)",
-    },
-    {
-      value: "D2C" as BusinessType,
-      label: "От бренда — клиенту (D2C)",
-    },
+    { value: "B2C" as BusinessType, label: "Частные лица (B2C)" },
+    { value: "B2B" as BusinessType, label: "Компании (B2B)" },
+    { value: "C2C" as BusinessType, label: "Между частными лицами (C2C)" },
+  ];
+
+  const businessCategoryOptions: { value: BusinessCategory; label: string; icon: string }[] = [
+    { value: "retail",     label: "Ритейл",       icon: "🛒" },
+    { value: "services",   label: "Услуги",        icon: "🤝" },
+    { value: "production", label: "Производство",  icon: "🏭" },
+    { value: "horeca",     label: "Общепит (HoReCa)", icon: "🍽️" },
+    { value: "it_saas",   label: "IT / SaaS",     icon: "💻" },
   ];
 
   const fundingPurposeOptions = [
@@ -1026,6 +1072,13 @@ export default function SocialPlanMasterPage() {
     }));
   };
 
+  const handleBusinessCategorySelect = (cat: BusinessCategory) => {
+    setFormData((prev) => ({
+      ...prev,
+      businessCategory: prev.businessCategory === cat ? undefined : cat,
+    }));
+  };
+
   const handleFundingPurposeToggle = (purpose: FundingPurpose) => {
     setFormData((prev) => ({
       ...prev,
@@ -1038,6 +1091,7 @@ export default function SocialPlanMasterPage() {
   const buildPlanRequestData = (overrides?: {
     ownCapital?: number;
     loanCapital?: number;
+    confirmedArchetype?: ClassifyOption;
   }) => {
     const ownCapitalValue =
       typeof overrides?.ownCapital === "number" &&
@@ -1060,6 +1114,7 @@ export default function SocialPlanMasterPage() {
           ? formData.exactAddress.trim()
           : undefined,
       business_types: formData.businessTypes,
+      business_category: formData.businessCategory || undefined,
       funding_purposes: formData.fundingPurposes,
       funding_description: formData.fundingDescription || undefined,
       own_capital: ownCapitalValue,
@@ -1088,6 +1143,10 @@ export default function SocialPlanMasterPage() {
         ? parseInt(formData.existingLoanMonthlyPayment)
         : undefined,
       advanced_planning_mode: advancedPlanningMode,
+      // [LOCKED_ARCHETYPE] Передаём подтверждённый пользователем архетип
+      locked_archetype_id: overrides?.confirmedArchetype?.archetype_id || undefined,
+      locked_archetype_subtype: overrides?.confirmedArchetype?.archetype_subtype || undefined,
+      locked_business_model: overrides?.confirmedArchetype?.business_model || undefined,
     };
   };
 
@@ -1127,6 +1186,7 @@ export default function SocialPlanMasterPage() {
     ownCapitalOverride?: number;
     loanCapitalOverride?: number;
     fallbackFromContinue?: boolean;
+    confirmedArchetype?: ClassifyOption;
   }) => {
     stopPolling();
     activeSynthesisIdRef.current = null;
@@ -1162,6 +1222,7 @@ export default function SocialPlanMasterPage() {
       !formData.region ||
       !formData.city ||
       formData.businessTypes.length === 0 ||
+      !formData.businessCategory ||
       formData.fundingPurposes.length === 0 ||
       !formData.ownCapital ||
       !formData.loanCapital ||
@@ -1184,6 +1245,7 @@ export default function SocialPlanMasterPage() {
       const requestData = buildPlanRequestData({
         ownCapital: options?.ownCapitalOverride,
         loanCapital: options?.loanCapitalOverride,
+        confirmedArchetype: options?.confirmedArchetype,
       });
 
       console.log(
@@ -1294,7 +1356,53 @@ export default function SocialPlanMasterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitAttempted(true);
+
+    // Быстрая валидация — дублируем check из startSynthesis, чтобы не звать classify зря
+    if (
+      !formData.businessIdea || !formData.region || !formData.city ||
+      formData.businessTypes.length === 0 || !formData.businessCategory ||
+      formData.fundingPurposes.length === 0 || !formData.ownCapital ||
+      !formData.loanCapital || !formData.spendingPeriod ||
+      Object.keys(fieldErrors).length > 0
+    ) {
+      // Передаём в startSynthesis — она сама покажет ошибку
+      await startSynthesis();
+      return;
+    }
+
+    // [CLASSIFY] Pre-flight классификация архетипа
+    setIsClassifying(true);
+    try {
+      const res = await fetch(`${PLANMASTER_BASE_URL}/api/synthesis/classify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          business_concept: formData.businessIdea,
+          business_category: formData.businessCategory,
+          region: formData.region,
+          city: formData.city,
+        }),
+      });
+      if (res.ok) {
+        const data: ClassifyResult = await res.json();
+        setClassifyResult(data);
+        setShowClassifyModal(true);
+        return; // Ждём подтверждения пользователя в модале
+      }
+    } catch (err) {
+      console.warn("[CLASSIFY] Pre-flight failed, falling back to direct synthesis:", err);
+    } finally {
+      setIsClassifying(false);
+    }
+    // Fallback: если classify упал — запускаем без подтверждения
     await startSynthesis();
+  };
+
+  // Вызывается из confirmation card после выбора архетипа
+  const confirmAndGenerate = async (chosen: ClassifyOption) => {
+    setShowClassifyModal(false);
+    setClassifyResult(null);
+    await startSynthesis({ confirmedArchetype: chosen });
   };
 
   const handleStopAndRestart = async () => {
@@ -1685,7 +1793,12 @@ export default function SocialPlanMasterPage() {
       Boolean(synthesisStatus?.pipeline_status?.stage46_failed) ||
       synthesisStatus?.pipeline_status?.consistency_ok === false;
     const isGoalSeekContinue = needsGoalSeekReview;
-    if (!isForceFinalize && !hasLeverChanges && !canRetryWithoutLeverChanges && !isGoalSeekContinue)
+    if (
+      !isForceFinalize &&
+      !hasLeverChanges &&
+      !canRetryWithoutLeverChanges &&
+      !isGoalSeekContinue
+    )
       return;
 
     // В этом флоу при нажатии "Продолжить генерацию" всегда продолжаем текущую сессию
@@ -1744,37 +1857,23 @@ export default function SocialPlanMasterPage() {
     } catch (err: any) {
       const statusCode = getErrorStatusCode(err);
       if (statusCode === 404) {
-        const ownOverride = manualFunds.ownCapital
-          ? parseInt(manualFunds.ownCapital, 10)
-          : undefined;
-        const loanOverride = manualFunds.loanCapital
-          ? parseInt(manualFunds.loanCapital, 10)
-          : undefined;
-
+        // [P0-FLOW FIX] Server restarted — job no longer exists.
+        // Do NOT silently restart synthesis (would create a new plan instead of continuing).
+        // Show a clear error so the user can decide what to do.
         setSynthesisStatus((prev) => {
           const prevLogs = Array.isArray(prev?.logs) ? prev!.logs : [];
-          const ts = new Date().toLocaleTimeString("ru-RU", {
-            hour12: false,
-          });
-          const compatMsg = `[${ts}] [BACKEND] [INFO] Режим корректировок недоступен на сервере. Запускаем генерацию в совместимом режиме`;
+          const ts = new Date().toLocaleTimeString("ru-RU", { hour12: false });
+          const errMsg = `[${ts}] [FRONTEND] [ERROR] Сервер был перезагружен, задача не найдена (404). Для получения финального документа запустите новую генерацию.`;
           return {
-            ...(prev || {
-              synthesis_id: currentSynthesisId,
-              progress: 75,
-              current_stage: "Совместимый режим",
-            }),
-            status: "in_progress",
-            current_stage:
-              "Режим корректировок недоступен, запускаем совместимую генерацию",
-            progress: Math.max(Number(prev?.progress || 0), 75),
-            logs: dedupeLogs([...prevLogs, compatMsg]),
+            ...(prev || { synthesis_id: currentSynthesisId, progress: 0 }),
+            status: "failed",
+            current_stage: "Сервер перезагружен — задача потеряна",
+            logs: dedupeLogs([...prevLogs, errMsg]),
           };
         });
-        await startSynthesis({
-          ownCapitalOverride: ownOverride,
-          loanCapitalOverride: loanOverride,
-          fallbackFromContinue: true,
-        });
+        setError(
+          "Сервер был перезагружен и задача не найдена. Пожалуйста, запустите новую генерацию.",
+        );
         return;
       }
 
@@ -1949,12 +2048,21 @@ export default function SocialPlanMasterPage() {
     if (fieldName && fieldErrors[fieldName]) {
       return { border: "2px solid #ef4444" };
     }
-    return submitAttempted && !filled ? { border: "2px solid #ef4444" } : undefined;
+    return submitAttempted && !filled
+      ? { border: "2px solid #ef4444" }
+      : undefined;
   };
 
   const fieldErrorMsg = (fieldName: string) =>
     fieldErrors[fieldName] ? (
-      <span style={{ color: "#ef4444", fontSize: "12px", marginTop: "2px", display: "block" }}>
+      <span
+        style={{
+          color: "#ef4444",
+          fontSize: "12px",
+          marginTop: "2px",
+          display: "block",
+        }}
+      >
         {fieldErrors[fieldName]}
       </span>
     ) : null;
@@ -1968,6 +2076,8 @@ export default function SocialPlanMasterPage() {
         <section className={styles.hero}>
           <div className={styles.heroContent}>
             <h1>Генератор бизнес-плана для социального контракта</h1>
+            <h3>бета-версия</h3>
+
             <p className={styles.heroDescription}>
               Создайте комплексный бизнес-план для вашего бизнеса с анализом
               рынка, целевой аудитории и стратегическими рекомендациями
@@ -2070,8 +2180,14 @@ export default function SocialPlanMasterPage() {
                 {isSubmitting && synthesisStatus && (
                   <div className={styles.progressCard}>
                     <div className={styles.progressHeader}>
-                      {!isGenerationPaused && <div className={styles.progressSpinner} />}
-                      <h2>{isGenerationPaused ? "Генерация приостановлена" : "Создаем ваш бизнес-план..."}</h2>
+                      {!isGenerationPaused && (
+                        <div className={styles.progressSpinner} />
+                      )}
+                      <h2>
+                        {isGenerationPaused
+                          ? "Генерация приостановлена"
+                          : "Создаем ваш бизнес-план..."}
+                      </h2>
                     </div>
 
                     <div className={styles.progressDetails}>
@@ -2079,7 +2195,8 @@ export default function SocialPlanMasterPage() {
                         <p className={styles.stageText}>
                           {isGenerationPaused
                             ? "Сервер продолжает работу в фоне"
-                            : (synthesisStatus.current_stage || "Инициализация...")}
+                            : synthesisStatus.current_stage ||
+                              "Инициализация..."}
                         </p>
                         <span className={styles.progressPercent}>
                           {progressValue}%
@@ -2106,7 +2223,13 @@ export default function SocialPlanMasterPage() {
 
                     {/* Pause / Resume Controls */}
                     {!isGenerationPaused ? (
-                      <div style={{ marginTop: "16px", display: "flex", justifyContent: "flex-end" }}>
+                      <div
+                        style={{
+                          marginTop: "16px",
+                          display: "flex",
+                          justifyContent: "flex-end",
+                        }}
+                      >
                         <button
                           onClick={() => {
                             stopPolling();
@@ -2129,7 +2252,14 @@ export default function SocialPlanMasterPage() {
                         </button>
                       </div>
                     ) : (
-                      <div style={{ marginTop: "16px", display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+                      <div
+                        style={{
+                          marginTop: "16px",
+                          display: "flex",
+                          gap: "10px",
+                          justifyContent: "flex-end",
+                        }}
+                      >
                         <button
                           onClick={() => {
                             // Обновить запрос: сброс всего, возврат на форму
@@ -2156,7 +2286,10 @@ export default function SocialPlanMasterPage() {
                           onClick={() => {
                             // Продолжить: возобновляем поллинг
                             setIsGenerationPaused(false);
-                            const resumeId = synthesisId || synthesisStatus?.synthesis_id || activeSynthesisIdRef.current;
+                            const resumeId =
+                              synthesisId ||
+                              synthesisStatus?.synthesis_id ||
+                              activeSynthesisIdRef.current;
                             if (resumeId) pollSynthesisStatus(resumeId);
                           }}
                           style={{
@@ -2221,39 +2354,90 @@ export default function SocialPlanMasterPage() {
                 {needsGoalSeekReview && synthesisStatus && (
                   <div className={styles.adjustmentCard}>
                     <div className={styles.adjustmentHeader}>
-                      <FiCheck className={styles.successIcon} style={{ color: "#0ea5e9" }} />
+                      <FiCheck
+                        className={styles.successIcon}
+                        style={{ color: "#0ea5e9" }}
+                      />
                       <h3 style={{ color: "#0c4a6e" }}>
                         Сервис сформировал финансовую модель вашего проекта
                       </h3>
                     </div>
 
-                    <p style={{ margin: "0 0 14px", fontSize: "0.93rem", color: "#475569" }}>
-                      Ниже представлены расчётные показатели и рычаги рентабельности.
-                      Вы можете скорректировать параметры и затем продолжить финальную генерацию.
+                    <p
+                      style={{
+                        margin: "0 0 14px",
+                        fontSize: "0.93rem",
+                        color: "#475569",
+                      }}
+                    >
+                      Ниже представлены расчётные показатели и рычаги
+                      рентабельности. Вы можете скорректировать параметры и
+                      затем продолжить финальную генерацию.
                     </p>
 
-                    <div className={styles.marginPreviewCard} style={{ background: "#f0f9ff", borderColor: "#7dd3fc" }}>
+                    <div
+                      className={styles.marginPreviewCard}
+                      style={{ background: "#f0f9ff", borderColor: "#7dd3fc" }}
+                    >
                       <div className={styles.marginPreviewHeader}>
                         <strong>Показатели финансовой модели</strong>
-                        {isPreviewLoading && <span className={styles.smallSpinner} style={{ marginLeft: "8px" }} />}
+                        {isPreviewLoading && (
+                          <span
+                            className={styles.smallSpinner}
+                            style={{ marginLeft: "8px" }}
+                          />
+                        )}
                       </div>
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px 20px", marginTop: "8px" }}>
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "1fr 1fr",
+                          gap: "8px 20px",
+                          marginTop: "8px",
+                        }}
+                      >
                         <div style={{ fontSize: "0.88rem", color: "#475569" }}>
-                          <span style={{ opacity: 0.75 }}>Рентабельность (прогноз):</span>
+                          <span style={{ opacity: 0.75 }}>
+                            Рентабельность (прогноз):
+                          </span>
                           <br />
-                          <strong style={{ fontSize: "1.05rem", color: projectedMargin >= 0 ? "#166534" : "#b91c1c" }}>
-                            {isPreviewLoading ? "..." : formatPct(projectedMargin)}
+                          <strong
+                            style={{
+                              fontSize: "1.05rem",
+                              color:
+                                projectedMargin >= 0 ? "#166534" : "#b91c1c",
+                            }}
+                          >
+                            {isPreviewLoading
+                              ? "..."
+                              : formatPct(projectedMargin)}
                           </strong>
-                          {adjustmentPreview && !isPreviewLoading && projectedMargin !== baseMargin && (
-                            <span style={{ fontSize: "0.78rem", color: projectedMargin > baseMargin ? "#166534" : "#b91c1c", marginLeft: "6px" }}>
-                              ({projectedMargin > baseMargin ? "+" : ""}{(projectedMargin - baseMargin).toFixed(1)}%)
-                            </span>
-                          )}
+                          {adjustmentPreview &&
+                            !isPreviewLoading &&
+                            projectedMargin !== baseMargin && (
+                              <span
+                                style={{
+                                  fontSize: "0.78rem",
+                                  color:
+                                    projectedMargin > baseMargin
+                                      ? "#166534"
+                                      : "#b91c1c",
+                                  marginLeft: "6px",
+                                }}
+                              >
+                                ({projectedMargin > baseMargin ? "+" : ""}
+                                {(projectedMargin - baseMargin).toFixed(1)}%)
+                              </span>
+                            )}
                         </div>
                         <div style={{ fontSize: "0.88rem", color: "#475569" }}>
-                          <span style={{ opacity: 0.75 }}>Целевая рентабельность:</span>
+                          <span style={{ opacity: 0.75 }}>
+                            Целевая рентабельность:
+                          </span>
                           <br />
-                          <strong style={{ fontSize: "1.05rem", color: "#0c4a6e" }}>
+                          <strong
+                            style={{ fontSize: "1.05rem", color: "#0c4a6e" }}
+                          >
                             {targetMargin.toFixed(1)}%
                           </strong>
                         </div>
@@ -2263,24 +2447,48 @@ export default function SocialPlanMasterPage() {
                           <strong>
                             {isPreviewLoading
                               ? "..."
-                              : adjustmentPreview?.projected_profit_monthly != null
-                                ? formatMoney(adjustmentPreview.projected_profit_monthly)
-                                : formatMoney(synthesisStatus?.financials_preview?.net_profit_monthly ?? 0)}
+                              : adjustmentPreview?.projected_profit_monthly !=
+                                  null
+                                ? formatMoney(
+                                    adjustmentPreview.projected_profit_monthly,
+                                  )
+                                : formatMoney(
+                                    synthesisStatus?.financials_preview
+                                      ?.net_profit_monthly ?? 0,
+                                  )}
                           </strong>
                         </div>
-                        {synthesisStatus?.financials_preview?.payback_months != null && (
-                          <div style={{ fontSize: "0.88rem", color: "#475569" }}>
-                            <span style={{ opacity: 0.75 }}>Срок окупаемости:</span>
+                        {synthesisStatus?.financials_preview?.payback_months !=
+                          null && (
+                          <div
+                            style={{ fontSize: "0.88rem", color: "#475569" }}
+                          >
+                            <span style={{ opacity: 0.75 }}>
+                              Срок окупаемости:
+                            </span>
                             <br />
-                            <strong>{Math.round(synthesisStatus.financials_preview.payback_months)} мес.</strong>
+                            <strong>
+                              {Math.round(
+                                synthesisStatus.financials_preview
+                                  .payback_months,
+                              )}{" "}
+                              мес.
+                            </strong>
                           </div>
                         )}
                       </div>
                     </div>
 
-                    {(profitabilityLevers.length > 0 || advancedPlanningMode) && (
+                    {(profitabilityLevers.length > 0 ||
+                      advancedPlanningMode) && (
                       <div className={styles.problemBlock}>
-                        <p style={{ margin: "4px 0 10px", fontWeight: 600, fontSize: "0.98rem" }}>
+                        <p
+                          style={{
+                            margin: "4px 0 10px",
+                            fontWeight: 600,
+                            fontSize: "0.98rem",
+                          }}
+                        >
                           Рычаги рентабельности — настройте при необходимости:
                         </p>
                         <div className={styles.doubleRow}>
@@ -2288,16 +2496,39 @@ export default function SocialPlanMasterPage() {
                             <div
                               key={lever.key}
                               className={styles.section}
-                              style={{ marginBottom: 0, paddingBottom: 0, borderBottom: "none" }}
+                              style={{
+                                marginBottom: 0,
+                                paddingBottom: 0,
+                                borderBottom: "none",
+                              }}
                             >
-                              <label style={{ display: "block", fontSize: "0.9rem", marginBottom: "6px" }}>
-                                {lever.label}{lever.unit ? ` (${lever.unit})` : ""}
+                              <label
+                                style={{
+                                  display: "block",
+                                  fontSize: "0.9rem",
+                                  marginBottom: "6px",
+                                }}
+                              >
+                                {lever.label}
+                                {lever.unit ? ` (${lever.unit})` : ""}
                               </label>
                               <input
                                 type="number"
-                                min={typeof lever.min_value === "number" ? lever.min_value : undefined}
-                                max={typeof lever.max_value === "number" ? lever.max_value : undefined}
-                                step={typeof lever.step === "number" ? lever.step : "any"}
+                                min={
+                                  typeof lever.min_value === "number"
+                                    ? lever.min_value
+                                    : undefined
+                                }
+                                max={
+                                  typeof lever.max_value === "number"
+                                    ? lever.max_value
+                                    : undefined
+                                }
+                                step={
+                                  typeof lever.step === "number"
+                                    ? lever.step
+                                    : "any"
+                                }
                                 placeholder={
                                   typeof lever.current_value === "number"
                                     ? String(lever.current_value)
@@ -2307,12 +2538,21 @@ export default function SocialPlanMasterPage() {
                                 }
                                 value={leverValues[lever.key] ?? ""}
                                 onChange={(e) =>
-                                  setLeverValues((prev) => ({ ...prev, [lever.key]: e.target.value }))
+                                  setLeverValues((prev) => ({
+                                    ...prev,
+                                    [lever.key]: e.target.value,
+                                  }))
                                 }
                                 className={styles.input}
                               />
                               {lever.description && (
-                                <p style={{ fontSize: "0.82rem", opacity: 0.8, marginTop: "4px" }}>
+                                <p
+                                  style={{
+                                    fontSize: "0.82rem",
+                                    opacity: 0.8,
+                                    marginTop: "4px",
+                                  }}
+                                >
                                   {lever.description}
                                 </p>
                               )}
@@ -2322,9 +2562,19 @@ export default function SocialPlanMasterPage() {
                             <>
                               <div
                                 className={styles.section}
-                                style={{ marginBottom: 0, paddingBottom: 0, borderBottom: "none" }}
+                                style={{
+                                  marginBottom: 0,
+                                  paddingBottom: 0,
+                                  borderBottom: "none",
+                                }}
                               >
-                                <label style={{ display: "block", fontSize: "0.9rem", marginBottom: "6px" }}>
+                                <label
+                                  style={{
+                                    display: "block",
+                                    fontSize: "0.9rem",
+                                    marginBottom: "6px",
+                                  }}
+                                >
                                   Площадь помещения (м²)
                                 </label>
                                 <input
@@ -2335,19 +2585,39 @@ export default function SocialPlanMasterPage() {
                                   placeholder="Площадь в м²"
                                   value={leverValues["area_sqm"] ?? ""}
                                   onChange={(e) =>
-                                    setLeverValues((prev) => ({ ...prev, area_sqm: e.target.value }))
+                                    setLeverValues((prev) => ({
+                                      ...prev,
+                                      area_sqm: e.target.value,
+                                    }))
                                   }
                                   className={styles.input}
                                 />
-                                <p style={{ fontSize: "0.82rem", opacity: 0.8, marginTop: "4px" }}>
-                                  Влияет на арендную плату и пропускную способность
+                                <p
+                                  style={{
+                                    fontSize: "0.82rem",
+                                    opacity: 0.8,
+                                    marginTop: "4px",
+                                  }}
+                                >
+                                  Влияет на арендную плату и пропускную
+                                  способность
                                 </p>
                               </div>
                               <div
                                 className={styles.section}
-                                style={{ marginBottom: 0, paddingBottom: 0, borderBottom: "none" }}
+                                style={{
+                                  marginBottom: 0,
+                                  paddingBottom: 0,
+                                  borderBottom: "none",
+                                }}
                               >
-                                <label style={{ display: "block", fontSize: "0.9rem", marginBottom: "6px" }}>
+                                <label
+                                  style={{
+                                    display: "block",
+                                    fontSize: "0.9rem",
+                                    marginBottom: "6px",
+                                  }}
+                                >
                                   Штат (чел.)
                                 </label>
                                 <input
@@ -2358,11 +2628,20 @@ export default function SocialPlanMasterPage() {
                                   placeholder="Количество сотрудников"
                                   value={leverValues["staff_count"] ?? ""}
                                   onChange={(e) =>
-                                    setLeverValues((prev) => ({ ...prev, staff_count: e.target.value }))
+                                    setLeverValues((prev) => ({
+                                      ...prev,
+                                      staff_count: e.target.value,
+                                    }))
                                   }
                                   className={styles.input}
                                 />
-                                <p style={{ fontSize: "0.82rem", opacity: 0.8, marginTop: "4px" }}>
+                                <p
+                                  style={{
+                                    fontSize: "0.82rem",
+                                    opacity: 0.8,
+                                    marginTop: "4px",
+                                  }}
+                                >
                                   Влияет на ФОТ и выручку сервисного бизнеса
                                 </p>
                               </div>
@@ -2373,7 +2652,10 @@ export default function SocialPlanMasterPage() {
                     )}
 
                     <div className={styles.adjustmentActions}>
-                      <button className={styles.fixManuallyBtn} onClick={handleReset}>
+                      <button
+                        className={styles.fixManuallyBtn}
+                        onClick={handleReset}
+                      >
                         Изменить начальные данные
                       </button>
                       <button
@@ -2694,26 +2976,59 @@ export default function SocialPlanMasterPage() {
               /* Form Section */
               <section className={styles.formSection}>
                 {/* ── Панель статуса сервисов ── */}
-                <div style={{
-                  marginBottom: "16px",
-                  padding: "12px 16px",
-                  borderRadius: "10px",
-                  border: `1px solid ${isLoadingHealth ? "#e2e8f0" : isSystemReady ? "#86efac" : "#fca5a5"}`,
-                  background: isLoadingHealth ? "#f8fafc" : isSystemReady ? "#f0fdf4" : "#fef2f2",
-                }}>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                      <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "#334155" }}>Статус системы</span>
-                      {isLoadingHealth && <span style={{ fontSize: "0.78rem", color: "#64748b" }}>Проверка...</span>}
-                      {!isLoadingHealth && (
-                        <span style={{
-                          fontSize: "0.75rem",
+                <div
+                  style={{
+                    marginBottom: "16px",
+                    padding: "12px 16px",
+                    borderRadius: "10px",
+                    border: `1px solid ${isLoadingHealth ? "#e2e8f0" : isSystemReady ? "#86efac" : "#fca5a5"}`,
+                    background: isLoadingHealth
+                      ? "#f8fafc"
+                      : isSystemReady
+                        ? "#f0fdf4"
+                        : "#fef2f2",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      marginBottom: "8px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontSize: "0.85rem",
                           fontWeight: 600,
-                          padding: "2px 8px",
-                          borderRadius: "20px",
-                          background: isSystemReady ? "#dcfce7" : "#fee2e2",
-                          color: isSystemReady ? "#16a34a" : "#dc2626",
-                        }}>
+                          color: "#334155",
+                        }}
+                      >
+                        Статус системы
+                      </span>
+                      {isLoadingHealth && (
+                        <span style={{ fontSize: "0.78rem", color: "#64748b" }}>
+                          Проверка...
+                        </span>
+                      )}
+                      {!isLoadingHealth && (
+                        <span
+                          style={{
+                            fontSize: "0.75rem",
+                            fontWeight: 600,
+                            padding: "2px 8px",
+                            borderRadius: "20px",
+                            background: isSystemReady ? "#dcfce7" : "#fee2e2",
+                            color: isSystemReady ? "#16a34a" : "#dc2626",
+                          }}
+                        >
                           {isSystemReady ? "✅ Готов к работе" : "❌ Не готов"}
                         </span>
                       )}
@@ -2735,27 +3050,49 @@ export default function SocialPlanMasterPage() {
                         gap: "4px",
                       }}
                     >
-                      <FiRefreshCw style={{ width: 11, height: 11, ...(isRefreshingHealth ? { animation: "spin 1s linear infinite" } : {}) }} />
+                      <FiRefreshCw
+                        style={{
+                          width: 11,
+                          height: 11,
+                          ...(isRefreshingHealth
+                            ? { animation: "spin 1s linear infinite" }
+                            : {}),
+                        }}
+                      />
                       Обновить
                     </button>
                   </div>
                   {healthStatus?.services && (
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                    <div
+                      style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}
+                    >
                       {(healthStatus.services as any[]).map((svc: any) => {
                         const isReady = svc.status === "ready";
                         const isWarn = svc.status === "warning";
                         return (
-                          <div key={svc.id} title={svc.error || svc.detail || ""} style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "5px",
-                            padding: "3px 10px",
-                            borderRadius: "20px",
-                            fontSize: "0.78rem",
-                            background: isReady ? "#dcfce7" : isWarn ? "#fef9c3" : "#fee2e2",
-                            color: isReady ? "#15803d" : isWarn ? "#854d0e" : "#b91c1c",
-                            border: `1px solid ${isReady ? "#86efac" : isWarn ? "#fde68a" : "#fca5a5"}`,
-                          }}>
+                          <div
+                            key={svc.id}
+                            title={svc.error || svc.detail || ""}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "5px",
+                              padding: "3px 10px",
+                              borderRadius: "20px",
+                              fontSize: "0.78rem",
+                              background: isReady
+                                ? "#dcfce7"
+                                : isWarn
+                                  ? "#fef9c3"
+                                  : "#fee2e2",
+                              color: isReady
+                                ? "#15803d"
+                                : isWarn
+                                  ? "#854d0e"
+                                  : "#b91c1c",
+                              border: `1px solid ${isReady ? "#86efac" : isWarn ? "#fde68a" : "#fca5a5"}`,
+                            }}
+                          >
                             <span>{isReady ? "✅" : isWarn ? "⚠️" : "❌"}</span>
                             <span>{svc.name}</span>
                           </div>
@@ -2764,8 +3101,15 @@ export default function SocialPlanMasterPage() {
                     </div>
                   )}
                   {!isLoadingHealth && !isSystemReady && (
-                    <p style={{ marginTop: "8px", fontSize: "0.78rem", color: "#dc2626" }}>
-                      Генерация недоступна — устраните проблемы выше и нажмите «Обновить»
+                    <p
+                      style={{
+                        marginTop: "8px",
+                        fontSize: "0.78rem",
+                        color: "#dc2626",
+                      }}
+                    >
+                      Генерация недоступна — устраните проблемы выше и нажмите
+                      «Обновить»
                     </p>
                   )}
                 </div>
@@ -2789,6 +3133,58 @@ export default function SocialPlanMasterPage() {
                       />
                     </div>
 
+                    {/* Кто ваши клиенты — сразу после описания */}
+                    <div className={styles.section}>
+                      <h3>Кто ваши клиенты *</h3>
+                      <div
+                        className={styles.buttonGroupInline}
+                        style={
+                          submitAttempted && formData.businessTypes.length === 0
+                            ? { border: "2px solid #ef4444", borderRadius: "8px", padding: "8px" }
+                            : undefined
+                        }
+                      >
+                        {businessTypeOptions.map((option) => (
+                          <button
+                            key={option.value}
+                            type="button"
+                            className={`${styles.toggleButton} ${
+                              formData.businessTypes.includes(option.value) ? styles.active : ""
+                            }`}
+                            onClick={() => handleBusinessTypeToggle(option.value)}
+                          >
+                            {option.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Категория бизнеса — сразу после клиентов */}
+                    <div className={styles.section}>
+                      <h3>Категория бизнеса *</h3>
+                      <div
+                        className={styles.buttonGroupInline}
+                        style={
+                          submitAttempted && !formData.businessCategory
+                            ? { border: "2px solid #ef4444", borderRadius: "8px", padding: "8px" }
+                            : undefined
+                        }
+                      >
+                        {businessCategoryOptions.map((option) => (
+                          <button
+                            key={option.value}
+                            type="button"
+                            className={`${styles.toggleButton} ${
+                              formData.businessCategory === option.value ? styles.active : ""
+                            }`}
+                            onClick={() => handleBusinessCategorySelect(option.value)}
+                          >
+                            {option.icon} {option.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
                     {/* Advanced Planning Mode */}
                     <div className={styles.section}>
                       <div
@@ -2797,7 +3193,9 @@ export default function SocialPlanMasterPage() {
                           alignItems: "flex-start",
                           gap: "10px",
                           padding: "12px 14px",
-                          background: advancedPlanningMode ? "#eef6ff" : "#f8fafc",
+                          background: advancedPlanningMode
+                            ? "#eef6ff"
+                            : "#f8fafc",
                           border: `1px solid ${advancedPlanningMode ? "#93c5fd" : "#e2e8f0"}`,
                           borderRadius: "8px",
                           cursor: "pointer",
@@ -2809,7 +3207,9 @@ export default function SocialPlanMasterPage() {
                           type="checkbox"
                           id="advancedPlanningMode"
                           checked={advancedPlanningMode}
-                          onChange={(e) => setAdvancedPlanningMode(e.target.checked)}
+                          onChange={(e) =>
+                            setAdvancedPlanningMode(e.target.checked)
+                          }
                           onClick={(e) => e.stopPropagation()}
                           className={styles.checkbox}
                           style={{ marginTop: "2px", flexShrink: 0 }}
@@ -2820,7 +3220,9 @@ export default function SocialPlanMasterPage() {
                             style={{
                               fontWeight: 600,
                               fontSize: "0.95rem",
-                              color: advancedPlanningMode ? "#1e40af" : "#334155",
+                              color: advancedPlanningMode
+                                ? "#1e40af"
+                                : "#334155",
                               cursor: "pointer",
                               display: "block",
                               marginBottom: "2px",
@@ -2828,9 +3230,17 @@ export default function SocialPlanMasterPage() {
                           >
                             Расширенные настройки планирования
                           </label>
-                          <p style={{ fontSize: "0.83rem", color: "#64748b", margin: 0 }}>
-                            Перед финальной генерацией сервис покажет финансовую модель и даст возможность
-                            тонко настроить ключевые параметры — средний чек, загрузку, аренду и другие рычаги.
+                          <p
+                            style={{
+                              fontSize: "0.83rem",
+                              color: "#64748b",
+                              margin: 0,
+                            }}
+                          >
+                            Перед финальной генерацией сервис покажет финансовую
+                            модель и даст возможность тонко настроить ключевые
+                            параметры — средний чек, загрузку, аренду и другие
+                            рычаги.
                           </p>
                         </div>
                       </div>
@@ -2907,39 +3317,6 @@ export default function SocialPlanMasterPage() {
                       )}
                     </div>
 
-                    {/* Business Types */}
-                    <div className={styles.section}>
-                      <h3>Кто ваши клиенты *</h3>
-                      <div
-                        className={styles.buttonGroupInline}
-                        style={
-                          submitAttempted && formData.businessTypes.length === 0
-                            ? {
-                                border: "2px solid #ef4444",
-                                borderRadius: "8px",
-                                padding: "8px",
-                              }
-                            : undefined
-                        }
-                      >
-                        {businessTypeOptions.map((option) => (
-                          <button
-                            key={option.value}
-                            type="button"
-                            className={`${styles.toggleButton} ${
-                              formData.businessTypes.includes(option.value)
-                                ? styles.active
-                                : ""
-                            }`}
-                            onClick={() =>
-                              handleBusinessTypeToggle(option.value)
-                            }
-                          >
-                            {option.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
 
                     {/* Funding Purposes */}
                     <div className={styles.section}>
@@ -2976,7 +3353,8 @@ export default function SocialPlanMasterPage() {
                       </div>
                       <div style={{ marginTop: "12px" }}>
                         <label className={styles.label}>
-                          Опишите точно, на что вы планируете использовать финансирование
+                          Опишите точно, на что вы планируете использовать
+                          финансирование
                         </label>
                         <textarea
                           name="fundingDescription"
@@ -3007,7 +3385,10 @@ export default function SocialPlanMasterPage() {
                             onChange={handleInputChange}
                             className={styles.input}
                             min={0}
-                            style={fieldError(!formData.ownCapital.trim(), "ownCapital")}
+                            style={fieldError(
+                              !formData.ownCapital.trim(),
+                              "ownCapital",
+                            )}
                           />
                           {fieldErrorMsg("ownCapital")}
                         </div>
@@ -3043,7 +3424,10 @@ export default function SocialPlanMasterPage() {
                             className={styles.input}
                             min={50}
                             max={350}
-                            style={fieldError(!formData.loanCapital.trim(), "loanCapital")}
+                            style={fieldError(
+                              !formData.loanCapital.trim(),
+                              "loanCapital",
+                            )}
                           />
                           {fieldErrorMsg("loanCapital")}
                         </div>
@@ -3059,7 +3443,10 @@ export default function SocialPlanMasterPage() {
                             onChange={handleInputChange}
                             className={styles.input}
                             min={1}
-                            style={fieldError(!formData.spendingPeriod.trim(), "spendingPeriod")}
+                            style={fieldError(
+                              !formData.spendingPeriod.trim(),
+                              "spendingPeriod",
+                            )}
                           />
                           {fieldErrorMsg("spendingPeriod")}
                         </div>
@@ -3316,9 +3703,9 @@ export default function SocialPlanMasterPage() {
                       <button
                         type="submit"
                         className={styles.submitButton}
-                        disabled={isSubmitting || !isFormValid}
+                        disabled={isSubmitting || isClassifying || !isFormValid}
                       >
-                        {isSubmitting ? "Обработка..." : "Начать генерацию"}
+                        {isClassifying ? "Определяем тип бизнеса..." : isSubmitting ? "Обработка..." : "Начать генерацию"}
                       </button>
                     </div>
                   </form>
@@ -3332,6 +3719,130 @@ export default function SocialPlanMasterPage() {
           </aside>
         </div>
       </main>
+
+      {/* [CLASSIFY] Confirmation card — показывается ВСЕГДА после pre-flight classify */}
+      {showClassifyModal && classifyResult && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 1000,
+          background: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          padding: "16px",
+        }}>
+          <div style={{
+            background: "#fff", borderRadius: "16px", padding: "28px 32px",
+            maxWidth: "520px", width: "100%", boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
+          }}>
+            <div style={{ marginBottom: "20px" }}>
+              <p style={{ fontSize: "13px", color: "#6b7280", margin: "0 0 4px" }}>
+                Мы определили тип вашего бизнеса:
+              </p>
+              <h2 style={{ fontSize: "20px", fontWeight: 700, color: "#111827", margin: "0 0 12px" }}>
+                Подтвердите или выберите тип
+              </h2>
+            </div>
+
+            {/* Detected — выделенная опция */}
+            <div
+              onClick={() => confirmAndGenerate(classifyResult.detected)}
+              style={{
+                border: "2px solid #2563eb", borderRadius: "12px", padding: "14px 16px",
+                marginBottom: "12px", cursor: "pointer", background: "#eff6ff",
+                display: "flex", alignItems: "center", gap: "12px",
+              }}
+            >
+              <div style={{
+                width: "20px", height: "20px", borderRadius: "50%",
+                background: "#2563eb", flexShrink: 0,
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#fff" }} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 600, fontSize: "15px", color: "#1d4ed8" }}>
+                  {classifyResult.detected.display_name}
+                </div>
+                <div style={{ fontSize: "12px", color: "#3b82f6", marginTop: "2px" }}>
+                  {classifyResult.detected.business_model} · уверенность {Math.round(classifyResult.detected.confidence * 100)}%
+                </div>
+              </div>
+              <div style={{
+                fontSize: "12px", fontWeight: 600, color: "#2563eb",
+                background: "#dbeafe", borderRadius: "6px", padding: "3px 8px", flexShrink: 0,
+              }}>
+                Выбрать ✓
+              </div>
+            </div>
+
+            {/* Alternatives */}
+            {classifyResult.alternatives.length > 0 && (
+              <div style={{ marginBottom: "20px" }}>
+                <p style={{ fontSize: "12px", color: "#9ca3af", margin: "0 0 8px" }}>
+                  Другие варианты:
+                </p>
+                {classifyResult.alternatives.map((alt, i) => (
+                  <div
+                    key={i}
+                    onClick={() => confirmAndGenerate(alt)}
+                    style={{
+                      border: "1.5px solid #e5e7eb", borderRadius: "10px", padding: "10px 14px",
+                      marginBottom: "8px", cursor: "pointer", background: "#f9fafb",
+                      display: "flex", alignItems: "center", gap: "10px",
+                      transition: "border-color 0.15s",
+                    }}
+                    onMouseEnter={e => (e.currentTarget.style.borderColor = "#93c5fd")}
+                    onMouseLeave={e => (e.currentTarget.style.borderColor = "#e5e7eb")}
+                  >
+                    <div style={{
+                      width: "18px", height: "18px", borderRadius: "50%",
+                      border: "2px solid #d1d5db", flexShrink: 0,
+                    }} />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 500, fontSize: "14px", color: "#374151" }}>
+                        {alt.display_name}
+                      </div>
+                      <div style={{ fontSize: "11px", color: "#9ca3af", marginTop: "1px" }}>
+                        {alt.business_model}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Actions */}
+            <div style={{ display: "flex", gap: "10px" }}>
+              <button
+                onClick={() => confirmAndGenerate(classifyResult.detected)}
+                style={{
+                  flex: 1, background: "#2563eb", color: "#fff", border: "none",
+                  borderRadius: "10px", padding: "12px", fontWeight: 600, fontSize: "14px",
+                  cursor: "pointer",
+                }}
+              >
+                Подтвердить и запустить
+              </button>
+              <button
+                onClick={async () => {
+                  setShowClassifyModal(false);
+                  setClassifyResult(null);
+                  await startSynthesis(); // без locked — система определит сама
+                }}
+                style={{
+                  background: "#f3f4f6", color: "#6b7280", border: "none",
+                  borderRadius: "10px", padding: "12px 16px", fontWeight: 500, fontSize: "13px",
+                  cursor: "pointer", whiteSpace: "nowrap",
+                }}
+              >
+                Пропустить
+              </button>
+            </div>
+
+            <p style={{ fontSize: "11px", color: "#d1d5db", textAlign: "center", margin: "12px 0 0" }}>
+              Тип бизнеса влияет на финансовую модель и структуру документа
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

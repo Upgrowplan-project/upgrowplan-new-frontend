@@ -1,14 +1,19 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
-import { Card } from "react-bootstrap";
-import Link from "next/link";
+import { Card, Modal } from "react-bootstrap";
 import { FaClock, FaDollarSign, FaChartLine } from "react-icons/fa";
 import Header from "../../components/Header";
+import ContactForm from "../../components/ContactForm";
 
 export default function ProductsPage() {
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [showContactModal, setShowContactModal] = useState(false);
+  const [selectedProductTitle, setSelectedProductTitle] = useState("");
+
+  const closeContactModal = () => {
+    setShowContactModal(false);
+    setSelectedProductTitle("");
+  };
 
   const products = [
     {
@@ -107,6 +112,7 @@ export default function ProductsPage() {
                   borderRadius: "12px",
                   transition: "all 0.3s ease",
                   backgroundColor: "#fff",
+                  cursor: "pointer",
                 }}
                 onMouseEnter={(e) => {
                   const el = e.currentTarget;
@@ -120,8 +126,12 @@ export default function ProductsPage() {
                   el.style.boxShadow = "none";
                   el.style.transform = "scale(1)";
                 }}
+                onClick={() => {
+                  setSelectedProductTitle(product.title);
+                  setShowContactModal(true);
+                }}
               >
-                <Card.Body>
+                <Card.Body className="d-flex flex-column justify-content-between">
                   <Card.Title style={{ color: "#1e6078" }}>
                     {product.title}
                   </Card.Title>
@@ -146,6 +156,24 @@ export default function ProductsPage() {
           ))}
         </div>
       </main>
+
+      <Modal show={showContactModal} onHide={closeContactModal} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Связаться</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <ContactForm
+            locale="ru"
+            className="border p-3 rounded bg-light shadow-sm"
+            initialMessage={
+              selectedProductTitle
+                ? `Интересует продукт: ${selectedProductTitle}`
+                : ""
+            }
+            onSuccess={closeContactModal}
+          />
+        </Modal.Body>
+      </Modal>
     </div>
   );
 }

@@ -1,54 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import Image from "next/image";
-import dynamic from "next/dynamic";
 import Header from "../../components/Header";
+import ContactForm from "../../components/ContactForm";
 
 //const Header = dynamic(() => import('@/components/Header'), { ssr: false });
 //const Footer = dynamic(() => import('@/components/Footer'), { ssr: false });
 
 export default function ContactsPage() {
-  const [isChecked, setIsChecked] = useState(false);
-  const [email, setEmail] = useState("");
-  const [name, setName] = useState("");
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setError("Введите корректный Email");
-      return;
-    }
-    setError("");
-
-    try {
-      const API_BASE =
-        process.env.NEXT_PUBLIC_MONITORING_API_URL || "http://localhost:8000";
-      const res = await fetch(`${API_BASE}/api/monitoring/contact`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, message }),
-      });
-
-      if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        throw new Error(text || `HTTP ${res.status}`);
-      }
-
-      setName("");
-      setEmail("");
-      setMessage("");
-      setIsChecked(false);
-      alert("Сообщение отправлено! Мы свяжемся с вами в ближайшее время.");
-    } catch (err) {
-      console.error("Ошибка отправки сообщения:", err);
-      alert("Не удалось отправить сообщение. Попробуйте позднее.");
-    }
-  };
-
   return (
     <>
       <Header />
@@ -96,82 +54,11 @@ export default function ContactsPage() {
           </a>
         </div>
 
-        <form
+        <ContactForm
+          locale="ru"
           className="border p-4 rounded bg-light shadow-sm"
           style={{ maxWidth: "600px" }}
-          onSubmit={handleSubmit}
-        >
-          <div className="mb-3">
-            <label htmlFor="name" className="form-label">
-              Имя
-            </label>
-            <input
-              type="text"
-              id="name"
-              className="form-control"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Введите ваше имя"
-              required
-            />
-          </div>
-          <div className="mb-3">
-            <label htmlFor="email" className="form-label">
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              className={`form-control ${error ? "is-invalid" : ""}`}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Введите ваш email"
-              required
-            />
-            {error && <div className="invalid-feedback">{error}</div>}
-          </div>
-          <div className="mb-3">
-            <label htmlFor="message" className="form-label">
-              Сообщение
-            </label>
-            <textarea
-              id="message"
-              className="form-control"
-              rows={4}
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Введите ваше сообщение"
-              required
-            ></textarea>
-          </div>
-          <div className="form-check mb-3">
-            <input
-              className="form-check-input"
-              type="checkbox"
-              id="policyCheck"
-              checked={isChecked}
-              onChange={() => setIsChecked(!isChecked)}
-            />
-            <label className="form-check-label" htmlFor="policyCheck">
-              Отправляя данное сообщение, я ознакомился и согласился с{" "}
-              <a href="/privacy" target="_blank">
-                Политикой конфиденциальности
-              </a>{" "}
-              и{" "}
-              <a href="/privacy" target="_blank">
-                Политикой обработки персональных данных
-              </a>
-              .
-            </label>
-          </div>
-          <button
-            type="submit"
-            className="btn btn-primary w-100"
-            disabled={!isChecked}
-          >
-            Отправить сообщение
-          </button>
-        </form>
+        />
       </main>
     </>
   );

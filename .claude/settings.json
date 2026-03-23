@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc:*)",
+      "Bash(split -l 100 \"C:\\\\Users\\\\Lenovo\\\\.claude\\\\projects\\\\d--UpgrowPlan-upgrowplan-new\\\\30b4a605-06da-4ec0-b4e8-441ff31cd3c1\\\\tool-results\\\\bwdlo53jf.txt\" /tmp/part_)"
+    ]
+  }
+}

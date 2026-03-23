@@ -1,10 +1,19 @@
 "use client";
 
-import { Card } from "react-bootstrap";
+import { useState } from "react";
+import { Card, Modal } from "react-bootstrap";
 import { FaClock, FaDollarSign, FaChartLine } from "react-icons/fa";
 import Header from "../../components/Header";
+import ContactForm from "../../components/ContactForm";
 
 export default function ProductsPage() {
+  const [showContactModal, setShowContactModal] = useState(false);
+  const [selectedProductTitle, setSelectedProductTitle] = useState("");
+
+  const closeContactModal = () => {
+    setShowContactModal(false);
+    setSelectedProductTitle("");
+  };
 
   const products = [
     {
@@ -100,6 +109,7 @@ export default function ProductsPage() {
                   borderRadius: "12px",
                   transition: "all 0.3s ease",
                   backgroundColor: "#fff",
+                  cursor: "pointer",
                 }}
                 onMouseEnter={(e) => {
                   const el = e.currentTarget;
@@ -112,6 +122,10 @@ export default function ProductsPage() {
                   el.style.backgroundColor = "#fff";
                   el.style.boxShadow = "none";
                   el.style.transform = "scale(1)";
+                }}
+                onClick={() => {
+                  setSelectedProductTitle(product.title);
+                  setShowContactModal(true);
                 }}
               >
                 <Card.Body className="d-flex flex-column justify-content-between">
@@ -152,6 +166,24 @@ export default function ProductsPage() {
           ))}
         </div>
       </main>
+
+      <Modal show={showContactModal} onHide={closeContactModal} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Contact</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <ContactForm
+            locale="en"
+            className="border p-3 rounded bg-light shadow-sm"
+            initialMessage={
+              selectedProductTitle
+                ? `Interested in product: ${selectedProductTitle}`
+                : ""
+            }
+            onSuccess={closeContactModal}
+          />
+        </Modal.Body>
+      </Modal>
     </div>
   );
 }
