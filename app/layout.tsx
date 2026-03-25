@@ -2,6 +2,7 @@
 // The actual localized layout is in app/[locale]/layout.tsx
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import Footer from "@/components/Footer";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -30,7 +31,12 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} suppressHydrationWarning>
-      <body className={`${inter.variable} antialiased`}>{children}</body>
+      <body className={`${inter.variable} antialiased`}>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+          {children}
+        </div>
+        <Footer />
+      </body>
     </html>
   );
 }

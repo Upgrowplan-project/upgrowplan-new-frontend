@@ -142,7 +142,7 @@ export default function AboutPage() {
         <div className="row">
           <Card>
             <h2 className="text-center" style={{ color: "#1e6078" }}>
-              🚀 What we do
+              What we do
             </h2>
             <p>
               We build tools that help launch and grow businesses. Upgrowplan
@@ -158,7 +158,7 @@ export default function AboutPage() {
 
           <Card>
             <h2 className="text-center" style={{ color: "#1e6078" }}>
-              🔍 Our approach
+              Our approach
             </h2>
             <ul>
               <li>
@@ -185,7 +185,7 @@ export default function AboutPage() {
         <div className="row justify-content-center">
           <FullWidthCard>
             <h2 className="text-center" style={{ color: "#1e6078" }}>
-              📊 At a glance
+              At a glance
             </h2>
             <div className="table-responsive">
               <table className="table table-striped">
@@ -223,7 +223,7 @@ export default function AboutPage() {
         <div className="row">
           <Card>
             <h2 className="text-center" style={{ color: "#1e6078" }}>
-              🌍 Industries
+              Industries
             </h2>
             <ul>
               <li>Farms & agritourism — 119 projects</li>
@@ -238,7 +238,7 @@ export default function AboutPage() {
 
           <Card>
             <h2 className="text-center" style={{ color: "#1e6078" }}>
-              🛠️ Competencies
+              Competencies
             </h2>
             <ul>
               <li>Economic and financial analysis</li>
@@ -257,7 +257,7 @@ export default function AboutPage() {
         <div className="row">
           <Card>
             <h2 className="text-center" style={{ color: "#1e6078" }}>
-              🔭 Where we're heading
+              Where we're heading
             </h2>
             <ul>
               <li>
@@ -278,7 +278,7 @@ export default function AboutPage() {
 
           <Card>
             <h2 className="text-center" style={{ color: "#1e6078" }}>
-              ⚙️ Technology stack
+              Technology stack
             </h2>
             <ul>
               <li>LLM API integrations</li>
@@ -298,7 +298,7 @@ export default function AboutPage() {
         <div className="row justify-content-center">
           <FullWidthCard>
             <h2 className="text-center" style={{ color: "#1e6078" }}>
-              🤝 We're open
+              We're open
             </h2>
             <p className="text-center">
               Upgrowplan grows with the community. We value feedback, love

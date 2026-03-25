@@ -144,7 +144,7 @@ export default function AboutPage() {
         <div className="row">
           <Card>
             <h2 className="text-center" style={{ color: "#1e6078" }}>
-              🚀 Что мы делаем:
+              Что мы делаем:
             </h2>
             <p>
               Мы создаём инструменты, которые помогают запускать и развивать
@@ -156,13 +156,13 @@ export default function AboutPage() {
               обоснованные решения.
             </p>
             <p>
-              <em>Основано на опыте. Улучшается вместе с вами.</em>
+              <em>Основано на нашем опыте. Улучшается вместе с вами.</em>
             </p>
           </Card>
 
           <Card>
             <h2 className="text-center" style={{ color: "#1e6078" }}>
-              🔍 Наш подход
+              Наш подход
             </h2>
             <ul>
               <li>
@@ -170,17 +170,18 @@ export default function AboutPage() {
                 клиентов.
               </li>
               <li>
-                Экономика + технологии. Мы объединяем классический консалтинг с
+                Экономика + технологии. Мы объединяем классическую экспертизу с
                 возможностями автоматизации, визуализации и аналитики.
               </li>
               <li>
-                ИИ не ради ИИ. Используем LLM, API, RAG и настройку параметров
-                модели. Готовим данные, обучаем модели и встраиваем в реальные
-                процессы — чтобы они действительно помогали.
+                Мы не используем модели нейросетей на этапе сбора данных, а
+                наоборот изолируем ИИ от формирования ядра контекста.
               </li>
               <li>
-                Результат важнее процесса. Протестировали, улучшили, оставили.
-                Если не помогает — убрали.
+                В процессе генерации документов используется технология RAG -
+                Retriveal-Augmented Generation. Это значит что контекст для
+                конткретной задачи формируется независимо от ИИ, а на основе
+                живого поиска по актуальным данным
               </li>
             </ul>
           </Card>
@@ -190,7 +191,7 @@ export default function AboutPage() {
         <div className="row justify-content-center">
           <FullWidthCard>
             <h2 className="text-center" style={{ color: "#1e6078" }}>
-              📊 Кратко о нас
+              Кратко о нас
             </h2>
             <div className="table-responsive">
               <table className="table table-striped">
@@ -228,7 +229,7 @@ export default function AboutPage() {
         <div className="row">
           <Card>
             <h2 className="text-center" style={{ color: "#1e6078" }}>
-              🌍 Отрасли
+              Отрасли
             </h2>
             <ul>
               <li>Фермерские хозяйства и агротуризм — 119 проектов</li>
@@ -245,7 +246,7 @@ export default function AboutPage() {
 
           <Card>
             <h2 className="text-center" style={{ color: "#1e6078" }}>
-              🛠️ Компетенции
+              Компетенции
             </h2>
             <ul>
               <li>экономический и финансовый анализ</li>
@@ -264,7 +265,7 @@ export default function AboutPage() {
         <div className="row">
           <Card>
             <h2 className="text-center" style={{ color: "#1e6078" }}>
-              🔭 Куда мы движемся:
+              Куда мы движемся:
             </h2>
             <ul>
               <li>
@@ -285,7 +286,7 @@ export default function AboutPage() {
 
           <Card>
             <h2 className="text-center" style={{ color: "#1e6078" }}>
-              ⚙️ Стэк технологий
+              Стэк технологий
             </h2>
             <ul>
               <li>интеграции LLM API</li>
@@ -305,7 +306,7 @@ export default function AboutPage() {
         <div className="row justify-content-center">
           <FullWidthCard>
             <h2 className="text-center" style={{ color: "#1e6078" }}>
-              🤝 Мы открыты
+              Мы открыты
             </h2>
             <p className="text-center">
               Upgrowplan развивается вместе с сообществом. Мы ценим обратную

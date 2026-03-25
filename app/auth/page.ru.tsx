@@ -13,8 +13,9 @@ export default function AuthPage() {
 
   return (
     <>
-      <Header />
-      <div className={`container py-5 ${styles.authPage}`}>
+      <main>
+        <Header />
+        <div className={`container py-5 ${styles.authPage}`}>
         {/* Экран выбора сценария */}
         {scenario === "none" && (
           <div className="d-flex flex-column align-items-center gap-3">
@@ -94,7 +95,8 @@ export default function AuthPage() {
             </CSSTransition>
           </div>
         )}
-      </div>
+        </div>
+      </main>
     </>
   );
 }

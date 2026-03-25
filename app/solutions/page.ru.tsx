@@ -17,6 +17,12 @@ import Header from "../../components/Header";
 export default function SolutionsPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [finPilotCountry, setFinPilotCountry] = useState("ru"); // Default Russia
+  const getLocalePath = (path: string) => {
+    if (path.startsWith("/ru")) {
+      return path;
+    }
+    return `/ru${path}`;
+  };
 
   const solutions = [
     {
@@ -33,6 +39,9 @@ export default function SolutionsPage() {
         "ИИ-агент поиска, анализа и выполнения полноценного маркетингового исследования. Верификация ресурсов и данных, адаптация под ваши ежедневные задачи.",
       icon: <FiCpu className="me-2 text-primary" />,
       release: "весна 2026",
+      link: "/solutions/marketResearch/descriptionPage",
+      elementId: "market-research-description-card",
+      ctaLabel: "Подробнее",
     },
     {
       title: "Сompetitors Research AI Agent",
@@ -47,6 +56,9 @@ export default function SolutionsPage() {
         "Генерация экспертного бизнес-плана на основе современной методологии, живого поиска и верифицированных данных. Нулевая толерантность к ИИ-галлюцинациям. Удобный чат запроса. Документ готов к презентации инвесторам.",
       icon: <FiFileText className="me-2 text-danger" />,
       release: "весна 2026",
+      link: "/solutions/planMaster/descriptionPage",
+      elementId: "planmaster-description-card",
+      ctaLabel: "Подробнее",
     },
     {
       title: "Relocation Service Free",
@@ -61,8 +73,10 @@ export default function SolutionsPage() {
       description:
         "Виртуарльная панель респондентов. Создание фокус-групп и анализ ответов респондентов по входным параметрам. Тонкая настройка демографии, возраста, социальных и финансовых парметров целевой аудитории.",
       icon: <FiUsers className="me-2 text-warning" />,
-      link: "/solutions/synthFocusLab",
-      elementId: "synth-focus-lab-card",
+      release: "весна 2026",
+      link: "/solutions/synthFocusLab/descriptionPage",
+      elementId: "synth-focus-lab-description-card",
+      ctaLabel: "Подробнее",
     },
   ];
   const { trackClick } = useClickAnalytics();
@@ -147,7 +161,7 @@ export default function SolutionsPage() {
                   {solution.link && (
                     <div className="mt-3">
                       <Link
-                        href={solution.link}
+                        href={getLocalePath(solution.link)}
                         className="btn btn-primary w-100"
                         style={{ minWidth: "150px" }}
                         onClick={() =>
@@ -157,7 +171,7 @@ export default function SolutionsPage() {
                           )
                         }
                       >
-                        Открыть
+                        {solution.ctaLabel ?? "Открыть"}
                       </Link>
                     </div>
                   )}

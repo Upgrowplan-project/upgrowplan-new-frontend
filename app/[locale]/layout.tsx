@@ -5,7 +5,6 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import "../globals.css";
 
 import AOSWrapper from "../AOSWrapper";
-import Footer from "@/components/Footer";
 import CookieBannerWrapper from "@/components/CookieBannerWrapper";
 import { NextIntlClientProvider } from "next-intl";
 
@@ -43,7 +42,6 @@ export default async function LocaleLayout({
       <AOSWrapper />
       <NextIntlClientProvider locale={locale} messages={messages}>
         <main>{children}</main>
-        <Footer />
         <CookieBannerWrapper />
       </NextIntlClientProvider>
       <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>

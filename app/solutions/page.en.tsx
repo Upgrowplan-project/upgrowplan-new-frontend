@@ -32,7 +32,10 @@ export default function SolutionsPage() {
       description:
         "An AI agent for discovery, analysis and full marketing research. Verifies sources and adapts results to your daily tasks.",
       icon: <FiCpu className="me-2 text-primary" />,
-      release: "Autumn 2025",
+      release: "Spring 2026",
+      link: "/solutions/marketResearch/descriptionPage",
+      elementId: "market-research-description-card",
+      ctaLabel: "Learn more",
     },
     {
       title: "Competitors Research AI Agent",
@@ -46,7 +49,10 @@ export default function SolutionsPage() {
       description:
         "Generates an expert business plan based on modern methodology, live search and verified data. Clear handling of hallucinations. User-friendly request chat and investor-ready documents.",
       icon: <FiFileText className="me-2 text-danger" />,
-      release: "Autumn 2025",
+      release: "Spring 2026",
+      link: "/solutions/planMaster/descriptionPage",
+      elementId: "planmaster-description-card",
+      ctaLabel: "Learn more",
     },
     {
       title: "Relocation Service Free",
@@ -61,7 +67,10 @@ export default function SolutionsPage() {
       description:
         "Virtual panel of respondents. Creating focus groups and analyzing respondents' answers based on input parameters. Fine-tuning demographics, age, social and financial parameters of the target audience.",
       icon: <FiUsers className="me-2 text-warning" />,
-      release: "winter 2025",
+      release: "Spring 2026",
+      link: "/solutions/synthFocusLab/descriptionPage",
+      elementId: "synth-focus-lab-description-card",
+      ctaLabel: "Learn more",
     },
   ];
 
@@ -154,7 +163,7 @@ export default function SolutionsPage() {
                           )
                         }
                       >
-                        Open
+                        {solution.ctaLabel ?? "Open"}
                       </Link>
                     </div>
                   )}

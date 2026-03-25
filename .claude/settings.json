@@ -2,7 +2,15 @@
   "permissions": {
     "allow": [
       "Bash(npx tsc:*)",
-      "Bash(split -l 100 \"C:\\\\Users\\\\Lenovo\\\\.claude\\\\projects\\\\d--UpgrowPlan-upgrowplan-new\\\\30b4a605-06da-4ec0-b4e8-441ff31cd3c1\\\\tool-results\\\\bwdlo53jf.txt\" /tmp/part_)"
+      "Bash(split -l 100 \"C:\\\\Users\\\\Lenovo\\\\.claude\\\\projects\\\\d--UpgrowPlan-upgrowplan-new\\\\30b4a605-06da-4ec0-b4e8-441ff31cd3c1\\\\tool-results\\\\bwdlo53jf.txt\" /tmp/part_)",
+      "Bash(PYTHONIOENCODING=utf-8 venv/Scripts/python.exe -m tests.integration.runner --cases it_services,saas_development,web_studio)",
+      "Bash(PYTHONIOENCODING=utf-8 venv/Scripts/python.exe -m tests.integration.runner --cases it_services --no-autofix)",
+      "Bash(python -c \":*)",
+      "Bash(powershell \"Get-WmiObject Win32_Process -Filter ''ProcessId=26172'' | Select-Object CommandLine\")",
+      "Bash(cmd //c \"taskkill /F /PID 26172\" sleep 2 netstat -ano)",
+      "Bash(cmd //c \"taskkill /F /IM python.exe /T\")",
+      "Bash(PYTHONUTF8=1 python -m tests.integration.runner --cases web_studio)",
+      "Bash(PYTHONUTF8=1 python -c \":*)"
     ]
   }
 }
