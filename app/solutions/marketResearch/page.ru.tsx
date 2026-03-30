@@ -307,6 +307,24 @@ export default function MarketResearchPage() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResearchPaused, setIsResearchPaused] = useState(false);
+  const isCompletedView = Boolean(enhancedReport || researchReport);
+
+  const buildCompletionSubtitle = () => {
+    const productName =
+      enhancedReport?.product_name || formData.productName || "Маркетинговый отчет";
+    const fullDesc =
+      (formData.productDescription || enhancedReport?.industry || "").trim();
+    const location =
+      enhancedReport?.location ||
+      [formData.region, formData.country].filter(Boolean).join(", ");
+
+    const shortDesc = fullDesc ? fullDesc.split(".")[0].trim() : "";
+    const left = `${productName}${fullDesc ? " " + fullDesc : ""}`.trim();
+    const middle = `${productName}${shortDesc ? " " + shortDesc : ""}`.trim();
+    const right = location || "";
+
+    return [left, middle, right].filter(Boolean).join(" • ");
+  };
 
   // Таймер и метрики исследования
   const [researchStartTime, setResearchStartTime] = useState<number | null>(
@@ -1457,8 +1475,10 @@ export default function MarketResearchPage() {
           </div>
         )}
 
-        <div className={styles.formSection}>
-          <div className={styles.card}>
+        {!isCompletedView && (
+          <>
+          <div className={styles.formSection}>
+            <div className={styles.card}>
             <h2>Данные для исследования</h2>
             <p className={styles.formDescription}>
               Внесите информацию о вашей идее или проекте. Чем больше информации
@@ -1812,775 +1832,31 @@ export default function MarketResearchPage() {
             </div>
           </div>
         )}
+          </>
+        )}
 
         {enhancedReport && (
           <div className={styles.resultsSection}>
             <div className={styles.resultsCard}>
               <div className={styles.resultsHeader}>
-                <div>
-                  <h2>Маркетинговый отчет</h2>
-                  <p className={styles.reportSubtitle}>
-                    {enhancedReport.product_name} • {enhancedReport.industry} •{" "}
-                    {enhancedReport.location}
-                  </p>
-                </div>
+                <h2>Маркетинговый отчет</h2>
+                <p className={styles.reportSubtitle}>{buildCompletionSubtitle()}</p>
               </div>
-
               <div className={styles.resultsBody}>
-                {/* СООБЩЕНИЕ: ОТЧЕТ ГОТОВ */}
                 <div className={styles.section}>
-                  <p style={{ fontSize: '1.2rem', textAlign: 'center', padding: '3rem', color: '#1e6078', fontWeight: 500 }}>
-                    ✅ Ваш маркетинговый отчет успешно сформирован!<br /><br />
-                    Скачайте полный отчет в форматах DOCX или PDF ниже.
+                  <p
+                    style={{
+                      fontSize: "1.2rem",
+                      textAlign: "center",
+                      padding: "2rem 1rem",
+                      color: "#1e6078",
+                      fontWeight: 600,
+                    }}
+                  >
+                    ✅ Ваш маркетинговый отчет успешно сформирован!
                   </p>
                 </div>
 
-                {/* ВСЕ СЕКЦИИ ОТЧЕТА СКРЫТЫ - ДОСТУПНЫ ТОЛЬКО ДЛЯ СКАЧИВАНИЯ */}
-                <div style={{ display: 'none' }}>
-                {/* Executive Summary Section */}
-                <div className={styles.section}>
-                  <h3>Резюме исследования</h3>
-
-                  {/* Метрики исследования */}
-                  {researchDuration && (
-                    <div className={styles.subsection}>
-                      <div className={styles.researchMetrics}>
-                        <div className={styles.metricItem}>
-                          <strong>Длительность исследования:</strong>{" "}
-                          {researchDuration.minutes} мин{" "}
-                          {researchDuration.seconds} сек
-                        </div>
-                        {enhancedReport.raw_research_data && (
-                          <>
-                            {Object.keys(enhancedReport.raw_research_data)
-                              .length > 0 && (
-                              <div className={styles.metricItem}>
-                                <strong>Обработано источников:</strong>{" "}
-                                {Object.values(
-                                  enhancedReport.raw_research_data
-                                ).reduce((acc: number, section: any) => {
-                                  const results = section?.results || [];
-                                  return (
-                                    acc +
-                                    results.reduce(
-                                      (sum: number, r: any) =>
-                                        sum + (r?.sources?.length || 0),
-                                      0
-                                    )
-                                  );
-                                }, 0)}
-                              </div>
-                            )}
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className={styles.subsection}>
-                    <h4>Заданные цели исследования</h4>
-                    <ul className={styles.bulletList}>
-                      {enhancedReport.executive_summary.research_objectives.map(
-                        (obj, idx) => (
-                          <li key={idx}>{obj}</li>
-                        )
-                      )}
-                    </ul>
-                  </div>
-
-                  <div className={styles.subsection}>
-                    <h4>Ключевые находки</h4>
-                    <div className={styles.keyFindingsGrid}>
-                      {enhancedReport.executive_summary.key_findings.map(
-                        (finding, idx) => (
-                          <div key={idx} className={styles.findingCard}>
-                            <span className={styles.findingNumber}>
-                              {idx + 1}
-                            </span>
-                            <p>{finding}</p>
-                          </div>
-                        )
-                      )}
-                    </div>
-                  </div>
-
-                  <div className={styles.subsection}>
-                    <h4>Стратегические рекомендации</h4>
-                    <ul className={styles.bulletList}>
-                      {enhancedReport.executive_summary.strategic_recommendations.map(
-                        (rec, idx) => (
-                          <li key={idx}>{rec}</li>
-                        )
-                      )}
-                    </ul>
-                  </div>
-
-                  <div className={styles.subsection}>
-                    <h4>Обзор рыночных возможностей</h4>
-                    <p className={styles.summaryText}>
-                      {
-                        enhancedReport.executive_summary
-                          .market_opportunity_summary
-                      }
-                    </p>
-                  </div>
-                </div>
-
-                {/* Market Analysis Section */}
-                <div className={styles.section}>
-                  <h3>Анализ рынка</h3>
-
-                  <div className={styles.subsection}>
-                    <h4>Размер рынка</h4>
-                    <div className={styles.marketSizeGrid}>
-                      {enhancedReport.market_analysis.market_size.tam_value && (
-                        <div className={styles.metricCard}>
-                          <h5>Общий доступный рынок (TAM)</h5>
-                          <p className={styles.metricValue}>
-                            {
-                              enhancedReport.market_analysis.market_size
-                                .tam_value
-                            }
-                          </p>
-                          <p className={styles.metricDescription}>
-                            {
-                              enhancedReport.market_analysis.market_size
-                                .tam_description
-                            }
-                          </p>
-                        </div>
-                      )}
-                      {enhancedReport.market_analysis.market_size.sam_value && (
-                        <div className={styles.metricCard}>
-                          <h5>Обслуживаемый доступный рынок (SAM)</h5>
-                          <p className={styles.metricValue}>
-                            {
-                              enhancedReport.market_analysis.market_size
-                                .sam_value
-                            }
-                          </p>
-                          <p className={styles.metricDescription}>
-                            {
-                              enhancedReport.market_analysis.market_size
-                                .sam_description
-                            }
-                          </p>
-                        </div>
-                      )}
-                      {enhancedReport.market_analysis.market_size.som_value && (
-                        <div className={styles.metricCard}>
-                          <h5>Достижимая доля рынка (SOM)</h5>
-                          <p className={styles.metricValue}>
-                            {
-                              enhancedReport.market_analysis.market_size
-                                .som_value
-                            }
-                          </p>
-                          <p className={styles.metricDescription}>
-                            {
-                              enhancedReport.market_analysis.market_size
-                                .som_description
-                            }
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                    {enhancedReport.market_analysis.market_size.growth_rate && (
-                      <p className={styles.growthRate}>
-                        <strong>Темп роста:</strong>{" "}
-                        {enhancedReport.market_analysis.market_size.growth_rate}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className={styles.subsection}>
-                    <h4>Рыночные тренды</h4>
-                    <div className={styles.trendsGrid}>
-                      <div className={styles.trendCard}>
-                        <h5>Текущие тренды</h5>
-                        <ul>
-                          {enhancedReport.market_analysis.market_trends.current_trends?.map(
-                            (trend, idx) => <li key={idx}>{trend}</li>
-                          ) || <li>Нет данных</li>}
-                        </ul>
-                      </div>
-                      <div className={styles.trendCard}>
-                        <h5>Драйверы роста</h5>
-                        <ul>
-                          {enhancedReport.market_analysis.market_trends.growth_drivers?.map(
-                            (driver, idx) => <li key={idx}>{driver}</li>
-                          ) || <li>Нет данных</li>}
-                        </ul>
-                      </div>
-                      <div className={styles.trendCard}>
-                        <h5>Барьеры рынка</h5>
-                        <ul>
-                          {enhancedReport.market_analysis.market_trends.market_barriers?.map(
-                            (barrier, idx) => <li key={idx}>{barrier}</li>
-                          ) || <li>Нет данных</li>}
-                        </ul>
-                      </div>
-                      <div className={styles.trendCard}>
-                        <h5>Прогноз развития</h5>
-                        <p>
-                          {enhancedReport.market_analysis.market_trends
-                            .future_outlook || "Нет данных"}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {enhancedReport.market_analysis.market_maturity && (
-                    <div className={styles.subsection}>
-                      <h4>Зрелость рынка</h4>
-                      <p className={styles.summaryText}>
-                        {enhancedReport.market_analysis.market_maturity}
-                      </p>
-                    </div>
-                  )}
-
-                  {enhancedReport.market_analysis.regulatory_environment && (
-                    <div className={styles.subsection}>
-                      <h4>Регуляторная среда</h4>
-                      <p className={styles.summaryText}>
-                        {enhancedReport.market_analysis.regulatory_environment}
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Target Audience Section */}
-                <div className={styles.section}>
-                  <h3>Анализ целевой аудитории</h3>
-
-                  <div className={styles.subsection}>
-                    <h4>Сегменты целевой аудитории</h4>
-                    <div className={styles.segmentsGrid}>
-                      {enhancedReport.target_audience.segments.map(
-                        (segment, idx) => (
-                          <div key={idx} className={styles.segmentCard}>
-                            <div className={styles.segmentHeader}>
-                              <h5>{segment.segment_name}</h5>
-                              {segment.priority && (
-                                <span
-                                  className={`${styles.priorityBadge} ${
-                                    styles[`priority${segment.priority}`]
-                                  }`}
-                                >
-                                  Приоритет: {segment.priority}
-                                </span>
-                              )}
-                            </div>
-                            {segment.segment_size && (
-                              <p className={styles.segmentSize}>
-                                <strong>Размер:</strong> {segment.segment_size}
-                              </p>
-                            )}
-
-                            <div className={styles.segmentDetails}>
-                              {segment.demographics.length > 0 && (
-                                <div>
-                                  <h6>Демография</h6>
-                                  <ul>
-                                    {segment.demographics.map((demo, i) => (
-                                      <li key={i}>{demo}</li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              )}
-                              {segment.psychographics.length > 0 && (
-                                <div>
-                                  <h6>Психография</h6>
-                                  <ul>
-                                    {segment.psychographics.map((psycho, i) => (
-                                      <li key={i}>{psycho}</li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              )}
-                              {segment.behaviors.length > 0 && (
-                                <div>
-                                  <h6>Поведение</h6>
-                                  <ul>
-                                    {segment.behaviors.map((behavior, i) => (
-                                      <li key={i}>{behavior}</li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              )}
-                              {segment.pain_points.length > 0 && (
-                                <div>
-                                  <h6>Болевые точки</h6>
-                                  <ul>
-                                    {segment.pain_points.map((pain, i) => (
-                                      <li key={i}>{pain}</li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              )}
-                              {segment.needs.length > 0 && (
-                                <div>
-                                  <h6>Потребности</h6>
-                                  <ul>
-                                    {segment.needs.map((need, i) => (
-                                      <li key={i}>{need}</li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              )}
-                              {segment.buying_motivations.length > 0 && (
-                                <div>
-                                  <h6>Мотивация к покупке</h6>
-                                  <ul>
-                                    {segment.buying_motivations.map(
-                                      (mot, i) => (
-                                        <li key={i}>{mot}</li>
-                                      )
-                                    )}
-                                  </ul>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        )
-                      )}
-                    </div>
-                  </div>
-
-                  {enhancedReport.target_audience.customer_journey && (
-                    <div className={styles.subsection}>
-                      <h4>Путь клиента (Customer Journey)</h4>
-                      <p className={styles.summaryText}>
-                        {enhancedReport.target_audience.customer_journey}
-                      </p>
-                    </div>
-                  )}
-
-                  {enhancedReport.target_audience.decision_making_process && (
-                    <div className={styles.subsection}>
-                      <h4>Процесс принятия решения</h4>
-                      <p className={styles.summaryText}>
-                        {enhancedReport.target_audience.decision_making_process}
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Competitive Analysis Section */}
-                <div className={styles.section}>
-                  <h3>Конкурентный анализ</h3>
-
-                  <div className={styles.subsection}>
-                    <h4>Обзор конкурентного ландшафта</h4>
-                    <p className={styles.summaryText}>
-                      {
-                        enhancedReport.competitive_analysis
-                          .competitive_landscape_overview
-                      }
-                    </p>
-                  </div>
-
-                  <div className={styles.subsection}>
-                    <h4>Прямые конкуренты</h4>
-                    <div className={styles.competitorsGrid}>
-                      {enhancedReport.competitive_analysis.direct_competitors.map(
-                        (comp: CompetitorProfile, idx: number) => (
-                          <div key={idx} className={styles.competitorCard}>
-                            <div className={styles.competitorHeader}>
-                              <h5>{comp.name}</h5>
-                              <span
-                                className={`${styles.competitorTypeBadge} ${
-                                  styles[comp.competitor_type]
-                                }`}
-                              >
-                                {comp.competitor_type}
-                              </span>
-                            </div>
-
-                            {comp.market_position && (
-                              <p className={styles.marketPosition}>
-                                <strong>Позиция:</strong> {comp.market_position}
-                              </p>
-                            )}
-                            {comp.market_share && (
-                              <p className={styles.marketShare}>
-                                <strong>Доля рынка:</strong> {comp.market_share}
-                              </p>
-                            )}
-
-                            <div className={styles.competitorDetails}>
-                              {comp.strengths.length > 0 && (
-                                <div>
-                                  <h6>Сильные стороны</h6>
-                                  <ul>
-                                    {comp.strengths.map(
-                                      (str: string, i: number) => (
-                                        <li key={i}>{str}</li>
-                                      )
-                                    )}
-                                  </ul>
-                                </div>
-                              )}
-                              {comp.weaknesses.length > 0 && (
-                                <div>
-                                  <h6>Слабые стороны</h6>
-                                  <ul>
-                                    {comp.weaknesses.map(
-                                      (weak: string, i: number) => (
-                                        <li key={i}>{weak}</li>
-                                      )
-                                    )}
-                                  </ul>
-                                </div>
-                              )}
-                              {comp.products_services.length > 0 && (
-                                <div>
-                                  <h6>Продукты/услуги</h6>
-                                  <ul>
-                                    {comp.products_services.map(
-                                      (prod: string, i: number) => (
-                                        <li key={i}>{prod}</li>
-                                      )
-                                    )}
-                                  </ul>
-                                </div>
-                              )}
-                              {comp.pricing && (
-                                <p>
-                                  <strong>Ценообразование:</strong>{" "}
-                                  {comp.pricing}
-                                </p>
-                              )}
-                              {comp.unique_value_proposition && (
-                                <p>
-                                  <strong>
-                                    Уникальное ценностное предложение:
-                                  </strong>{" "}
-                                  {comp.unique_value_proposition}
-                                </p>
-                              )}
-                              {(comp.website ||
-                                (comp.social_links &&
-                                  comp.social_links.length > 0)) && (
-                                <div
-                                  style={{
-                                    marginTop: "1rem",
-                                    paddingTop: "1rem",
-                                    borderTop: "1px solid #e2e8f0",
-                                  }}
-                                >
-                                  <h6 style={{ marginBottom: "0.5rem" }}>
-                                    Ссылки
-                                  </h6>
-                                  {comp.website && (
-                                    <p style={{ margin: "0.25rem 0" }}>
-                                      <strong>Сайт:</strong>{" "}
-                                      <a
-                                        href={comp.website}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        style={{ color: "#1e6078" }}
-                                      >
-                                        {comp.website}
-                                      </a>
-                                    </p>
-                                  )}
-                                  {comp.social_links &&
-                                    comp.social_links.length > 0 && (
-                                      <div style={{ margin: "0.5rem 0" }}>
-                                        <strong>Соцсети:</strong>
-                                        <ul
-                                          style={{
-                                            margin: "0.25rem 0",
-                                            paddingLeft: "1.5rem",
-                                          }}
-                                        >
-                                          {comp.social_links.map(
-                                            (link: string, i: number) => (
-                                              <li key={i}>
-                                                <a
-                                                  href={link}
-                                                  target="_blank"
-                                                  rel="noopener noreferrer"
-                                                  style={{ color: "#1e6078" }}
-                                                >
-                                                  {link}
-                                                </a>
-                                              </li>
-                                            )
-                                          )}
-                                        </ul>
-                                      </div>
-                                    )}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        )
-                      )}
-                    </div>
-                  </div>
-
-                  {enhancedReport.competitive_analysis.indirect_competitors
-                    .length > 0 && (
-                    <div className={styles.subsection}>
-                      <h4>Косвенные конкуренты</h4>
-                      <div className={styles.competitorsGrid}>
-                        {enhancedReport.competitive_analysis.indirect_competitors.map(
-                          (comp: CompetitorProfile, idx: number) => (
-                            <div key={idx} className={styles.competitorCard}>
-                              <div className={styles.competitorHeader}>
-                                <h5>{comp.name}</h5>
-                                <span
-                                  className={`${styles.competitorTypeBadge} ${
-                                    styles[comp.competitor_type]
-                                  }`}
-                                >
-                                  {comp.competitor_type}
-                                </span>
-                              </div>
-                              {comp.market_position && (
-                                <p className={styles.marketPosition}>
-                                  <strong>Позиция:</strong>{" "}
-                                  {comp.market_position}
-                                </p>
-                              )}
-                            </div>
-                          )
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {enhancedReport.competitive_analysis.swot && (
-                    <div className={styles.subsection}>
-                      <h4>SWOT Анализ</h4>
-                      <div className={styles.swotGrid}>
-                        <div className={styles.swotCard}>
-                          <h5>Сильные стороны</h5>
-                          <ul>
-                            {enhancedReport.competitive_analysis.swot.strengths.map(
-                              (str: string, idx: number) => (
-                                <li key={idx}>{str}</li>
-                              )
-                            )}
-                          </ul>
-                        </div>
-                        <div className={styles.swotCard}>
-                          <h5>Слабые стороны</h5>
-                          <ul>
-                            {enhancedReport.competitive_analysis.swot.weaknesses.map(
-                              (weak: string, idx: number) => (
-                                <li key={idx}>{weak}</li>
-                              )
-                            )}
-                          </ul>
-                        </div>
-                        <div className={styles.swotCard}>
-                          <h5>Возможности</h5>
-                          <ul>
-                            {enhancedReport.competitive_analysis.swot.opportunities.map(
-                              (opp: string, idx: number) => (
-                                <li key={idx}>{opp}</li>
-                              )
-                            )}
-                          </ul>
-                        </div>
-                        <div className={styles.swotCard}>
-                          <h5>Угрозы</h5>
-                          <ul>
-                            {enhancedReport.competitive_analysis.swot.threats.map(
-                              (threat: string, idx: number) => (
-                                <li key={idx}>{threat}</li>
-                              )
-                            )}
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className={styles.twoColumnGrid}>
-                    <div className={styles.subsection}>
-                      <h4>Конкурентные преимущества</h4>
-                      <ul className={styles.bulletList}>
-                        {enhancedReport.competitive_analysis.competitive_advantages.map(
-                          (adv: string, idx: number) => (
-                            <li key={idx}>{adv}</li>
-                          )
-                        )}
-                      </ul>
-                    </div>
-                    <div className={styles.subsection}>
-                      <h4>Рыночные ниши</h4>
-                      <ul className={styles.bulletList}>
-                        {enhancedReport.competitive_analysis.market_gaps.map(
-                          (gap: string, idx: number) => (
-                            <li key={idx}>{gap}</li>
-                          )
-                        )}
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Pricing Analysis Section */}
-                <div className={styles.section}>
-                  <h3>Ценовой анализ</h3>
-
-                  {enhancedReport.pricing_analysis.market_price_range && (
-                    <div className={styles.subsection}>
-                      <h4>Диапазон цен на рынке</h4>
-                      <p className={styles.summaryText}>
-                        {enhancedReport.pricing_analysis.market_price_range}
-                      </p>
-                    </div>
-                  )}
-
-                  <div className={styles.subsection}>
-                    <h4>Цены конкурентов</h4>
-                    <div className={styles.pricingTable}>
-                      <table>
-                        <thead>
-                          <tr>
-                            <th>Конкурент</th>
-                            <th>Диапазон цен</th>
-                            <th>Модель ценообразования</th>
-                            <th>Ценностное предложение</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {enhancedReport.pricing_analysis.competitive_pricing.map(
-                            (price, idx) => (
-                              <tr key={idx}>
-                                <td>{price.competitor_name}</td>
-                                <td>{price.price_range}</td>
-                                <td>{price.pricing_model}</td>
-                                <td>{price.value_proposition}</td>
-                              </tr>
-                            )
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-
-                  <div className={styles.subsection}>
-                    <h4>Стратегии ценообразования</h4>
-                    <ul className={styles.bulletList}>
-                      {enhancedReport.pricing_analysis.pricing_strategies.map(
-                        (strategy, idx) => (
-                          <li key={idx}>{strategy}</li>
-                        )
-                      )}
-                    </ul>
-                  </div>
-
-                  {enhancedReport.pricing_analysis.recommended_pricing && (
-                    <div className={styles.subsection}>
-                      <h4>Рекомендуемая цена</h4>
-                      <p className={styles.summaryText}>
-                        {enhancedReport.pricing_analysis.recommended_pricing}
-                      </p>
-                    </div>
-                  )}
-
-                  {enhancedReport.pricing_analysis
-                    .price_sensitivity_analysis && (
-                    <div className={styles.subsection}>
-                      <h4>Анализ чувствительности к цене</h4>
-                      <p className={styles.summaryText}>
-                        {
-                          enhancedReport.pricing_analysis
-                            .price_sensitivity_analysis
-                        }
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Strategic Recommendations Section */}
-                <div className={styles.section}>
-                  <h3>Стратегические рекомендации</h3>
-
-                  <div className={styles.subsection}>
-                    <h4>Позиционирование</h4>
-                    <p className={styles.summaryText}>
-                      {
-                        enhancedReport.strategic_recommendations
-                          .positioning_statement
-                      }
-                    </p>
-                  </div>
-
-                  <div className={styles.subsection}>
-                    <h4>Стратегия выхода на рынок</h4>
-                    <p className={styles.summaryText}>
-                      {
-                        enhancedReport.strategic_recommendations
-                          .go_to_market_strategy
-                      }
-                    </p>
-                  </div>
-
-                  <div className={styles.subsection}>
-                    <h4>Маркетинговые каналы</h4>
-                    <ul className={styles.bulletList}>
-                      {enhancedReport.strategic_recommendations.marketing_channels?.map(
-                        (channel, idx) => <li key={idx}>{channel}</li>
-                      ) || <li>Нет данных</li>}
-                    </ul>
-                  </div>
-
-                  <div className={styles.subsection}>
-                    <h4>Метрики успеха (KPI)</h4>
-                    <ul className={styles.bulletList}>
-                      {enhancedReport.strategic_recommendations.success_metrics?.map(
-                        (metric, idx) => <li key={idx}>{metric}</li>
-                      ) || <li>Нет данных</li>}
-                    </ul>
-                  </div>
-
-                  <div className={styles.subsection}>
-                    <h4>План действий</h4>
-                    <div className={styles.actionPlanGrid}>
-                      {enhancedReport.strategic_recommendations.action_plan.map(
-                        (action, idx) => (
-                          <div key={idx} className={styles.actionCard}>
-                            <div className={styles.actionHeader}>
-                              <span
-                                className={`${styles.priorityBadge} ${
-                                  styles[`priority${action.priority}`]
-                                }`}
-                              >
-                                Приоритет: {action.priority}
-                              </span>
-                              <span className={styles.timeline}>
-                                {action.timeline}
-                              </span>
-                            </div>
-                            <p className={styles.actionText}>{action.action}</p>
-                            {action.responsible && (
-                              <p className={styles.responsible}>
-                                <strong>Ответственный:</strong>{" "}
-                                {action.responsible}
-                              </p>
-                            )}
-                            {action.expected_outcome && (
-                              <p className={styles.outcome}>
-                                <strong>Ожидаемый результат:</strong>{" "}
-                                {action.expected_outcome}
-                              </p>
-                            )}
-                          </div>
-                        )
-                      )}
-                    </div>
-                  </div>
-                </div>
-                </div> {/* Конец скрытого блока */}
-
-                {/* КНОПКИ СКАЧИВАНИЯ */}
                 <div className={styles.section}>
                   <div className={styles.downloadButtons}>
                     <button
@@ -2611,20 +1887,18 @@ export default function MarketResearchPage() {
               </div>
             </div>
           </div>
-        )}
-
-        {researchReport && !enhancedReport && (
+        )}\n        {researchReport && !enhancedReport && (
           <div className={styles.resultsSection}>
             <div className={styles.resultsCard}>
               <div className={styles.resultsHeader}>
                 <h2>Маркетинговый отчет</h2>
+                <p className={styles.reportSubtitle}>{buildCompletionSubtitle()}</p>
               </div>
               <div className={styles.resultsBody}>
                 {/* СООБЩЕНИЕ: ОТЧЕТ ГОТОВ */}
                 <div className={styles.section}>
-                  <p style={{ fontSize: '1.2rem', textAlign: 'center', padding: '3rem', color: '#1e6078', fontWeight: 500 }}>
-                    ✅ Ваш маркетинговый отчет успешно сформирован!<br /><br />
-                    Скачайте полный отчет в форматах DOCX или PDF ниже.
+                  <p style={{ fontSize: '1.2rem', textAlign: 'center', padding: '2rem 1rem', color: '#1e6078', fontWeight: 600 }}>
+                    ✅ Ваш маркетинговый отчет успешно сформирован!
                   </p>
                 </div>
 
@@ -2661,14 +1935,18 @@ export default function MarketResearchPage() {
           </div>
         )}
 
-        <div className={styles.disclaimer}>
-          <p>
-            <strong>Важно:</strong> Это тестовая версия сервиса. Результаты
-            могут быть неполными. Сервис использует AI-агенты, живой поиск для
-            сбора и проверки данных.
-          </p>
-        </div>
+        {!isCompletedView && (
+          <div className={styles.disclaimer}>
+            <p>
+              <strong>Важно:</strong> Это тестовая версия сервиса. Результаты
+              могут быть неполными. Сервис использует AI-агенты, живой поиск для
+              сбора и проверки данных.
+            </p>
+          </div>
+        )}
       </main>
     </div>
   );
 }
+
+
