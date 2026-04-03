@@ -35,6 +35,7 @@ const translations = {
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false);
 
   const router = useRouter();
   const pathname = usePathname() || "/";
@@ -56,6 +57,23 @@ export default function Header() {
     setIsLoggedIn(!!token);
   }, []);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest(".language-dropdown-container")) {
+        setLanguageDropdownOpen(false);
+      }
+    };
+
+    if (languageDropdownOpen) {
+      document.addEventListener("click", handleClickOutside);
+      return () => {
+        document.removeEventListener("click", handleClickOutside);
+      };
+    }
+  }, [languageDropdownOpen]);
+
   // Extract the path without locale for building hrefs
   const pathWithoutLocale = pathname.replace(/^\/(en|ru)/, "") || "/";
   const baseHref = pathWithoutLocale === "" ? "/" : pathWithoutLocale;
@@ -64,7 +82,7 @@ export default function Header() {
   const switchLocale = (newLocale: string) => {
     // Save locale preference to cookie
     document.cookie = `NEXT_LOCALE=${newLocale}; path=/; max-age=31536000`; // 1 year
-    
+
     // For 'en', don't add prefix; for 'ru', add /ru prefix
     const localePrefix = newLocale === "en" ? "" : `/${newLocale}`;
     // If baseHref is "/", we want just the locale prefix (or empty for en)
@@ -79,129 +97,366 @@ export default function Header() {
     <header style={{ position: "sticky", top: 0, zIndex: 1000, margin: 0 }}>
       <nav
         className="navbar navbar-expand-md navbar-light"
-        style={{ backgroundColor: "#d7ecf6", margin: 0, padding: "0.5rem 0" }}
+        style={{
+          backgroundColor: "#d7ecf6",
+          margin: 0,
+          padding: "0.5rem 1rem",
+        }}
       >
-        <div className="container">
+        {/* Mobile: Home icon on the left */}
+        <div className="mobile-home-icon">
           <Link
             href={homeLink}
-            className="navbar-brand d-flex align-items-center"
+            style={{
+              textDecoration: "none",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            title="Home"
           >
             <Image
-              src="/LogoUpGrowSmall2.png"
-              alt="Up&Grow Logo"
-              width={40}
-              height={40}
+              src="/icons/home-icon.png"
+              alt="Home"
+              width={32}
+              height={32}
               style={{ maxWidth: "100%", height: "auto" }}
             />
-            <span
-              className="ms-2"
-              style={{ color: "#1e6078", fontWeight: "bold" }}
-            >
-              Upgrowplan
-            </span>
           </Link>
-          <button
-            className="navbar-toggler"
-            type="button"
-            onClick={() => setMenuOpen(!menuOpen)}
-            aria-controls="navbarNav"
-            aria-expanded={menuOpen}
-            aria-label="Toggle navigation"
-          >
-            <span className="navbar-toggler-icon"></span>
-          </button>
-          <div
-            className={`collapse navbar-collapse ${menuOpen ? "show" : ""}`}
-            id="navbarNav"
-          >
-            <ul className="navbar-nav ms-auto mb-2 mb-md-0">
-              <li className="nav-item">
-                <Link
-                  href={locale === "en" ? "/products" : "/ru/products"}
-                  className="nav-link"
-                  style={{ color: "#0785f6" }}
-                >
-                  {t.products}
-                </Link>
-              </li>
-              <li className="nav-item">
-                <Link
-                  href={locale === "en" ? "/solutions" : "/ru/solutions"}
-                  className="nav-link"
-                  style={{ color: "#0785f6" }}
-                >
-                  {t.solutions}
-                </Link>
-              </li>
-              <li className="nav-item">
-                <Link
-                  href={locale === "en" ? "/blog" : "/ru/blog"}
-                  className="nav-link"
-                  style={{ color: "#0785f6" }}
-                >
-                  {t.blog}
-                </Link>
-              </li>
-              <li className="nav-item">
-                <Link
-                  href={locale === "en" ? "/about" : "/ru/about"}
-                  className="nav-link"
-                  style={{ color: "#0785f6" }}
-                >
-                  {t.about}
-                </Link>
-              </li>
-              <li className="nav-item">
-                <Link
-                  href={locale === "en" ? "/contacts" : "/ru/contacts"}
-                  className="nav-link"
-                  style={{ color: "#0785f6" }}
-                >
-                  {t.contact}
-                </Link>
-              </li>
-              <li className="nav-item">
-                <Link
-                  href={
-                    isLoggedIn
-                      ? locale === "en"
-                        ? "/account"
-                        : "/ru/account"
-                      : locale === "en"
-                        ? "/auth"
-                        : "/ru/auth"
-                  }
-                  className="nav-link"
-                  style={{ color: "#0785f6" }}
-                >
-                  {isLoggedIn ? t.account : t.login}
-                </Link>
-              </li>
-              <li className="nav-item d-flex align-items-center ms-3">
-                {/* Language switcher */}
-                <button
-                  onClick={() => switchLocale("en")}
-                  className={`btn btn-sm ${
-                    locale === "en" ? "btn-primary" : "btn-outline-primary"
-                  }`}
-                  aria-label="Switch to English"
-                  style={{ marginRight: 6 }}
-                >
-                  EN
-                </button>
+        </div>
 
-                <button
-                  onClick={() => switchLocale("ru")}
-                  className={`btn btn-sm ${
-                    locale === "ru" ? "btn-primary" : "btn-outline-primary"
-                  }`}
-                  aria-label="Switch to Russian"
+        {/* Logo and Brand Name */}
+        <Link
+          href={homeLink}
+          className="navbar-brand d-flex align-items-center"
+          style={{
+            marginRight: "auto",
+          }}
+        >
+          <Image
+            src="/LogoUpGrowSmall2.png"
+            alt="Up&Grow Logo"
+            width={40}
+            height={40}
+            style={{ maxWidth: "100%", height: "auto" }}
+          />
+          <span
+            className="ms-2"
+            style={{ color: "#1e6078", fontWeight: "bold" }}
+          >
+            Upgrowplan
+          </span>
+        </Link>
+
+        {/* Mobile: Language switcher (Globe) on the right */}
+        <div className="mobile-language-switcher">
+          <button
+            onClick={() => switchLocale(locale === "en" ? "ru" : "en")}
+            style={{
+              background: "none",
+              border: "none",
+              color: "#01346e",
+              fontSize: "1.5rem",
+              cursor: "pointer",
+              padding: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              marginLeft: "0.5rem",
+            }}
+            aria-label="Switch language"
+            title={locale === "en" ? "Переключить на РУ" : "Switch to EN"}
+          >
+            <i className="bi bi-globe" />
+          </button>
+        </div>
+
+        {/* Desktop burger menu */}
+        <button
+          className="navbar-toggler"
+          type="button"
+          onClick={() => setMenuOpen(!menuOpen)}
+          aria-controls="navbarNav"
+          aria-expanded={menuOpen}
+          aria-label="Toggle navigation"
+        >
+          <span className="navbar-toggler-icon"></span>
+        </button>
+
+        {/* Collapsible navigation menu */}
+        <div
+          className={`collapse navbar-collapse ${menuOpen ? "show" : ""}`}
+          id="navbarNav"
+        >
+          <ul className="navbar-nav ms-auto mb-2 mb-md-0">
+            <li className="nav-item">
+              <Link
+                href={locale === "en" ? "/products" : "/ru/products"}
+                className="nav-link"
+                style={{ color: "#0785f6" }}
+              >
+                {t.products}
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link
+                href={locale === "en" ? "/solutions" : "/ru/solutions"}
+                className="nav-link"
+                style={{ color: "#0785f6" }}
+              >
+                {t.solutions}
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link
+                href={locale === "en" ? "/blog" : "/ru/blog"}
+                className="nav-link"
+                style={{ color: "#0785f6" }}
+              >
+                {t.blog}
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link
+                href={locale === "en" ? "/about" : "/ru/about"}
+                className="nav-link"
+                style={{ color: "#0785f6" }}
+              >
+                {t.about}
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link
+                href={locale === "en" ? "/contacts" : "/ru/contacts"}
+                className="nav-link"
+                style={{ color: "#0785f6" }}
+              >
+                {t.contact}
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link
+                href={
+                  isLoggedIn
+                    ? locale === "en"
+                      ? "/account"
+                      : "/ru/account"
+                    : locale === "en"
+                      ? "/auth"
+                      : "/ru/auth"
+                }
+                className="nav-link"
+                style={{ color: "#0785f6" }}
+              >
+                {isLoggedIn ? t.account : t.login}
+              </Link>
+            </li>
+            <li
+              className="nav-item d-flex align-items-center ms-3 language-dropdown-container"
+              style={{ position: "relative" }}
+            >
+              {/* Desktop: Language switcher with dropdown */}
+              <button
+                onClick={() => setLanguageDropdownOpen(!languageDropdownOpen)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "#0785f6",
+                  fontSize: "1.2rem",
+                  cursor: "pointer",
+                  padding: "0.25rem 0.5rem",
+                  marginTop: "-0.2rem",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+                aria-label="Switch language"
+                title={locale === "en" ? "Переключить язык" : "Switch language"}
+              >
+                <i className="bi bi-globe" />
+              </button>
+
+              {/* Language dropdown menu */}
+              {languageDropdownOpen && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "100%",
+                    right: 0,
+                    backgroundColor: "#ffffff",
+                    border: "1px solid #d0d0d0",
+                    borderRadius: "8px",
+                    boxShadow: "0 8px 16px rgba(0, 0, 0, 0.15)",
+                    zIndex: 1100,
+                    width: "auto",
+                    minWidth: "110px",
+                    marginTop: "0.5rem",
+                  }}
                 >
-                  RU
-                </button>
-              </li>
-            </ul>
-          </div>
+                  {/* Show languages in reverse order based on current locale */}
+                  {locale === "ru" ? (
+                    // If RU is current: EN first, RU second
+                    <>
+                      <button
+                        onClick={() => {
+                          switchLocale("en");
+                          setLanguageDropdownOpen(false);
+                        }}
+                        style={{
+                          width: "100%",
+                          padding: "0.6rem 0.8rem",
+                          border: "none",
+                          background: "none",
+                          textAlign: "left",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "flex-start",
+                          gap: "0.6rem",
+                          color: "#0785f6",
+                          fontSize: "0.95rem",
+                          borderBottom: "1px solid #f0f0f0",
+                          transition: "background-color 0.2s",
+                        }}
+                        onMouseEnter={(e) =>
+                          (e.currentTarget.style.backgroundColor = "#f5f5f5")
+                        }
+                        onMouseLeave={(e) =>
+                          (e.currentTarget.style.backgroundColor =
+                            "transparent")
+                        }
+                      >
+                        <Image
+                          src="/icons/en-icon.png"
+                          alt="English"
+                          width={20}
+                          height={20}
+                          style={{ borderRadius: "50%" }}
+                        />
+                        <span>en</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          switchLocale("ru");
+                          setLanguageDropdownOpen(false);
+                        }}
+                        style={{
+                          width: "100%",
+                          padding: "0.6rem 0.8rem",
+                          border: "none",
+                          background: "none",
+                          textAlign: "left",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "flex-start",
+                          gap: "0.6rem",
+                          color: "#0785f6",
+                          fontSize: "0.95rem",
+                          transition: "background-color 0.2s",
+                        }}
+                        onMouseEnter={(e) =>
+                          (e.currentTarget.style.backgroundColor = "#f5f5f5")
+                        }
+                        onMouseLeave={(e) =>
+                          (e.currentTarget.style.backgroundColor =
+                            "transparent")
+                        }
+                      >
+                        <Image
+                          src="/icons/ru-icon.png"
+                          alt="Русский"
+                          width={20}
+                          height={20}
+                          style={{ borderRadius: "50%" }}
+                        />
+                        <span>ru</span>
+                      </button>
+                    </>
+                  ) : (
+                    // If EN is current: RU first, EN second
+                    <>
+                      <button
+                        onClick={() => {
+                          switchLocale("ru");
+                          setLanguageDropdownOpen(false);
+                        }}
+                        style={{
+                          width: "100%",
+                          padding: "0.6rem 0.8rem",
+                          border: "none",
+                          background: "none",
+                          textAlign: "left",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "flex-start",
+                          gap: "0.6rem",
+                          color: "#0785f6",
+                          fontSize: "0.95rem",
+                          borderBottom: "1px solid #f0f0f0",
+                          transition: "background-color 0.2s",
+                        }}
+                        onMouseEnter={(e) =>
+                          (e.currentTarget.style.backgroundColor = "#f5f5f5")
+                        }
+                        onMouseLeave={(e) =>
+                          (e.currentTarget.style.backgroundColor =
+                            "transparent")
+                        }
+                      >
+                        <Image
+                          src="/icons/ru-icon.png"
+                          alt="Русский"
+                          width={20}
+                          height={20}
+                          style={{ borderRadius: "50%" }}
+                        />
+                        <span>ru</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          switchLocale("en");
+                          setLanguageDropdownOpen(false);
+                        }}
+                        style={{
+                          width: "100%",
+                          padding: "0.6rem 0.8rem",
+                          border: "none",
+                          background: "none",
+                          textAlign: "left",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "flex-start",
+                          gap: "0.6rem",
+                          color: "#0785f6",
+                          fontSize: "0.95rem",
+                          transition: "background-color 0.2s",
+                        }}
+                        onMouseEnter={(e) =>
+                          (e.currentTarget.style.backgroundColor = "#f5f5f5")
+                        }
+                        onMouseLeave={(e) =>
+                          (e.currentTarget.style.backgroundColor =
+                            "transparent")
+                        }
+                      >
+                        <Image
+                          src="/icons/en-icon.png"
+                          alt="English"
+                          width={20}
+                          height={20}
+                          style={{ borderRadius: "50%" }}
+                        />
+                        <span>en</span>
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
+            </li>
+          </ul>
         </div>
       </nav>
     </header>
