@@ -36,6 +36,12 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} suppressHydrationWarning>
+      <head>
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
+        />
+      </head>
       <body className={`${inter.variable} antialiased`}>
         <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
           {children}
