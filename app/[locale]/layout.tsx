@@ -1,13 +1,7 @@
 // app/[locale]/layout.tsx
-import "bootstrap/dist/css/bootstrap.min.css";
-import "aos/dist/aos.css";
-import "bootstrap-icons/font/bootstrap-icons.css";
-import "../globals.css";
-
-import Script from "next/script";
-import AOSWrapper from "../AOSWrapper";
+// CSS, MobileNavWrapper, AOSWrapper are now in root layout (app/layout.tsx)
+// This layout only adds i18n context for locale-prefixed routes (/ru/...)
 import CookieBannerWrapper from "@/components/CookieBannerWrapper";
-import MobileNavWrapper from "@/components/MobileNavLayout";
 import { NextIntlClientProvider } from "next-intl";
 
 export function generateStaticParams() {
@@ -23,7 +17,6 @@ export default async function LocaleLayout({
 }) {
   const locale = params.locale;
 
-  // Загружаем переводы на сервере
   let messages: Record<string, any> = {};
   try {
     const common = await import(`../../locales/${locale}/common.json`);
@@ -35,21 +28,13 @@ export default async function LocaleLayout({
       monitoring: monitoring?.default ?? {},
     };
   } catch (err) {
-    // если нет переводов — оставляем пустые сообщения
     messages = {};
   }
 
   return (
-    <div suppressHydrationWarning>
-      <AOSWrapper />
-      <NextIntlClientProvider locale={locale} messages={messages}>
-        <MobileNavWrapper>{children}</MobileNavWrapper>
-        <CookieBannerWrapper />
-      </NextIntlClientProvider>
-      <Script
-        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
-        strategy="lazyOnload"
-      />
-    </div>
+    <NextIntlClientProvider locale={locale} messages={messages}>
+      {children}
+      <CookieBannerWrapper />
+    </NextIntlClientProvider>
   );
 }

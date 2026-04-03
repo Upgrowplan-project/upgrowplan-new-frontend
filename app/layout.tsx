@@ -1,8 +1,16 @@
 // Root layout - required by Next.js
-// The actual localized layout is in app/[locale]/layout.tsx
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import Footer from "@/components/Footer";
+import Script from "next/script";
+import MobileNavWrapper from "@/components/MobileNavLayout";
+import AOSWrapper from "./AOSWrapper";
+
+// CSS here covers ALL pages including English routes (non-prefixed /solutions/... etc.)
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap-icons/font/bootstrap-icons.css";
+import "aos/dist/aos.css";
+import "./globals.css";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -36,17 +44,18 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} suppressHydrationWarning>
-      <head>
-        <link
-          rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
-        />
-      </head>
-      <body className={`${inter.variable} antialiased`}>
-        <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-          {children}
-        </div>
+      <body className={`${inter.variable} antialiased`} suppressHydrationWarning>
+        <AOSWrapper />
+        <MobileNavWrapper>
+          <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+            {children}
+          </div>
+        </MobileNavWrapper>
         <Footer />
+        <Script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
+          strategy="lazyOnload"
+        />
       </body>
     </html>
   );
