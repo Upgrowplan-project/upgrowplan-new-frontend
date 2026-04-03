@@ -22,6 +22,19 @@ const nextConfig = {
       process.env.NEXT_PUBLIC_BACKEND_PLANMASTER_URL || "http://localhost:8004",
   },
 
+  webpack: (config, { isServer }) => {
+    // Обработка mapbox-gl для избежания ошибок при сборке
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+      };
+    }
+    return config;
+  },
+
   async rewrites() {
     // Для реврайтов тоже используем переменные, которые уже точно определены выше
     return [
