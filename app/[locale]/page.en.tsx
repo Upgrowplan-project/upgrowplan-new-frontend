@@ -1955,6 +1955,8 @@ export default function Home() {
           color: #ecf6ff;
           display: grid;
           gap: 0.6rem;
+          height: 200px;
+          overflow: hidden;
         }
 
         .console-line {
@@ -2418,7 +2420,7 @@ export default function Home() {
         .chat-messages {
           display: grid;
           gap: 0.75rem;
-          max-height: 360px;
+          height: 300px;
           overflow: hidden;
           padding-right: 0.25rem;
         }
@@ -2753,7 +2755,7 @@ export default function Home() {
         .terminal-lines {
           display: grid;
           gap: 0.5rem;
-          max-height: 240px;
+          height: 240px;
           overflow-y: auto;
           scrollbar-width: none;
           mask-image: linear-gradient(
@@ -3601,6 +3603,8 @@ export default function Home() {
 
           .console-body {
             padding: 0.75rem;
+            height: 180px;
+            overflow: hidden;
           }
 
           .proof-grid {
@@ -3630,7 +3634,7 @@ export default function Home() {
           }
 
           .chat-messages {
-            max-height: 300px;
+            height: 260px;
           }
 
           .pulse-grid {
@@ -3739,6 +3743,8 @@ export default function Home() {
           .console-body {
             padding: 0.5rem;
             gap: 0.4rem;
+            height: 140px;
+            overflow: hidden;
           }
 
           .console-line {
