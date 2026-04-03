@@ -148,6 +148,111 @@ main {
   margin: 0;
 }
 
+/* Desktop and Mobile Navigation Styles */
+.desktop-header {
+  display: block;
+}
+
+.mobile-nav-overlay {
+  display: none;
+}
+
+/* Desktop header container - hidden on mobile */
+.mobile-container {
+  display: none;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+/* Mobile home icon - hidden on desktop */
+.mobile-home-icon {
+  display: none;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-right: 0.5rem;
+}
+
+/* Mobile language switcher - hidden on desktop */
+.mobile-language-switcher {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Mobile Navigation Styles */
+@media (max-width: 767px) {
+  /* Navbar should use flexbox on mobile */
+  .navbar {
+    display: flex;
+    flex-wrap: nowrap;
+  }
+
+  /* Show mobile home icon on left */
+  .mobile-home-icon {
+    display: flex !important;
+  }
+
+  /* Keep navbar-brand visible on mobile, will be centered via flexbox */
+  .navbar-brand {
+    margin-right: auto !important;
+    margin-left: auto !important;
+  }
+
+  /* Show mobile language switcher (globe) on right */
+  .mobile-language-switcher {
+    display: flex !important;
+  }
+
+  /* Hide desktop navigation items on mobile */
+  .navbar-expand-md .navbar-nav {
+    display: none !important;
+  }
+
+  /* Hide burger menu on mobile */
+  .navbar-toggler {
+    display: none !important;
+  }
+
+  /* Hide collapse menu on mobile */
+  .navbar-collapse {
+    display: none !important;
+  }
+
+  /* Show mobile tab bar */
+  .mobile-nav-overlay {
+    display: block !important;
+  }
+
+  main {
+    padding-bottom: 80px;
+  }
+
+  .home-2026 {
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+  }
+
+  .home-2026 main {
+    padding-bottom: 80px;
+    overflow-x: hidden;
+  }
+
+  /* Hide divider lines in report cards */
+  .report-card p.micro-copy {
+    border-bottom: none !important;
+  }
+
+  .report-card p.micro-copy::after {
+    display: none !important;
+  }
+}
+
 .product-card-meta {
   margin-top: 1rem !important;
 }

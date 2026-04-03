@@ -6,6 +6,7 @@ import "../globals.css";
 
 import AOSWrapper from "../AOSWrapper";
 import CookieBannerWrapper from "@/components/CookieBannerWrapper";
+import MobileNavWrapper from "@/components/MobileNavLayout";
 import { NextIntlClientProvider } from "next-intl";
 
 export function generateStaticParams() {
@@ -41,7 +42,7 @@ export default async function LocaleLayout({
     <div suppressHydrationWarning>
       <AOSWrapper />
       <NextIntlClientProvider locale={locale} messages={messages}>
-        <main>{children}</main>
+        <MobileNavWrapper>{children}</MobileNavWrapper>
         <CookieBannerWrapper />
       </NextIntlClientProvider>
       <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>

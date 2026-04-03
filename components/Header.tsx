@@ -115,7 +115,7 @@ export default function Header() {
             }}
             title="Home"
           >
-            <Image
+            <img
               src="/icons/home-icon.png"
               alt="Home"
               width={32}
