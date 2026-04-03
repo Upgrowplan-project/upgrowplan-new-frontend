@@ -4,6 +4,7 @@ import "aos/dist/aos.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "../globals.css";
 
+import Script from "next/script";
 import AOSWrapper from "../AOSWrapper";
 import CookieBannerWrapper from "@/components/CookieBannerWrapper";
 import MobileNavWrapper from "@/components/MobileNavLayout";
@@ -45,7 +46,10 @@ export default async function LocaleLayout({
         <MobileNavWrapper>{children}</MobileNavWrapper>
         <CookieBannerWrapper />
       </NextIntlClientProvider>
-      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+      <Script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
+        strategy="lazyOnload"
+      />
     </div>
   );
 }

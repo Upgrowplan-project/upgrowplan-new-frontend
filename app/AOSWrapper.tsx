@@ -7,9 +7,11 @@ import AOS from "aos";
 export default function AOSWrapper() {
   useEffect(() => {
     AOS.init({
-      // Настройки анимации, если нужно
       duration: 800,
       once: true,
+      offset: 50,
+      delay: 0,
+      anchorPlacement: "top-bottom",
     });
   }, []);
 
