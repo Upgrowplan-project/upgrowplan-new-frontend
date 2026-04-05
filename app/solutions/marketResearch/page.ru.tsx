@@ -339,6 +339,7 @@ export default function MarketResearchPage() {
   const [healthStatus, setHealthStatus] = useState<any>(null);
   const [isLoadingHealth, setIsLoadingHealth] = useState(true);
   const [isRefreshingHealth, setIsRefreshingHealth] = useState(false);
+  const [downloadingFormat, setDownloadingFormat] = useState<"docx" | "pdf" | null>(null);
 
   // Ref для хранения polling interval
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -1264,11 +1265,11 @@ export default function MarketResearchPage() {
 
   const handleDownload = async (format: "docx" | "pdf") => {
     if ((!enhancedReport && !researchReport) || !researchId) return;
+    if (downloadingFormat) return;
 
+    setDownloadingFormat(format);
     try {
-      // Get API base URL from environment or use default
-      const apiBaseUrl =
-        "http://localhost:8005";
+      const apiBaseUrl = "http://localhost:8005";
 
       const response = await fetch(
         `${apiBaseUrl}/api/v1/research/${researchId}/report/${format}`,
@@ -1298,6 +1299,8 @@ export default function MarketResearchPage() {
       setError(
         err.message || `Ошибка при скачивании ${format.toUpperCase()} файла`
       );
+    } finally {
+      setDownloadingFormat(null);
     }
   };
 
@@ -1862,15 +1865,26 @@ export default function MarketResearchPage() {
                     <button
                       className={styles.downloadButton}
                       onClick={() => handleDownload("docx")}
+                      disabled={!!downloadingFormat}
+                      style={downloadingFormat === "docx" ? { opacity: 0.7, cursor: "wait" } : undefined}
                     >
-                      <FiFile /> Скачать в DOCX
+                      {downloadingFormat === "docx" ? (
+                        <><FiDownload className={styles.spinIcon} /> Скачиваем отчёт...</>
+                      ) : (
+                        <><FiFile /> Скачать в DOCX</>
+                      )}
                     </button>
                     <button
                       className={styles.downloadButton}
                       onClick={() => handleDownload("pdf")}
-                      style={{ backgroundColor: "#dc2626" }}
+                      disabled={!!downloadingFormat}
+                      style={{ backgroundColor: "#dc2626", ...(downloadingFormat === "pdf" ? { opacity: 0.7, cursor: "wait" } : {}) }}
                     >
-                      <FiDownload /> Скачать в PDF
+                      {downloadingFormat === "pdf" ? (
+                        <><FiDownload className={styles.spinIcon} /> Скачиваем отчёт...</>
+                      ) : (
+                        <><FiDownload /> Скачать в PDF</>
+                      )}
                     </button>
                   </div>
                 </div>
@@ -1908,15 +1922,26 @@ export default function MarketResearchPage() {
                     <button
                       className={styles.downloadButton}
                       onClick={() => handleDownload("docx")}
+                      disabled={!!downloadingFormat}
+                      style={downloadingFormat === "docx" ? { opacity: 0.7, cursor: "wait" } : undefined}
                     >
-                      <FiFile /> Скачать в DOCX
+                      {downloadingFormat === "docx" ? (
+                        <><FiDownload className={styles.spinIcon} /> Скачиваем отчёт...</>
+                      ) : (
+                        <><FiFile /> Скачать в DOCX</>
+                      )}
                     </button>
                     <button
                       className={styles.downloadButton}
                       onClick={() => handleDownload("pdf")}
-                      style={{ backgroundColor: "#dc2626" }}
+                      disabled={!!downloadingFormat}
+                      style={{ backgroundColor: "#dc2626", ...(downloadingFormat === "pdf" ? { opacity: 0.7, cursor: "wait" } : {}) }}
                     >
-                      <FiDownload /> Скачать в PDF
+                      {downloadingFormat === "pdf" ? (
+                        <><FiDownload className={styles.spinIcon} /> Скачиваем отчёт...</>
+                      ) : (
+                        <><FiDownload /> Скачать в PDF</>
+                      )}
                     </button>
                   </div>
                 </div>

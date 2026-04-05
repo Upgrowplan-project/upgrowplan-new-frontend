@@ -6,6 +6,8 @@ import { usePathname } from "next/navigation";
 interface MobileMenuProps {
   isOpen: boolean;
   onClose: () => void;
+  /** If set, replaces the default locale menu (e.g. Blog + FAQ only). */
+  customItems?: { label: string; href: string }[];
 }
 
 const menuItems = {
@@ -27,12 +29,17 @@ const menuItems = {
   ],
 };
 
-export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
+export default function MobileMenu({
+  isOpen,
+  onClose,
+  customItems,
+}: MobileMenuProps) {
   const pathname = usePathname() || "/";
   const isRussian = pathname.startsWith("/ru");
   const locale = isRussian ? "ru" : "en";
   const localePrefix = isRussian ? "/ru" : "";
-  const items = menuItems[locale];
+  const items =
+    customItems && customItems.length > 0 ? customItems : menuItems[locale];
 
   const buildUrl = (href: string): string => {
     if (href === "/") return localePrefix || "/";

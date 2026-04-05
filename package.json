@@ -18,6 +18,8 @@
     "bootstrap-icons": "^1.13.1",
     "chart.js": "^4.5.1",
     "debug": "^4.4.1",
+    "framer-motion": "^11.18.2",
+    "gsap": "^3.12.2",
     "mapbox-gl": "^3.5.2",
     "next": "13.4.13",
     "next-intl": "^4.5.5",

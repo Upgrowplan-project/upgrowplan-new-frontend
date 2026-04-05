@@ -557,10 +557,23 @@
   gap: 0.5rem;
 }
 
-.downloadButton:hover {
+.downloadButton:hover:not(:disabled) {
   background: #155566;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(30, 96, 120, 0.3);
+}
+
+.downloadButton:disabled {
+  cursor: wait;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spinIcon {
+  animation: spin 1s linear infinite;
 }
 
 /* Reset Section */

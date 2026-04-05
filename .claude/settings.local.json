@@ -75,7 +75,9 @@
       "WebFetch(domain:developers.google.com)",
       "Bash(unzip -l social-plan-788ce805.docx)",
       "Bash(unzip -p social-plan-788ce805.docx word/document.xml)",
-      "Bash(docx2txt \"d:/UpgrowPlan/social-plan-master/test_reports/social-plan-5179bb98.docx\")"
+      "Bash(docx2txt \"d:/UpgrowPlan/social-plan-master/test_reports/social-plan-5179bb98.docx\")",
+      "Bash(.venv/Scripts/python.exe -c ':*)",
+      "Bash(.venv/Scripts/pip install:*)"
     ],
     "deny": [],
     "ask": []

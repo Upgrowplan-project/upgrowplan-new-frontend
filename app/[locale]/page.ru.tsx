@@ -1236,19 +1236,20 @@ export default function Home() {
           <div className="container pulse-grid">
             <div className="pulse-copy">
               <h2>
-                Бизнес‑план, который не умеет устаревать.
+                Хватит «внедрять ИИ». Просто начните им пользоваться.
                 <span className="accent-inline">
                   {" "}
-                  Мир меняется быстрее, чем вы печатаете отчет. Подписка на
-                  Business Pulse заменяет целый отдел маркетинга и юристов. Вы
-                  получаете только то, что влияет на вашу прибыль. Каждое утро.
+                  Business Pulse — это не чат-бот, а ваш ежедневный цифровой
+                  департамент. Мы объединили живой поиск и нейронные связи,
+                  чтобы вы получали выжимку смыслов для роста прибыли. Каждое
+                  утро.
                 </span>
               </h2>
               <div className="pulse-tabs">
                 {[
-                  "Разведка: Опережайте конкурентов.",
-                  "Щит: Спите спокойно.",
-                  "Рейтинг: Станьте №1 на своей улице.",
+                  "РАДАР: Опережайте конкурентов.",
+                  "ИММУНИТЕТ: Спите спокойно.",
+                  "РЕЙТИНГ: Станьте №1 на своей улице.",
                 ].map((label, idx) => (
                   <button
                     key={label}
@@ -1261,9 +1262,9 @@ export default function Home() {
               </div>
               <Link
                 href="/ru/solutions/marketResearch/descriptionPage"
-                className="pulse-cta"
+                className="btn btn-primary-u-glow"
               >
-                Проверить свою гипотезу
+                Проверить
               </Link>
             </div>
             <div className="pulse-dashboard">
@@ -3274,6 +3275,29 @@ export default function Home() {
           display: inline-flex;
           align-items: center;
           justify-content: center;
+        }
+
+        .btn-primary-u-glow {
+          border: none;
+          background: #0683f5;
+          color: #ffffff;
+          padding: 0.75rem 1.75rem;
+          border-radius: 12px;
+          font-weight: 600;
+          cursor: pointer;
+          width: fit-content;
+          text-decoration: none;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 0 0 0 rgba(6, 131, 245, 0.5);
+          transition: background 0.2s, box-shadow 0.2s;
+        }
+        .btn-primary-u-glow:hover {
+          background: #0565c8;
+          box-shadow: 0 0 18px 4px rgba(6, 131, 245, 0.45);
+          color: #ffffff;
+          text-decoration: none;
         }
 
         .pulse-dashboard {
