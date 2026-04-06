@@ -16,24 +16,24 @@ export default function Home() {
   const logLines = useMemo(
     () => [
       {
-        text: "[Agent: Pitch Pro] Создание Pitch Deck... OK",
+        text: "[Agent: Pitch Pro] Creating pitch deck... OK",
         speed: 26,
       },
       {
-        text: "[Agent: Market Sense] Конкуренты в Лиссабоне... Найдено 12",
+        text: "[Agent: Market Sense] Competitors in Lisbon... Found 12",
         speed: 20,
         source: { name: "Google Maps" },
       },
       {
-        text: "[Agent: Skeptic] Маржа 30%... ВНИМАНИЕ: Слишком оптимистично",
+        text: "[Agent: Skeptic] Margin 30%... WARNING: Too optimistic",
         speed: 18,
       },
       {
-        text: "[Agent: Fin Pilot] Financial Model (CapEx/OpEx)... Завершено",
+        text: "[Agent: Fin Pilot] Financial model (CapEx/OpEx)... Done",
         speed: 24,
       },
       {
-        text: "Поиск по живым источникам (10+)... VERIFIED",
+        text: "Live sources scan (10+)... VERIFIED",
         speed: 22,
         source: { name: "Statista" },
       },
@@ -70,40 +70,40 @@ export default function Home() {
 
   const personas = [
     {
-      name: "Peter",
+      name: "Peter Petrovich",
       age: 68,
-      role: "Resident",
-      income: "30–40k руб/мес",
-      preferences: ["Price/Quality", "Quiet", "Trust", "Как раньше"],
+      role: "Senior resident",
+      income: "30–40k RUB/mo",
+      preferences: ["Price/Quality", "Quiet", "Trust", "Old school"],
       data: "Based on 620 local reviews",
-      caseTitle: "Craft Beer Bar",
+      caseTitle: "Craft beer bar in the neighborhood",
       image: "/images/personas/mark.jpg",
       dialog: [
         {
           speaker: "skeptic",
-          text: "Добрый день, Peter. Планируем открыть крафтовый пивбар в вашем доме. Цены — премиум, атмосфера — тихий лофт. Как вам идея? 🍻",
+          text: "Hello, Peter Petrovich. We're planning to open a craft beer bar in your building. Premium prices, quiet loft atmosphere. What do you think? 🍻",
           time: "10:02",
         },
         {
           speaker: "avatar",
-          text: "Лофт? Премиум? В нашем доме уже есть разливное за 80 рублей. Я туда не хожу, шумно и контингент... А крафт за 300? Это кто пить будет, молодёжь ваша? 👴🏻",
+          text: "Loft? Premium? We already have draft beer for 80 rubles in our building. I don't go there—it's noisy and the crowd... And craft for 300? Who will drink that, your youth? 👴🏻",
           time: "10:03",
-          status: "Прочитано ✓✓",
+          status: "Read ✓✓",
         },
         {
           speaker: "skeptic",
-          text: "Мы делаем упор на тишину и культуру пития. Никакого шума после 22:00.",
+          text: "We focus on quiet and drinking culture. No noise after 22:00.",
           time: "10:04",
         },
         {
           speaker: "avatar",
-          text: "Quiet после 22:00? До этого вы все так обещаете. А потом будут орать под окнами. И вообще, пиво за 300... я лучше дочке на подарок добавлю. Не пойду я к вам. 😕",
+          text: "Quiet after 22:00? You all promise that. Then people will shout under the windows. And beer for 300... I'd rather add it to a gift for my daughter. I won't come. 😕",
           time: "10:05",
-          status: "Прочитано ✓✓",
+          status: "Read ✓✓",
         },
         {
           speaker: "skeptic",
-          text: "[RAG Validation]: Hypothesis NOT validated. Низкий интерес целевой аудитории (пенсионеры) из-за цены и страха шума. Рекомендуем пересмотреть район.",
+          text: "[RAG Validation]: Hypothesis NOT validated. Low interest among retirees due to price and noise concerns. Consider changing the neighborhood.",
           time: "10:06",
         },
       ],
@@ -111,38 +111,38 @@ export default function Home() {
     {
       name: "Oksana",
       age: 28,
-      role: "Office Professional",
-      income: "120–150k руб/мес",
+      role: "Office professional",
+      income: "120–150k RUB/mo",
       preferences: ["Aesthetics", "Time", "Status", "Technology"],
       data: "Based on 1.1k office surveys",
-      caseTitle: "Family Bakery Near Office",
+      caseTitle: "Family bakery near the office",
       image: "/images/personas/lina.jpg",
       dialog: [
         {
           speaker: "skeptic",
-          text: "Oksana, привет. Открываем семейную кондитерскую рядом с вашим офисом. Детские праздники, ростовые куклы, торты под заказ. Будете заходить? 🍰",
+          text: "Oksana, hi. We're opening a family bakery near your office. Kids' parties, mascot costumes, custom cakes. Would you stop by? 🍰",
           time: "11:10",
         },
         {
           speaker: "avatar",
-          text: "Рядом с офисом — это хорошо. Но «семейная» и «ростовые куклы»? Это значит, что там постоянно будет шумно и много детей. А я после работы хочу тишины и красивый кофе... ☕️✨",
+          text: "Near the office is great. But “family” and “mascots”? That means noise and lots of kids. After work I want quiet and a beautiful coffee... ☕️✨",
           time: "11:11",
-          status: "Прочитано ✓✓",
+          status: "Read ✓✓",
         },
         {
           speaker: "skeptic",
-          text: "У нас будет отдельная зона для тихих встреч. И очень эстетичный интерьер.",
+          text: "We'll have a separate quiet zone and a very aesthetic interior.",
           time: "11:12",
         },
         {
           speaker: "avatar",
-          text: "Отдельная зона? Если торты вкусные, я может и зайду один раз на пробу. Но куклы... У меня нет детей. Для свидания я выберу другое место, а для кофе — вашу эстетику может заглушить плач. 50/50. 😐",
+          text: "A quiet zone? If the cakes are great, I might try it once. But mascots... I don't have kids. For dates I'd choose another place, and for coffee your aesthetics might be drowned by crying. 50/50. 😐",
           time: "11:13",
-          status: "Прочитано ✓✓",
+          status: "Read ✓✓",
         },
         {
           speaker: "skeptic",
-          text: "[RAG Validation]: Hypothesis PARTIALLY validated. Интерес есть к продукту (эстетика/кофе), но концепция «семейной» кондитерской отпугивает платежеспособную аудиторию без детей.",
+          text: "[RAG Validation]: Hypothesis partially validated. Interest in the product (aesthetics/coffee) exists, but the “family bakery” concept scares off high‑spending customers without kids.",
           time: "11:14",
         },
       ],
@@ -150,38 +150,38 @@ export default function Home() {
     {
       name: "Maria",
       age: 35,
-      role: "Bakery Owner",
-      income: "200–250k руб/мес",
-      preferences: ["Unit Economics", "Operations", "Quality", "Competition"],
+      role: "Bakery owner",
+      income: "200–250k RUB/mo",
+      preferences: ["Unit economics", "Operations", "Quality", "Competition"],
       data: "Based on 1.2k HoReCa reviews",
-      caseTitle: "Tool-Sharing Service",
+      caseTitle: "Tool‑sharing service",
       image: "/images/personas/anna.jpg",
       dialog: [
         {
           speaker: "skeptic",
-          text: "Maria, добрый день. Планируем сервис шеринга дорогих инструментов: перфораторы, тепловизоры. Как вы, как предприниматель, оцениваете идею? 🛠",
+          text: "Maria, hello. We're planning a sharing service for expensive tools: rotary hammers, thermal imagers. As a founder, how do you assess the idea? 🛠",
           time: "12:20",
         },
         {
           speaker: "avatar",
-          text: "Хм. Идея интересная. Я сама в пекарню миксер за 150к покупала. Но как вы решите вопрос с залогом и, главное, с логистикой и ремонтом? 🤯",
+          text: "Hmm. Interesting idea. I bought a 150k mixer for my bakery myself. But how will you handle deposits and, most importantly, logistics and repairs? 🤯",
           time: "12:21",
-          status: "Прочитано ✓✓",
+          status: "Read ✓✓",
         },
         {
           speaker: "skeptic",
-          text: "Залог — через блокировку на карте. Ремонт — страховка. Доставка — курьеры.",
+          text: "Deposit via card hold. Repairs via insurance. Delivery by couriers.",
           time: "12:22",
         },
         {
           speaker: "avatar",
-          text: "Курьеры? Это же дорого. А если перфоратор сломали «случайно»? Кто это будет проверять? Если цена аренды будет 1000 рублей, вы не покроете операционные расходы. Я бы не рискнула, слишком сложная логистика. 📈📉",
+          text: "Couriers? That's expensive. And if someone “accidentally” breaks a hammer? Who checks it? If rent is 1,000 rubles, you won't cover operating costs. I wouldn't take the risk — the logistics are too complex. 📈📉",
           time: "12:23",
-          status: "Прочитано ✓✓",
+          status: "Read ✓✓",
         },
         {
           speaker: "skeptic",
-          text: "[RAG Validation]: Hypothesis NOT validated. Высокие операционные расходы и риски (логистика/ремонт) убивают юнит-экономику для этой целевой аудитории.",
+          text: "[RAG Validation]: Hypothesis NOT validated. High operating costs and risks (logistics/repairs) kill unit economics for this audience.",
           time: "12:24",
         },
       ],
@@ -189,38 +189,38 @@ export default function Home() {
     {
       name: "Nikita",
       age: 21,
-      role: "Student Dreamer",
-      income: "15–20k руб/мес",
+      role: "Student dreamer",
+      income: "15–20k RUB/mo",
       preferences: ["Trends", "Hype", "Ecology", "Community"],
       data: "Based on 900 student interviews",
-      caseTitle: "Online Calligraphy School",
+      caseTitle: "Online calligraphy school",
       image: "/images/personas/student.jpg",
       dialog: [
         {
           speaker: "skeptic",
-          text: "Nikita, привет. Тестируем идею онлайн-школы каллиграфии. Это успокаивает, развивает мозг и сейчас в тренде на экологичность. Запишешься на курс? ✍️",
+          text: "Nikita, hi. We're testing an online calligraphy school. It's calming, trains your mind, and is eco‑trendy. Would you enroll? ✍️",
           time: "13:05",
         },
         {
           speaker: "avatar",
-          text: "Вау. Онлайн-школа... но медленное письмо? Я в универе лекции не пишу, все в Notion. У меня времени нет на «медленно». Это какой-то хайп для бумеров. 😴",
+          text: "Wow. Online school... but slow writing? I don't take notes at uni, everything is in Notion. I don't have time for “slow.” Sounds like hype for boomers. 😴",
           time: "13:06",
-          status: "Прочитано ✓✓",
+          status: "Read ✓✓",
         },
         {
           speaker: "skeptic",
-          text: "Это позволяет разгрузить мозг от гаджетов. Community, оффлайн встречи.",
+          text: "It helps unload the brain from gadgets. Community and offline meetups.",
           time: "13:07",
         },
         {
           speaker: "avatar",
-          text: "Оффлайн встречи — это круче. Но каллиграфия? Я лучше пойду на курсы по AI или хотя бы гончарному делу. Там продукт можно потрогать. А буквы писать... не, это не для меня, сорри. 🤷‍♂️",
+          text: "Offline meetups are cooler. But calligraphy? I'd rather take AI courses or at least pottery. There you can touch the product. Writing letters... nah, not for me, sorry. 🤷‍♂️",
           time: "13:08",
-          status: "Прочитано ✓✓",
+          status: "Read ✓✓",
         },
         {
           speaker: "skeptic",
-          text: "[RAG Validation]: Hypothesis NOT validated. Целевая аудитория (студенты) ценит скорость и практичный результат, а не «медленные» хайпы. Тренд экологичности не работает в этом контексте.",
+          text: "[RAG Validation]: Hypothesis NOT validated. Students value speed and practical outcomes, not “slow” trends. The eco trend doesn't work here.",
           time: "13:09",
         },
       ],
@@ -229,37 +229,37 @@ export default function Home() {
       name: "Victor Borisovich",
       age: 62,
       role: "Director",
-      income: "400k+ руб/мес",
-      preferences: ["Risks", "Scale", "Financial Model", "Strategy"],
+      income: "400k+ RUB/mo",
+      preferences: ["Risks", "Scale", "Financial model", "Strategy"],
       data: "Based on 420 director interviews",
-      caseTitle: "Franchise: Auto Washes",
+      caseTitle: "Franchise: automated car washes",
       image: "/images/personas/director.jpg",
       dialog: [
         {
           speaker: "skeptic",
-          text: "Victor Borisovich, добрый день. Рассматриваем покупку франшизы автоматических моек. Quality среднее, но скорость (3 минуты) и низкая маржа. Что скажете? 🚗💨",
+          text: "Victor Borisovich, hello. We're considering an automated car wash franchise. Average quality, but fast (3 minutes) and low margin. What do you think? 🚗💨",
           time: "14:30",
         },
         {
           speaker: "avatar",
-          text: "Скорость — это отлично, москвичи это ценят. Низкая маржа? Это сколько? Если чистая прибыль 5% — это не бизнес, это благотворительность. Покажите финмодель. 📊🧐",
+          text: "Speed is great, Muscovites value it. Low margin? How low? If net profit is 5% — that's not a business, it's charity. Show me the financial model. 📊🧐",
           time: "14:31",
-          status: "Прочитано ✓✓",
+          status: "Read ✓✓",
         },
         {
           speaker: "skeptic",
-          text: "Вот скриншот нашей финансовой модели. Капекс высокий, но окупаемость — 18 месяцев за счет оборота.",
+          text: "Here’s a screenshot of our financial model. Capex is high, but payback is 18 months thanks to turnover.",
           time: "14:32",
         },
         {
           speaker: "avatar",
-          text: "Окупаемость 18 месяцев при капексе 10 млн? Это при загрузке 24/7? В Москве рынок перенасыщен, конкуренты (у которых качество выше) задушат вас ценой. Я бы не стал вкладываться, риск масштабируемости слишком высок. Не верю я в 3 минуты без потери качества. 📉❌",
+          text: "18 months with 10M capex? At 24/7 utilization? Moscow is oversaturated; competitors with higher quality will crush you on price. I wouldn't invest—scalability risk is too high. I don't believe in 3 minutes without losing quality. 📉❌",
           time: "14:33",
-          status: "Прочитано ✓✓",
+          status: "Read ✓✓",
         },
         {
           speaker: "skeptic",
-          text: "[RAG Validation]: Hypothesis NOT validated. Опытный инвестор считает финансовую модель слишком оптимистичной, а рыночную конкуренцию в Москве — фатальной.",
+          text: "[RAG Validation]: Hypothesis NOT validated. An experienced investor finds the financial model too optimistic and Moscow competition fatal.",
           time: "14:34",
         },
       ],
@@ -268,7 +268,7 @@ export default function Home() {
       name: "Elena",
       age: 43,
       role: "Homemaker",
-      income: "70–90k руб/мес",
+      income: "70–90k RUB/mo",
       preferences: ["Convenience", "Time", "Children", "Loyalty"],
       data: "Based on 1.5k household surveys",
       caseTitle: "Cleaning Subscription",
@@ -276,29 +276,29 @@ export default function Home() {
       dialog: [
         {
           speaker: "skeptic",
-          text: "Elena, здравствуйте. Открываем сервис регулярной уборки квартир по подписке. 2 раза в месяц, фиксированная цена, те же клинеры. Будете пользоваться? 🧹✨",
+          text: "Elena, hello. We're launching a subscription home cleaning service. Twice a month, fixed price, same cleaners. Would you use it? 🧹✨",
           time: "15:40",
         },
         {
           speaker: "avatar",
-          text: "Подписка на уборку? Это было бы супер. У меня двое детей, и к выходным квартира превращается в поле битвы. Но мне важен один клинер, чтобы я не боялась оставить его дома. 🥰",
+          text: "A cleaning subscription? That would be great. I have two kids and by weekends the apartment becomes a battlefield. But I need one cleaner I can trust to leave at home. 🥰",
           time: "15:41",
-          status: "Прочитано ✓✓",
+          status: "Read ✓✓",
         },
         {
           speaker: "skeptic",
-          text: "Да, мы гарантируем, что к вам будет ходить одна и та же клинер, обученная по нашему стандарту. И залог не нужен.",
+          text: "Yes, we guarantee the same cleaner trained to our standard. No deposit required.",
           time: "15:42",
         },
         {
           speaker: "avatar",
-          text: "Отлично. Цена 5000 рублей за две уборки в месяц — это приемлемо. Если клинер действительно хорошая, я сэкономлю себе 8 часов жизни. Я запишусь! И подругам посоветую. ❤️🗓",
+          text: "Great. 5,000 rubles for two cleanings a month is reasonable. If the cleaner is really good, I'll save 8 hours of my life. I'll sign up and tell my friends. ❤️🗓",
           time: "15:43",
-          status: "Прочитано ✓✓",
+          status: "Read ✓✓",
         },
         {
           speaker: "skeptic",
-          text: "[RAG Validation]: Hypothesis VALIDATED. Сервис закрывает боли целевой аудитории (домохозяйки) по времени и доверию при приемлемой цене. Высокий виральный потенциал.",
+          text: "[RAG Validation]: Hypothesis VALIDATED. The service solves key pains (time and trust) at an acceptable price. High viral potential.",
           time: "15:44",
         },
       ],
@@ -350,32 +350,32 @@ export default function Home() {
       {
         ts: "[02:14:45]",
         tag: "SEARCH_AGENT",
-        text: "Сканирование цен на коммерческую недвижимость в г. Хайфа... Найдено 24 объекта.",
+        text: "Scanning commercial rent prices in Haifa... Found 24 listings.",
       },
       {
         ts: "[02:14:48]",
         tag: "TAX_ENGINE",
-        text: "Сверка с налоговым кодексом 2026. Обновление ставок НДС и муниципальных сборов.",
+        text: "Syncing with the 2026 tax code. Updating VAT and municipal fees.",
       },
       {
         ts: "[02:14:52]",
         tag: "COMPETITOR_V2",
-        text: 'Анализ отзывов Google Maps для кофейни "X" и "Y". Выявление слабых зон (Wi-Fi, сервис).',
+        text: 'Analyzing Google Maps reviews for cafe "X" and "Y". Detecting weak points (Wi‑Fi, service).',
       },
       {
         ts: "[02:14:55]",
         tag: "RAG_VALIDATE",
-        text: "Подтверждение данных о пешеходном трафике (ул. Герцля). Источник: Google Traffic Data.",
+        text: "Validating foot‑traffic data (Herzl St.). Source: Google Traffic Data.",
       },
       {
         ts: "[02:15:01]",
         tag: "PERSONA_SIM",
-        text: "Запуск 6 симуляций аватаров. Тестирование эластичности спроса при цене 22₪ за латте.",
+        text: "Running 6 persona simulations. Testing demand elasticity at ₪22 latte price.",
       },
       {
         ts: "[02:15:05]",
         tag: "FIN_MODEL",
-        text: "Пересчет точки безубыточности с учетом инфляционного коэффициента 3.2%.",
+        text: "Recalculating breakeven with a 3.2% inflation coefficient.",
       },
     ],
     [],
@@ -753,13 +753,12 @@ export default function Home() {
         <section className="hero-2026">
           <div className="container hero-grid">
             <div className="hero-copy">
-              <h1>Stop guessing. Start winning.</h1>
+              <h1>The real world doesn't run on templates. Your plan shouldn't either.</h1>
               <p className="hero-subtitle">
-                Мы вылечили ИИ от галлюцинаций. Upgrowplan использует данные
-                рынка и конкурентов, моделирует ваших клиентов и проверяет
-                качество документа агентом-скептиком, чтобы создать план,
-                который выдержит встречу с реальностью, а не просто красиво
-                выглядит на бумаге.
+                We cured AI hallucinations. Upgrowplan pulls real market and
+                competitor data, simulates your buyers, and stress‑tests your
+                document with a Skeptic agent so the plan survives reality —
+                not just looks good on paper.
               </p>
               <div className="hero-cta">
                 <Link
@@ -772,7 +771,7 @@ export default function Home() {
                   className="btn btn-outline-primary btn-lg"
                   onClick={() => setShowContactModal(true)}
                 >
-                  Write to Expert
+                  Talk to an expert
                 </button>
               </div>
               <div className="hero-proof">
@@ -781,8 +780,8 @@ export default function Home() {
                   <span className="proof-label">projects launched</span>
                 </div>
                 <div>
-                  <span className="proof-number">14+ лет</span>
-                  <span className="proof-label">expertise</span>
+                  <span className="proof-number">14+ years</span>
+                  <span className="proof-label">of expertise</span>
                 </div>
                 <div>
                   <span className="proof-number">UNIDO / EBRD</span>
@@ -797,12 +796,11 @@ export default function Home() {
           <div className="container rag-grid">
             <div className="rag-copy">
               <h2>
-                Как ИИ-агенты Upgrowplan создают и проверяют планы на живых
-                данных.
+                How Upgrowplan AI agents build and verify plans on live data.
                 <span className="accent-inline">
                   {" "}
-                  Не просто генерация текста, а пошаговая валидация каждого
-                  факта.
+                  Not just text generation — step‑by‑step validation of every
+                  fact.
                 </span>
               </h2>
               <Link
@@ -840,7 +838,7 @@ export default function Home() {
                             </svg>
                           )}
                         </span>
-                        Источник
+                        Source
                         <span className="source-card">
                           <span className="source-icon" aria-hidden="true">
                             {line.source.name === "Google Maps" ? (
@@ -881,12 +879,12 @@ export default function Home() {
           <div className="container">
             <div className="proof-head">
               <h2>
-                Забудьте о галлюцинациях ИИ. Каждая цифра в вашем плане имеет
-                автора.
+                Forget AI hallucinations. Every number in your plan has an
+                author.
                 <span className="accent-inline">
                   {" "}
-                  Прямые ссылки на официальные отчеты, налоговые кодексы и
-                  рыночную аналитику 2026 года.
+                  Direct links to official reports, tax codes, and 2026 market
+                  analytics.
                 </span>
               </h2>
             </div>
@@ -894,9 +892,9 @@ export default function Home() {
               <div className="proof-note">
                 <h4>What this means for you</h4>
                 <p className="micro-copy">
-                  Мы используем RAG (Retrieval-Augmented Generation). ИИ сначала
-                  находит актуальные документы, читает их, и только затем пишет
-                  ваш план.
+                  We use RAG (Retrieval‑Augmented Generation). The AI first
+                  finds up‑to‑date documents, reads them, and only then writes
+                  your plan.
                 </p>
                 <div className="proof-result">
                   Result: 0% fiction, 100% verifiable.
@@ -925,16 +923,16 @@ export default function Home() {
                           />
                         </svg>
                       </span>
-                      Министерство финансов Израиля, 2026
+                      Ministry of Finance of Israel, 2026
                       <span className="source-quote">
-                        «Стандартная ставка НДС — 17% на 2026 год».
+                        “Standard VAT rate is 17% for 2026.”
                       </span>
                       <a
                         href="https://www.gov.il"
                         target="_blank"
                         rel="noreferrer"
                       >
-                        Перейти к источнику
+                        Open source
                       </a>
                     </span>
                   </span>
@@ -962,14 +960,14 @@ export default function Home() {
                       </span>
                       Statista Market Outlook, 2026
                       <span className="source-quote">
-                        «Рынок coffee subscription достиг $1.2B».
+                        “Coffee subscription market reached $1.2B.”
                       </span>
                       <a
                         href="https://www.statista.com"
                         target="_blank"
                         rel="noreferrer"
                       >
-                        Перейти к источнику
+                        Open source
                       </a>
                     </span>
                   </span>
@@ -997,14 +995,14 @@ export default function Home() {
                       </span>
                       Google Maps + Reviews Index, 2026
                       <span className="source-quote">
-                        «Средний рост спроса 6.4% YoY».
+                        “Average demand growth 6.4% YoY.”
                       </span>
                       <a
                         href="https://maps.google.com"
                         target="_blank"
                         rel="noreferrer"
                       >
-                        Перейти к источнику
+                        Open source
                       </a>
                     </span>
                   </span>
@@ -1021,18 +1019,17 @@ export default function Home() {
                 The only AI that isn't afraid to tell you "no".
                 <span className="accent-inline">
                   {" "}
-                  Ваш Агент-Скептик проверит идею на прочность, найдет скрытые
-                  расходы и укажет на перенасыщенный рынок.
+                  Your Skeptic Agent will stress‑test the idea, uncover hidden
+                  costs, and flag overcrowded markets.
                 </span>
               </h2>
               <p className="micro-copy">
-                Мы готовим вас к худшему сценарию, чтобы вы были готовы к
-                лучшему.
+                We prepare you for the worst case so you're ready for the best.
               </p>
             </div>
             <div className="skeptic-widget">
               <div className="score-row">
-                <span>Confidence Score</span>
+                <span>Trust score</span>
                 <strong>{confidence}/100</strong>
               </div>
               <div className="score-bar">
@@ -1050,20 +1047,20 @@ export default function Home() {
                     />
                   </svg>
                 </span>
-                «Вы указали рост 20% в месяц. Исторические данные вашей ниши
-                показывают максимум 8%. Откуда возьмутся лишние 12%?»
+                “You projected 20% monthly growth. Historical data in your niche
+                shows a maximum of 8%. Where will the extra 12% come from?”
               </div>
               <div className="red-flags">
                 <details>
-                  <summary>[!] Риск: Competition</summary>
+                  <summary>[!] Risk: Competition</summary>
                   <div className="flag-detail">
-                    Насыщенность рынка в 3.2 раза выше региональной нормы.
+                    Market saturation is 3.2x higher than the regional norm.
                   </div>
                 </details>
                 <details>
-                  <summary>[!] Риск: Завышенная стоимость лида</summary>
+                  <summary>[!] Risk: Overstated lead cost</summary>
                   <div className="flag-detail">
-                    Стоимость привлечения клиента выше плана на 40%.
+                    Customer acquisition cost is 40% above plan.
                   </div>
                 </details>
               </div>
@@ -1099,9 +1096,9 @@ export default function Home() {
                 Don't guess. Ask those who will actually buy.
                 <span className="accent-inline">
                   {" "}
-                  Забудьте о «слепой вере». Upgrowplan создает цифровую копию
-                  вашей аудитории в нужном районе и позволяет моментально
-                  проверить любую бизнес‑гипотезу.
+                  Forget blind faith. Upgrowplan builds a digital twin of your
+                  audience in the right neighborhood and lets you validate any
+                  business hypothesis instantly.
                 </span>
               </h2>
             </div>
@@ -1178,12 +1175,12 @@ export default function Home() {
                 <div className="chat-input">
                   <input
                     type="text"
-                    placeholder="[Upgrowplan RAG Agent спрашивает...]"
+                    placeholder="[Upgrowplan RAG Agent asks...]"
                     disabled
                     aria-label="Upgrowplan RAG Agent asks"
                   />
                   <button type="button" disabled>
-                    Отправить
+                    Send
                   </button>
                 </div>
               </div>
@@ -1195,19 +1192,19 @@ export default function Home() {
           <div className="container pulse-grid">
             <div className="pulse-copy">
               <h2>
-                Бизнес‑план, который не умеет устаревать.
+                A business plan that doesn’t get outdated.
                 <span className="accent-inline">
                   {" "}
-                  Мир меняется быстрее, чем вы печатаете отчет. Подписка на
-                  Business Pulse заменяет целый отдел маркетинга и юристов. Вы
-                  получаете только то, что влияет на вашу прибыль. Каждое утро.
+                  The world changes faster than you can type a report. Business
+                  Pulse replaces an entire marketing and legal department. You
+                  get only what impacts your profit. Every morning.
                 </span>
               </h2>
               <div className="pulse-tabs">
                 {[
-                  "Разведка: Опережайте конкурентов.",
-                  "Щит: Спите спокойно.",
-                  "Рейтинг: Станьте №1 на своей улице.",
+                  "RADAR: Stay ahead of competitors.",
+                  "SHIELD: Sleep easy.",
+                  "RANKING: Become #1 on your street.",
                 ].map((label, idx) => (
                   <button
                     key={label}
@@ -1219,10 +1216,10 @@ export default function Home() {
                 ))}
               </div>
               <Link
-                href="/ru/solutions/marketResearch/descriptionPage"
+                href={getLocalePath("/solutions/businessPulse")}
                 className="pulse-cta"
               >
-                Проверить свою гипотезу
+                Connect Business Pulse
               </Link>
             </div>
             <div className="pulse-dashboard">
@@ -1231,7 +1228,7 @@ export default function Home() {
                   <span>Business Pulse</span>
                   <span className="live-sync">
                     <span className="live-dot"></span>
-                    Live: мониторинг цен и законов
+                    Live: price & legal monitoring
                   </span>
                 </div>
                 <div className="device-map">
@@ -1243,17 +1240,17 @@ export default function Home() {
                       disabled={geoStatus === "loading"}
                     >
                       {geoStatus === "loading"
-                        ? "Определяем местоположение..."
+                        ? "Locating..."
                         : geoStatus === "ready"
-                          ? "Локация определена"
-                          : "Показать мой район"}
+                          ? "Location detected"
+                          : "Show my neighborhood"}
                     </button>
                     {geoLabel && (
-                      <span className="map-hint">Район: {geoLabel}</span>
+                      <span className="map-hint">Area: {geoLabel}</span>
                     )}
                     {geoStatus === "denied" && (
                       <span className="map-hint">
-                        Доступ к геолокации не предоставлен
+                        Geolocation access not granted
                       </span>
                     )}
                   </div>
@@ -1265,11 +1262,11 @@ export default function Home() {
                     <div className={`pulse-card${pulseActive ? " in" : ""}`}>
                       <div className="pulse-icon">📡</div>
                       <div>
-                        <strong>Шпионаж</strong>
+                        <strong>Competitive intel</strong>
                         <p>
-                          Ваш главный конкурент обновил меню и снизил цены на
-                          латте. Мы пересчитали вашу маржу. Риск оттока
-                          клиентов: 12%.
+                          Your main competitor updated the menu and lowered
+                          latte prices. We recalculated your margin. Churn
+                          risk: 12%.
                         </p>
                       </div>
                     </div>
@@ -1280,8 +1277,8 @@ export default function Home() {
                       <div>
                         <strong>Trends</strong>
                         <p>
-                          В соцсетях Хайфы взлетел интерес к "безглютеновым
-                          десертам". Пора внедрять, пока это не сделали другие.
+                          In Haifa social media, interest in “gluten‑free
+                          desserts” is spiking. Time to act before competitors.
                         </p>
                       </div>
                     </div>
@@ -1290,10 +1287,10 @@ export default function Home() {
                     >
                       <div className="pulse-icon">📢</div>
                       <div>
-                        <strong>Голос района</strong>
+                        <strong>Neighborhood voice</strong>
                         <p>
-                          За неделю у соседей +15 отзывов. Главная жалоба —
-                          медленный Wi‑Fi. Ваш шанс выделиться.
+                          +15 reviews for nearby spots this week. Main complaint:
+                          slow Wi‑Fi. Your chance to stand out.
                         </p>
                       </div>
                     </div>
@@ -1305,10 +1302,10 @@ export default function Home() {
                     <div className={`pulse-card${pulseActive ? " in" : ""}`}>
                       <div className="pulse-icon">🛡</div>
                       <div>
-                        <strong>Налоги</strong>
+                        <strong>Taxes</strong>
                         <p>
-                          С 1-го числа меняется ставка страховых взносов для
-                          вашего МСП. Мы уже обновили вашу финансовую модель.
+                          Insurance contribution rates for SMEs change on the
+                          1st. We’ve already updated your financial model.
                         </p>
                       </div>
                     </div>
@@ -1317,10 +1314,10 @@ export default function Home() {
                     >
                       <div className="pulse-icon">⚖️</div>
                       <div>
-                        <strong>Законы</strong>
+                        <strong>Regulations</strong>
                         <p>
-                          Новое требование к маркировке продукции в вашем
-                          секторе. Проверьте остатки на складе.
+                          New labeling requirement in your sector. Check stock
+                          before the deadline.
                         </p>
                       </div>
                     </div>
@@ -1329,10 +1326,10 @@ export default function Home() {
                     >
                       <div className="pulse-icon">⏳</div>
                       <div>
-                        <strong>Лицензии</strong>
+                        <strong>Licenses</strong>
                         <p>
-                          Срок действия разрешения на вывеску истекает через 30
-                          дней. Ссылка на автоматическое продление прилагается.
+                          Your signage permit expires in 30 days. Auto‑renewal
+                          link attached.
                         </p>
                       </div>
                     </div>
@@ -1344,10 +1341,9 @@ export default function Home() {
                     <div className={`pulse-card${pulseActive ? " in" : ""}`}>
                       <div className="pulse-icon">🏆</div>
                       <div>
-                        <strong>Место в лиге</strong>
+                        <strong>League position</strong>
                         <p>
-                          Вы на 2‑м месте по популярности в категории "Завтраки"
-                          в своем квартале.
+                          You're #2 in “Breakfasts” in your block.
                         </p>
                       </div>
                     </div>
@@ -1358,8 +1354,8 @@ export default function Home() {
                       <div>
                         <strong>The Gap</strong>
                         <p>
-                          До 1‑го места не хватило всего 5 положительных
-                          упоминаний за неделю. Мы знаем, как их получить.
+                          Only 5 positive mentions short of #1 this week. We
+                          know how to get them.
                         </p>
                       </div>
                     </div>
@@ -1368,10 +1364,10 @@ export default function Home() {
                     >
                       <div className="pulse-icon">💸</div>
                       <div>
-                        <strong>Бенчмаркинг</strong>
+                        <strong>Benchmarking</strong>
                         <p>
-                          Средний чек в районе вырос на 3%. Ваши цены остались
-                          прежними — вы теряете чистую прибыль.
+                          Average check in the area rose by 3%. Your prices
+                          stayed the same — you're losing net profit.
                         </p>
                       </div>
                     </div>
@@ -1386,11 +1382,11 @@ export default function Home() {
           <div className="container">
             <div className="anti-title-row">
               <h2>
-                Хватит копировать чужие ошибки.
+                Stop copying other people’s mistakes.
                 <span className="accent-inline">
                   {" "}
-                  Шаблон — это «средняя температура по больнице». Мы строим ваш
-                  бизнес на живых данных вашего города, улицы и ниши.
+                  A template is just an “average temperature.” We build your
+                  business on live data from your city, street, and niche.
                 </span>
               </h2>
             </div>
@@ -1408,39 +1404,38 @@ export default function Home() {
                         </div>
                         <h4>Strategy: Haifa, Hadar District | April 2026</h4>
                         <p>
-                          Студенты Техниона (ул. Герцля) формируют 65% утреннего
-                          трафика. Пик: 08:15 — 09:30. Ожидаемый чек: 18–22 ₪.
+                          Technion students (Herzl St.) drive 65% of morning
+                          traffic. Peak: 08:15–09:30. Expected ticket: ₪18–22.
                         </p>
                         <p>
-                          В радиусе 150м — 4 точки. Конкурент "Cafe X" снизил
-                          оценку до 3.8. Ваша точка входа: лучший Wi‑Fi и
-                          веганское меню (спрос в районе +40%).
+                          Within 150m — 4 locations. Competitor “Cafe X” dropped
+                          to 3.8 rating. Your entry point: best Wi‑Fi and vegan
+                          menu (area demand +40%).
                         </p>
                         <p>
-                          Аренда лота #442: 8,400 ₪ + муниципальный налог.
-                          Лицензия на вывеску в Хайфе: ожидание 14 дней.
+                          Rent for lot #442: ₪8,400 + municipal tax. Signage
+                          license in Haifa: 14‑day waiting period.
                         </p>
                       </div>
                     </div>
 
                     <div className="layer-template">
                       <div className="template-content">
-                        <h4>Типовой бизнес-план кофейни (v.4.2)</h4>
+                        <h4>Generic coffee shop plan (v4.2)</h4>
                         <p>
-                          Рынок общественного питания демонстрирует стабильный
-                          рост в 3-5% ежегодно. Целевая аудитория — мужчины и
-                          женщины 18-65 лет...
+                          The foodservice market shows stable 3–5% annual
+                          growth. Target audience — men and women aged 18–65...
                         </p>
                         <p className="strike">
-                          Необходимо выбрать место с высоким пешеходным
-                          трафиком, предпочтительно на первой линии домов...
+                          Choose a location with high foot traffic, preferably
+                          on the first line of buildings...
                         </p>
                         <p>
-                          Средняя стоимость аренды в крупном городе составляет
-                          $2000. Коэффициент инфляции — стандартный...
+                          Average rent in a large city is $2,000. Inflation
+                          coefficient — standard...
                         </p>
                         <div className="template-stamp">
-                          ДАННЫЕ ИЗ WIKIPEDIA 2021
+                          DATA FROM WIKIPEDIA 2021
                         </div>
                       </div>
                     </div>
@@ -1456,27 +1451,26 @@ export default function Home() {
                 </div>
               </div>
               <div className="col-lg-4 ps-lg-5">
-                <h2>Upgrowplan — это не конструктор. Это интеллект.</h2>
+                <h2>Upgrowplan is not a builder. It’s intelligence.</h2>
                 <p className="micro-copy">
-                  Шаблоны — это яд для стартапа. Они дают ложное чувство
-                  безопасности, используя цифры, которые не имеют отношения к
-                  вашей улице.
+                  Templates are poison for startups. They create false safety
+                  using numbers that have nothing to do with your street.
                 </p>
                 <p className="micro-copy">
-                  Мы полностью отказались от заготовок. Каждое слово в вашем
-                  плане рождается в момент запроса:
+                  We’ve abandoned boilerplates. Every word in your plan is
+                  generated at request time:
                 </p>
                 <ul>
                   <li>
-                    Живой поиск: наши агенты «ногами» обходят интернет вашего
-                    города.
+                    Live search: agents walk the web of your city.
                   </li>
                   <li>
-                    Никакой воды: мы пишем про цены у вашего соседа справа.
+                    No fluff: we write about the prices of your neighbor next
+                    door.
                   </li>
                   <li>
-                    Проверка гипотез: данные сверяются с налогами и трендами
-                    апреля 2026 года.
+                    Hypothesis check: data is verified against taxes and trends
+                    as of April 2026.
                   </li>
                 </ul>
               </div>
@@ -1491,12 +1485,11 @@ export default function Home() {
                 <div className="row align-items-center gy-4">
                   <div className="col-lg-5 text-center">
                     <h2 className="deep-title">
-                      15 минут правды против 60 секунд вымысла.
+                      15 minutes of truth vs 60 seconds of fiction.
                       <span className="accent-inline">
                         {" "}
-                        Фастфуд готовится минуту, но им нельзя питаться долго.
-                        Настоящая стратегия требует времени на проверку каждого
-                        факта.
+                        Fast food takes a minute — but you can’t live on it.
+                        Real strategy needs time to verify every fact.
                       </span>
                     </h2>
                   </div>
@@ -1525,26 +1518,24 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="deep-copy">
-                  <h4>Почему наши агенты не отвечают мгновенно?</h4>
+                  <h4>Why don’t our agents answer instantly?</h4>
                   <ul>
                     <li>
-                      Мы не галлюцинируем: обычный чат-бот придумывает цифру за
-                      секунду. Наш RAG-агент тратит 3 минуты только на поиск
-                      реальных объявлений об аренде в вашем районе.
+                      We don’t hallucinate: a regular chatbot invents a number
+                      in a second. Our RAG agent spends 3 minutes just finding
+                      real rental listings in your area.
                     </li>
                     <li>
-                      Мы сверяем законы: система запрашивает актуальные
-                      налоговые справочники.
+                      We verify laws: the system pulls current tax references.
                     </li>
                     <li>
-                      Мы думаем за покупателя: прогоняем идею через 6 цифровых
-                      аватаров, чтобы понять, купят они продукт или нет.
+                      We think like customers: the idea is tested through 6
+                      digital avatars to see if they would buy or not.
                     </li>
                   </ul>
                   <div className="deep-result">
-                    Итог: вы тратите 15 минут на ожидание, чтобы сэкономить 15
-                    месяцев жизни и миллионы инвестиций в заведомо провальную
-                    локацию.
+                    Bottom line: you wait 15 minutes to save 15 months of life
+                    and millions in investments in a losing location.
                   </div>
                 </div>
               </div>
@@ -1557,24 +1548,23 @@ export default function Home() {
             <div className="row align-items-center gy-4">
               <div className="col-lg-5">
                 <h2>
-                  Метрики, которые понятны обычному человеку.
+                  Metrics a normal human can understand.
                   <span className="accent-inline">
                     {" "}
-                    Мы понимаем, что вы открываете бизнес, чтобы созидать, а не
-                    чтобы круглосуточно смотреть в Excel.
+                    We know you start a business to build, not to stare at
+                    Excel all day.
                   </span>
                 </h2>
                 <ul className="micro-copy">
                   <li>
-                    Никакой воды: только те цифры, которые влияют на решение
-                    сегодня.
+                    No fluff: only the numbers that affect today’s decision.
                   </li>
                   <li>
-                    Наглядность: визуальные графики вместо бесконечных таблиц.
+                    Clarity: visual charts instead of endless tables.
                   </li>
                   <li>
-                    Прогноз на ладони: одно маленькое изменение цены за чашку
-                    меняет результат года.
+                    Forecast in your palm: a small price change per cup shifts
+                    the year’s outcome.
                   </li>
                 </ul>
               </div>
@@ -1585,13 +1575,13 @@ export default function Home() {
                       className={`switch-btn${metricMode === "cfo" ? " active" : ""}`}
                       onClick={() => setMetricMode("cfo")}
                     >
-                      Финансовый директор
+                      Finance Director
                     </button>
                     <button
                       className={`switch-btn${metricMode === "owner" ? " active" : ""}`}
                       onClick={() => setMetricMode("owner")}
                     >
-                      Владелец бизнеса
+                      Business Owner
                     </button>
                   </div>
                   <div className="metric-cards">
@@ -1642,19 +1632,19 @@ export default function Home() {
                         <span className="icon">☕</span>
                         <div>
                           <div className="metric-label">
-                            Точка безубыточности
+                            Breakeven point
                           </div>
                           <div className="metric-value">
-                            14 чашек латте в день
+                            14 lattes per day
                           </div>
                         </div>
                       </div>
                       <div className="metric-row">
                         <span className="icon">⏳</span>
                         <div>
-                          <div className="metric-label">Оптимизация затрат</div>
+                          <div className="metric-label">Cost optimization</div>
                           <div className="metric-value">
-                            Закрывайтесь на 1 час раньше в ПН
+                            Close 1 hour earlier on Monday
                           </div>
                         </div>
                       </div>
@@ -1662,19 +1652,19 @@ export default function Home() {
                         <span className="icon">👤</span>
                         <div>
                           <div className="metric-label">
-                            Эффективность маркетинга
+                            Marketing effectiveness
                           </div>
                           <div className="metric-value">
-                            500 ₪ → 12 клиентов из Instagram
+                            500 ₪ → 12 Instagram customers
                           </div>
                         </div>
                       </div>
                       <div className="metric-row">
                         <span className="icon">📅</span>
                         <div>
-                          <div className="metric-label">Срок окупаемости</div>
+                          <div className="metric-label">Payback period</div>
                           <div className="metric-value">
-                            Кофейня выходит в прибыль через 7 месяцев
+                            Coffee shop reaches profitability in 7 months
                           </div>
                         </div>
                       </div>
@@ -1690,11 +1680,11 @@ export default function Home() {
           <div className="container text-center">
             <div className="reality-inner">
               <h2 className="reality-title">
-                Бизнес-план — это не документ для банка. Это ваша страховка от
-                банкротства в первый год.
+                A business plan isn’t a bank document. It’s your insurance
+                against a first‑year failure.
               </h2>
               <p className="micro-copy">
-                Квиз на 15 секунд. Мы ценим ваше время
+                A 15‑second quiz. We value your time.
               </p>
             </div>
           </div>
@@ -1702,9 +1692,9 @@ export default function Home() {
           <div className="container">
             <div className="row g-3 reality-questions">
               {[
-                "Вы знаете точную стоимость аренды и муниципальный налог на выбранной улице на апрель 2026?",
-                "Вы в курсе, на что жалуются 20% клиентов вашего ближайшего конкурента в Google Maps прямо сейчас?",
-                "Ваша финансовая модель учитывает последние изменения в трудовом законодательстве и социальные взносы на текущий квартал?",
+                "Do you know the exact rent and municipal tax on your chosen street for April 2026?",
+                "Do you know what 20% of customers complain about in your nearest competitor’s Google Maps reviews right now?",
+                "Does your financial model include the latest labor law changes and social contributions for this quarter?",
               ].map((question, idx) => (
                 <div className="col-12 col-md-4" key={question}>
                   <div className="reality-card h-100">
@@ -1720,7 +1710,7 @@ export default function Home() {
                           })
                         }
                       >
-                        Да
+                        Yes
                       </button>
                       <button
                         className={`answer-btn${realityAnswers[idx] === false ? " active no" : ""}`}
@@ -1732,7 +1722,7 @@ export default function Home() {
                           })
                         }
                       >
-                        Нет
+                        No
                       </button>
                     </div>
                   </div>
@@ -1746,46 +1736,44 @@ export default function Home() {
               <div className="reality-outcome">
                 {anyNo ? (
                   <>
-                    <h3>Time заполнить пробелы.</h3>
+                    <h3>Time to fill the gaps.</h3>
                     <p className="micro-copy">
-                      Бизнес не прощает галлюцинаций. Даже одна ошибка в расчете
-                      аренды или налогах может съесть вашу прибыль за первый
-                      год. Наши RAG-агентства уже нашли ответы на эти вопросы.
-                      Получите их через 15 минут.
+                      Business doesn’t forgive hallucinations. One mistake in
+                      rent or taxes can wipe out your first‑year profit. Our
+                      RAG agencies already have the answers — get them in
+                      15 minutes.
                     </p>
                   </>
                 ) : (
                   <>
-                    <h3>
-                      Впечатляет. Вы входите в 5% подготовленных фаундеров.
-                    </h3>
+                    <h3>You’re impressive — top 5% of prepared founders.</h3>
                     <p className="micro-copy">
-                      Но профессионалы знают: цена ошибки слишком велика, чтобы
-                      доверять одному источнику. Используйте Upgrowplan как
-                      Stress-Test: сверьте свои расчеты с независимыми данными
-                      ИИ-агентов. Если мы найдем расхождение — это спасет ваши
-                      деньги. Если нет — вы получите железобетонную уверенность.
+                      Professionals know the price of error is too high to trust
+                      one source. Use Upgrowplan as a Stress Test: verify your
+                      numbers against independent AI‑agent data. If we find a
+                      discrepancy, we save your money. If not, you gain
+                      iron‑clad confidence.
                     </p>
                   </>
                 )}
                 <div className="reality-actions">
                   <Link
-                    href="/ru/solutions/planMaster/descriptionPage"
+                    href={getLocalePath("/solutions/planMaster/descriptionPage")}
                     className="btn btn-primary btn-lg"
                   >
-                    Создать бизнес-план
+                    Create a business plan
                   </Link>
                 </div>
               </div>
             )}
 
             <div className="reality-message">
-              <div className="message-text">Остались вопросы?</div>
+              <div className="message-text">Still have questions?</div>
               <button
                 className="btn btn-outline-primary btn-lg"
                 onClick={() => setShowContactModal(true)}
               >
-                Написать нам
+                Contact us
               </button>
             </div>
           </div>
@@ -1797,13 +1785,13 @@ export default function Home() {
           centered
         >
           <Modal.Header closeButton>
-            <Modal.Title>Связаться</Modal.Title>
+            <Modal.Title>Contact us</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <ContactForm
-              locale="ru"
+              locale="en"
               className="border p-3 rounded bg-light shadow-sm"
-              initialMessage="Интересует консультация по проверке данных"
+              initialMessage="Interested in a data validation consultation"
               onSuccess={() => setShowContactModal(false)}
             />
           </Modal.Body>

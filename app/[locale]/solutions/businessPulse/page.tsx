@@ -2,14 +2,13 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import Header from "../../../../components/Header";
+import Header from "@/components/Header";
+import type mapboxgl from "mapbox-gl";
 
 /* ══════════════════════════════════════════════════════════════════
    GLOBAL STYLES
 ══════════════════════════════════════════════════════════════════ */
 const GLOBAL_CSS = `
-@import url('https://api.mapbox.com/mapbox-gl-js/v3.5.2/mapbox-gl.css');
-
 @keyframes bp-pulse {
   0%, 100% { opacity: 1; transform: scale(1); }
   50%       { opacity: 0.4; transform: scale(1.6); }
@@ -36,11 +35,30 @@ const GLOBAL_CSS = `
   from { transform: translateY(-12px); opacity: 0; }
   to   { transform: translateY(0);     opacity: 1; }
 }
-@keyframes bp-fade-slide {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
 .bp-mapbox-container .mapboxgl-canvas { border-radius: 16px; }
+.business-pulse-page {
+  font-family: var(--font-inter), "Inter", "SF Pro Display", "Segoe UI", Arial, sans-serif;
+  color: #0b1a2e;
+}
+.business-pulse-page h1,
+.business-pulse-page h2,
+.business-pulse-page h3,
+.business-pulse-page h4 {
+  font-family: var(--font-inter), "Inter", "SF Pro Display", "Segoe UI", Arial, sans-serif;
+  font-weight: 700 !important;
+  color: #1e6078 !important;
+  letter-spacing: 0;
+}
+.bp-hero-title {
+  font-size: clamp(2.4rem, 4vw, 3.8rem);
+  font-weight: 700;
+  color: #1e6078;
+  margin-bottom: 1rem;
+  letter-spacing: 0;
+}
+.bp-hero-accent {
+  color: #0683f5;
+}
 `;
 
 /* ══════════════════════════════════════════════════════════════════
@@ -80,11 +98,9 @@ function LiveWidget() {
       minWidth: 300,
       maxWidth: 340,
     }}>
-      {/* Live status */}
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 22 }}>
         <span style={{
           width: 9, height: 9, borderRadius: "50%", background: "#22c55e",
-          boxShadow: "0 0 0 0 #22c55e",
           animation: "bp-pulse 1.5s ease-in-out infinite",
           flexShrink: 0,
         }} />
@@ -93,7 +109,6 @@ function LiveWidget() {
         </span>
       </div>
 
-      {/* Rolling number */}
       <div style={{ marginBottom: 18, overflow: "hidden", height: 72 }}>
         <div key={key} style={{ animation: "bp-num-roll 3s ease-in-out forwards" }}>
           <div style={{ fontSize: 13, color: "#64748b", marginBottom: 4 }}>{m.label}</div>
@@ -104,7 +119,6 @@ function LiveWidget() {
         </div>
       </div>
 
-      {/* Animated bar chart */}
       <div style={{ display: "flex", alignItems: "flex-end", gap: 4, height: 56, marginBottom: 16 }}>
         {BAR_HEIGHTS.map((h, i) => (
           <div key={i} style={{
@@ -151,24 +165,18 @@ function HeroSection() {
               <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#0683f5" }} />
               Business Pulse
             </div>
-            <h1 style={{
-              fontSize: "clamp(2rem, 4.5vw, 3rem)",
-              fontWeight: 800,
-              lineHeight: 1.13,
-              color: "#1e6078",
-              marginBottom: 22,
-            }}>
+            <h1 className="bp-hero-title">
               Хватит «внедрять ИИ».{" "}
-              <span style={{ color: "#0683f5" }}>Просто начните им пользоваться.</span>
+              <span className="bp-hero-accent">Просто начните им пользоваться.</span>
             </h1>
-            <p style={{
-              color: "#64748b", fontSize: 17, lineHeight: 1.75, marginBottom: 36,
-            }}>
-              Business Pulse — ваш ежедневный цифровой департамент. Он следит
-              за конкурентами, рынком и трендами — пока вы занимаетесь бизнесом.
+            <p style={{ color: "#64748b", fontSize: 17, lineHeight: 1.75, marginBottom: 36 }}>
+              Все говорят, что надо внедрять ИИ! А мы это сделали, причем довольно деликатно. Вам не надо пускать к себе
+              в учетную систему непонятных агентов, не надо давать доступ к чувствительной информации, не надо выгружать
+              коммерческую информацию на внешние ресурсы. Вы говорите нам чем и где вы занимаетесь, а мы еженедельно
+              обновляем для вас мониторинг рынка и правовую информацию.
             </p>
             <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
-              <a href="/ru/solutions/businessPulse" style={{
+              <a href="#workspace" style={{
                 padding: "14px 32px",
                 borderRadius: 12,
                 background: "#0683f5",
@@ -236,16 +244,66 @@ const MARKER_COLORS: Record<string, string> = {
 
 function RadarMap() {
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<unknown>(null);
+  const mapRef = useRef<mapboxgl.Map | null>(null);
+  const mapboxRef = useRef<typeof mapboxgl | null>(null);
+  const userMarkerRef = useRef<mapboxgl.Marker | null>(null);
+  const bizMarkersRef = useRef<mapboxgl.Marker[]>([]);
   const [status, setStatus] = useState<"idle" | "loading" | "ready" | "denied">("idle");
+  const [geoLabel, setGeoLabel] = useState("");
+  const [address, setAddress] = useState("");
+  const [addressStatus, setAddressStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
 
-  const initMap = useCallback(async (center: [number, number]) => {
-    if (mapRef.current || !mapContainerRef.current) return;
-    const mapboxgl = (await import("mapbox-gl")).default;
-    (mapboxgl as { accessToken: string }).accessToken =
+  const addMarkers = useCallback((center: [number, number]) => {
+    if (!mapRef.current || !mapboxRef.current) return;
+    const mapbox = mapboxRef.current;
+    if (!userMarkerRef.current) {
+      const el = document.createElement("div");
+      el.style.cssText = `
+        width:18px;height:18px;border-radius:50%;
+        background:#0683f5;border:3px solid #fff;
+        box-shadow:0 0 0 0 rgba(6,131,245,0.5);
+        animation:bp-pulse 1.6s ease-in-out infinite;
+      `;
+      userMarkerRef.current = new mapbox.Marker({ element: el }).setLngLat(center).addTo(mapRef.current);
+    } else {
+      userMarkerRef.current.setLngLat(center);
+    }
+
+    bizMarkersRef.current.forEach((marker) => marker.remove());
+    bizMarkersRef.current = [];
+
+    MOCK_MARKERS.forEach((m) => {
+      const dot = document.createElement("div");
+      const color = MARKER_COLORS[m.type];
+      dot.style.cssText = `
+        width:14px;height:14px;border-radius:50%;
+        background:${color};border:2px solid #fff;
+        box-shadow:0 0 8px ${color};cursor:pointer;
+      `;
+      const popup = new mapbox.Popup({ offset: 14, closeButton: false })
+        .setHTML(`<div style="font-size:13px;padding:4px 2px;color:#1e293b;">${m.label}</div>`);
+      const marker = new mapbox.Marker({ element: dot })
+        .setLngLat([center[0] + m.lng, center[1] + m.lat])
+        .setPopup(popup)
+        .addTo(mapRef.current);
+      bizMarkersRef.current.push(marker);
+    });
+  }, []);
+
+  const ensureMap = useCallback(async (center: [number, number]) => {
+    if (!mapContainerRef.current) return;
+    if (mapRef.current) {
+      mapRef.current.flyTo({ center, zoom: 13.5 });
+      addMarkers(center);
+      setStatus("ready");
+      return;
+    }
+    const mapbox = (await import("mapbox-gl")).default;
+    mapboxRef.current = mapbox;
+    (mapbox as { accessToken: string }).accessToken =
       process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? "";
 
-    const map = new mapboxgl.Map({
+    const map = new mapbox.Map({
       container: mapContainerRef.current,
       style: "mapbox://styles/mapbox/light-v11",
       center,
@@ -256,82 +314,76 @@ function RadarMap() {
 
     map.on("load", () => {
       setStatus("ready");
-
-      // Center pulsing dot
-      const el = document.createElement("div");
-      el.style.cssText = `
-        width:18px;height:18px;border-radius:50%;
-        background:#0683f5;border:3px solid #fff;
-        box-shadow:0 0 0 0 rgba(6,131,245,0.5);
-        animation:bp-pulse 1.6s ease-in-out infinite;
-      `;
-      new mapboxgl.Marker({ element: el }).setLngLat(center).addTo(map);
-
-      // Competitor markers
-      MOCK_MARKERS.forEach((m) => {
-        const dot = document.createElement("div");
-        const color = MARKER_COLORS[m.type];
-        dot.style.cssText = `
-          width:14px;height:14px;border-radius:50%;
-          background:${color};border:2px solid #fff;
-          box-shadow:0 0 8px ${color};cursor:pointer;
-        `;
-        const popup = new mapboxgl.Popup({ offset: 14, closeButton: false })
-          .setHTML(`<div style="font-size:13px;padding:4px 2px;color:#1e293b;">${m.label}</div>`);
-        new mapboxgl.Marker({ element: dot })
-          .setLngLat([center[0] + m.lng, center[1] + m.lat])
-          .setPopup(popup)
-          .addTo(map);
-      });
+      addMarkers(center);
     });
-  }, []);
+  }, [addMarkers]);
 
   const handleScan = useCallback(() => {
     setStatus("loading");
     if (!navigator.geolocation) {
-      initMap([37.6173, 55.7558]);
+      ensureMap([37.6173, 55.7558]);
       return;
     }
     navigator.geolocation.getCurrentPosition(
-      (pos) => initMap([pos.coords.longitude, pos.coords.latitude]),
+      (pos) => {
+        const center: [number, number] = [pos.coords.longitude, pos.coords.latitude];
+        ensureMap(center);
+        setGeoLabel("Ваш район");
+      },
       () => {
         setStatus("denied");
-        initMap([37.6173, 55.7558]);
+        ensureMap([37.6173, 55.7558]);
       },
       { timeout: 8000 }
     );
-  }, [initMap]);
+  }, [ensureMap]);
+
+  const handleAddressLookup = useCallback(async () => {
+    if (!address.trim()) return;
+    setAddressStatus("loading");
+    const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? "";
+    try {
+      const res = await fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(address)}.json?limit=1&language=ru&access_token=${token}`
+      );
+      const data = await res.json();
+      const feature = data?.features?.[0];
+      if (feature?.center) {
+        const center: [number, number] = [feature.center[0], feature.center[1]];
+        ensureMap(center);
+        setGeoLabel(feature.place_name);
+        setAddressStatus("ready");
+      } else {
+        setAddressStatus("error");
+      }
+    } catch {
+      setAddressStatus("error");
+    }
+  }, [address, ensureMap]);
 
   return (
     <section style={{ background: "#ffffff", padding: "72px 0" }}>
       <div className="container">
         <div style={{ textAlign: "center", marginBottom: 48 }}>
-          <h2 style={{ fontSize: "clamp(1.6rem,3vw,2.3rem)", fontWeight: 800, color: "#0b1a2e" }}>
-            Захват рынка — ваш радар конкурентов
+          <h2 style={{ fontSize: "clamp(1.6rem,3vw,2.3rem)" }}>
+            Территория роста: ваша локация как на ладони.
+            <span style={{ color: "#0683f5" }}>
+              {" "}
+              Карта показывает реальную активность конкурентов, спрос и слабые места вокруг вашей точки.
+            </span>
           </h2>
-          <p style={{ color: "#64748b", fontSize: 16, marginTop: 10 }}>
-            ИИ сканирует округу в реальном времени и отмечает угрозы, отзывы и тренды
-          </p>
         </div>
 
         <div style={{ position: "relative", borderRadius: 20, overflow: "hidden", height: 440,
           boxShadow: "0 8px 40px rgba(0,0,0,0.08)", border: "1px solid #e2e8f0" }}>
+          <div ref={mapContainerRef} className="bp-mapbox-container" style={{ width: "100%", height: "100%" }} />
 
-          {/* Map container */}
-          <div
-            ref={mapContainerRef}
-            className="bp-mapbox-container"
-            style={{ width: "100%", height: "100%" }}
-          />
-
-          {/* Radar overlay */}
           {status === "ready" && (
             <div style={{
               position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
               pointerEvents: "none",
               display: "flex", alignItems: "center", justifyContent: "center",
             }}>
-              {/* Ripple rings */}
               {[0, 1, 2].map((i) => (
                 <div key={i} style={{
                   position: "absolute",
@@ -342,16 +394,9 @@ function RadarMap() {
                   animationDelay: `${i * 1}s`,
                 }} />
               ))}
-              {/* Sweep */}
-              <div style={{
-                position: "absolute",
-                width: 240, height: 240,
-                borderRadius: "50%",
-                overflow: "hidden",
-              }}>
+              <div style={{ position: "absolute", width: 240, height: 240, borderRadius: "50%", overflow: "hidden" }}>
                 <div style={{
-                  position: "absolute",
-                  width: "100%", height: "100%",
+                  position: "absolute", width: "100%", height: "100%",
                   background: "conic-gradient(from 0deg, rgba(6,131,245,0.3) 0deg, transparent 50deg)",
                   animation: "bp-spin 3s linear infinite",
                 }} />
@@ -359,11 +404,10 @@ function RadarMap() {
             </div>
           )}
 
-          {/* Placeholder state */}
-          {status !== "ready" && (
-            <div style={{
-              position: "absolute", inset: 0,
-              background: "linear-gradient(135deg,#f0f7ff 0%,#e8f0fe 100%)",
+           {status !== "ready" && (
+             <div style={{
+               position: "absolute", inset: 0,
+               background: "linear-gradient(135deg,#f0f7ff 0%,#e8f0fe 100%)",
               display: "flex", flexDirection: "column",
               alignItems: "center", justifyContent: "center", gap: 20,
             }}>
@@ -371,23 +415,19 @@ function RadarMap() {
                 <>
                   <div style={{
                     width: 48, height: 48, borderRadius: "50%",
-                    border: "3px solid #e2e8f0",
-                    borderTopColor: "#0683f5",
+                    border: "3px solid #e2e8f0", borderTopColor: "#0683f5",
                     animation: "bp-spin 0.8s linear infinite",
                   }} />
                   <p style={{ color: "#64748b", fontSize: 15 }}>Определяем геолокацию…</p>
                 </>
               ) : (
                 <>
-                  {/* Decorative mock rings */}
                   <div style={{ position: "relative", width: 200, height: 200 }}>
                     {[40, 80, 120, 160].map((s) => (
                       <div key={s} style={{
                         position: "absolute",
-                        top: `calc(50% - ${s / 2}px)`,
-                        left: `calc(50% - ${s / 2}px)`,
-                        width: s, height: s,
-                        borderRadius: "50%",
+                        top: `calc(50% - ${s / 2}px)`, left: `calc(50% - ${s / 2}px)`,
+                        width: s, height: s, borderRadius: "50%",
                         border: "1px dashed rgba(6,131,245,0.25)",
                       }} />
                     ))}
@@ -395,38 +435,72 @@ function RadarMap() {
                       position: "absolute", top: "50%", left: "50%",
                       transform: "translate(-50%,-50%)",
                       width: 18, height: 18, borderRadius: "50%",
-                      background: "#0683f5",
-                      boxShadow: "0 0 0 6px rgba(6,131,245,0.15)",
+                      background: "#0683f5", boxShadow: "0 0 0 6px rgba(6,131,245,0.15)",
                     }} />
                   </div>
-                  <button
-                    onClick={handleScan}
-                    style={{
-                      padding: "13px 34px",
-                      borderRadius: 12,
-                      background: "#0683f5",
-                      color: "#fff",
-                      fontWeight: 700,
-                      fontSize: 15,
-                      border: "none",
-                      cursor: "pointer",
-                      boxShadow: "0 4px 18px rgba(6,131,245,0.35)",
-                    }}>
-                    Включить радар рядом со мной
-                  </button>
-                  {status === "denied" && (
-                    <p style={{ color: "#94a3b8", fontSize: 13 }}>
-                      Геолокация недоступна — показываем Москву
-                    </p>
-                  )}
+                  <p style={{ color: "#94a3b8", fontSize: 13 }}>
+                    Нажмите «Показать мой район», чтобы запустить карту
+                  </p>
                 </>
               )}
             </div>
           )}
         </div>
 
-        {/* Legend */}
-        <div style={{ display: "flex", gap: 24, flexWrap: "wrap", marginTop: 20, justifyContent: "center" }}>
+        <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginTop: 20, justifyContent: "center" }}>
+          <button onClick={handleScan} style={{
+            padding: "12px 26px", borderRadius: 12,
+            background: "#0683f5", color: "#fff",
+            fontWeight: 700, fontSize: 14, border: "none", cursor: "pointer",
+            boxShadow: "0 4px 18px rgba(6,131,245,0.3)",
+          }}>
+            {status === "loading" ? "Определяем район..." : "Показать мой район"}
+          </button>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+            <input
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              placeholder="Ввести адрес моего бизнеса"
+              style={{
+                minWidth: 240,
+                padding: "11px 14px",
+                borderRadius: 12,
+                border: "1px solid #d7e1f3",
+                fontSize: 14,
+                color: "#1e293b",
+              }}
+            />
+            <button onClick={handleAddressLookup} style={{
+              padding: "12px 20px",
+              borderRadius: 12,
+              background: "#ffffff",
+              color: "#0683f5",
+              fontWeight: 700,
+              fontSize: 14,
+              border: "1px solid #0683f5",
+              cursor: "pointer",
+            }}>
+              Найти адрес
+            </button>
+          </div>
+          {geoLabel && (
+            <div style={{ fontSize: 13, color: "#64748b" }}>
+              Локация: {geoLabel}
+            </div>
+          )}
+          {addressStatus === "error" && (
+            <div style={{ fontSize: 13, color: "#ef4444" }}>
+              Адрес не найден, попробуйте уточнить
+            </div>
+          )}
+          {status === "denied" && (
+            <div style={{ fontSize: 13, color: "#94a3b8" }}>
+              Геолокация недоступна — показываем центр города
+            </div>
+          )}
+        </div>
+
+        <div style={{ display: "flex", gap: 24, flexWrap: "wrap", marginTop: 16, justifyContent: "center" }}>
           {[
             { color: "#ef4444", label: "Риск / Ценовая угроза" },
             { color: "#f59e0b", label: "Новый отзыв конкурента" },
@@ -451,26 +525,26 @@ const STEPS = [
   {
     id: "scan",
     icon: "🔍",
-    label: "Как работает",
-    title: "ИИ-сканеры соцсетей и новостей",
-    body: "Мультиагентный оркестратор непрерывно парсит отзывы, цены, акции и новостной фон конкурентов. Каждые несколько часов модель синтезирует сигналы в единый срез, отфильтрованный от шума.",
-    highlight: "Покрытие: ВКонтакте, 2ГИС, Яндекс, Google, Telegram-каналы",
+    label: "Как это работает?",
+    title: "Мониторинг",
+    body: "Агент поиска данных методично сканирует локацию и определяет конкурентов, трафик покупателей, отзывы и оценки в соцсетях, социально-демографические параметры и правовое поле.",
+    highlight: "Результат — фактическая картина рынка вокруг вашей точки",
   },
   {
     id: "data",
-    icon: "📍",
-    label: "Что нужно",
-    title: "Только адрес и ниша",
-    body: "Укажите адрес точки и тип бизнеса — система сама определит радиус конкуренции, соберёт пул игроков и настроит персонализированные фильтры под вашу категорию.",
-    highlight: "Онбординг занимает менее 3 минут",
+    icon: "🗂️",
+    label: "Что от вас надо?",
+    title: "5 минут",
+    body: "Укажите ваш товар, особенности, текущую целевую аудиторию и локацию — этого достаточно, чтобы запустить персональный мониторинг.",
+    highlight: "Без доступа к учетным системам и чувствительным данным",
   },
   {
     id: "result",
-    icon: "📲",
-    label: "Результат",
-    title: "Готовый пуш с решением в ваш Telegram",
-    body: "Вы получаете не «отчёт для галочки», а конкретное действие: снизить цену, запустить акцию, ответить на отзыв. Уведомление приходит туда, где вы уже находитесь.",
-    highlight: "Среднее время на реакцию: 4 минуты",
+    icon: "📬",
+    label: "Что вы получаете?",
+    title: "Контроль",
+    body: "Получайте результат мониторинга вашей рыночной ниши, обновления налоговых и регуляторных ограничений на мэйл или в телеграмм раз в неделю или ежедневно.",
+    highlight: "Четкий апдейт вместо хаоса и перегрузки",
   },
 ];
 
@@ -482,64 +556,48 @@ function HowItWorksSection() {
     <section id="how-it-works" style={{ background: "#f0f7ff", padding: "72px 0" }}>
       <div className="container">
         <div style={{ textAlign: "center", marginBottom: 48 }}>
-          <h2 style={{ fontSize: "clamp(1.6rem,3vw,2.3rem)", fontWeight: 800, color: "#0b1a2e" }}>
-            3 шага к контролю над рынком
+          <h2 style={{ fontSize: "clamp(1.6rem,3vw,2.3rem)" }}>
+            3 шага к контролю над рынком.
+            <span style={{ color: "#0683f5" }}>
+              {" "}
+              Ваш ежедневный цифровой отдел для мониторинга рынка и защиты бизнеса.
+            </span>
           </h2>
         </div>
 
-        {/* Tab buttons */}
         <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginBottom: 36 }}>
           {STEPS.map((s) => (
-            <button
-              key={s.id}
-              onClick={() => setActive(s.id)}
-              style={{
-                display: "flex", alignItems: "center", gap: 10,
-                padding: "12px 26px",
-                borderRadius: 40,
-                border: `2px solid ${active === s.id ? "#0683f5" : "#dde8f5"}`,
-                background: active === s.id ? "#0683f5" : "#fff",
-                color: active === s.id ? "#fff" : "#64748b",
-                fontWeight: 700, fontSize: 15,
-                cursor: "pointer",
-                transition: "all 0.2s",
-                boxShadow: active === s.id ? "0 4px 16px rgba(6,131,245,0.28)" : "none",
-              }}>
+            <button key={s.id} onClick={() => setActive(s.id)} style={{
+              display: "flex", alignItems: "center", gap: 10,
+              padding: "12px 26px", borderRadius: 40,
+              border: `2px solid ${active === s.id ? "#0683f5" : "#dde8f5"}`,
+              background: active === s.id ? "#0683f5" : "#fff",
+              color: active === s.id ? "#fff" : "#64748b",
+              fontWeight: 700, fontSize: 15, cursor: "pointer", transition: "all 0.2s",
+              boxShadow: active === s.id ? "0 4px 16px rgba(6,131,245,0.28)" : "none",
+            }}>
               <span style={{ fontSize: 18 }}>{s.icon}</span>
               {s.label}
             </button>
           ))}
         </div>
 
-        {/* Content with fade */}
         <AnimatePresence mode="wait">
-          <motion.div
-            key={active}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.22 }}
+          <motion.div key={active}
+            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.22 }}
             style={{
-              background: "#fff",
-              borderRadius: 20,
-              padding: "36px 40px",
-              boxShadow: "0 4px 24px rgba(0,0,0,0.05)",
-              border: "1px solid #e0eaf6",
+              background: "#fff", borderRadius: 20, padding: "36px 40px",
+              boxShadow: "0 4px 24px rgba(0,0,0,0.05)", border: "1px solid #e0eaf6",
               maxWidth: 720, margin: "0 auto",
             }}>
             <div style={{ fontSize: 34, marginBottom: 14 }}>{step.icon}</div>
-            <h3 style={{ fontSize: 22, fontWeight: 800, color: "#0b1a2e", marginBottom: 12 }}>
-              {step.title}
-            </h3>
-            <p style={{ color: "#475569", lineHeight: 1.8, fontSize: 15, marginBottom: 20 }}>
-              {step.body}
-            </p>
+            <h3 style={{ fontSize: 22, fontWeight: 800, color: "#1e6078", marginBottom: 12 }}>{step.title}</h3>
+            <p style={{ color: "#475569", lineHeight: 1.8, fontSize: 15, marginBottom: 20 }}>{step.body}</p>
             <div style={{
               display: "inline-flex", alignItems: "center", gap: 8,
-              background: "rgba(6,131,245,0.07)",
-              border: "1px solid rgba(6,131,245,0.2)",
-              borderRadius: 8, padding: "8px 16px",
-              fontSize: 13, color: "#0683f5", fontWeight: 600,
+              background: "rgba(6,131,245,0.07)", border: "1px solid rgba(6,131,245,0.2)",
+              borderRadius: 8, padding: "8px 16px", fontSize: 13, color: "#0683f5", fontWeight: 600,
             }}>
               ✓ {step.highlight}
             </div>
@@ -551,15 +609,11 @@ function HowItWorksSection() {
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   4. WORKSPACE DASHBOARD
+   4. WORKSPACE
 ══════════════════════════════════════════════════════════════════ */
 
 const FREQ_LABELS: Record<number, string> = {
-  1: "Real-time",
-  2: "Каждые 2 ч",
-  3: "Ежедневно",
-  4: "Еженедельно",
-  5: "Спокойно",
+  1: "Real-time", 2: "Каждые 2 ч", 3: "Ежедневно", 4: "Еженедельно", 5: "Спокойно",
 };
 
 const CHANNELS_W = [
@@ -591,37 +645,33 @@ function WorkspaceSection() {
     setSelCh((prev) => prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]);
 
   return (
-    <section style={{ background: "#ffffff", padding: "72px 0" }}>
+    <section id="workspace" style={{ background: "#ffffff", padding: "72px 0" }}>
       <div className="container">
         <div style={{ textAlign: "center", marginBottom: 52 }}>
-          <h2 style={{ fontSize: "clamp(1.6rem,3vw,2.3rem)", fontWeight: 800, color: "#0b1a2e" }}>
-            Ваш цифровой штаб
+          <h2 style={{ fontSize: "clamp(1.6rem,3vw,2.3rem)" }}>
+            Ваш цифровой отдел.
+            <span style={{ color: "#0683f5" }}>
+              {" "}
+              Настройте, как и куда приходит аналитика — всё под рукой.
+            </span>
           </h2>
-          <p style={{ color: "#64748b", fontSize: 16, marginTop: 10 }}>
-            Настройте, как и куда приходит аналитика — всё под рукой
-          </p>
         </div>
 
         <div style={{ display: "flex", gap: 48, flexWrap: "wrap", alignItems: "flex-start" }}>
-          {/* Controls */}
           <div style={{ flex: "1 1 300px" }}>
-            {/* Frequency */}
             <div style={{ marginBottom: 36 }}>
               <div style={{ fontWeight: 700, color: "#0b1a2e", fontSize: 15, marginBottom: 6 }}>
                 Частота отчётов:{" "}
                 <span style={{ color: "#0683f5" }}>{FREQ_LABELS[freq]}</span>
               </div>
-              <input
-                type="range" min={1} max={5} step={1} value={freq}
+              <input type="range" min={1} max={5} step={1} value={freq}
                 onChange={e => setFreq(Number(e.target.value))}
-                style={{ width: "100%", accentColor: "#0683f5", marginBottom: 4 }}
-              />
+                style={{ width: "100%", accentColor: "#0683f5", marginBottom: 4 }} />
               <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#94a3b8" }}>
                 <span>Real-time</span><span>Спокойно</span>
               </div>
             </div>
 
-            {/* Channels */}
             <div style={{ marginBottom: 36 }}>
               <div style={{ fontWeight: 700, color: "#0b1a2e", fontSize: 15, marginBottom: 14 }}>
                 Канал уведомлений
@@ -630,18 +680,14 @@ function WorkspaceSection() {
                 {CHANNELS_W.map((ch) => {
                   const sel = selCh.includes(ch.id);
                   return (
-                    <button
-                      key={ch.id}
-                      onClick={() => toggleCh(ch.id)}
-                      style={{
-                        display: "flex", alignItems: "center", gap: 8,
-                        padding: "10px 20px", borderRadius: 30,
-                        border: `2px solid ${sel ? "#0683f5" : "#e2e8f0"}`,
-                        background: sel ? "rgba(6,131,245,0.08)" : "#fff",
-                        color: sel ? "#0683f5" : "#94a3b8",
-                        fontWeight: 600, fontSize: 14,
-                        cursor: "pointer", transition: "all 0.2s",
-                      }}>
+                    <button key={ch.id} onClick={() => toggleCh(ch.id)} style={{
+                      display: "flex", alignItems: "center", gap: 8,
+                      padding: "10px 20px", borderRadius: 30,
+                      border: `2px solid ${sel ? "#0683f5" : "#e2e8f0"}`,
+                      background: sel ? "rgba(6,131,245,0.08)" : "#fff",
+                      color: sel ? "#0683f5" : "#94a3b8",
+                      fontWeight: 600, fontSize: 14, cursor: "pointer", transition: "all 0.2s",
+                    }}>
                       <span>{ch.icon}</span>{ch.label}
                     </button>
                   );
@@ -650,8 +696,7 @@ function WorkspaceSection() {
             </div>
 
             <div style={{
-              background: "rgba(6,131,245,0.06)",
-              borderRadius: 12, padding: "14px 18px",
+              background: "rgba(6,131,245,0.06)", borderRadius: 12, padding: "14px 18px",
               fontSize: 13, color: "#475569", lineHeight: 1.6,
             }}>
               <strong style={{ color: "#0683f5" }}>Совет:</strong> Для малого бизнеса
@@ -659,58 +704,35 @@ function WorkspaceSection() {
             </div>
           </div>
 
-          {/* Phone mockup */}
           <div style={{ flex: "0 0 auto", margin: "0 auto" }}>
             <div style={{
-              width: 280,
-              background: "#0b1a2e",
-              borderRadius: 36,
+              width: 280, background: "#0b1a2e", borderRadius: 36,
               padding: "14px 10px 20px",
-              boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
-              border: "3px solid #1e293b",
+              boxShadow: "0 20px 60px rgba(0,0,0,0.25)", border: "3px solid #1e293b",
             }}>
-              {/* Notch */}
               <div style={{ width: 90, height: 6, background: "#1e293b", borderRadius: 3, margin: "0 auto 14px" }} />
-              {/* Screen */}
               <div style={{ background: "#f8fafc", borderRadius: 24, overflow: "hidden" }}>
-                {/* Top bar */}
-                <div style={{
-                  background: "#0683f5", padding: "12px 16px",
-                  display: "flex", alignItems: "center", gap: 8,
-                }}>
+                <div style={{ background: "#0683f5", padding: "12px 16px", display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontSize: 16 }}>📊</span>
                   <span style={{ color: "#fff", fontWeight: 700, fontSize: 13 }}>Business Pulse</span>
                   <span style={{
                     marginLeft: "auto", fontSize: 10, fontWeight: 700,
-                    background: "#22c55e", color: "#fff",
-                    borderRadius: 6, padding: "2px 7px",
+                    background: "#22c55e", color: "#fff", borderRadius: 6, padding: "2px 7px",
                   }}>LIVE</span>
                 </div>
-                {/* Notifications */}
                 <div style={{ padding: "10px 8px", display: "flex", flexDirection: "column", gap: 8 }}>
                   {NOTIFS.slice(0, visibleNotifs).map((n, i) => (
-                    <div
-                      key={i}
-                      style={{
-                        background: n.type === "danger"
-                          ? "rgba(239,68,68,0.06)"
-                          : n.type === "warn"
-                            ? "rgba(245,158,11,0.06)"
-                            : "rgba(34,197,94,0.06)",
-                        border: `1px solid ${n.type === "danger" ? "rgba(239,68,68,0.2)" : n.type === "warn" ? "rgba(245,158,11,0.2)" : "rgba(34,197,94,0.2)"}`,
-                        borderRadius: 10, padding: "9px 11px",
-                        animation: i === 0 ? "bp-notif-in 0.35s ease-out" : "none",
-                      }}>
+                    <div key={i} style={{
+                      background: n.type === "danger" ? "rgba(239,68,68,0.06)" : n.type === "warn" ? "rgba(245,158,11,0.06)" : "rgba(34,197,94,0.06)",
+                      border: `1px solid ${n.type === "danger" ? "rgba(239,68,68,0.2)" : n.type === "warn" ? "rgba(245,158,11,0.2)" : "rgba(34,197,94,0.2)"}`,
+                      borderRadius: 10, padding: "9px 11px",
+                      animation: i === 0 ? "bp-notif-in 0.35s ease-out" : "none",
+                    }}>
                       <div style={{ display: "flex", gap: 7, alignItems: "flex-start" }}>
                         <span style={{ fontSize: 13, flexShrink: 0 }}>{n.icon}</span>
-                        <span style={{
-                          fontSize: 11.5, color: "#1e293b", lineHeight: 1.5,
-                          fontWeight: n.type === "danger" ? 700 : 400,
-                        }}>{n.text}</span>
+                        <span style={{ fontSize: 11.5, color: "#1e293b", lineHeight: 1.5, fontWeight: n.type === "danger" ? 700 : 400 }}>{n.text}</span>
                       </div>
-                      <div style={{ fontSize: 10, color: "#94a3b8", marginTop: 4, textAlign: "right" }}>
-                        {n.time}
-                      </div>
+                      <div style={{ fontSize: 10, color: "#94a3b8", marginTop: 4, textAlign: "right" }}>{n.time}</div>
                     </div>
                   ))}
                 </div>
@@ -757,46 +779,29 @@ function VoiceInsight() {
   }, [hovering, playing]); // eslint-disable-line
 
   return (
-    <section style={{
-      background: "#f0f7ff",
-      padding: "72px 0",
-    }}>
+    <section style={{ background: "#f0f7ff", padding: "72px 0" }}>
       <div className="container">
         <div style={{ textAlign: "center", marginBottom: 12 }}>
-          <h2 style={{ fontSize: "clamp(1.6rem,3vw,2.3rem)", fontWeight: 800, color: "#0b1a2e", marginBottom: 10 }}>
-            Voice Insight
+          <h2 style={{ fontSize: "clamp(1.6rem,3vw,2.3rem)" }}>
+            Voice Insight.
+            <span style={{ color: "#0683f5" }}>
+              {" "}
+              Послушайте утренний брифинг по пути на работу.
+            </span>
           </h2>
-          <p style={{ color: "#64748b", fontSize: 16 }}>
-            Послушайте утренний брифинг по пути в офис
-          </p>
         </div>
 
         <div style={{ maxWidth: 600, margin: "40px auto 0", textAlign: "center" }}>
           <div style={{
-            background: "#ffffff",
-            borderRadius: 24,
-            padding: "40px 36px",
-            boxShadow: "0 6px 32px rgba(6,131,245,0.10)",
-            border: "1px solid #dde8f5",
+            background: "#ffffff", borderRadius: 24, padding: "40px 36px",
+            boxShadow: "0 6px 32px rgba(6,131,245,0.10)", border: "1px solid #dde8f5",
           }}>
-            {/* Waveform */}
-            <div
-              onMouseEnter={() => setHovering(true)}
-              onMouseLeave={() => setHovering(false)}
-              style={{
-                display: "flex", alignItems: "center",
-                justifyContent: "center", gap: 4,
-                height: 80, cursor: "pointer",
-                marginBottom: 28,
-              }}>
+            <div onMouseEnter={() => setHovering(true)} onMouseLeave={() => setHovering(false)}
+              style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 4, height: 80, cursor: "pointer", marginBottom: 28 }}>
               {heights.map((h, i) => (
                 <div key={i} style={{
-                  width: 5,
-                  height: h,
-                  borderRadius: 3,
-                  background: playing || hovering
-                    ? `hsl(${205 + i * 2}, 80%, ${45 + h * 0.25}%)`
-                    : "rgba(6,131,245,0.25)",
+                  width: 5, height: h, borderRadius: 3,
+                  background: playing || hovering ? `hsl(${205 + i * 2}, 80%, ${45 + h * 0.25}%)` : "rgba(6,131,245,0.25)",
                   transition: hovering || playing ? "none" : "height 0.5s ease, background 0.5s",
                 }} />
               ))}
@@ -806,20 +811,13 @@ function VoiceInsight() {
               Сегодня, 08:30 · 58 секунд
             </div>
 
-            <button
-              onClick={() => setPlaying((p) => !p)}
-              style={{
-                padding: "13px 44px",
-                borderRadius: 30,
-                background: playing ? "#ef4444" : "#0683f5",
-                color: "#fff",
-                fontWeight: 700, fontSize: 15,
-                border: "none", cursor: "pointer",
-                boxShadow: playing
-                  ? "0 4px 18px rgba(239,68,68,0.35)"
-                  : "0 4px 18px rgba(6,131,245,0.35)",
-                transition: "background 0.2s, box-shadow 0.2s",
-              }}>
+            <button onClick={() => setPlaying((p) => !p)} style={{
+              padding: "13px 44px", borderRadius: 30,
+              background: playing ? "#ef4444" : "#0683f5",
+              color: "#fff", fontWeight: 700, fontSize: 15, border: "none", cursor: "pointer",
+              boxShadow: playing ? "0 4px 18px rgba(239,68,68,0.35)" : "0 4px 18px rgba(6,131,245,0.35)",
+              transition: "background 0.2s, box-shadow 0.2s",
+            }}>
               {playing ? "⏹ Остановить" : "▶ Воспроизвести брифинг"}
             </button>
             <p style={{ marginTop: 14, fontSize: 13, color: "#94a3b8" }}>
@@ -833,7 +831,7 @@ function VoiceInsight() {
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   6. VECTOR CHOICE (two cards)
+   6. VECTOR CHOICE
 ══════════════════════════════════════════════════════════════════ */
 
 const BP_FEATURES = [
@@ -857,7 +855,7 @@ function VectorChoice() {
     <section style={{ background: "#ffffff", padding: "72px 0" }}>
       <div className="container">
         <div style={{ textAlign: "center", marginBottom: 52 }}>
-          <h2 style={{ fontSize: "clamp(1.6rem,3vw,2.3rem)", fontWeight: 800, color: "#0b1a2e" }}>
+          <h2 style={{ fontSize: "clamp(1.6rem,3vw,2.3rem)", fontWeight: 800, color: "#1e6078" }}>
             Выберите свой вектор
           </h2>
           <p style={{ color: "#64748b", fontSize: 16, marginTop: 10 }}>
@@ -866,24 +864,19 @@ function VectorChoice() {
         </div>
 
         <div style={{ display: "flex", gap: 28, flexWrap: "wrap", justifyContent: "center" }}>
-          {/* Business Pulse card */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.4 }}
+            initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }} transition={{ duration: 0.4 }}
             style={{
               flex: "1 1 320px", maxWidth: 420,
               background: "linear-gradient(145deg,#0683f5 0%,#0565c8 100%)",
               borderRadius: 24, padding: "40px 36px",
-              boxShadow: "0 12px 48px rgba(6,131,245,0.28)",
-              color: "#fff",
+              boxShadow: "0 12px 48px rgba(6,131,245,0.28)", color: "#fff",
             }}>
             <div style={{ fontSize: 36, marginBottom: 12 }}>🛡️</div>
             <h3 style={{ fontSize: 22, fontWeight: 800, marginBottom: 8 }}>Иммунитет бизнеса</h3>
             <p style={{ fontSize: 15, opacity: 0.85, lineHeight: 1.7, marginBottom: 28 }}>
-              Для тех, кто уже работает и хочет защитить свою долю рынка
-              от конкурентов и неожиданных изменений.
+              Для тех, кто уже работает и хочет защитить свою долю рынка от конкурентов.
             </p>
             <ul style={{ listStyle: "none", padding: 0, margin: "0 0 32px", display: "flex", flexDirection: "column", gap: 10 }}>
               {BP_FEATURES.map((f) => (
@@ -893,42 +886,26 @@ function VectorChoice() {
                 </li>
               ))}
             </ul>
-            <a href="/ru/solutions/businessPulse" style={{
-              display: "block", textAlign: "center",
-              padding: "13px 0",
-              borderRadius: 12,
-              background: "#fff",
-              color: "#0683f5",
-              fontWeight: 700, fontSize: 15,
-              textDecoration: "none",
-              transition: "box-shadow 0.2s",
-            }}
-            onMouseOver={e => { (e.currentTarget as HTMLAnchorElement).style.boxShadow = "0 4px 16px rgba(255,255,255,0.4)"; }}
-            onMouseOut={e => { (e.currentTarget as HTMLAnchorElement).style.boxShadow = ""; }}>
+            <a href="#workspace" style={{
+              display: "block", textAlign: "center", padding: "13px 0", borderRadius: 12,
+              background: "#fff", color: "#0683f5", fontWeight: 700, fontSize: 15, textDecoration: "none",
+            }}>
               Настроить Пульс
             </a>
           </motion.div>
 
-          {/* Market Research card */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.4, delay: 0.12 }}
+            initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }} transition={{ duration: 0.4, delay: 0.12 }}
             style={{
               flex: "1 1 320px", maxWidth: 420,
-              background: "#fff",
-              borderRadius: 24, padding: "40px 36px",
-              boxShadow: "0 8px 36px rgba(0,0,0,0.06)",
-              border: "2px solid #e2e8f0",
+              background: "#fff", borderRadius: 24, padding: "40px 36px",
+              boxShadow: "0 8px 36px rgba(0,0,0,0.06)", border: "2px solid #e2e8f0",
             }}>
             <div style={{ fontSize: 36, marginBottom: 12 }}>🎯</div>
-            <h3 style={{ fontSize: 22, fontWeight: 800, color: "#0b1a2e", marginBottom: 8 }}>
-              Стратегический Щит
-            </h3>
+            <h3 style={{ fontSize: 22, fontWeight: 800, color: "#1e6078", marginBottom: 8 }}>Стратегический Щит</h3>
             <p style={{ fontSize: 15, color: "#64748b", lineHeight: 1.7, marginBottom: 28 }}>
-              Для запуска новых продуктов, захвата новых ниш и
-              принятия стратегических решений с данными.
+              Для запуска новых продуктов, захвата новых ниш и стратегических решений с данными.
             </p>
             <ul style={{ listStyle: "none", padding: 0, margin: "0 0 32px", display: "flex", flexDirection: "column", gap: 10 }}>
               {MR_FEATURES.map((f) => (
@@ -938,25 +915,14 @@ function VectorChoice() {
                 </li>
               ))}
             </ul>
-            <a href="/ru/solutions/marketResearch" style={{
-              display: "block", textAlign: "center",
-              padding: "13px 0",
-              borderRadius: 12,
-              background: "transparent",
-              color: "#0683f5",
-              fontWeight: 700, fontSize: 15,
-              textDecoration: "none",
-              border: "2px solid #0683f5",
+            <a href="/ru/solutions/marketResearch/descriptionPage" style={{
+              display: "block", textAlign: "center", padding: "13px 0", borderRadius: 12,
+              background: "transparent", color: "#0683f5", fontWeight: 700, fontSize: 15,
+              textDecoration: "none", border: "2px solid #0683f5",
               transition: "background 0.2s, color 0.2s",
             }}
-            onMouseOver={e => {
-              const el = e.currentTarget as HTMLAnchorElement;
-              el.style.background = "#0683f5"; el.style.color = "#fff";
-            }}
-            onMouseOut={e => {
-              const el = e.currentTarget as HTMLAnchorElement;
-              el.style.background = "transparent"; el.style.color = "#0683f5";
-            }}>
+            onMouseOver={e => { const el = e.currentTarget as HTMLAnchorElement; el.style.background = "#0683f5"; el.style.color = "#fff"; }}
+            onMouseOut={e => { const el = e.currentTarget as HTMLAnchorElement; el.style.background = "transparent"; el.style.color = "#0683f5"; }}>
               Заказать исследование
             </a>
           </motion.div>
@@ -974,8 +940,7 @@ function BetaSection() {
   return (
     <section style={{
       background: "radial-gradient(ellipse at 50% 60%, rgba(7,133,246,0.12) 0%, #f0f7ff 70%)",
-      padding: "80px 0",
-      textAlign: "center",
+      padding: "80px 0", textAlign: "center",
     }}>
       <div className="container">
         <div style={{
@@ -983,48 +948,28 @@ function BetaSection() {
           background: "rgba(6,131,245,0.1)", border: "1px solid rgba(6,131,245,0.25)",
           borderRadius: 30, padding: "5px 18px",
           fontSize: 12, color: "#0683f5", fontWeight: 700,
-          letterSpacing: "0.06em", textTransform: "uppercase" as const,
-          marginBottom: 24,
+          letterSpacing: "0.06em", textTransform: "uppercase" as const, marginBottom: 24,
         }}>
-          <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#22c55e",
-            animation: "bp-pulse 1.4s ease-in-out infinite" }} />
+          <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#22c55e", animation: "bp-pulse 1.4s ease-in-out infinite" }} />
           Бета-доступ открыт
         </div>
-        <h2 style={{
-          fontSize: "clamp(1.8rem,4vw,2.8rem)", fontWeight: 800,
-          color: "#0b1a2e", marginBottom: 16,
-        }}>
+        <h2 style={{ fontSize: "clamp(1.8rem,4vw,2.8rem)", fontWeight: 800, color: "#1e6078", marginBottom: 16 }}>
           Попробуйте Business Pulse бесплатно
         </h2>
         <p style={{ color: "#64748b", fontSize: 17, maxWidth: 520, margin: "0 auto 14px", lineHeight: 1.7 }}>
-          3 месяца бесплатного доступа для первых участников бета-теста.
-          Без привязки карты.
+          3 месяца бесплатного доступа для первых участников бета-теста. Без привязки карты.
         </p>
         <p style={{ color: "#94a3b8", fontSize: 14, marginBottom: 40 }}>
           Уже 120+ предпринимателей отслеживают конкурентов с Business Pulse
         </p>
-        <a href="/ru/solutions/businessPulse" style={{
-          display: "inline-block",
-          padding: "16px 48px",
-          borderRadius: 14,
-          background: "#0683f5",
-          color: "#fff",
-          fontWeight: 800,
-          fontSize: 17,
-          textDecoration: "none",
-          boxShadow: "0 6px 28px rgba(6,131,245,0.4)",
+        <a href="#workspace" style={{
+          display: "inline-block", padding: "16px 48px", borderRadius: 14,
+          background: "#0683f5", color: "#fff", fontWeight: 800, fontSize: 17,
+          textDecoration: "none", boxShadow: "0 6px 28px rgba(6,131,245,0.4)",
           transition: "transform 0.15s, box-shadow 0.2s",
         }}
-        onMouseOver={e => {
-          const el = e.currentTarget as HTMLAnchorElement;
-          el.style.transform = "translateY(-3px)";
-          el.style.boxShadow = "0 10px 36px rgba(6,131,245,0.5)";
-        }}
-        onMouseOut={e => {
-          const el = e.currentTarget as HTMLAnchorElement;
-          el.style.transform = "";
-          el.style.boxShadow = "0 6px 28px rgba(6,131,245,0.4)";
-        }}>
+        onMouseOver={e => { const el = e.currentTarget as HTMLAnchorElement; el.style.transform = "translateY(-3px)"; el.style.boxShadow = "0 10px 36px rgba(6,131,245,0.5)"; }}
+        onMouseOut={e => { const el = e.currentTarget as HTMLAnchorElement; el.style.transform = ""; el.style.boxShadow = "0 6px 28px rgba(6,131,245,0.4)"; }}>
           Присоединиться к Beta →
         </a>
       </div>
@@ -1036,18 +981,17 @@ function BetaSection() {
    PAGE ROOT
 ══════════════════════════════════════════════════════════════════ */
 
-export default function MarketResearchDescriptionPageRu() {
+export default function BusinessPulsePage() {
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: GLOBAL_CSS }} />
-      <div style={{ backgroundColor: "#fff" }}>
+      <div className="business-pulse-page" style={{ backgroundColor: "#fff" }}>
         <Header />
         <HeroSection />
         <RadarMap />
         <HowItWorksSection />
         <WorkspaceSection />
         <VoiceInsight />
-        <VectorChoice />
         <BetaSection />
       </div>
     </>

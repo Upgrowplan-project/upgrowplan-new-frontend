@@ -9,6 +9,7 @@ import {
   FiUsers,
   FiFileText,
   FiMapPin,
+  FiMonitor,
 } from "react-icons/fi";
 import { useClickAnalytics } from "../../hooks/useClickAnalytics";
 import { FaHourglassHalf } from "react-icons/fa";
@@ -38,11 +39,14 @@ export default function SolutionsPage() {
       ctaLabel: "Learn more",
     },
     {
-      title: "Competitors Research AI Agent",
+      title: "Business Pulse Workspace",
       description:
-        "An AI agent for researching your competitors. Focused on local and detailed niche analysis.",
-      icon: <FiUsers className="me-2 text-warning" />,
-      release: "Autumn 2025",
+        "Your daily digital department for market monitoring and business protection. A light AI start for your company.",
+      icon: <FiMonitor className="me-2 text-primary" />,
+      release: "Spring 2026",
+      link: "/solutions/businessPulse",
+      elementId: "business-pulse-workspace-card",
+      ctaLabel: "Learn more",
     },
     {
       title: "PlanMaster AI",

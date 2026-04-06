@@ -1261,10 +1261,10 @@ export default function Home() {
                 ))}
               </div>
               <Link
-                href="/ru/solutions/marketResearch/descriptionPage"
+                href={getLocalePath("/solutions/businessPulse")}
                 className="btn btn-primary-u-glow"
               >
-                Проверить
+                Подключить Business Pulse
               </Link>
             </div>
             <div className="pulse-dashboard">
