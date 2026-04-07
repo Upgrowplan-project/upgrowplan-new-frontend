@@ -59,6 +59,48 @@ const GLOBAL_CSS = `
 .bp-hero-accent {
   color: #0683f5;
 }
+@media (max-width: 768px) {
+  .bp-hero {
+    padding: 64px 0 56px !important;
+  }
+  .bp-hero-row {
+    gap: 32px !important;
+  }
+  .bp-hero-cta {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  .bp-hero-cta a {
+    width: 100% !important;
+    text-align: center !important;
+  }
+  .bp-live-wrap {
+    width: 100% !important;
+  }
+  .bp-live-wrap > div {
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+  .bp-map-shell {
+    height: 320px !important;
+  }
+  .bp-map-actions {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  .bp-map-actions button {
+    width: 100% !important;
+  }
+  .bp-map-inputs {
+    width: 100% !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  .bp-map-inputs input {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+}
 `;
 
 /* ══════════════════════════════════════════════════════════════════
@@ -146,13 +188,13 @@ function LiveWidget() {
 
 function HeroSection() {
   return (
-    <section style={{
+    <section className="bp-hero" style={{
       background: "radial-gradient(ellipse at 60% 40%, rgba(7,133,246,0.09) 0%, rgba(255,255,255,0) 70%), #ffffff",
       padding: "88px 0 80px",
       borderBottom: "1px solid #e8f0fe",
     }}>
       <div className="container">
-        <div style={{ display: "flex", alignItems: "center", gap: 64, flexWrap: "wrap" }}>
+        <div className="bp-hero-row" style={{ display: "flex", alignItems: "center", gap: 64, flexWrap: "wrap" }}>
           <div style={{ flex: "1 1 360px" }}>
             <div style={{
               display: "inline-flex", alignItems: "center", gap: 8,
@@ -175,7 +217,7 @@ function HeroSection() {
               коммерческую информацию на внешние ресурсы. Вы говорите нам чем и где вы занимаетесь, а мы еженедельно
               обновляем для вас мониторинг рынка и правовую информацию.
             </p>
-            <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
+            <div className="bp-hero-cta" style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
               <a href="#workspace" style={{
                 padding: "14px 32px",
                 borderRadius: 12,
@@ -215,7 +257,7 @@ function HeroSection() {
               </a>
             </div>
           </div>
-          <div style={{ flex: "0 0 auto", display: "flex", justifyContent: "center" }}>
+          <div className="bp-live-wrap" style={{ flex: "0 0 auto", display: "flex", justifyContent: "center" }}>
             <LiveWidget />
           </div>
         </div>
@@ -374,7 +416,7 @@ function RadarMap() {
           </h2>
         </div>
 
-        <div style={{ position: "relative", borderRadius: 20, overflow: "hidden", height: 440,
+        <div className="bp-map-shell" style={{ position: "relative", borderRadius: 20, overflow: "hidden", height: 440,
           boxShadow: "0 8px 40px rgba(0,0,0,0.08)", border: "1px solid #e2e8f0" }}>
           <div ref={mapContainerRef} className="bp-mapbox-container" style={{ width: "100%", height: "100%" }} />
 
@@ -447,7 +489,7 @@ function RadarMap() {
           )}
         </div>
 
-        <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginTop: 20, justifyContent: "center" }}>
+        <div className="bp-map-actions" style={{ display: "flex", gap: 16, flexWrap: "wrap", marginTop: 20, justifyContent: "center" }}>
           <button onClick={handleScan} style={{
             padding: "12px 26px", borderRadius: 12,
             background: "#0683f5", color: "#fff",
@@ -456,7 +498,7 @@ function RadarMap() {
           }}>
             {status === "loading" ? "Определяем район..." : "Показать мой район"}
           </button>
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+          <div className="bp-map-inputs" style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
             <input
               value={address}
               onChange={(e) => setAddress(e.target.value)}

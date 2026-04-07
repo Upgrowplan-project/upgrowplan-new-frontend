@@ -1,5 +1,5 @@
-import PlanMasterPageRu from "../../../solutions/planMaster/page.ru";
-import PlanMasterPageEn from "../../../solutions/planMaster/page.en";
+import PlanMasterPageEn from "./page.en";
+import PlanMasterPageRu from "./page.ru";
 
 type Params = {
   params: {

@@ -1,5 +1,5 @@
-import SolutionsPageEn from "../../solutions/page.en";
-import SolutionsPageRu from "../../solutions/page.ru";
+import SolutionsPageEn from "./page.en";
+import SolutionsPageRu from "./page.ru";
 
 type Params = {
   params: {

@@ -11,9 +11,9 @@ import {
   FiMapPin,
   FiMonitor,
 } from "react-icons/fi";
-import { useClickAnalytics } from "../../hooks/useClickAnalytics";
+import { useClickAnalytics } from "../../../hooks/useClickAnalytics";
 import { FaHourglassHalf } from "react-icons/fa";
-import Header from "../../components/Header";
+import Header from "../../../components/Header";
 
 export default function SolutionsPage() {
   const [menuOpen, setMenuOpen] = useState(false);

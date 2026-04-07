@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
-import Header from "../../../components/Header";
-import Grade from "../../../components/Grade";
+import Header from "../../../../components/Header";
+import Grade from "../../../../components/Grade";
 import styles from "./planMaster.module.css";
 import { FiCheck, FiAlertCircle, FiDownload } from "react-icons/fi";
 
@@ -33,7 +33,7 @@ interface PlanStatus {
   docx_available?: boolean;
 }
 
-export default function PlanMasterPageRu() {
+export default function PlanMasterPageEn() {
   const [form, setForm] = useState({
     business_idea: "",
     business_description: "",
@@ -119,7 +119,7 @@ export default function PlanMasterPageRu() {
       });
       if (!resp.ok) {
         const message = await resp.text();
-        throw new Error(message || "Ошибка создания запроса");
+        throw new Error(message || "Failed to create request");
       }
       const data = await resp.json();
       setPlanId(data.plan_id);
@@ -130,7 +130,7 @@ export default function PlanMasterPageRu() {
         current_stage: data.current_stage,
       });
     } catch (err: any) {
-      setError(err.message || "Не удалось отправить запрос");
+      setError(err.message || "Request failed");
     } finally {
       setIsSubmitting(false);
     }
@@ -144,10 +144,10 @@ export default function PlanMasterPageRu() {
         <section className={styles.hero}>
           <div className={styles.heroText}>
             <p className={styles.badge}>Worldwide SME Business Plan Generator</p>
-            <h1>Глобальный мастер бизнес-планов</h1>
+            <h1>Global Business Plan Master</h1>
             <p className={styles.subtitle}>
-              Генерация бизнес-плана с учетом цели, страны, валюты и рыночных
-              данных. Документ формируется в формате DOCX.
+              Generate a DOCX business plan tailored to your goal, country, and
+              market context.
             </p>
           </div>
           <Grade />
@@ -157,17 +157,17 @@ export default function PlanMasterPageRu() {
           <form className={styles.form} onSubmit={onSubmit}>
             <div className={styles.formGrid}>
               <label className={styles.label}>
-                Бизнес-идея
+                Business idea
                 <input
                   className={styles.input}
                   value={form.business_idea}
                   onChange={(e) => updateField("business_idea", e.target.value)}
-                  placeholder="Например: сеть здорового фастфуда"
+                  placeholder="For example: healthy fast-food chain"
                   required
                 />
               </label>
               <label className={styles.label}>
-                Страна
+                Country
                 <select
                   className={styles.input}
                   value={form.country}
@@ -181,25 +181,21 @@ export default function PlanMasterPageRu() {
                 </select>
               </label>
               <label className={styles.label}>
-                Город
+                City
                 <input
                   className={styles.input}
                   value={form.city}
                   onChange={(e) => updateField("city", e.target.value)}
-                  placeholder="Например: Berlin"
+                  placeholder="For example: Berlin"
                   required
                 />
               </label>
               <label className={styles.label}>
-                Валюта
-                <input
-                  className={styles.input}
-                  value={selectedCurrency}
-                  readOnly
-                />
+                Currency
+                <input className={styles.input} value={selectedCurrency} readOnly />
               </label>
               <label className={styles.label}>
-                Тип бизнеса
+                Business type
                 <select
                   className={styles.input}
                   value={form.business_type}
@@ -213,7 +209,7 @@ export default function PlanMasterPageRu() {
                 </select>
               </label>
               <label className={styles.label}>
-                Тип продукта
+                Product type
                 <select
                   className={styles.input}
                   value={form.product_type}
@@ -227,17 +223,17 @@ export default function PlanMasterPageRu() {
                 </select>
               </label>
               <label className={styles.label}>
-                Отрасль
+                Industry
                 <input
                   className={styles.input}
                   value={form.industry}
                   onChange={(e) => updateField("industry", e.target.value)}
-                  placeholder="Например: Food & Beverage"
+                  placeholder="For example: Food & Beverage"
                   required
                 />
               </label>
               <label className={styles.label}>
-                Цель бизнес-плана
+                Plan goal
                 <select
                   className={styles.input}
                   value={form.goal}
@@ -251,7 +247,7 @@ export default function PlanMasterPageRu() {
                 </select>
               </label>
               <label className={styles.label}>
-                Масштаб
+                Scale
                 <select
                   className={styles.input}
                   value={form.scale}
@@ -265,37 +261,37 @@ export default function PlanMasterPageRu() {
                 </select>
               </label>
               <label className={styles.label}>
-                Инвестиции (в валюте)
+                Investment amount (local currency)
                 <input
                   className={styles.input}
                   type="number"
                   value={form.investment_amount}
                   onChange={(e) => updateField("investment_amount", e.target.value)}
-                  placeholder="Например: 150000"
+                  placeholder="For example: 150000"
                 />
               </label>
               <label className={styles.label}>
-                Собственный капитал
+                Own capital
                 <input
                   className={styles.input}
                   type="number"
                   value={form.own_capital}
                   onChange={(e) => updateField("own_capital", e.target.value)}
-                  placeholder="Например: 40000"
+                  placeholder="For example: 40000"
                 />
               </label>
               <label className={styles.label}>
-                Запрашиваемое финансирование
+                Requested funding
                 <input
                   className={styles.input}
                   type="number"
                   value={form.requested_funding}
                   onChange={(e) => updateField("requested_funding", e.target.value)}
-                  placeholder="Например: 110000"
+                  placeholder="For example: 110000"
                 />
               </label>
               <label className={styles.label}>
-                Горизонт прогноза (лет)
+                Forecast horizon (years)
                 <select
                   className={styles.input}
                   value={form.horizon_years}
@@ -311,38 +307,38 @@ export default function PlanMasterPageRu() {
             </div>
 
             <label className={styles.label}>
-              Описание бизнеса
+              Business description
               <textarea
                 className={styles.textarea}
                 value={form.business_description}
                 onChange={(e) => updateField("business_description", e.target.value)}
-                placeholder="Ключевая ценность, модель монетизации, особенности продукта"
+                placeholder="Value proposition, monetization, unique factors"
                 required
               />
             </label>
 
             <label className={styles.label}>
-              Целевая аудитория
+              Target customers
               <textarea
                 className={styles.textarea}
                 value={form.target_customers}
                 onChange={(e) => updateField("target_customers", e.target.value)}
-                placeholder="Кратко опишите сегменты и боли клиентов"
+                placeholder="Describe segments and customer needs"
               />
             </label>
 
             <label className={styles.label}>
-              Известные конкуренты
+              Known competitors
               <input
                 className={styles.input}
                 value={form.known_competitors}
                 onChange={(e) => updateField("known_competitors", e.target.value)}
-                placeholder="Через запятую"
+                placeholder="Comma-separated"
               />
             </label>
 
             <button className={styles.submit} type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Формируем" : "Сгенерировать DOCX"}
+              {isSubmitting ? "Generating" : "Generate DOCX"}
             </button>
 
             {error && (
@@ -354,17 +350,17 @@ export default function PlanMasterPageRu() {
           </form>
 
           <aside className={styles.statusCard}>
-            <h3>Статус генерации</h3>
+            <h3>Generation status</h3>
             {status ? (
               <div className={styles.statusContent}>
                 <p>
-                  Этап: <strong>{status.current_stage || "ожидание"}</strong>
+                  Stage: <strong>{status.current_stage || "waiting"}</strong>
                 </p>
                 <p>
-                  Прогресс: <strong>{status.progress}%</strong>
+                  Progress: <strong>{status.progress}%</strong>
                 </p>
                 <p>
-                  Статус: <strong>{status.status}</strong>
+                  Status: <strong>{status.status}</strong>
                 </p>
                 {status.status === "completed" && planId && (
                   <a
@@ -373,25 +369,25 @@ export default function PlanMasterPageRu() {
                     target="_blank"
                     rel="noreferrer"
                   >
-                    <FiDownload /> Скачать DOCX
+                    <FiDownload /> Download DOCX
                   </a>
                 )}
                 {status.status === "failed" && (
                   <div className={styles.error}>
                     <FiAlertCircle />
-                    <span>Ошибка генерации: {status.error || ""}</span>
+                    <span>Generation failed: {status.error || ""}</span>
                   </div>
                 )}
                 {status.status === "completed" && (
                   <div className={styles.success}>
                     <FiCheck />
-                    <span>Документ готов</span>
+                    <span>Document ready</span>
                   </div>
                 )}
               </div>
             ) : (
               <p className={styles.statusHint}>
-                После запуска вы увидите этапы генерации и сможете скачать DOCX.
+                Start the flow to see progress and download your DOCX plan.
               </p>
             )}
           </aside>

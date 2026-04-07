@@ -1,77 +1,16 @@
-"use client";
+import MarketResearchDescriptionPageEn from "./page.en";
+import MarketResearchDescriptionPageRu from "./page.ru";
 
-import Header from "@/components/Header";
+type Params = {
+  params: {
+    locale: string;
+  };
+};
 
-const INFO_SECTIONS = [
-  {
-    title: "Как это работает",
-    content: (
-      <>
-        <p style={{ marginBottom: "0.6rem" }}>
-          Система функционирует на базе мультиагентного оркестратора, который
-          координирует работу узкопрофильных ИИ-агентов для глубокого поиска
-          (Deep Research), анализа конкурентов и построения финансовых моделей.
-          Технология гибридного синтеза сопоставляет данные живого веб-поиска с
-          верифицированными отраслевыми архетипами, проходя через многоуровневый
-          фильтр валидации логической консистентности и «культурного контекста»
-          региона.
-        </p>
-      </>
-    ),
-  },
-  {
-    title: "Какие нужны данные",
-    content: (
-      <>
-        <p style={{ marginBottom: "0.6rem" }}>
-          Для формирования исследования достаточно описания бизнес-концепции,
-          географической локации и базовых операционных параметров, таких как
-          масштаб проекта (площадь или объем производства) и тип целевого
-          клиента. Указание специфических характеристик продукта и модели
-          монетизации позволяет системе точнее калибровать поисковые запросы,
-          минимизируя шум и фокусируясь на релевантных рыночных нишах.
-        </p>
-      </>
-    ),
-  },
-  {
-    title: "Что вы получаете",
-    content: (
-      <>
-        <p style={{ marginBottom: "0.6rem" }}>
-          На выходе формируется структурированный аналитический отчет, включающий
-          расчет емкости рынка (TAM/SAM/SOM), профилирование прямых конкурентов и
-          детализированную финансовую модель с прогнозом окупаемости. Каждый
-          ключевой вывод подкреплен верифицированными ссылками на источники
-          данных, а итоговый документ очищен от технических артефактов и
-          адаптирован для принятия управленческих решений.
-        </p>
-      </>
-    ),
-  },
-];
-
-export default function MarketResearchDescriptionPage() {
-  return (
-    <div style={{ backgroundColor: "#f8f9fa", minHeight: "100vh" }}>
-      <Header />
-      <main className="container py-5">
-        <h1 className="mb-4" style={{ color: "#1e6078" }}>
-          MarketSense AI Agent
-        </h1>
-        <div className="row g-4">
-          {INFO_SECTIONS.map((section) => (
-            <div className="col-12" key={section.title}>
-              <div className="card p-4 border-0 shadow-sm">
-                <h2 className="h5 mb-3" style={{ color: "#1e6078" }}>
-                  {section.title}
-                </h2>
-                {section.content}
-              </div>
-            </div>
-          ))}
-        </div>
-      </main>
-    </div>
+export default function MarketResearchDescriptionLocalePage({ params }: Params) {
+  return params.locale === "ru" ? (
+    <MarketResearchDescriptionPageRu />
+  ) : (
+    <MarketResearchDescriptionPageEn />
   );
 }

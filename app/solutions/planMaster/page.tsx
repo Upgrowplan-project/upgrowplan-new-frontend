@@ -1,8 +1,8 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import EnPage from "./page.en";
-import RuPage from "./page.ru";
+import EnPage from "../../[locale]/solutions/planMaster/page.en";
+import RuPage from "../../[locale]/solutions/planMaster/page.ru";
 
 export default function Page() {
   const pathname = usePathname();

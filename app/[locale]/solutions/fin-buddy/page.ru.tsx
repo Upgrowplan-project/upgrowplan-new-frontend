@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Header from "../../../components/Header";
+import Header from "../../../../components/Header";
 import styles from "./finBuddy.module.css";
 import {
   FiUploadCloud,

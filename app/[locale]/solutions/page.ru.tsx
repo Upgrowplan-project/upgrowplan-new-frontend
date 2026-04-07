@@ -11,9 +11,9 @@ import {
   FiMapPin,
   FiMonitor,
 } from "react-icons/fi";
-import { useClickAnalytics } from "../../hooks/useClickAnalytics";
+import { useClickAnalytics } from "../../../hooks/useClickAnalytics";
 import { FaHourglassHalf } from "react-icons/fa";
-import Header from "../../components/Header";
+import Header from "../../../components/Header";
 
 export default function SolutionsPage() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -47,7 +47,7 @@ export default function SolutionsPage() {
     {
       title: "Business Pulse Workspace",
       description:
-        "Ваш ежедневный цифровой отдел для мониторинга рынка и защиты бизнеса. Легкий старт ИИ для вашего предприятия",
+        "Ваш ежедневный цифровой отдел для анализа целевой аудитории, мониторинга конкурентов, проверки налогов и разрешений вашего бизнеса. Легкий старт ИИ для вашего предприятия. Получите отчет на почту каждый понедельник",
       icon: <FiMonitor className="me-2 text-primary" />,
       release: "весна 2026",
       link: "/solutions/businessPulse",
@@ -75,7 +75,7 @@ export default function SolutionsPage() {
     {
       title: "Synth Focus Lab",
       description:
-        "Виртуарльная панель респондентов. Создание фокус-групп и анализ ответов респондентов по входным параметрам. Тонкая настройка демографии, возраста, социальных и финансовых парметров целевой аудитории.",
+        "Виртуальная панель респондентов. Создание фокус-групп и анализ ответов респондентов по входным параметрам. Тонкая настройка демографии, возраста, социальных и финансовых парметров целевой аудитории.",
       icon: <FiUsers className="me-2 text-warning" />,
       release: "весна 2026",
       link: "/solutions/synthFocusLab/descriptionPage",

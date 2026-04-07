@@ -1,12 +1,7 @@
 "use client";
 
-import { usePathname } from "next/navigation";
-import EnPage from "./page.en";
-import RuPage from "./page.ru";
+import EnPage from "../[locale]/solutions/page.en";
 
 export default function Page() {
-  const pathname = usePathname();
-  const isRussian = pathname.startsWith("/ru");
-  
-  return isRussian ? <RuPage /> : <EnPage />;
+  return <EnPage />;
 }
