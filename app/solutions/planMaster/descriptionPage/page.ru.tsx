@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import Header from "../../../../components/Header";
 import IntelligenceLabV3 from "./IntelligenceLab-v3";
 
@@ -197,26 +198,101 @@ const PRODUCTS = [
   },
 ];
 
+const INFO_TABS_RU = [
+  {
+    id: "how",
+    icon: "🔍",
+    label: "Как это работает",
+    title: "Как это работает",
+    text:
+      "Сервис формирует бизнес‑план в утверждённом формате. Используются классическая методология планирования, маркетинговый и экономический анализ. Полное исследование и выдача документа занимает 5–10 минут.",
+    bullets: [
+      "Анализирует идею, формат бизнеса, город, источники финансирования и входные параметры проекта.",
+      "Собирает данные по рынку и конкурентам для обоснования ключевых метрик (средний чек, спрос). Предлагает маркетинговую стратегию на основе актуальных данных. Подтягивает свежие данные по аренде, зарплатам и налогам в регионе.",
+      "Строит реалистичную финансовую модель: прогноз выручки, расходов, прибыли, налогов, рентабельности и окупаемости.",
+      "Если проект недостаточно прибыльный — останавливает генерацию, указывает критическую метрику и предлагает корректировки.",
+      "Выдаёт финальный документ с разделами, источниками и выводом, готовый к подаче.",
+    ],
+    tags: ["Глубокий поиск", "Конкурентный анализ", "Финмодель", "Валидация"],
+  },
+  {
+    id: "inputs",
+    icon: "🗂️",
+    label: "Какие нужны данные",
+    title: "Какие нужны данные",
+    text:
+      "Чем точнее и полнее входные данные, тем выше качество анализа рынка, тем точнее находятся прямые конкуренты и тем реалистичнее финансовые расчёты.",
+    bullets: [
+      "Опишите бизнес‑идею: продукт/услуга, формат, ключевое отличие, специфика продукта или клиента, важные параметры (площадь, локация).",
+      "Укажите географию (регион, город и точный адрес при наличии) для корректного анализа конкурентов и аудитории.",
+      "Опишите структуру финансирования: собственные средства, поддержка, уже вложенные суммы и период расходов. Укажите текущую долговую нагрузку.",
+      "Заполните профиль инициатора: опыт, образование, навыки, достижения — это повышает доверие к документу.",
+    ],
+    tags: ["Локация", "Формат бизнеса", "ЦА", "Масштаб"],
+  },
+  {
+    id: "result",
+    icon: "📬",
+    label: "Что вы получаете",
+    title: "Что вы получаете",
+    text: "Вы получаете готовый бизнес‑план и прозрачную логику расчётов.",
+    bullets: [
+      "Сводный отчёт с ключевыми метриками: инвестиции, прибыль, рентабельность, налоги, окупаемость.",
+      "Разделы по рынку, конкурентам, целевой аудитории, организации, производству и финансам.",
+      "Источники данных в тексте и приложении — все выводы можно проверить.",
+      "DOCX‑файл для редактирования и подачи.",
+    ],
+    tags: ["TAM / SAM / SOM", "Профили конкурентов", "Источники", "DOCX"],
+  },
+];
+
 // ─── BETA FORM ─────────────────────────────────────────────────────────────
 function BetaForm() {
   const [email, setEmail] = useState("");
   const [interest, setInterest] = useState<"worldwide" | "soccontract">(
     "worldwide",
   );
+  const [isChecked, setIsChecked] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState("");
 
-  const onSubmit = (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setError("Введите корректный Email");
       return;
-    setSubmitted(true);
+    }
+    if (!isChecked) return;
+    setError("");
+
+    try {
+      const API_BASE =
+        process.env.NEXT_PUBLIC_MONITORING_API_URL || "http://localhost:8000";
+      await fetch(`${API_BASE}/api/monitoring/contact`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: "",
+          email,
+          message: `Пользователь (${email}) интересуется продуктом planMaster, опция ${interest === "worldwide" ? "worldwide" : "соцконтракт"}.`,
+        }),
+      });
+      setSubmitted(true);
+      setEmail("");
+      setIsChecked(false);
+    } catch (err) {
+      console.error("Error sending beta request:", err);
+    }
   };
 
   if (submitted) {
     return (
-      <p className="fw-semibold mb-0" style={{ color: "#0683f5" }}>
-        Спасибо! Мы свяжемся с вами, когда откроется доступ к бете.
-      </p>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, color: "#16a34a" }}>
+        <span style={{ fontSize: 20 }}>✔</span>
+        <span style={{ fontWeight: 600 }}>
+          Спасибо за интерес к нашему продукту! Мы сообщим вам о доступе к тестированию посредством email.
+        </span>
+      </div>
     );
   }
 
@@ -239,6 +315,7 @@ function BetaForm() {
           required
           autoComplete="email"
         />
+        {error && <div className="text-danger small mt-2">{error}</div>}
       </div>
       <div className="mb-4">
         <span className="form-label small fw-semibold text-secondary d-block mb-2">
@@ -274,10 +351,30 @@ function BetaForm() {
           </button>
         </div>
       </div>
+      <div className="form-check mb-3">
+        <input
+          className="form-check-input"
+          type="checkbox"
+          id="beta-policy-ru"
+          checked={isChecked}
+          onChange={() => setIsChecked(!isChecked)}
+        />
+        <label className="form-check-label" htmlFor="beta-policy-ru">
+          Отправляя данное сообщение, я ознакомился и согласился с{" "}
+          <a href="/privacy" target="_blank">
+            Политикой конфиденциальности
+          </a>{" "}
+          и{" "}
+          <a href="/privacy" target="_blank">
+            Политикой обработки персональных данных
+          </a>.
+        </label>
+      </div>
       <button
         type="submit"
         className="btn btn-lg w-100 rounded-3 fw-semibold border-0"
         style={{ backgroundColor: "#0683f5", color: "#fff" }}
+        disabled={!isChecked}
       >
         Забронировать место в очереди
       </button>
@@ -288,6 +385,8 @@ function BetaForm() {
 // ─── PAGE ─────────────────────────────────────────────────────────────────
 export default function PlanMasterDescriptionPageRu() {
   const [showModal, setShowModal] = useState(false);
+  const [activeTab, setActiveTab] = useState("how");
+  const active = INFO_TABS_RU.find((t) => t.id === activeTab) ?? INFO_TABS_RU[0];
 
   const handleModalSuccess = () => {
     setShowModal(false);
@@ -422,10 +521,118 @@ export default function PlanMasterDescriptionPageRu() {
               0%, 100% { opacity: 1; }
               50%       { opacity: 0.4; }
             }
+            @media (max-width: 768px) {
+              .pm-tabs {
+                padding: 40px 0 !important;
+              }
+              .pm-tabs-buttons {
+                flex-direction: column !important;
+                align-items: stretch !important;
+              }
+              .pm-tabs-buttons button {
+                width: 100% !important;
+                text-align: center !important;
+              }
+              .pm-tabs-card {
+                width: 100% !important;
+                padding: 24px !important;
+              }
+            }
           `}</style>
 
           {/* ══════════ ARCHITECTURE (no changes) ══════════ */}
           <IntelligenceLabV3 />
+
+          {/* ══════════ SERVICE PRINCIPLES ══════════ */}
+          <section className="container py-5">
+            <section className="pm-tabs" style={{ background: "#f0f7ff", padding: "56px 0", borderRadius: 16 }}>
+              <div style={{ textAlign: "center", marginBottom: 28 }}>
+                <h2 style={{ fontSize: "clamp(1.6rem,3vw,2.3rem)", color: "#1e6078" }}>
+                  Принципы работы сервиса.
+                  <span style={{ color: "#0683f5" }}> Мы стараемся не усложнять:</span>
+                </h2>
+              </div>
+              <div
+                className="pm-tabs-buttons"
+                style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginBottom: 28 }}
+              >
+                {INFO_TABS_RU.map((t) => (
+                  <button
+                    key={t.id}
+                    onClick={() => setActiveTab(t.id)}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 10,
+                      padding: "12px 26px", borderRadius: 40,
+                      border: `2px solid ${activeTab === t.id ? "#0683f5" : "#dde8f5"}`,
+                      background: activeTab === t.id ? "#0683f5" : "#fff",
+                      color: activeTab === t.id ? "#fff" : "#64748b",
+                      fontWeight: 700, fontSize: 15, cursor: "pointer", transition: "all 0.2s",
+                      boxShadow: activeTab === t.id ? "0 4px 16px rgba(6,131,245,0.28)" : "none",
+                    }}
+                  >
+                    <span style={{ fontSize: 18 }}>{t.icon}</span>
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={active.id}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.22 }}
+                  className="pm-tabs-card"
+                  style={{
+                    background: "#fff",
+                    borderRadius: 20,
+                    padding: "32px 36px",
+                    boxShadow: "0 4px 24px rgba(0,0,0,0.05)",
+                    border: "1px solid #e0eaf6",
+                    width: "min(66%, 760px)",
+                    margin: "0 auto",
+                    textAlign: "left",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+                    <span style={{ fontSize: 24, lineHeight: 1 }}>{active.icon}</span>
+                    <h3 style={{ fontSize: 20, fontWeight: 800, color: "#1e6078", margin: 0 }}>
+                      {active.title}
+                    </h3>
+                  </div>
+                  <p style={{ color: "#475569", lineHeight: 1.8, fontSize: 15, marginBottom: 16 }}>
+                    {active.text}
+                  </p>
+                  <ul style={{ paddingLeft: "1.2rem", marginBottom: 18, color: "#475569", lineHeight: 1.8, fontSize: 15 }}>
+                    {active.bullets.map((b) => (
+                      <li key={b} style={{ marginBottom: "0.45rem" }}>{b}</li>
+                    ))}
+                  </ul>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+                    {active.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 8,
+                          background: "rgba(6,131,245,0.07)",
+                          border: "1px solid rgba(6,131,245,0.2)",
+                          borderRadius: 8,
+                          padding: "8px 16px",
+                          fontSize: 13,
+                          color: "#0683f5",
+                          fontWeight: 600,
+                        }}
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            </section>
+          </section>
 
           {/* ══════════ OUR PRODUCTS ══════════ */}
           <section

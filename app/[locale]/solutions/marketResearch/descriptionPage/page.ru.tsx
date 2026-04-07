@@ -167,19 +167,47 @@ function AccessCodeModal({
 
 function BetaForm() {
   const [email, setEmail] = useState("");
+  const [isChecked, setIsChecked] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState("");
 
-  const onSubmit = (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) return;
-    setSubmitted(true);
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setError("Введите корректный Email");
+      return;
+    }
+    if (!isChecked) return;
+    setError("");
+
+    try {
+      const API_BASE =
+        process.env.NEXT_PUBLIC_MONITORING_API_URL || "http://localhost:8000";
+      await fetch(`${API_BASE}/api/monitoring/contact`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: "",
+          email,
+          message: `Пользователь (${email}) интересуется продуктом marketResearch.`,
+        }),
+      });
+      setSubmitted(true);
+      setEmail("");
+      setIsChecked(false);
+    } catch (err) {
+      console.error("Error sending beta request:", err);
+    }
   };
 
   if (submitted) {
     return (
-      <p className="fw-semibold mb-0" style={{ color: "#0683f5" }}>
-        Спасибо! Мы свяжемся с вами, когда откроется доступ к бете.
-      </p>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, color: "#16a34a" }}>
+        <span style={{ fontSize: 20 }}>✔</span>
+        <span style={{ fontWeight: 600 }}>
+          Спасибо за интерес к нашему продукту! Мы сообщим вам о доступе к тестированию посредством email.
+        </span>
+      </div>
     );
   }
 
@@ -202,11 +230,32 @@ function BetaForm() {
           required
           autoComplete="email"
         />
+        {error && <div className="text-danger small mt-2">{error}</div>}
+      </div>
+      <div className="form-check mb-3">
+        <input
+          className="form-check-input"
+          type="checkbox"
+          id="beta-policy-ru"
+          checked={isChecked}
+          onChange={() => setIsChecked(!isChecked)}
+        />
+        <label className="form-check-label" htmlFor="beta-policy-ru">
+          Отправляя данное сообщение, я ознакомился и согласился с{" "}
+          <a href="/privacy" target="_blank">
+            Политикой конфиденциальности
+          </a>{" "}
+          и{" "}
+          <a href="/privacy" target="_blank">
+            Политикой обработки персональных данных
+          </a>.
+        </label>
       </div>
       <button
         type="submit"
         className="btn btn-lg w-100 rounded-3 fw-semibold border-0"
         style={{ backgroundColor: "#0683f5", color: "#fff" }}
+        disabled={!isChecked}
       >
         Забронировать место в очереди
       </button>
