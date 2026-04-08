@@ -820,6 +820,17 @@ export default function Home() {
                   факта.
                 </span>
               </h2>
+              <p className="micro-copy">
+                Сервис создает основу, контекст будущего документа на основании
+                результатов поиска. Мы обрабатываем ваш запрос и декомпозируем
+                его на тысячи параметров, которые будут кирпичиками вашего
+                бизнеса. Кажждый параметр получает свое значение на основании
+                обработки данных из интернета. Тут мы изолируем искусственный
+                интеллект от формирования ядра контекста. Это и есть гарантия
+                отсутствия галлюцинаций. ИИ не может придумать цифры, факты или
+                инсайты, которых нет в данных. Он может только выбрать и
+                структурировать то, что реально существует.
+              </p>
               <Link
                 href={getLocalePath("/solutions/planMaster/descriptionPage")}
                 className="btn btn-primary btn-lg"
@@ -1137,14 +1148,21 @@ export default function Home() {
           <div className="container persona-grid">
             <div className="persona-copy">
               <h2>
-                Не гадайте. Спросите тех, кто действительно купит.
+                Не гадайте. Спросите тех, кто действительно купит или скажет,
+                почему это не интересно.
                 <span className="accent-inline">
                   {" "}
-                  Забудьте о «слепой вере». Upgrowplan создает цифровую копию
-                  вашей аудитории в нужном районе и позволяет моментально
-                  проверить любую бизнес‑гипотезу.
+                  Мы создаем виртуальных покупателей и проверяем вашу гипотезу
                 </span>
               </h2>
+              <p className="micro-copy">
+                Вы задаете сервису Synth Focus Lab начальные данные в виде
+                описания бизнес-идеи, ребрендинга продукта или новой фичи, а
+                также локации. Лаборатория создает до 10 виртуальных персонажей
+                из вашей аудитории в нужном районе и позволяет моментально
+                проверить любую бизнес‑гипотезу. Также на их основе могут быть
+                созданы до 100 виртуальных респондентов для формирования
+              </p>
             </div>
             <div className="persona-content">
               <div className="persona-cards">
@@ -1219,14 +1237,24 @@ export default function Home() {
                 <div className="chat-input">
                   <input
                     type="text"
-                    placeholder="[Upgrowplan RAG Agent спрашивает...]"
+                    placeholder="[Synth Focus Lab спрашивает...]"
                     disabled
-                    aria-label="Upgrowplan RAG Agent asks"
+                    aria-label="Synth Focus Lab asks"
                   />
                   <button type="button" disabled>
                     Отправить
                   </button>
                 </div>
+              </div>
+              <div className="persona-cta">
+                <Link
+                  href={getLocalePath(
+                    "/solutions/synthFocusLab/descriptionPage",
+                  )}
+                  className="btn btn-primary btn-lg"
+                >
+                  Подробнее
+                </Link>
               </div>
             </div>
           </div>
@@ -1262,7 +1290,7 @@ export default function Home() {
               </div>
               <Link
                 href={getLocalePath("/solutions/businessPulse")}
-                className="btn btn-primary-u-glow"
+                className="btn btn-primary btn-lg"
               >
                 Подключить
               </Link>
@@ -2355,6 +2383,15 @@ export default function Home() {
           color: #0683f5;
           font-weight: 600;
         }
+        .persona-copy p {
+          color: #1e6078;
+          margin-top: 0.75rem;
+          line-height: 1.6;
+        }
+        .persona-cta {
+          margin-top: 1.25rem;
+          text-align: left;
+        }
 
         .persona-content {
           display: grid;
@@ -3291,7 +3328,9 @@ export default function Home() {
           align-items: center;
           justify-content: center;
           box-shadow: 0 0 0 0 rgba(6, 131, 245, 0.5);
-          transition: background 0.2s, box-shadow 0.2s;
+          transition:
+            background 0.2s,
+            box-shadow 0.2s;
         }
         .btn-primary-u-glow:hover {
           background: #0565c8;

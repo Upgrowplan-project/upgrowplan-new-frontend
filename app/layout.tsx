@@ -24,8 +24,8 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title:
-    "Upgrowplan | Business plans, Financial models, Analytics, Market research",
-  description: "Upgrowplan — future planning service",
+    "Upgrowplan | AI-generated Business-plans, Market Researches, Virtual Respondents, RAG-technology",
+  description: "Upgrowplan - AI-generated future planning service",
   icons: {
     icon: "/favicon.ico",
   },
@@ -44,7 +44,10 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} suppressHydrationWarning>
-      <body className={`${inter.variable} antialiased`} suppressHydrationWarning>
+      <body
+        className={`${inter.variable} antialiased`}
+        suppressHydrationWarning
+      >
         <AOSWrapper />
         <MobileNavWrapper>
           <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>

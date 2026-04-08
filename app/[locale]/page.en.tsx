@@ -976,14 +976,21 @@ export default function Home() {
           <div className="container persona-grid">
             <div className="persona-copy">
               <h2>
-                Don't guess. Ask those who will actually buy.
+                Don't guess. Ask those who will actually buy or tell you why
+                it's not interesting.
                 <span className="accent-inline">
                   {" "}
-                  Forget blind faith. Upgrowplan builds a digital twin of your
-                  audience in the right neighborhood and lets you validate any
-                  business hypothesis instantly.
+                  We build virtual buyers and validate your hypothesis.
                 </span>
               </h2>
+              <p>
+                You provide Synth Focus Lab with initial input: a business idea,
+                a product rebrand, or a new feature — plus the location. The lab
+                generates up to 10 virtual personas from your target audience in
+                the right neighborhood and lets you test any business hypothesis
+                instantly. Based on them, we can also create up to 100 virtual
+                respondents for deeper research.
+              </p>
             </div>
             <div className="persona-content">
               <div className="persona-cards">
@@ -1058,14 +1065,22 @@ export default function Home() {
                 <div className="chat-input">
                   <input
                     type="text"
-                    placeholder="[Upgrowplan RAG Agent asks...]"
+                    placeholder="[Synth Focus Lab asks...]"
                     disabled
-                    aria-label="Upgrowplan RAG Agent asks"
+                    aria-label="Synth Focus Lab asks"
                   />
                   <button type="button" disabled>
                     Send
                   </button>
                 </div>
+              </div>
+              <div className="persona-cta">
+                <Link
+                  href={getLocalePath("/solutions/synthFocusLab/descriptionPage")}
+                  className="btn btn-primary btn-lg"
+                >
+                  Learn More
+                </Link>
               </div>
             </div>
           </div>
@@ -2155,6 +2170,15 @@ export default function Home() {
         .persona-copy h2 .accent-inline {
           color: #0683f5;
           font-weight: 600;
+        }
+        .persona-copy p {
+          color: #1e6078;
+          margin-top: 0.75rem;
+          line-height: 1.6;
+        }
+        .persona-cta {
+          margin-top: 1.25rem;
+          text-align: left;
         }
 
         .persona-content {
