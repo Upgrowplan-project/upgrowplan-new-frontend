@@ -1264,7 +1264,7 @@ export default function Home() {
                 href={getLocalePath("/solutions/businessPulse")}
                 className="btn btn-primary-u-glow"
               >
-                Подключить Business Pulse
+                Подключить
               </Link>
             </div>
             <div className="pulse-dashboard">

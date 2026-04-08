@@ -70,10 +70,10 @@ export default function Home() {
 
   const personas = [
     {
-      name: "Peter Petrovich",
+      name: "Jhon Peterson",
       age: 68,
       role: "Senior resident",
-      income: "30–40k RUB/mo",
+      income: "$ 17.9K",
       preferences: ["Price/Quality", "Quiet", "Trust", "Old school"],
       data: "Based on 620 local reviews",
       caseTitle: "Craft beer bar in the neighborhood",
@@ -81,7 +81,7 @@ export default function Home() {
       dialog: [
         {
           speaker: "skeptic",
-          text: "Hello, Peter Petrovich. We're planning to open a craft beer bar in your building. Premium prices, quiet loft atmosphere. What do you think? 🍻",
+          text: "Hello, Jhon Peterson. We're planning to open a craft beer bar in your building. Premium prices, quiet loft atmosphere. What do you think? 🍻",
           time: "10:02",
         },
         {
@@ -109,10 +109,10 @@ export default function Home() {
       ],
     },
     {
-      name: "Oksana",
+      name: "Elizabeth Doe",
       age: 28,
       role: "Office professional",
-      income: "120–150k RUB/mo",
+      income: "$ 8.5K",
       preferences: ["Aesthetics", "Time", "Status", "Technology"],
       data: "Based on 1.1k office surveys",
       caseTitle: "Family bakery near the office",
@@ -120,7 +120,7 @@ export default function Home() {
       dialog: [
         {
           speaker: "skeptic",
-          text: "Oksana, hi. We're opening a family bakery near your office. Kids' parties, mascot costumes, custom cakes. Would you stop by? 🍰",
+          text: "Elizabeth, hi. We're opening a family bakery near your office. Kids' parties, mascot costumes, custom cakes. Would you stop by? 🍰",
           time: "11:10",
         },
         {
@@ -148,10 +148,10 @@ export default function Home() {
       ],
     },
     {
-      name: "Maria",
+      name: "Pavel Durov",
       age: 35,
       role: "Bakery owner",
-      income: "200–250k RUB/mo",
+      income: "$ 2.1K",
       preferences: ["Unit economics", "Operations", "Quality", "Competition"],
       data: "Based on 1.2k HoReCa reviews",
       caseTitle: "Tool‑sharing service",
@@ -159,7 +159,7 @@ export default function Home() {
       dialog: [
         {
           speaker: "skeptic",
-          text: "Maria, hello. We're planning a sharing service for expensive tools: rotary hammers, thermal imagers. As a founder, how do you assess the idea? 🛠",
+          text: "Pavel, hello. We're planning a sharing service for expensive tools: rotary hammers, thermal imagers. As a founder, how do you assess the idea? 🛠",
           time: "12:20",
         },
         {
@@ -183,123 +183,6 @@ export default function Home() {
           speaker: "skeptic",
           text: "[RAG Validation]: Hypothesis NOT validated. High operating costs and risks (logistics/repairs) kill unit economics for this audience.",
           time: "12:24",
-        },
-      ],
-    },
-    {
-      name: "Nikita",
-      age: 21,
-      role: "Student dreamer",
-      income: "15–20k RUB/mo",
-      preferences: ["Trends", "Hype", "Ecology", "Community"],
-      data: "Based on 900 student interviews",
-      caseTitle: "Online calligraphy school",
-      image: "/images/personas/student.jpg",
-      dialog: [
-        {
-          speaker: "skeptic",
-          text: "Nikita, hi. We're testing an online calligraphy school. It's calming, trains your mind, and is eco‑trendy. Would you enroll? ✍️",
-          time: "13:05",
-        },
-        {
-          speaker: "avatar",
-          text: "Wow. Online school... but slow writing? I don't take notes at uni, everything is in Notion. I don't have time for “slow.” Sounds like hype for boomers. 😴",
-          time: "13:06",
-          status: "Read ✓✓",
-        },
-        {
-          speaker: "skeptic",
-          text: "It helps unload the brain from gadgets. Community and offline meetups.",
-          time: "13:07",
-        },
-        {
-          speaker: "avatar",
-          text: "Offline meetups are cooler. But calligraphy? I'd rather take AI courses or at least pottery. There you can touch the product. Writing letters... nah, not for me, sorry. 🤷‍♂️",
-          time: "13:08",
-          status: "Read ✓✓",
-        },
-        {
-          speaker: "skeptic",
-          text: "[RAG Validation]: Hypothesis NOT validated. Students value speed and practical outcomes, not “slow” trends. The eco trend doesn't work here.",
-          time: "13:09",
-        },
-      ],
-    },
-    {
-      name: "Victor Borisovich",
-      age: 62,
-      role: "Director",
-      income: "400k+ RUB/mo",
-      preferences: ["Risks", "Scale", "Financial model", "Strategy"],
-      data: "Based on 420 director interviews",
-      caseTitle: "Franchise: automated car washes",
-      image: "/images/personas/director.jpg",
-      dialog: [
-        {
-          speaker: "skeptic",
-          text: "Victor Borisovich, hello. We're considering an automated car wash franchise. Average quality, but fast (3 minutes) and low margin. What do you think? 🚗💨",
-          time: "14:30",
-        },
-        {
-          speaker: "avatar",
-          text: "Speed is great, Muscovites value it. Low margin? How low? If net profit is 5% — that's not a business, it's charity. Show me the financial model. 📊🧐",
-          time: "14:31",
-          status: "Read ✓✓",
-        },
-        {
-          speaker: "skeptic",
-          text: "Here’s a screenshot of our financial model. Capex is high, but payback is 18 months thanks to turnover.",
-          time: "14:32",
-        },
-        {
-          speaker: "avatar",
-          text: "18 months with 10M capex? At 24/7 utilization? Moscow is oversaturated; competitors with higher quality will crush you on price. I wouldn't invest—scalability risk is too high. I don't believe in 3 minutes without losing quality. 📉❌",
-          time: "14:33",
-          status: "Read ✓✓",
-        },
-        {
-          speaker: "skeptic",
-          text: "[RAG Validation]: Hypothesis NOT validated. An experienced investor finds the financial model too optimistic and Moscow competition fatal.",
-          time: "14:34",
-        },
-      ],
-    },
-    {
-      name: "Elena",
-      age: 43,
-      role: "Homemaker",
-      income: "70–90k RUB/mo",
-      preferences: ["Convenience", "Time", "Children", "Loyalty"],
-      data: "Based on 1.5k household surveys",
-      caseTitle: "Cleaning Subscription",
-      image: "/images/personas/homemaker.jpg",
-      dialog: [
-        {
-          speaker: "skeptic",
-          text: "Elena, hello. We're launching a subscription home cleaning service. Twice a month, fixed price, same cleaners. Would you use it? 🧹✨",
-          time: "15:40",
-        },
-        {
-          speaker: "avatar",
-          text: "A cleaning subscription? That would be great. I have two kids and by weekends the apartment becomes a battlefield. But I need one cleaner I can trust to leave at home. 🥰",
-          time: "15:41",
-          status: "Read ✓✓",
-        },
-        {
-          speaker: "skeptic",
-          text: "Yes, we guarantee the same cleaner trained to our standard. No deposit required.",
-          time: "15:42",
-        },
-        {
-          speaker: "avatar",
-          text: "Great. 5,000 rubles for two cleanings a month is reasonable. If the cleaner is really good, I'll save 8 hours of my life. I'll sign up and tell my friends. ❤️🗓",
-          time: "15:43",
-          status: "Read ✓✓",
-        },
-        {
-          speaker: "skeptic",
-          text: "[RAG Validation]: Hypothesis VALIDATED. The service solves key pains (time and trust) at an acceptable price. High viral potential.",
-          time: "15:44",
         },
       ],
     },
@@ -1217,9 +1100,9 @@ export default function Home() {
               </div>
               <Link
                 href={getLocalePath("/solutions/businessPulse")}
-                className="pulse-cta"
+                className="btn btn-primary btn-lg pulse-cta"
               >
-                Connect Business Pulse
+                Connect
               </Link>
             </div>
             <div className="pulse-dashboard">
@@ -3113,7 +2996,7 @@ export default function Home() {
 
         .pulse-cta {
           border: none;
-          background: #01346e;
+          background: #0683f5;
           color: #ffffff;
           padding: 0.75rem 1.1rem;
           border-radius: 12px;
