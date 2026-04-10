@@ -1,9 +1,13 @@
-# *
 User-agent: *
 Allow: /
+Disallow: /account
+Disallow: /ru/account
+Disallow: /auth
+Disallow: /ru/auth
+Disallow: /api/
+Disallow: /monitoring
+Disallow: /ru/monitoring
+Disallow: /fin-model/
+Disallow: /ru/fin-model/
 
-# Host
-Host: https://upgrowplan.com
-
-# Sitemaps
 Sitemap: https://upgrowplan.com/sitemap.xml

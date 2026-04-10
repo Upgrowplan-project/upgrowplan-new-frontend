@@ -23,11 +23,31 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title:
-    "Upgrowplan | AI-generated Business-plans, Market Researches, Virtual Respondents, RAG-technology",
-  description: "Upgrowplan - AI-generated future planning service",
+  title: {
+    default:
+      "Upgrowplan | AI Business Plans, Market Research & Strategic Analysis",
+    template: "%s | Upgrowplan",
+  },
+  description:
+    "Generate AI-powered business plans, market research reports, and strategic insights in minutes. Built for entrepreneurs and analysts.",
+  metadataBase: new URL("https://upgrowplan.com"),
   icons: {
     icon: "/favicon.ico",
+  },
+  openGraph: {
+    siteName: "Upgrowplan",
+    type: "website",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Upgrowplan",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
   },
 };
 

@@ -1,13 +1,17 @@
+import type { Metadata } from "next";
+import { buildMetadata, pageMeta } from "@/lib/seo/metadata";
 import PrivacyPageEn from "../../privacy/page.en";
 import PrivacyPageRu from "../../privacy/page.ru";
 
-type Params = {
-  params: {
-    locale: string;
-  };
-};
+type Params = { params: { locale: string } };
+
+export async function generateMetadata({ params }: Params): Promise<Metadata> {
+  const locale = params.locale === "ru" ? "ru" : "en";
+  const meta = pageMeta.privacy;
+  const path = locale === "ru" ? meta.ruPath : meta.enPath;
+  return buildMetadata({ locale, path, ...meta });
+}
 
 export default function PrivacyLocalePage({ params }: Params) {
-  // Simple locale switching similar to other pages
   return params.locale === "ru" ? <PrivacyPageRu /> : <PrivacyPageEn />;
 }
