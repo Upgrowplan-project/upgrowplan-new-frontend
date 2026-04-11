@@ -1,51 +1,22 @@
-"use client";
-
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import type { Metadata } from "next";
+import { buildMetadata, pageMeta } from "@/lib/seo/metadata";
+import { organizationSchema, websiteSchema } from "@/lib/seo/jsonld";
+import { JsonLd } from "@/components/JsonLd";
 import HomeEn from "./[locale]/page.en";
+import RootPageClient from "./RootPageClient";
 
-function getCookie(name: string) {
-  if (typeof document === "undefined") return null;
-  const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
-  return match ? decodeURIComponent(match[2]) : null;
-}
+export const metadata: Metadata = buildMetadata({
+  locale: "en",
+  path: pageMeta.home.enPath,
+  ...pageMeta.home,
+});
 
 export default function RootPage() {
-  const router = useRouter();
-
-  useEffect(() => {
-    // 1) Check lang param e.g., /?lang=ru or /?lang=en
-    const params = new URLSearchParams(window.location.search);
-    const langParam = params.get("lang");
-    if (langParam === "ru") {
-      router.push("/ru");
-      return;
-    }
-
-    if (langParam === "en") {
-      // set cookie preference and stay on root (English)
-      document.cookie = `NEXT_LOCALE=en; path=/; max-age=31536000`;
-      return;
-    }
-
-    // 2) Check cookie preference
-    const cookieLocale = getCookie("NEXT_LOCALE");
-    if (cookieLocale === "ru") {
-      router.push("/ru");
-      return;
-    }
-    if (cookieLocale === "en") {
-      // Explicitly prefer English - stay on '/' (do nothing)
-      return;
-    }
-
-    // 3) Auto-detect only if no explicit preference set
-    const navigatorLang = navigator.language.split("-")[0];
-    if (navigatorLang === "ru") {
-      router.push("/ru");
-    }
-  }, [router]);
-
-  // Render English homepage on root
-  return <HomeEn />;
+  return (
+    <>
+      <JsonLd data={[organizationSchema(), websiteSchema()]} />
+      <RootPageClient />
+      <HomeEn />
+    </>
+  );
 }

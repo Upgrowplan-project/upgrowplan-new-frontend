@@ -1,12 +1,29 @@
-"use client";
-
-import { usePathname } from "next/navigation";
+import type { Metadata } from "next";
+import { buildMetadata, pageMeta } from "@/lib/seo/metadata";
+import { softwareAppSchema, breadcrumbSchema, breadcrumbs, solutionData } from "@/lib/seo/jsonld";
+import { JsonLd } from "@/components/JsonLd";
 import EnPage from "./page.en";
-import RuPage from "./page.ru";
 
-export default function Page() {
-  const pathname = usePathname();
-  const isRussian = pathname.startsWith("/ru");
+const SITE_URL = "https://upgrowplan.com";
 
-  return isRussian ? <RuPage /> : <EnPage />;
+export const metadata: Metadata = buildMetadata({
+  locale: "en",
+  path: pageMeta.finBuddy.enPath,
+  ...pageMeta.finBuddy,
+});
+
+export default function FinBuddyPage() {
+  const data = solutionData.finBuddy.en;
+  const url = `${SITE_URL}${solutionData.finBuddy.url}`;
+  return (
+    <>
+      <JsonLd
+        data={[
+          softwareAppSchema({ ...data, url, isFree: solutionData.finBuddy.isFree }),
+          breadcrumbSchema(breadcrumbs.solutionPage("en", data.name)),
+        ]}
+      />
+      <EnPage />
+    </>
+  );
 }
