@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { buildMetadata, pageMeta } from "@/lib/seo/metadata";
-import { softwareAppSchema, breadcrumbSchema, breadcrumbs, solutionData } from "@/lib/seo/jsonld";
+import { softwareAppSchema, breadcrumbSchema, breadcrumbs, solutionData, faqSchema, pageFaqs } from "@/lib/seo/jsonld";
 import { JsonLd } from "@/components/JsonLd";
 import MarketResearchPageEn from "../../../solutions/marketResearch/page.en";
 import MarketResearchPageRu from "../../../solutions/marketResearch/page.ru";
@@ -25,6 +25,7 @@ export default function MarketResearchLocalePage({ params }: Params) {
         data={[
           softwareAppSchema({ ...data, url, isFree: solutionData.marketResearch.isFree }),
           breadcrumbSchema(breadcrumbs.solutionPage(locale, data.name)),
+          faqSchema(pageFaqs.marketResearch[locale]),
         ]}
       />
       {locale === "ru" ? <MarketResearchPageRu /> : <MarketResearchPageEn />}

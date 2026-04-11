@@ -35,8 +35,14 @@ export function buildMetadata({
   const ruUrl = `${SITE_URL}${ruPath}`;
   const ogImageUrl = buildOgImageUrl(pageTitle, pageDescription, locale);
 
+  // Homepage uses absolute title to avoid template duplication ("Brand | Brand")
+  const titleValue =
+    path === "/" || path === "/ru"
+      ? { absolute: pageTitle }
+      : pageTitle;
+
   return {
-    title: pageTitle,
+    title: titleValue,
     description: pageDescription,
     alternates: {
       canonical: canonicalUrl,
@@ -79,6 +85,7 @@ export function buildMetadata({
 
 export const pageMeta = {
   home: {
+    // Homepage bypasses the template via absolute — brand is the title itself
     title: {
       en: "Upgrowplan | AI Business Plans & Market Research",
       ru: "Upgrowplan | ИИ Бизнес-планы и Исследование рынка",
@@ -92,8 +99,8 @@ export const pageMeta = {
   },
   about: {
     title: {
-      en: "About Upgrowplan | AI-Powered Business Planning",
-      ru: "О нас | ИИ-платформа для бизнес-планирования Upgrowplan",
+      en: "About | AI-Powered Business Planning",
+      ru: "О нас | ИИ-платформа для бизнес-планирования",
     },
     description: {
       en: "Learn about Upgrowplan — the team and mission behind the AI platform for business planning, market research, and strategic analysis.",
@@ -104,8 +111,8 @@ export const pageMeta = {
   },
   products: {
     title: {
-      en: "Products | AI Business Planning Tools | Upgrowplan",
-      ru: "Продукты | ИИ-инструменты для бизнес-планирования | Upgrowplan",
+      en: "Products | AI Business Planning Tools",
+      ru: "Продукты | ИИ-инструменты для бизнес-планирования",
     },
     description: {
       en: "Explore Upgrowplan's suite of AI tools: business plan generation, market research, financial modelling, virtual respondents, and more.",
@@ -116,8 +123,8 @@ export const pageMeta = {
   },
   blog: {
     title: {
-      en: "Blog | AI Business Insights | Upgrowplan",
-      ru: "Блог | Аналитика и инсайты | Upgrowplan",
+      en: "Blog | AI Business Insights",
+      ru: "Блог | Аналитика и инсайты",
     },
     description: {
       en: "Read expert articles on AI business planning, market research strategies, entrepreneurship, and the future of strategic analysis.",
@@ -128,8 +135,8 @@ export const pageMeta = {
   },
   contacts: {
     title: {
-      en: "Contact Us | Upgrowplan",
-      ru: "Контакты | Upgrowplan",
+      en: "Contact Us",
+      ru: "Контакты",
     },
     description: {
       en: "Get in touch with the Upgrowplan team. We're here to answer questions about our AI business planning platform.",
@@ -140,8 +147,8 @@ export const pageMeta = {
   },
   privacy: {
     title: {
-      en: "Privacy Policy | Upgrowplan",
-      ru: "Политика конфиденциальности | Upgrowplan",
+      en: "Privacy Policy",
+      ru: "Политика конфиденциальности",
     },
     description: {
       en: "Read Upgrowplan's privacy policy to understand how we collect, use, and protect your personal data.",
@@ -152,8 +159,8 @@ export const pageMeta = {
   },
   solutions: {
     title: {
-      en: "AI Solutions for Business | Upgrowplan",
-      ru: "ИИ-решения для бизнеса | Upgrowplan",
+      en: "AI Solutions for Business",
+      ru: "ИИ-решения для бизнеса",
     },
     description: {
       en: "Discover all Upgrowplan AI solutions: market research, business plan generation, financial modelling, social strategy, and more.",
@@ -164,8 +171,8 @@ export const pageMeta = {
   },
   marketResearch: {
     title: {
-      en: "AI Market Research | Upgrowplan",
-      ru: "ИИ Исследование рынка | Upgrowplan",
+      en: "AI Market Research",
+      ru: "ИИ Исследование рынка",
     },
     description: {
       en: "Generate comprehensive AI-powered market research reports with competitor analysis, trends, and actionable insights in minutes.",
@@ -176,8 +183,8 @@ export const pageMeta = {
   },
   marketResearchDescription: {
     title: {
-      en: "About AI Market Research | Upgrowplan",
-      ru: "О сервисе Исследование рынка | Upgrowplan",
+      en: "About AI Market Research",
+      ru: "О сервисе Исследование рынка",
     },
     description: {
       en: "Learn how Upgrowplan's AI market research tool works — data sources, methodology, and what you get in your report.",
@@ -188,8 +195,8 @@ export const pageMeta = {
   },
   plan: {
     title: {
-      en: "AI Business Plan Generator | Upgrowplan",
-      ru: "ИИ Генератор бизнес-планов | Upgrowplan",
+      en: "AI Business Plan Generator",
+      ru: "ИИ Генератор бизнес-планов",
     },
     description: {
       en: "Create a professional AI-generated business plan in minutes. Tailored for investors, banks, and internal strategy.",
@@ -200,8 +207,8 @@ export const pageMeta = {
   },
   planMaster: {
     title: {
-      en: "Plan Master | AI Strategic Planning | Upgrowplan",
-      ru: "Plan Master | ИИ Стратегическое планирование | Upgrowplan",
+      en: "Plan Master | AI Strategic Planning",
+      ru: "Plan Master | ИИ Стратегическое планирование",
     },
     description: {
       en: "Plan Master by Upgrowplan helps you build advanced strategic plans with AI-driven scenario analysis and forecasting.",
@@ -212,8 +219,8 @@ export const pageMeta = {
   },
   planMasterDescription: {
     title: {
-      en: "About Plan Master | Upgrowplan",
-      ru: "О продукте Plan Master | Upgrowplan",
+      en: "About Plan Master",
+      ru: "О продукте Plan Master",
     },
     description: {
       en: "Learn how Plan Master's AI strategic planning engine works, including methodology, inputs, and deliverables.",
@@ -224,8 +231,8 @@ export const pageMeta = {
   },
   synthFocusLab: {
     title: {
-      en: "Synthetic Focus Lab | AI Virtual Respondents | Upgrowplan",
-      ru: "Synthetic Focus Lab | ИИ Виртуальные респонденты | Upgrowplan",
+      en: "Synthetic Focus Lab | AI Virtual Respondents",
+      ru: "Synthetic Focus Lab | ИИ Виртуальные респонденты",
     },
     description: {
       en: "Run AI-powered focus groups and surveys using synthetic respondents. Get qualitative research insights without recruiting real participants.",
@@ -236,8 +243,8 @@ export const pageMeta = {
   },
   synthFocusLabDescription: {
     title: {
-      en: "About Synthetic Focus Lab | Upgrowplan",
-      ru: "О продукте Synthetic Focus Lab | Upgrowplan",
+      en: "About Synthetic Focus Lab",
+      ru: "О продукте Synthetic Focus Lab",
     },
     description: {
       en: "Discover how Synthetic Focus Lab uses AI personas to simulate focus group discussions and consumer surveys.",
@@ -248,8 +255,8 @@ export const pageMeta = {
   },
   socialPlanMaster: {
     title: {
-      en: "Social Plan Master | AI Social Media Strategy | Upgrowplan",
-      ru: "Social Plan Master | ИИ Стратегия в соцсетях | Upgrowplan",
+      en: "Social Plan Master | AI Social Media Strategy",
+      ru: "Social Plan Master | ИИ Стратегия в соцсетях",
     },
     description: {
       en: "Build a data-driven social media strategy with AI. Content plans, audience analysis, and platform recommendations.",
@@ -260,8 +267,8 @@ export const pageMeta = {
   },
   finBuddy: {
     title: {
-      en: "Fin Buddy | AI Financial Planning | Upgrowplan",
-      ru: "Fin Buddy | ИИ Финансовое планирование | Upgrowplan",
+      en: "Fin Buddy | AI Financial Planning",
+      ru: "Fin Buddy | ИИ Финансовое планирование",
     },
     description: {
       en: "Fin Buddy generates AI-powered financial projections, P&L statements, and cash flow models for your business.",
@@ -272,8 +279,8 @@ export const pageMeta = {
   },
   openAbroad: {
     title: {
-      en: "Open Abroad | International Expansion Planning | Upgrowplan",
-      ru: "Open Abroad | Планирование выхода на международный рынок | Upgrowplan",
+      en: "Open Abroad | International Expansion Planning",
+      ru: "Open Abroad | Планирование выхода на международный рынок",
     },
     description: {
       en: "Plan your international business expansion with AI. Country analysis, regulatory overview, and market entry strategy.",
@@ -284,8 +291,8 @@ export const pageMeta = {
   },
   businessPulse: {
     title: {
-      en: "Business Pulse | AI Market Monitoring | Upgrowplan",
-      ru: "Business Pulse | ИИ Мониторинг рынка | Upgrowplan",
+      en: "Business Pulse | AI Market Monitoring",
+      ru: "Business Pulse | ИИ Мониторинг рынка",
     },
     description: {
       en: "Monitor market trends, competitor moves, and business signals in real time with Upgrowplan's AI-powered Business Pulse.",

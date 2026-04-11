@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { buildMetadata, pageMeta } from "@/lib/seo/metadata";
-import { softwareAppSchema, breadcrumbSchema, breadcrumbs, solutionData } from "@/lib/seo/jsonld";
+import { softwareAppSchema, breadcrumbSchema, breadcrumbs, solutionData, faqSchema, pageFaqs } from "@/lib/seo/jsonld";
 import { JsonLd } from "@/components/JsonLd";
 import SynthFocusLabPageEn from "../../../solutions/synthFocusLab/page.en";
 import SynthFocusLabPageRu from "../../../solutions/synthFocusLab/page.ru";
@@ -25,6 +25,7 @@ export default function SynthFocusLabLocalePage({ params }: Params) {
         data={[
           softwareAppSchema({ ...data, url, isFree: solutionData.synthFocusLab.isFree }),
           breadcrumbSchema(breadcrumbs.solutionPage(locale, data.name)),
+          faqSchema(pageFaqs.synthFocusLab[locale]),
         ]}
       />
       {locale === "ru" ? <SynthFocusLabPageRu /> : <SynthFocusLabPageEn />}

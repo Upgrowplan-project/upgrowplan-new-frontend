@@ -5,6 +5,8 @@ import {
   breadcrumbSchema,
   breadcrumbs,
   solutionData,
+  faqSchema,
+  pageFaqs,
 } from "@/lib/seo/jsonld";
 import { JsonLd } from "@/components/JsonLd";
 import SolutionsPageEn from "./page.en";
@@ -37,6 +39,7 @@ export default function SolutionsLocalePage({ params }: Params) {
         data={[
           itemListSchema(listItems),
           breadcrumbSchema(breadcrumbs.solutions(locale)),
+          faqSchema(pageFaqs.solutions[locale]),
         ]}
       />
       {locale === "ru" ? <SolutionsPageRu /> : <SolutionsPageEn />}

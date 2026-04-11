@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { buildMetadata, pageMeta } from "@/lib/seo/metadata";
-import { softwareAppSchema, breadcrumbSchema, breadcrumbs, solutionData } from "@/lib/seo/jsonld";
+import { softwareAppSchema, breadcrumbSchema, breadcrumbs, solutionData, faqSchema, pageFaqs } from "@/lib/seo/jsonld";
 import { JsonLd } from "@/components/JsonLd";
 import PlanMasterPageEn from "./page.en";
 import PlanMasterPageRu from "./page.ru";
@@ -25,6 +25,7 @@ export default function PlanMasterLocalePage({ params }: Params) {
         data={[
           softwareAppSchema({ ...data, url, isFree: solutionData.planMaster.isFree }),
           breadcrumbSchema(breadcrumbs.solutionPage(locale, data.name)),
+          faqSchema(pageFaqs.planMaster[locale]),
         ]}
       />
       {locale === "ru" ? <PlanMasterPageRu /> : <PlanMasterPageEn />}
