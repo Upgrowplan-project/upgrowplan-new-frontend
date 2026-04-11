@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { buildMetadata, pageMeta } from "@/lib/seo/metadata";
+import { blogSchema, breadcrumbSchema, breadcrumbs } from "@/lib/seo/jsonld";
+import { JsonLd } from "@/components/JsonLd";
 import BlogPageEn from "../../blog/page.en";
 import BlogPageRu from "../../blog/page.ru";
 
@@ -13,5 +15,16 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 }
 
 export default function BlogLocalePage({ params }: Params) {
-  return params.locale === "ru" ? <BlogPageRu /> : <BlogPageEn />;
+  const locale = params.locale === "ru" ? "ru" : "en";
+  return (
+    <>
+      <JsonLd
+        data={[
+          blogSchema(locale),
+          breadcrumbSchema(breadcrumbs.blog(locale)),
+        ]}
+      />
+      {locale === "ru" ? <BlogPageRu /> : <BlogPageEn />}
+    </>
+  );
 }

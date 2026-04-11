@@ -1,7 +1,16 @@
 import type { Metadata } from "next";
 import { buildMetadata, pageMeta } from "@/lib/seo/metadata";
+import {
+  itemListSchema,
+  breadcrumbSchema,
+  breadcrumbs,
+  solutionData,
+} from "@/lib/seo/jsonld";
+import { JsonLd } from "@/components/JsonLd";
 import SolutionsPageEn from "./page.en";
 import SolutionsPageRu from "./page.ru";
+
+const SITE_URL = "https://upgrowplan.com";
 
 type Params = { params: { locale: string } };
 
@@ -13,5 +22,24 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 }
 
 export default function SolutionsLocalePage({ params }: Params) {
-  return params.locale === "ru" ? <SolutionsPageRu /> : <SolutionsPageEn />;
+  const locale = params.locale === "ru" ? "ru" : "en";
+
+  const listItems = Object.entries(solutionData).map(([, val], i) => ({
+    position: i + 1,
+    name: val[locale].name,
+    description: val[locale].description,
+    url: `${SITE_URL}${locale === "ru" ? "/ru" : ""}${val.url}`,
+  }));
+
+  return (
+    <>
+      <JsonLd
+        data={[
+          itemListSchema(listItems),
+          breadcrumbSchema(breadcrumbs.solutions(locale)),
+        ]}
+      />
+      {locale === "ru" ? <SolutionsPageRu /> : <SolutionsPageEn />}
+    </>
+  );
 }

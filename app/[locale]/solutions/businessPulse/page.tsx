@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import { buildMetadata, pageMeta } from "@/lib/seo/metadata";
+import { softwareAppSchema, breadcrumbSchema, breadcrumbs, solutionData } from "@/lib/seo/jsonld";
+import { JsonLd } from "@/components/JsonLd";
 import BusinessPulsePageEn from "./page.en";
 import BusinessPulsePageRu from "./page.ru";
 
+const SITE_URL = "https://upgrowplan.com";
 type Params = { params: { locale: string } };
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
@@ -13,5 +16,18 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 }
 
 export default function BusinessPulseLocalePage({ params }: Params) {
-  return params.locale === "ru" ? <BusinessPulsePageRu /> : <BusinessPulsePageEn />;
+  const locale = params.locale === "ru" ? "ru" : "en";
+  const data = solutionData.businessPulse[locale];
+  const url = `${SITE_URL}${locale === "ru" ? "/ru" : ""}${solutionData.businessPulse.url}`;
+  return (
+    <>
+      <JsonLd
+        data={[
+          softwareAppSchema({ ...data, url, isFree: solutionData.businessPulse.isFree }),
+          breadcrumbSchema(breadcrumbs.solutionPage(locale, data.name)),
+        ]}
+      />
+      {locale === "ru" ? <BusinessPulsePageRu /> : <BusinessPulsePageEn />}
+    </>
+  );
 }

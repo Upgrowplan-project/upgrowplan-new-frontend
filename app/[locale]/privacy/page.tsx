@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { buildMetadata, pageMeta } from "@/lib/seo/metadata";
+import { breadcrumbSchema, breadcrumbs } from "@/lib/seo/jsonld";
+import { JsonLd } from "@/components/JsonLd";
 import PrivacyPageEn from "../../privacy/page.en";
 import PrivacyPageRu from "../../privacy/page.ru";
 
@@ -13,5 +15,11 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 }
 
 export default function PrivacyLocalePage({ params }: Params) {
-  return params.locale === "ru" ? <PrivacyPageRu /> : <PrivacyPageEn />;
+  const locale = params.locale === "ru" ? "ru" : "en";
+  return (
+    <>
+      <JsonLd data={breadcrumbSchema(breadcrumbs.privacy(locale))} />
+      {locale === "ru" ? <PrivacyPageRu /> : <PrivacyPageEn />}
+    </>
+  );
 }

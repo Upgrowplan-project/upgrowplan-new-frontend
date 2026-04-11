@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import { buildMetadata, pageMeta } from "@/lib/seo/metadata";
+import { softwareAppSchema, breadcrumbSchema, breadcrumbs, solutionData } from "@/lib/seo/jsonld";
+import { JsonLd } from "@/components/JsonLd";
 import SynthFocusLabPageEn from "../../../solutions/synthFocusLab/page.en";
 import SynthFocusLabPageRu from "../../../solutions/synthFocusLab/page.ru";
 
+const SITE_URL = "https://upgrowplan.com";
 type Params = { params: { locale: string } };
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
@@ -13,5 +16,18 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 }
 
 export default function SynthFocusLabLocalePage({ params }: Params) {
-  return params.locale === "ru" ? <SynthFocusLabPageRu /> : <SynthFocusLabPageEn />;
+  const locale = params.locale === "ru" ? "ru" : "en";
+  const data = solutionData.synthFocusLab[locale];
+  const url = `${SITE_URL}${locale === "ru" ? "/ru" : ""}${solutionData.synthFocusLab.url}`;
+  return (
+    <>
+      <JsonLd
+        data={[
+          softwareAppSchema({ ...data, url, isFree: solutionData.synthFocusLab.isFree }),
+          breadcrumbSchema(breadcrumbs.solutionPage(locale, data.name)),
+        ]}
+      />
+      {locale === "ru" ? <SynthFocusLabPageRu /> : <SynthFocusLabPageEn />}
+    </>
+  );
 }

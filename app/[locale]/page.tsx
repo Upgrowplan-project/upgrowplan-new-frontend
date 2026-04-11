@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { buildMetadata, pageMeta } from "@/lib/seo/metadata";
+import { organizationSchema, websiteSchema } from "@/lib/seo/jsonld";
+import { JsonLd } from "@/components/JsonLd";
 import HomePageEn from "./page.en";
 import HomePageRu from "./page.ru";
 
@@ -13,5 +15,11 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 }
 
 export default function HomePage({ params }: Params) {
-  return params.locale === "ru" ? <HomePageRu /> : <HomePageEn />;
+  const locale = params.locale === "ru" ? "ru" : "en";
+  return (
+    <>
+      <JsonLd data={[organizationSchema(), websiteSchema()]} />
+      {locale === "ru" ? <HomePageRu /> : <HomePageEn />}
+    </>
+  );
 }

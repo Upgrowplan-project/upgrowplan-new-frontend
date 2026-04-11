@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { buildMetadata, pageMeta } from "@/lib/seo/metadata";
+import { aboutPageSchema, breadcrumbSchema, breadcrumbs } from "@/lib/seo/jsonld";
+import { JsonLd } from "@/components/JsonLd";
 import AboutPageEn from "../../about/page.en";
 import AboutPageRu from "../../about/page.ru";
 
@@ -13,5 +15,16 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 }
 
 export default function AboutLocalePage({ params }: Params) {
-  return params.locale === "ru" ? <AboutPageRu /> : <AboutPageEn />;
+  const locale = params.locale === "ru" ? "ru" : "en";
+  return (
+    <>
+      <JsonLd
+        data={[
+          aboutPageSchema(locale),
+          breadcrumbSchema(breadcrumbs.about(locale)),
+        ]}
+      />
+      {locale === "ru" ? <AboutPageRu /> : <AboutPageEn />}
+    </>
+  );
 }

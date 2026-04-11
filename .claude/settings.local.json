@@ -80,7 +80,8 @@
       "Bash(.venv/Scripts/pip install:*)",
       "Bash(node -e \"const p = require\\('./package.json'\\); console.log\\(p.dependencies['next'], p.dependencies['next/og'] || 'builtin'\\)\")",
       "Bash(node -e \"const p = require\\('d:/UpgrowPlan/upgrowplan_new/node_modules/next/package.json'\\); const exp = p.exports && p.exports['./og']; console.log\\(JSON.stringify\\(exp, null, 2\\)\\)\")",
-      "Bash(node -e \"const p = require\\('d:/UpgrowPlan/upgrowplan_new/node_modules/next/package.json'\\); const exp = p.exports && p.exports['./server']; console.log\\(JSON.stringify\\(exp, null, 2\\).slice\\(0, 500\\)\\)\")"
+      "Bash(node -e \"const p = require\\('d:/UpgrowPlan/upgrowplan_new/node_modules/next/package.json'\\); const exp = p.exports && p.exports['./server']; console.log\\(JSON.stringify\\(exp, null, 2\\).slice\\(0, 500\\)\\)\")",
+      "Bash(powershell.exe -Command \"Get-Process python | Stop-Process -Force\")"
     ],
     "deny": [],
     "ask": []
