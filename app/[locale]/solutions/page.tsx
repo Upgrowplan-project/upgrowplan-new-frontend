@@ -9,6 +9,7 @@ import {
   pageFaqs,
 } from "@/lib/seo/jsonld";
 import { JsonLd } from "@/components/JsonLd";
+import FaqSection from "@/components/FaqSection";
 import SolutionsPageEn from "./page.en";
 import SolutionsPageRu from "./page.ru";
 
@@ -25,6 +26,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 
 export default function SolutionsLocalePage({ params }: Params) {
   const locale = params.locale === "ru" ? "ru" : "en";
+  const faqTitle = locale === "ru" ? "Вопросы об инструментах" : "Questions About Our Tools";
 
   const listItems = Object.entries(solutionData).map(([, val], i) => ({
     position: i + 1,
@@ -43,6 +45,7 @@ export default function SolutionsLocalePage({ params }: Params) {
         ]}
       />
       {locale === "ru" ? <SolutionsPageRu /> : <SolutionsPageEn />}
+      <FaqSection items={pageFaqs.solutions[locale]} title={faqTitle} />
     </>
   );
 }
