@@ -1,29 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const locales = ['en', 'ru'];
-const defaultLocale = 'en';
-
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  // If someone visits /en or /en/* - redirect to path without /en (canonicalize)
+  // /en or /en/* → redirect to canonical path without /en prefix
+  // (keeps URLs clean: /blog not /en/blog)
   if (pathname === '/en' || pathname.startsWith('/en/')) {
     const cleanPath = pathname === '/en' ? '/' : pathname.replace(/^\/en/, '');
     const url = new URL(`${cleanPath}${request.nextUrl.search}`, request.url);
     const response = NextResponse.redirect(url, { status: 307 });
-    // remember preference
     response.cookies.set('NEXT_LOCALE', 'en', { path: '/', maxAge: 31536000 });
     return response;
   }
 
-  // If path is already Russian, continue
+  // /ru or /ru/* → pass through, app/[locale]/ handles with locale="ru"
   if (pathname === '/ru' || pathname.startsWith('/ru/')) {
     return NextResponse.next();
   }
 
-  // Root path handling
+  // Root path / → language detection + redirect or rewrite to /en
   if (pathname === '/') {
-    // Respect explicit lang param
     const langParam = request.nextUrl.searchParams.get('lang');
     if (langParam === 'ru') {
       const response = NextResponse.redirect(new URL('/ru', request.url), { status: 307 });
@@ -31,36 +27,39 @@ export function middleware(request: NextRequest) {
       return response;
     }
     if (langParam === 'en') {
-      const response = NextResponse.next();
+      const url = request.nextUrl.clone();
+      url.pathname = '/en';
+      const response = NextResponse.rewrite(url);
       response.cookies.set('NEXT_LOCALE', 'en', { path: '/', maxAge: 31536000 });
       return response;
     }
 
-    // Respect cookie preference (ru -> redirect to /ru, en -> stay at /)
     const localeCookie = request.cookies.get('NEXT_LOCALE')?.value;
     if (localeCookie === 'ru') {
       return NextResponse.redirect(new URL('/ru', request.url), { status: 307 });
     }
-    if (localeCookie === 'en') {
-      return NextResponse.next();
-    }
 
-    // Auto-detect only if no preference saved
     const acceptLanguage = request.headers.get('accept-language') || '';
     const isRussian = acceptLanguage.includes('ru');
-    if (isRussian) {
+    if (isRussian && localeCookie !== 'en') {
       return NextResponse.redirect(new URL('/ru', request.url), { status: 307 });
     }
 
-    // Default: stay on root (English)
-    return NextResponse.next();
+    // Default: rewrite / → /en → app/[locale]/page.tsx with locale="en"
+    const url = request.nextUrl.clone();
+    url.pathname = '/en';
+    return NextResponse.rewrite(url);
   }
 
-  // For all other non-prefixed paths (English pages), just continue
-  return NextResponse.next();
+  // All other non-prefixed paths (e.g. /blog, /about, /solutions/planMaster)
+  // → internally rewrite to /en/... so app/[locale]/ handles them with locale="en"
+  // Browser URL stays unchanged (no redirect), canonical URLs remain clean
+  const url = request.nextUrl.clone();
+  url.pathname = `/en${pathname}`;
+  return NextResponse.rewrite(url);
 }
 
 export const config = {
-  // Match all routes except static files and api
-  matcher: ['/((?!api|_next|_vercel|.*\\..*).*)']
+  // Exclude static files, api routes, Next.js internals
+  matcher: ['/((?!api|_next|_vercel|.*\\..*).*)'],
 };

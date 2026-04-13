@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { buildMetadata, pageMeta } from "@/lib/seo/metadata";
-import { blogSchema, breadcrumbSchema, breadcrumbs } from "@/lib/seo/jsonld";
+import { blogSchema, breadcrumbSchema, breadcrumbs, faqSchema, pageFaqs } from "@/lib/seo/jsonld";
 import { JsonLd } from "@/components/JsonLd";
+import FaqSection from "@/components/FaqSection";
 import BlogPageEn from "../../blog/page.en";
 import BlogPageRu from "../../blog/page.ru";
 
@@ -16,15 +17,18 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 
 export default function BlogLocalePage({ params }: Params) {
   const locale = params.locale === "ru" ? "ru" : "en";
+  const faqTitle = locale === "ru" ? "Вопросы о бизнес-планировании с ИИ" : "AI Business Planning — FAQ";
   return (
     <>
       <JsonLd
         data={[
           blogSchema(locale),
           breadcrumbSchema(breadcrumbs.blog(locale)),
+          faqSchema(pageFaqs.blog[locale]),
         ]}
       />
       {locale === "ru" ? <BlogPageRu /> : <BlogPageEn />}
+      <FaqSection items={pageFaqs.blog[locale]} title={faqTitle} />
     </>
   );
 }

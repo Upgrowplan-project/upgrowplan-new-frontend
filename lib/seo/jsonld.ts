@@ -626,6 +626,62 @@ export const pageFaqs = {
       },
     ],
   },
+  blog: {
+    en: [
+      {
+        question: "What topics does the Upgrowplan blog cover?",
+        answer:
+          "The Upgrowplan blog covers AI business planning, market research strategies, competitor analysis, financial modelling, startup fundraising, and practical entrepreneurship guides — with real case studies and data-backed insights.",
+      },
+      {
+        question: "How long does it take to write a business plan with AI?",
+        answer:
+          "With Upgrowplan's PlanMaster AI, a complete investor-ready business plan is generated in 5–10 minutes. This includes market analysis, financial projections (P&L, cash flow, break-even), competitor research, and risk assessment.",
+      },
+      {
+        question: "What is AI market research and how is it different from traditional research?",
+        answer:
+          "AI market research uses artificial intelligence to automatically collect, analyse, and synthesise market data from multiple live sources. Unlike traditional research (which takes 2–4 weeks and costs thousands), AI market research delivers a comparable report in 10–30 minutes at a fraction of the cost.",
+      },
+      {
+        question: "Can AI replace a business consultant for writing a business plan?",
+        answer:
+          "For the structural and analytical parts of a business plan — market analysis, financials, competitor mapping — AI tools like PlanMaster deliver consultant-quality output in minutes. Human expertise remains valuable for unique strategic decisions and investor relationship building.",
+      },
+      {
+        question: "What should a good AI-generated business plan include?",
+        answer:
+          "A complete AI business plan should include: executive summary, market size and growth analysis, competitor landscape, target customer segments, product/service description, marketing and sales strategy, operational plan, financial projections (P&L, cash flow, break-even), and risk assessment. PlanMaster generates all of these sections automatically.",
+      },
+    ],
+    ru: [
+      {
+        question: "О чём пишет блог Upgrowplan?",
+        answer:
+          "Блог Upgrowplan освещает темы бизнес-планирования с ИИ, стратегий исследования рынка, анализа конкурентов, финансового моделирования, привлечения инвестиций и практического предпринимательства — с реальными кейсами и аналитикой.",
+      },
+      {
+        question: "Сколько времени занимает составление бизнес-плана с ИИ?",
+        answer:
+          "С PlanMaster AI от Upgrowplan полный бизнес-план для инвесторов генерируется за 5–10 минут. Это включает анализ рынка, финансовые прогнозы (P&L, денежный поток, точка безубыточности), исследование конкурентов и оценку рисков.",
+      },
+      {
+        question: "Что такое ИИ-исследование рынка и чем оно отличается от традиционного?",
+        answer:
+          "ИИ-исследование рынка использует искусственный интеллект для автоматического сбора, анализа и синтеза рыночных данных из множества живых источников. В отличие от традиционного исследования (2–4 недели, стоимость тысячи рублей), ИИ-инструмент даёт сопоставимый отчёт за 10–30 минут.",
+      },
+      {
+        question: "Может ли ИИ заменить бизнес-консультанта при написании бизнес-плана?",
+        answer:
+          "Для структурных и аналитических частей бизнес-плана — анализ рынка, финансы, конкуренты — ИИ-инструменты вроде PlanMaster дают результат уровня консультанта за минуты. Экспертиза человека остаётся ценной для уникальных стратегических решений и выстраивания отношений с инвесторами.",
+      },
+      {
+        question: "Что должен включать качественный бизнес-план, созданный с помощью ИИ?",
+        answer:
+          "Полноценный бизнес-план должен включать: резюме, анализ объёма и роста рынка, конкурентную среду, целевые сегменты клиентов, описание продукта/услуги, маркетинговую и операционную стратегию, финансовые прогнозы (P&L, денежный поток, точка безубыточности) и оценку рисков. PlanMaster генерирует все эти разделы автоматически.",
+      },
+    ],
+  },
   businessPulse: {
     en: [
       {
