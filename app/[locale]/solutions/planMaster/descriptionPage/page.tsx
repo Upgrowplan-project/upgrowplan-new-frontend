@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { buildMetadata, pageMeta } from "@/lib/seo/metadata";
-import { faqSchema, pageFaqs, breadcrumbSchema } from "@/lib/seo/jsonld";
+import {
+  faqSchema, pageFaqs, breadcrumbSchema,
+  howToSchema, howToSteps,
+  productSchema, solutionData,
+} from "@/lib/seo/jsonld";
 import { JsonLd } from "@/components/JsonLd";
 import FaqSection from "@/components/FaqSection";
 import PlanMasterDescriptionPageEn from "../../../../solutions/planMaster/descriptionPage/page.en";
@@ -27,6 +31,8 @@ export default function PlanMasterDescriptionLocalePage({ params }: Params) {
     },
     { name: "PlanMaster AI" },
   ];
+  const solData = solutionData.planMaster[locale];
+  const solUrl = `${SITE_URL}${locale === "ru" ? "/ru" : ""}${solutionData.planMaster.url}`;
 
   return (
     <>
@@ -34,6 +40,8 @@ export default function PlanMasterDescriptionLocalePage({ params }: Params) {
         data={[
           faqSchema(pageFaqs.planMasterDescription[locale]),
           breadcrumbSchema(crumbs),
+          howToSchema(howToSteps.planMaster[locale]),
+          productSchema({ name: solData.name, description: solData.description, url: solUrl }),
         ]}
       />
       {locale === "ru" ? <PlanMasterDescriptionPageRu /> : <PlanMasterDescriptionPageEn />}

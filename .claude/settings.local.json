@@ -83,7 +83,8 @@
       "Bash(node -e \"const p = require\\('d:/UpgrowPlan/upgrowplan_new/node_modules/next/package.json'\\); const exp = p.exports && p.exports['./server']; console.log\\(JSON.stringify\\(exp, null, 2\\).slice\\(0, 500\\)\\)\")",
       "Bash(powershell.exe -Command \"Get-Process python | Stop-Process -Force\")",
       "Bash(C:/Users/Lenovo/AppData/Local/Programs/Python/Python310/python.exe -m pip install pymorphy2 pymorphy2-dicts-ru nltk)",
-      "WebFetch(domain:www.upgrowplan.com)"
+      "WebFetch(domain:www.upgrowplan.com)",
+      "WebSearch"
     ],
     "deny": [],
     "ask": []

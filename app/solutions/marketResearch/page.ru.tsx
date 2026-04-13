@@ -13,6 +13,21 @@ import {
 } from "react-icons/fi";
 
 type BusinessType = "B2B" | "B2C" | "B2B2C" | "C2C" | "D2C";
+type OfferingType = "product" | "service" | "hybrid";
+type OfferingSubType =
+  | "physical"
+  | "digital"
+  | "one_time"
+  | "subscription"
+  | "hourly"
+  | "product_plus_service";
+type PriceSegment = "budget" | "mid" | "premium";
+type RevenueRange =
+  | "under_1m"
+  | "1m_10m"
+  | "10m_50m"
+  | "50m_500m"
+  | "over_500m";
 type ProductType =
   // B2C категории
   | "retail_fmcg"
@@ -66,6 +81,16 @@ interface FormData {
   productTypes: ProductType[];
   localization: Localization | "";
   researchGoals: ResearchGoal[];
+  // Тип предложения
+  offeringType: OfferingType | "";
+  offeringSubType: OfferingSubType | "";
+  // Ценовой сегмент
+  priceSegment: PriceSegment | "";
+  // Стадия бизнеса
+  isExistingBusiness: boolean;
+  annualRevenueRange: RevenueRange | "";
+  yearsOperating: string;
+  // Дополнительные поля
   targetAudience: string;
   competitors: string;
 }
@@ -288,6 +313,12 @@ export default function MarketResearchPage() {
     productTypes: [],
     localization: "",
     researchGoals: [],
+    offeringType: "",
+    offeringSubType: "",
+    priceSegment: "",
+    isExistingBusiness: false,
+    annualRevenueRange: "",
+    yearsOperating: "",
     targetAudience: "",
     competitors: "",
   };
@@ -465,6 +496,71 @@ export default function MarketResearchPage() {
 
     return () => clearInterval(watchdog);
   }, [researchId, enhancedReport, researchReport, isSubmitting, isResearchPaused, researchStatus?.status]);
+
+  const productTypeToIndustry: Record<ProductType, string> = {
+    retail_fmcg: "Розница и FMCG",
+    fashion_apparel: "Мода и одежда",
+    electronics: "Техника и электроника",
+    food_beverage: "Food & Beverage",
+    digital_apps: "Цифровые приложения",
+    manufacturing: "Производство",
+    wholesale_trade: "Оптовая торговля",
+    corporate_solutions: "Корпоративные решения",
+    business_tech: "Технологии для бизнеса",
+    marketplace: "Маркетплейс / Платформа",
+    p2p_platform: "P2P Платформа",
+    saas_b2b: "B2B SaaS",
+    saas_b2c: "B2C SaaS",
+    cloud_platform: "Облачная платформа",
+    industrial_equipment: "Промышленное оборудование",
+    logistics: "Логистика",
+    construction: "Строительство",
+    energy: "Энергетика",
+    agriculture: "Сельское хозяйство",
+    consulting: "Консалтинг",
+    healthcare: "Медицина",
+    education: "Образование",
+    tourism_hospitality: "Туризм и гостиничный бизнес",
+    financial_services: "Финансовые услуги",
+    horeca: "HoReCa",
+    professional_services: "Профессиональные услуги",
+    other: "Другое",
+  };
+
+  const offeringTypeOptions = [
+    { value: "product" as OfferingType, label: "Продукт", desc: "Физический или цифровой товар" },
+    { value: "service" as OfferingType, label: "Услуга", desc: "Почасовая, разовая или подписка" },
+    { value: "hybrid" as OfferingType, label: "Гибрид", desc: "Продукт + услуга (кофейня, клиника)" },
+  ];
+
+  const offeringSubTypeOptions: Record<OfferingType, { value: OfferingSubType; label: string }[]> = {
+    product: [
+      { value: "physical", label: "Физический товар" },
+      { value: "digital", label: "Цифровой продукт" },
+    ],
+    service: [
+      { value: "one_time", label: "Разовая услуга" },
+      { value: "subscription", label: "Подписка / абонемент" },
+      { value: "hourly", label: "Почасовая оплата" },
+    ],
+    hybrid: [
+      { value: "product_plus_service", label: "Товар + сопровождение" },
+    ],
+  };
+
+  const priceSegmentOptions = [
+    { value: "budget" as PriceSegment, label: "Эконом", desc: "Масс-маркет, низкий ценовой сегмент" },
+    { value: "mid" as PriceSegment, label: "Средний", desc: "Средний ценовой сегмент" },
+    { value: "premium" as PriceSegment, label: "Премиум", desc: "Премиум и люкс" },
+  ];
+
+  const revenueRangeOptions = [
+    { value: "under_1m" as RevenueRange, label: "До 1 млн ₽/год" },
+    { value: "1m_10m" as RevenueRange, label: "1–10 млн ₽/год" },
+    { value: "10m_50m" as RevenueRange, label: "10–50 млн ₽/год" },
+    { value: "50m_500m" as RevenueRange, label: "50–500 млн ₽/год" },
+    { value: "over_500m" as RevenueRange, label: "Свыше 500 млн ₽/год" },
+  ];
 
   const businessTypeOptions = [
     {
@@ -767,46 +863,47 @@ export default function MarketResearchPage() {
         console.warn("Не удалось сохранить данные последнего запроса:", e);
       }
 
-      const requestData = {
-        session_id: `session_${Date.now()}`,
-        answers: {
-          product_or_service: {
-            answer: formData.productDescription,
-            timestamp: new Date().toISOString(),
-            files: [],
-          },
-          target_audience_type: {
-            answer: formData.businessTypes,
-            timestamp: new Date().toISOString(),
-            files: [],
-          },
-          location: {
-            answer: formData.region
-              ? `${formData.country}, ${formData.region}`
-              : formData.country,
-            timestamp: new Date().toISOString(),
-            files: [],
-          },
-          business_stage: {
-            answer: "Развитие",
-            timestamp: new Date().toISOString(),
-            files: [],
-          },
-          competitors: {
-            answer: formData.competitors || "Неизвестно",
-            timestamp: new Date().toISOString(),
-            files: [],
-          },
-          investment_needed: {
-            answer: "$50000",
-            timestamp: new Date().toISOString(),
-            files: [],
-          },
-        },
+      // Parse competitors string → array
+      const competitorsList = formData.competitors
+        ? formData.competitors.split(",").map((c) => c.trim()).filter(Boolean)
+        : undefined;
+
+      // Derive industry from selected product type (first selected)
+      const primaryProductType = formData.productTypes[0];
+      const industryStr = productTypeToIndustry[primaryProductType] ?? primaryProductType;
+
+      // Build ResearchRequest directly — no onboarding mapper indirection
+      const requestData: Record<string, unknown> = {
+        product_name: formData.productName,
+        product_description: formData.productDescription,
+        country: formData.country,
+        ...(formData.region ? { region: formData.region } : {}),
+        // business_type: API expects single value; take first selected
+        business_type: formData.businessTypes[0],
+        // product_type: same — take first selected
+        product_type: primaryProductType,
+        localization: formData.localization,
+        industry: industryStr,
+        research_goals: formData.researchGoals,
+        // Offering & pricing (optional — omit if not set)
+        ...(formData.offeringType ? { offering_type: formData.offeringType } : {}),
+        ...(formData.offeringSubType ? { offering_sub_type: formData.offeringSubType } : {}),
+        ...(formData.priceSegment ? { price_segment: formData.priceSegment } : {}),
+        // Business stage
+        is_existing_business: formData.isExistingBusiness,
+        ...(formData.isExistingBusiness && formData.annualRevenueRange
+          ? { annual_revenue_range: formData.annualRevenueRange }
+          : {}),
+        ...(formData.isExistingBusiness && formData.yearsOperating
+          ? { years_operating: parseInt(formData.yearsOperating, 10) }
+          : {}),
+        // Optional extras
+        ...(formData.targetAudience ? { target_audience_description: formData.targetAudience } : {}),
+        ...(competitorsList && competitorsList.length > 0 ? { competitors: competitorsList } : {}),
       };
 
       console.log(
-        "[Market Research] Sending request to market-research-service..."
+        "[Market Research] Sending request to market-research-service (direct)..."
       );
       console.log("[Market Research] Request data:", requestData);
 
@@ -815,7 +912,7 @@ export default function MarketResearchPage() {
       const apiBaseUrl = "http://localhost:8005";
 
       const response = await fetch(
-        `${apiBaseUrl}/api/v1/research/from-onboarding`,
+        `${apiBaseUrl}/api/v1/research/direct`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -1637,6 +1734,142 @@ export default function MarketResearchPage() {
                         <FiCheck style={{ marginRight: "0.5rem" }} />
                       )}
                       {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* === СТАДИЯ БИЗНЕСА === */}
+              <div className={styles.section}>
+                <h3>Стадия бизнеса *</h3>
+                <div className={styles.buttonGroup}>
+                  <button
+                    type="button"
+                    className={!formData.isExistingBusiness ? styles.buttonActive : styles.button}
+                    onClick={() => setFormData((prev) => ({ ...prev, isExistingBusiness: false, annualRevenueRange: "", yearsOperating: "" }))}
+                  >
+                    {!formData.isExistingBusiness && <FiCheck style={{ marginRight: "0.5rem" }} />}
+                    Новый бизнес / стартап
+                  </button>
+                  <button
+                    type="button"
+                    className={formData.isExistingBusiness ? styles.buttonActive : styles.button}
+                    onClick={() => setFormData((prev) => ({ ...prev, isExistingBusiness: true }))}
+                  >
+                    {formData.isExistingBusiness && <FiCheck style={{ marginRight: "0.5rem" }} />}
+                    Действующий бизнес
+                  </button>
+                </div>
+
+                {formData.isExistingBusiness && (
+                  <div style={{ marginTop: "1rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
+                    <div className={styles.formGroup}>
+                      <label className={styles.label}>Годовая выручка (опционально)</label>
+                      <div className={styles.buttonGroup}>
+                        {revenueRangeOptions.map((opt) => (
+                          <button
+                            key={opt.value}
+                            type="button"
+                            className={formData.annualRevenueRange === opt.value ? styles.buttonActive : styles.button}
+                            onClick={() => handleButtonSelect("annualRevenueRange", opt.value)}
+                          >
+                            {formData.annualRevenueRange === opt.value && <FiCheck style={{ marginRight: "0.5rem" }} />}
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label className={styles.label}>Лет на рынке (опционально)</label>
+                      <input
+                        type="number"
+                        name="yearsOperating"
+                        value={formData.yearsOperating}
+                        onChange={handleInputChange}
+                        className={styles.input}
+                        placeholder="Например: 3"
+                        min={0}
+                        max={100}
+                        style={{ maxWidth: "180px" }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* === ТИП ПРЕДЛОЖЕНИЯ === */}
+              <div className={styles.section}>
+                <h3>Тип предложения (опционально)</h3>
+                <p className={styles.formDescription} style={{ marginBottom: "0.75rem" }}>
+                  Помогает точнее построить финансовую модель
+                </p>
+                <div className={styles.buttonGroup}>
+                  {offeringTypeOptions.map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      className={formData.offeringType === opt.value ? styles.buttonActive : styles.button}
+                      onClick={() =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          offeringType: prev.offeringType === opt.value ? "" : opt.value,
+                          offeringSubType: "",
+                        }))
+                      }
+                    >
+                      {formData.offeringType === opt.value && <FiCheck style={{ marginRight: "0.5rem" }} />}
+                      <span>
+                        <strong>{opt.label}</strong>
+                        <span style={{ fontWeight: 400, marginLeft: "0.4rem", opacity: 0.75 }}>— {opt.desc}</span>
+                      </span>
+                    </button>
+                  ))}
+                </div>
+
+                {formData.offeringType && offeringSubTypeOptions[formData.offeringType].length > 0 && (
+                  <div style={{ marginTop: "0.75rem" }}>
+                    <label className={styles.label} style={{ marginBottom: "0.5rem" }}>Уточните тип</label>
+                    <div className={styles.buttonGroup}>
+                      {offeringSubTypeOptions[formData.offeringType].map((sub) => (
+                        <button
+                          key={sub.value}
+                          type="button"
+                          className={formData.offeringSubType === sub.value ? styles.buttonActive : styles.button}
+                          onClick={() => handleButtonSelect("offeringSubType", formData.offeringSubType === sub.value ? "" : sub.value)}
+                        >
+                          {formData.offeringSubType === sub.value && <FiCheck style={{ marginRight: "0.5rem" }} />}
+                          {sub.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* === ЦЕНОВОЙ СЕГМЕНТ === */}
+              <div className={styles.section}>
+                <h3>Ценовой сегмент (опционально)</h3>
+                <p className={styles.formDescription} style={{ marginBottom: "0.75rem" }}>
+                  Влияет на анализ конкурентов и целевой аудитории
+                </p>
+                <div className={styles.buttonGroup}>
+                  {priceSegmentOptions.map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      className={formData.priceSegment === opt.value ? styles.buttonActive : styles.button}
+                      onClick={() =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          priceSegment: prev.priceSegment === opt.value ? "" : opt.value,
+                        }))
+                      }
+                    >
+                      {formData.priceSegment === opt.value && <FiCheck style={{ marginRight: "0.5rem" }} />}
+                      <span>
+                        <strong>{opt.label}</strong>
+                        <span style={{ fontWeight: 400, marginLeft: "0.4rem", opacity: 0.75 }}>— {opt.desc}</span>
+                      </span>
                     </button>
                   ))}
                 </div>

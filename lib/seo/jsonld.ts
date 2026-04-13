@@ -805,3 +805,337 @@ export const solutionData = {
     isFree: false,
   },
 } as const;
+
+// ─── HowTo (step-by-step guides for AI citation) ─────────────────────────────
+export interface HowToStep {
+  name: string;
+  text: string;
+}
+
+export interface HowToInput {
+  name: string;
+  description: string;
+  url: string;
+  totalTime?: string; // ISO 8601, e.g. "PT10M"
+  steps: HowToStep[];
+}
+
+export function howToSchema({ name, description, url, totalTime, steps }: HowToInput) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    name,
+    description,
+    url,
+    ...(totalTime ? { totalTime } : {}),
+    tool: {
+      "@type": "HowToTool",
+      name: "Upgrowplan",
+      url: SITE_URL,
+    },
+    step: steps.map((step, i) => ({
+      "@type": "HowToStep",
+      position: i + 1,
+      name: step.name,
+      text: step.text,
+    })),
+  };
+}
+
+// ─── HowTo steps per product (EN + RU) ────────────────────────────────────────
+export const howToSteps = {
+  planMaster: {
+    en: {
+      name: "How to Create an AI Business Plan with PlanMaster",
+      description:
+        "Generate a complete investor-ready business plan in 5–10 minutes using PlanMaster AI — no consultants needed.",
+      totalTime: "PT10M",
+      url: `${SITE_URL}/solutions/planMaster`,
+      steps: [
+        {
+          name: "Describe your business idea",
+          text: "Enter a brief description of your business: the product or service, your target market, and the country where you plan to operate.",
+        },
+        {
+          name: "Set plan parameters",
+          text: "Choose your business type (B2B, B2C, or B2B2C), scale, industry, country, and preferred currency. PlanMaster supports any country and adapts tax and market context automatically.",
+        },
+        {
+          name: "AI generates all sections",
+          text: "PlanMaster AI orchestrates multiple specialised agents to draft each section: executive summary, market analysis, competitor research, marketing strategy, operational plan, and financial model (P&L, cash flow, break-even).",
+        },
+        {
+          name: "Skeptic Agent verifies data accuracy",
+          text: "A built-in Skeptic Agent cross-checks every key figure against live web sources and flags unrealistic assumptions — such as a 90% market share or 200% margins — before finalising the document.",
+        },
+        {
+          name: "Download your business plan",
+          text: "The formatted business plan is available for download as a .docx (Word) file, ready to share with investors, banks, or grant committees without additional editing.",
+        },
+      ],
+    },
+    ru: {
+      name: "Как создать бизнес-план с помощью PlanMaster AI",
+      description:
+        "Создайте полноценный бизнес-план для инвесторов за 5–10 минут с PlanMaster AI — без консультантов.",
+      totalTime: "PT10M",
+      url: `${SITE_URL}/ru/solutions/planMaster`,
+      steps: [
+        {
+          name: "Опишите бизнес-идею",
+          text: "Введите краткое описание бизнеса: продукт или услугу, целевую аудиторию и страну работы.",
+        },
+        {
+          name: "Задайте параметры плана",
+          text: "Выберите тип бизнеса (B2B, B2C или B2B2C), масштаб, отрасль, страну и предпочтительную валюту. PlanMaster поддерживает любую страну и автоматически адаптирует налоги и рыночный контекст.",
+        },
+        {
+          name: "ИИ генерирует все разделы",
+          text: "PlanMaster AI координирует несколько специализированных агентов для составления каждого раздела: резюме, анализ рынка, конкурентная среда, маркетинговая стратегия, операционный план и финансовая модель (P&L, денежный поток, точка безубыточности).",
+        },
+        {
+          name: "Агент-скептик проверяет данные",
+          text: "Встроенный агент-скептик перекрёстно проверяет каждую ключевую цифру по живым веб-источникам и помечает нереалистичные предположения — например, долю рынка 90% или маржу 200% — до финализации документа.",
+        },
+        {
+          name: "Скачайте бизнес-план",
+          text: "Готовый отформатированный бизнес-план доступен для скачивания в формате .docx (Word) — готов к отправке инвесторам, банкам или грантовым комитетам без дополнительного редактирования.",
+        },
+      ],
+    },
+  },
+  marketResearch: {
+    en: {
+      name: "How to Conduct AI Market Research with MarketSense",
+      description:
+        "Get a comprehensive market research report for your niche in 10–30 minutes using MarketSense AI Agent.",
+      totalTime: "PT30M",
+      url: `${SITE_URL}/solutions/marketResearch`,
+      steps: [
+        {
+          name: "Define your target market",
+          text: "Specify the industry, product or service category, target country and city (if applicable), and the type of customers you want to analyse.",
+        },
+        {
+          name: "Configure the research scope",
+          text: "Set the number of competitors to track (up to 20), customer segments to profile, data recency requirements, and any specific focus areas such as pricing or distribution channels.",
+        },
+        {
+          name: "AI pulls live data from 10+ sources",
+          text: "MarketSense AI queries live data sources — Google Maps, Statista, open business registries, and industry news databases — to gather current, real-world market information.",
+        },
+        {
+          name: "Multi-agent validation filters the results",
+          text: "A Deep Search Agent, Skeptic Agent, and Validator Agent cross-check all findings, remove duplicates, flag inconsistencies, and verify data before synthesis.",
+        },
+        {
+          name: "Receive your full market research report",
+          text: "The final report includes: market size and growth forecasts, competitor mapping with profiles, customer segmentation, demand trends, pricing benchmarks, and strategic recommendations — all with source references.",
+        },
+      ],
+    },
+    ru: {
+      name: "Как провести ИИ-исследование рынка с MarketSense",
+      description:
+        "Получите комплексный отчёт по исследованию рынка для вашей ниши за 10–30 минут с MarketSense AI Agent.",
+      totalTime: "PT30M",
+      url: `${SITE_URL}/ru/solutions/marketResearch`,
+      steps: [
+        {
+          name: "Определите целевой рынок",
+          text: "Укажите отрасль, категорию продукта или услуги, целевую страну и город (если применимо) и тип клиентов для анализа.",
+        },
+        {
+          name: "Настройте охват исследования",
+          text: "Задайте количество конкурентов для отслеживания (до 20), сегменты клиентов для профилирования, требования к актуальности данных и любые конкретные фокусные области — например, ценообразование или каналы сбыта.",
+        },
+        {
+          name: "ИИ собирает живые данные из 10+ источников",
+          text: "MarketSense AI запрашивает живые источники данных — Google Maps, Statista, открытые бизнес-реестры и отраслевые новостные базы — для сбора актуальной рыночной информации.",
+        },
+        {
+          name: "Многоагентная валидация фильтрует результаты",
+          text: "Агент глубокого поиска, агент-скептик и агент-валидатор перекрёстно проверяют все находки, удаляют дубли, отмечают несоответствия и верифицируют данные перед синтезом.",
+        },
+        {
+          name: "Получите полный отчёт по рынку",
+          text: "Итоговый отчёт включает: прогнозы объёма и роста рынка, картирование конкурентов с профилями, сегментацию клиентов, тренды спроса, ценовые бенчмарки и стратегические рекомендации — всё со ссылками на источники.",
+        },
+      ],
+    },
+  },
+  synthFocusLab: {
+    en: {
+      name: "How to Run a Virtual Focus Group with Synth Focus Lab",
+      description:
+        "Test your product concept or marketing message with AI-powered synthetic respondents in minutes — no recruiting needed.",
+      totalTime: "PT15M",
+      url: `${SITE_URL}/solutions/synthFocusLab`,
+      steps: [
+        {
+          name: "Define your research question",
+          text: "Describe the concept, product, ad copy, or UX element you want to test. State what kind of feedback you need — emotional reaction, purchase intent, usability, or price sensitivity.",
+        },
+        {
+          name: "Configure your respondent panel",
+          text: "Set panel size (5–50+ respondents), demographics (age range, income level, location, lifestyle), and any niche characteristics relevant to your target audience.",
+        },
+        {
+          name: "AI generates synthetic personas",
+          text: "Each respondent is built as a detailed AI persona with consistent demographic, behavioural, and financial attributes — calibrated against real population data patterns to simulate authentic reactions.",
+        },
+        {
+          name: "Run the test session",
+          text: "The personas respond to your questions, react to your concept, and provide feedback — just like real focus group participants, but available instantly without scheduling or incentive fees.",
+        },
+        {
+          name: "Receive analysed insights",
+          text: "Get a structured summary of key findings, sentiment breakdown, common objections, and actionable recommendations based on the full panel responses.",
+        },
+      ],
+    },
+    ru: {
+      name: "Как провести виртуальную фокус-группу с Synth Focus Lab",
+      description:
+        "Протестируйте концепцию продукта или маркетинговое сообщение с синтетическими ИИ-респондентами за считанные минуты — без рекрутинга.",
+      totalTime: "PT15M",
+      url: `${SITE_URL}/ru/solutions/synthFocusLab`,
+      steps: [
+        {
+          name: "Определите исследовательский вопрос",
+          text: "Опишите концепцию, продукт, рекламный текст или элемент UX для тестирования. Укажите тип обратной связи: эмоциональная реакция, намерение купить, удобство использования или ценовая чувствительность.",
+        },
+        {
+          name: "Настройте панель респондентов",
+          text: "Задайте размер панели (5–50+ респондентов), демографику (возраст, уровень дохода, геолокация, образ жизни) и нишевые характеристики целевой аудитории.",
+        },
+        {
+          name: "ИИ создаёт синтетические персоны",
+          text: "Каждый респондент формируется как детальная ИИ-персона с согласованными демографическими, поведенческими и финансовыми атрибутами — откалиброванными по реальным паттернам данных населения.",
+        },
+        {
+          name: "Запустите тестовую сессию",
+          text: "Персоны отвечают на вопросы, реагируют на концепцию и дают обратную связь — как реальные участники фокус-группы, но доступные мгновенно без расписания и вознаграждений.",
+        },
+        {
+          name: "Получите проанализированные инсайты",
+          text: "Получите структурированное резюме ключевых выводов, разбивку настроений, типичные возражения и практические рекомендации на основе ответов всей панели.",
+        },
+      ],
+    },
+  },
+  businessPulse: {
+    en: {
+      name: "How to Monitor Your Market with Business Pulse",
+      description:
+        "Set up AI-powered daily market intelligence to track competitors, news, and industry signals automatically.",
+      totalTime: "PT5M",
+      url: `${SITE_URL}/solutions/businessPulse`,
+      steps: [
+        {
+          name: "Define your monitoring targets",
+          text: "Specify your industry, key competitors (by name or website), geographic market, and the types of signals you care about — pricing, product launches, news mentions, or regulatory changes.",
+        },
+        {
+          name: "Configure alert priorities",
+          text: "Set thresholds for what triggers an immediate alert versus a daily digest. Critical signals like competitor price drops or major news events are flagged in near real-time.",
+        },
+        {
+          name: "AI monitors continuously",
+          text: "Business Pulse scans competitor websites, social media, news feeds, and business registries every day — collecting raw signals from across the web without manual effort.",
+        },
+        {
+          name: "Intelligent scoring and summarisation",
+          text: "Unlike Google Alerts (which sends raw links), Business Pulse analyses each signal, scores its business relevance, and summarises the key insight so you can act immediately.",
+        },
+        {
+          name: "Review your daily intelligence briefing",
+          text: "Each day you receive a structured briefing: what changed, who moved, what it means for your business, and recommended next actions — all in one dashboard.",
+        },
+      ],
+    },
+    ru: {
+      name: "Как мониторить рынок с Business Pulse",
+      description:
+        "Настройте ИИ-мониторинг рынка для автоматического отслеживания конкурентов, новостей и отраслевых сигналов.",
+      totalTime: "PT5M",
+      url: `${SITE_URL}/ru/solutions/businessPulse`,
+      steps: [
+        {
+          name: "Определите объекты мониторинга",
+          text: "Укажите отрасль, ключевых конкурентов (по имени или сайту), географический рынок и типы сигналов: ценообразование, запуски продуктов, упоминания в новостях или изменения регуляторики.",
+        },
+        {
+          name: "Настройте приоритеты уведомлений",
+          text: "Задайте пороги для немедленных уведомлений и ежедневного дайджеста. Критические сигналы — снижение цен конкурентами или крупные новости — приходят в режиме близком к реальному времени.",
+        },
+        {
+          name: "ИИ мониторит непрерывно",
+          text: "Business Pulse ежедневно сканирует сайты конкурентов, социальные сети, новостные ленты и бизнес-реестры — собирая сырые сигналы со всего интернета без ручных усилий.",
+        },
+        {
+          name: "Интеллектуальная оценка и обобщение",
+          text: "В отличие от Google Alerts (который присылает сырые ссылки), Business Pulse анализирует каждый сигнал, оценивает его бизнес-релевантность и формулирует ключевой инсайт для немедленного действия.",
+        },
+        {
+          name: "Читайте ежедневный разведывательный брифинг",
+          text: "Каждый день вы получаете структурированный брифинг: что изменилось, кто сдвинулся, что это значит для вашего бизнеса и рекомендуемые следующие шаги — всё в одном дашборде.",
+        },
+      ],
+    },
+  },
+};
+
+// ─── Product schema (boosts rich results + AI citation signals) ───────────────
+export interface ProductInput {
+  name: string;
+  description: string;
+  url: string;
+  image?: string;
+  /**
+   * Only add aggregateRating when you have real verified user reviews.
+   * Fake or placeholder ratings violate Google guidelines.
+   */
+  aggregateRating?: {
+    ratingValue: number;
+    reviewCount: number;
+    bestRating?: number;
+  };
+}
+
+export function productSchema({ name, description, url, image, aggregateRating }: ProductInput) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name,
+    description,
+    url,
+    brand: {
+      "@type": "Brand",
+      name: "Upgrowplan",
+      url: SITE_URL,
+    },
+    image: image ?? OG_IMAGE,
+    offers: {
+      "@type": "Offer",
+      url,
+      availability: "https://schema.org/OnlineOnly",
+      seller: {
+        "@type": "Organization",
+        name: "Upgrowplan",
+        url: SITE_URL,
+      },
+    },
+    ...(aggregateRating
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: aggregateRating.ratingValue,
+            reviewCount: aggregateRating.reviewCount,
+            bestRating: aggregateRating.bestRating ?? 5,
+            worstRating: 1,
+          },
+        }
+      : {}),
+  };
+}

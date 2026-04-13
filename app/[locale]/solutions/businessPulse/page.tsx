@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { buildMetadata, pageMeta } from "@/lib/seo/metadata";
-import { softwareAppSchema, breadcrumbSchema, breadcrumbs, solutionData, faqSchema, pageFaqs } from "@/lib/seo/jsonld";
+import { softwareAppSchema, breadcrumbSchema, breadcrumbs, solutionData, faqSchema, pageFaqs, howToSchema, howToSteps, productSchema } from "@/lib/seo/jsonld";
 import { JsonLd } from "@/components/JsonLd";
 import FaqSection from "@/components/FaqSection";
 import BusinessPulsePageEn from "./page.en";
@@ -29,6 +29,8 @@ export default function BusinessPulseLocalePage({ params }: Params) {
           softwareAppSchema({ ...data, url, isFree: solutionData.businessPulse.isFree }),
           breadcrumbSchema(breadcrumbs.solutionPage(locale, data.name)),
           faqSchema(pageFaqs.businessPulse[locale]),
+          howToSchema(howToSteps.businessPulse[locale]),
+          productSchema({ name: data.name, description: data.description, url }),
         ]}
       />
       {locale === "ru" ? <BusinessPulsePageRu /> : <BusinessPulsePageEn />}

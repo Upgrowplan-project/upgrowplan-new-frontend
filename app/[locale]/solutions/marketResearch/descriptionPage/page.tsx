@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { buildMetadata, pageMeta } from "@/lib/seo/metadata";
-import { faqSchema, pageFaqs, breadcrumbSchema } from "@/lib/seo/jsonld";
+import {
+  faqSchema, pageFaqs, breadcrumbSchema,
+  howToSchema, howToSteps,
+  productSchema, solutionData,
+} from "@/lib/seo/jsonld";
 import { JsonLd } from "@/components/JsonLd";
 import FaqSection from "@/components/FaqSection";
 import MarketResearchDescriptionPageEn from "./page.en";
@@ -27,6 +31,8 @@ export default function MarketResearchDescriptionLocalePage({ params }: Params) 
     },
     { name: locale === "ru" ? "Исследование рынка" : "Market Research" },
   ];
+  const solData = solutionData.marketResearch[locale];
+  const solUrl = `${SITE_URL}${locale === "ru" ? "/ru" : ""}${solutionData.marketResearch.url}`;
 
   return (
     <>
@@ -34,6 +40,8 @@ export default function MarketResearchDescriptionLocalePage({ params }: Params) 
         data={[
           faqSchema(pageFaqs.marketResearchDescription[locale]),
           breadcrumbSchema(crumbs),
+          howToSchema(howToSteps.marketResearch[locale]),
+          productSchema({ name: solData.name, description: solData.description, url: solUrl }),
         ]}
       />
       {locale === "ru" ? <MarketResearchDescriptionPageRu /> : <MarketResearchDescriptionPageEn />}
