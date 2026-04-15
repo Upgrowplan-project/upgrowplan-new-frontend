@@ -61,6 +61,17 @@ type ProductType =
   | "financial_services"
   | "horeca"
   | "professional_services"
+  | "wellness_fitness"
+  | "beauty_personal_care"
+  | "home_services"
+  | "legal_services"
+  | "pet_services"
+  // Медиа и развлечения
+  | "entertainment_media"
+  // Недвижимость
+  | "real_estate"
+  // Транспорт
+  | "transport_mobility"
   // Общее
   | "other";
 type ResearchGoal =
@@ -524,6 +535,14 @@ export default function MarketResearchPage() {
     financial_services: "Финансовые услуги",
     horeca: "HoReCa",
     professional_services: "Профессиональные услуги",
+    wellness_fitness: "Фитнес и Велнес",
+    beauty_personal_care: "Красота и уход",
+    home_services: "Дом и быт",
+    legal_services: "Юридические услуги",
+    pet_services: "Зоотовары и ветеринария",
+    entertainment_media: "Развлечения и медиа",
+    real_estate: "Недвижимость",
+    transport_mobility: "Транспорт и мобильность",
     other: "Другое",
   };
 
@@ -585,144 +604,62 @@ export default function MarketResearchPage() {
     },
   ];
 
-  const productTypeOptions = [
-    // B2C категории
-    {
-      value: "retail_fmcg" as ProductType,
-      label: "Розница и FMCG",
-      category: "B2C",
-    },
-    {
-      value: "fashion_apparel" as ProductType,
-      label: "Мода и одежда",
-      category: "B2C",
-    },
-    {
-      value: "electronics" as ProductType,
-      label: "Техника и электроника",
-      category: "B2C",
-    },
-    {
-      value: "food_beverage" as ProductType,
-      label: "Продукты питания и напитки",
-      category: "B2C",
-    },
-    {
-      value: "digital_apps" as ProductType,
-      label: "Цифровые приложения для потребителей",
-      category: "B2C",
-    },
-
-    // B2B категории
-    {
-      value: "manufacturing" as ProductType,
-      label: "Производство",
-      category: "B2B",
-    },
-    {
-      value: "wholesale_trade" as ProductType,
-      label: "Оптовая торговля",
-      category: "B2B",
-    },
-    {
-      value: "corporate_solutions" as ProductType,
-      label: "Корпоративные решения",
-      category: "B2B",
-    },
-    {
-      value: "business_tech" as ProductType,
-      label: "Технологии для бизнеса",
-      category: "B2B",
-    },
-
-    // Маркетплейсы и платформы
-    {
-      value: "marketplace" as ProductType,
-      label: "Маркетплейс/Платформа",
-      category: "Платформы",
-    },
-    {
-      value: "p2p_platform" as ProductType,
-      label: "P2P платформа",
-      category: "Платформы",
-    },
-
-    // SaaS и цифровые платформы
-    { value: "saas_b2b" as ProductType, label: "B2B SaaS", category: "SaaS" },
-    { value: "saas_b2c" as ProductType, label: "B2C SaaS", category: "SaaS" },
-    {
-      value: "cloud_platform" as ProductType,
-      label: "Облачная платформа",
-      category: "SaaS",
-    },
-
-    // Промышленные рынки
-    {
-      value: "industrial_equipment" as ProductType,
-      label: "Промышленное оборудование",
-      category: "Промышленность",
-    },
-    {
-      value: "logistics" as ProductType,
-      label: "Логистика",
-      category: "Промышленность",
-    },
-    {
-      value: "construction" as ProductType,
-      label: "Строительство",
-      category: "Промышленность",
-    },
-    {
-      value: "energy" as ProductType,
-      label: "Энергетика",
-      category: "Промышленность",
-    },
-    {
-      value: "agriculture" as ProductType,
-      label: "Сельское хозяйство",
-      category: "Промышленность",
-    },
-
-    // Услуги
-    {
-      value: "consulting" as ProductType,
-      label: "Консалтинг",
-      category: "Услуги",
-    },
-    {
-      value: "healthcare" as ProductType,
-      label: "Медицина",
-      category: "Услуги",
-    },
-    {
-      value: "education" as ProductType,
-      label: "Образование",
-      category: "Услуги",
-    },
-    {
-      value: "tourism_hospitality" as ProductType,
-      label: "Туризм и гостиничный бизнес",
-      category: "Услуги",
-    },
-    {
-      value: "financial_services" as ProductType,
-      label: "Финансовые услуги",
-      category: "Услуги",
-    },
-    {
-      value: "horeca" as ProductType,
-      label: "HoReCa (отели, рестораны, кафе)",
-      category: "Услуги",
-    },
-    {
-      value: "professional_services" as ProductType,
-      label: "Профессиональные услуги",
-      category: "Услуги",
-    },
-
+  const productTypeOptions: { value: ProductType; label: string; category: string }[] = [
+    // Розница и потребительские товары
+    { value: "retail_fmcg",        label: "Розница и FMCG",                  category: "Розница" },
+    { value: "fashion_apparel",    label: "Мода и одежда",                   category: "Розница" },
+    { value: "electronics",        label: "Техника и электроника",            category: "Розница" },
+    { value: "food_beverage",      label: "Продукты питания и напитки",       category: "Розница" },
+    // HoReCa
+    { value: "horeca",             label: "HoReCa (кафе, рестораны, отели)", category: "HoReCa" },
+    { value: "tourism_hospitality",label: "Туризм и гостиничный бизнес",     category: "HoReCa" },
+    // Велнес и красота
+    { value: "wellness_fitness",   label: "Фитнес и Велнес",                 category: "Велнес и красота" },
+    { value: "beauty_personal_care",label: "Красота и уход",                 category: "Велнес и красота" },
+    { value: "healthcare",         label: "Медицина и клиники",              category: "Велнес и красота" },
+    { value: "pet_services",       label: "Зоотовары и ветеринария",         category: "Велнес и красота" },
+    // Образование и профессии
+    { value: "education",          label: "Образование",                     category: "Образование и услуги" },
+    { value: "consulting",         label: "Консалтинг",                      category: "Образование и услуги" },
+    { value: "professional_services", label: "Профессиональные услуги",      category: "Образование и услуги" },
+    { value: "legal_services",     label: "Юридические услуги",              category: "Образование и услуги" },
+    // Дом и быт
+    { value: "home_services",      label: "Дом и быт (клининг, ремонт)",     category: "Дом и быт" },
+    { value: "real_estate",        label: "Недвижимость",                    category: "Дом и быт" },
+    { value: "construction",       label: "Строительство",                   category: "Дом и быт" },
+    // Цифровые продукты
+    { value: "digital_apps",       label: "Цифровые приложения (B2C)",       category: "Цифровые продукты" },
+    { value: "saas_b2b",           label: "B2B SaaS",                        category: "Цифровые продукты" },
+    { value: "saas_b2c",           label: "B2C SaaS",                        category: "Цифровые продукты" },
+    { value: "cloud_platform",     label: "Облачная платформа",              category: "Цифровые продукты" },
+    { value: "marketplace",        label: "Маркетплейс / Платформа",         category: "Цифровые продукты" },
+    { value: "p2p_platform",       label: "P2P платформа",                   category: "Цифровые продукты" },
+    { value: "entertainment_media",label: "Развлечения и медиа",             category: "Цифровые продукты" },
+    // B2B и промышленность
+    { value: "manufacturing",      label: "Производство",                    category: "B2B и промышленность" },
+    { value: "wholesale_trade",    label: "Оптовая торговля",                category: "B2B и промышленность" },
+    { value: "corporate_solutions",label: "Корпоративные решения",           category: "B2B и промышленность" },
+    { value: "business_tech",      label: "Технологии для бизнеса",          category: "B2B и промышленность" },
+    { value: "industrial_equipment",label: "Промышленное оборудование",      category: "B2B и промышленность" },
+    { value: "logistics",          label: "Логистика",                       category: "B2B и промышленность" },
+    { value: "energy",             label: "Энергетика",                      category: "B2B и промышленность" },
+    { value: "agriculture",        label: "Сельское хозяйство",              category: "B2B и промышленность" },
+    { value: "transport_mobility", label: "Транспорт и мобильность",         category: "B2B и промышленность" },
+    // Финансы
+    { value: "financial_services", label: "Финансовые услуги",               category: "Финансы" },
     // Общее
-    { value: "other" as ProductType, label: "Другое", category: "Другое" },
+    { value: "other",              label: "Другое",                          category: "Другое" },
   ];
+
+  // Grouped structure for the multi-select panel
+  const productTypesByCategory = productTypeOptions.reduce<Record<string, typeof productTypeOptions>>(
+    (acc, opt) => {
+      if (!acc[opt.category]) acc[opt.category] = [];
+      acc[opt.category].push(opt);
+      return acc;
+    },
+    {}
+  );
 
   const localizationOptions = [
     { value: "local" as Localization, label: "Местный рынок" },
@@ -1670,24 +1607,53 @@ export default function MarketResearchPage() {
 
               <div className={styles.section}>
                 <h3>Тип продукта или услуги * (можно выбрать несколько)</h3>
-                <div className={styles.buttonGroup}>
-                  {productTypeOptions.map((option) => (
-                    <button
-                      key={option.value}
-                      type="button"
-                      className={
-                        formData.productTypes.includes(option.value)
-                          ? styles.buttonActive
-                          : styles.button
-                      }
-                      onClick={() => handleProductTypeToggle(option.value)}
-                    >
-                      {formData.productTypes.includes(option.value) && (
-                        <FiCheck style={{ marginRight: "0.5rem" }} />
-                      )}
-                      {option.label}
-                    </button>
-                  ))}
+                <div className={styles.productTypeSelectWrapper}>
+                  {/* Selected tags */}
+                  {formData.productTypes.length > 0 && (
+                    <div className={styles.selectedTagsRow}>
+                      {formData.productTypes.map((t) => {
+                        const opt = productTypeOptions.find((o) => o.value === t);
+                        return (
+                          <span key={t} className={styles.selectedTag}>
+                            {opt?.label ?? t}
+                            <button
+                              type="button"
+                              className={styles.selectedTagRemove}
+                              onClick={() => handleProductTypeToggle(t)}
+                              aria-label={`Убрать ${opt?.label}`}
+                            >
+                              ×
+                            </button>
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
+                  {/* Grouped checkbox panel */}
+                  <div className={styles.productTypePanel}>
+                    {Object.entries(productTypesByCategory).map(([category, opts]) => (
+                      <div key={category} className={styles.productTypeCategoryBlock}>
+                        <div className={styles.productTypeCategoryHeader}>{category}</div>
+                        {opts.map((opt) => {
+                          const checked = formData.productTypes.includes(opt.value);
+                          return (
+                            <label
+                              key={opt.value}
+                              className={`${styles.productTypeCheckLabel}${checked ? " " + styles.checkedItem : ""}`}
+                            >
+                              <input
+                                type="checkbox"
+                                className={styles.productTypeCheckbox}
+                                checked={checked}
+                                onChange={() => handleProductTypeToggle(opt.value)}
+                              />
+                              {opt.label}
+                            </label>
+                          );
+                        })}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
 

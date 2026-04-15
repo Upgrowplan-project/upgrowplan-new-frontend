@@ -273,17 +273,17 @@ export const pageFaqs = {
       {
         question: "What is Upgrowplan?",
         answer:
-          "Upgrowplan is an AI-powered platform that generates professional business plans, market research reports, financial models, and strategic analyses in minutes — without hiring consultants.",
+          "Upgrowplan is an AI-powered platform that generates professional business plans, market research reports, financial models, and virtual respondent panels in minutes — without hiring consultants.",
       },
       {
         question: "How long does it take to generate a business plan?",
         answer:
-          "Depending on the tool, a full business plan is ready in 5–20 minutes. Market research reports typically take 10–30 minutes with live data verification.",
+          "Generation takes 7–15 minutes: the service needs time to collect and verify data from live sources before producing the final document.",
       },
       {
         question: "Is Upgrowplan suitable for investor presentations?",
         answer:
-          "Yes. Our PlanMaster AI generates investor-ready documents with financial projections, market analysis, and SWOT, formatted according to international standards.",
+          "Yes. Upgrowplan services generate investor-ready documents with financial projections, market analysis, and SWOT, formatted according to international standards.",
       },
       {
         question: "What languages does Upgrowplan support?",
@@ -293,24 +293,24 @@ export const pageFaqs = {
       {
         question: "Do I need technical knowledge to use Upgrowplan?",
         answer:
-          "No. All tools work through a simple chat interface — just describe your business idea and the AI handles the rest.",
+          "No. All Upgrowplan services work through a simple request form — just fill in your business details and the service handles the rest.",
       },
     ],
     ru: [
       {
         question: "Что такое Upgrowplan?",
         answer:
-          "Upgrowplan — ИИ-платформа для генерации профессиональных бизнес-планов, исследований рынка, финансовых моделей и стратегических анализов за считанные минуты — без найма консультантов.",
+          "Upgrowplan — ИИ-платформа для генерации профессиональных бизнес-планов, исследований рынка, финансовых моделей и панелей виртуальных респондентов за считанные минуты — без найма консультантов.",
       },
       {
         question: "Сколько времени занимает генерация бизнес-плана?",
         answer:
-          "В зависимости от инструмента, полный бизнес-план готов за 5–20 минут. Отчёты по исследованию рынка занимают 10–30 минут с верификацией живых данных.",
+          "Генерация занимает 7–15 минут: сервису необходимо время на сбор и проверку данных из живых источников перед формированием итогового документа.",
       },
       {
         question: "Подходит ли Upgrowplan для презентации инвесторам?",
         answer:
-          "Да. PlanMaster AI генерирует готовые для инвесторов документы с финансовыми прогнозами, анализом рынка и SWOT, оформленные по международным стандартам.",
+          "Да. Сервисы Upgrowplan генерируют готовые для инвесторов документы с финансовыми прогнозами, анализом рынка и SWOT, оформленные по международным стандартам.",
       },
       {
         question: "Какие языки поддерживает Upgrowplan?",
@@ -320,7 +320,7 @@ export const pageFaqs = {
       {
         question: "Нужны ли технические знания для работы с Upgrowplan?",
         answer:
-          "Нет. Все инструменты работают через простой чат-интерфейс — просто опишите бизнес-идею, а ИИ сделает остальное.",
+          "Нет. Все сервисы Upgrowplan работают через простую форму запроса — просто заполните данные о вашем бизнесе, и сервис сделает остальное.",
       },
     ],
   },
@@ -467,12 +467,12 @@ export const pageFaqs = {
       {
         question: "What AI tools does Upgrowplan offer?",
         answer:
-          "Upgrowplan offers: PlanMaster AI (business plans), MarketSense AI (market research), Synth Focus Lab (virtual focus groups), Business Pulse (market monitoring), Social Plan Master (SMM strategy), Fin Buddy (financial tracking), Open Abroad (international expansion), and FinPilot Free (financial modelling).",
+          "Upgrowplan offers: PlanMaster AI (business plans), MarketSense AI (market research), Synth Focus Lab (virtual focus groups), Business Pulse (market monitoring), Fin Buddy (financial tracking), Open Abroad (international expansion), and FinPilot Free (financial modelling).",
       },
       {
         question: "Which tools are free?",
         answer:
-          "FinPilot Free and Open Abroad (Relocation Service) are available for free. Other tools are available on a subscription or pay-per-use basis.",
+          "FinPilot Free and Open Abroad (Relocation Service) are available for free. Visit the service pages and get free access to test the beta versions of our products. Other tools are available on a subscription or pay-per-use basis.",
       },
       {
         question: "Can I use Upgrowplan tools for an existing business?",
@@ -484,12 +484,12 @@ export const pageFaqs = {
       {
         question: "Какие ИИ-инструменты предлагает Upgrowplan?",
         answer:
-          "Upgrowplan предлагает: PlanMaster AI (бизнес-планы), MarketSense AI (исследование рынка), Synth Focus Lab (виртуальные фокус-группы), Business Pulse (мониторинг рынка), Social Plan Master (SMM-стратегия), Fin Buddy (финансовый учёт), Open Abroad (международная экспансия) и FinPilot Free (финансовое моделирование).",
+          "Upgrowplan предлагает: PlanMaster AI (бизнес-планы), MarketSense AI (исследование рынка), Synth Focus Lab (виртуальные фокус-группы), Business Pulse (мониторинг рынка), Fin Buddy (финансовый учёт), Open Abroad (международная экспансия) и FinPilot Free (финансовое моделирование).",
       },
       {
         question: "Какие инструменты бесплатны?",
         answer:
-          "FinPilot Free и Open Abroad (Relocation Service) доступны бесплатно. Остальные инструменты доступны по подписке или по модели оплаты за использование.",
+          "FinPilot Free и Open Abroad (Relocation Service) доступны бесплатно. Посетите страницы сервисов и получите бесплатный доступ для тестирования бета-версии продуктов. Остальные инструменты доступны по подписке или по модели оплаты за использование.",
       },
       {
         question: "Можно ли использовать инструменты Upgrowplan для действующего бизнеса?",
@@ -547,19 +547,19 @@ export const pageFaqs = {
   marketResearchDescription: {
     en: [
       {
-        question: "What does an AI market research report include?",
+        question: "What does a market research report include?",
         answer:
           "A MarketSense report includes: market size and growth forecast, competitor mapping (up to 20 players), customer segmentation, demand trends, pricing benchmarks, and strategic recommendations — all sourced from live data.",
       },
       {
         question: "How long does market research take?",
         answer:
-          "Most reports are ready in 10–30 minutes. Complex multi-city or multi-segment analyses may take up to an hour. Compare that to 2–4 weeks for a traditional research agency.",
+          "Most reports are ready in 7–15 minutes. Complex multi-city or multi-segment analyses may take longer. Compare that to 2–4 weeks for a traditional research agency.",
       },
       {
-        question: "What sources does the AI use?",
+        question: "What sources does the service use?",
         answer:
-          "MarketSense pulls from 10+ live sources: Google Maps, Statista, open business registries, news databases, and industry reports. Every data point is tagged with its source for full transparency.",
+          "MarketSense uses up to 50 verified sources: competitor websites, service aggregators, tax and regulatory resources, Google Maps, Statista, open business registries, news databases, and industry reports. Every data point is tagged with its source for full transparency.",
       },
       {
         question: "Can I use the report to pitch to investors?",
@@ -569,19 +569,19 @@ export const pageFaqs = {
     ],
     ru: [
       {
-        question: "Что включает отчёт ИИ-исследования рынка?",
+        question: "Что включает маркетинговое исследование рынка?",
         answer:
           "Отчёт MarketSense включает: объём рынка и прогноз роста, картирование конкурентов (до 20 игроков), сегментацию клиентов, тренды спроса, ценовые бенчмарки и стратегические рекомендации — всё на основе живых данных.",
       },
       {
         question: "Сколько времени занимает исследование рынка?",
         answer:
-          "Большинство отчётов готовы за 10–30 минут. Сложные многогородские или многосегментные анализы могут занять до часа. Для сравнения: традиционное исследовательское агентство тратит 2–4 недели.",
+          "Большинство отчётов готовы за 7–15 минут. Сложные многогородские или многосегментные анализы могут занять больше времени. Для сравнения: традиционное исследовательское агентство тратит 2–4 недели.",
       },
       {
-        question: "Какие источники использует ИИ?",
+        question: "Какие источники использует сервис?",
         answer:
-          "MarketSense использует 10+ живых источников: Google Maps, Statista, открытые бизнес-реестры, новостные базы данных и отраслевые отчёты. Каждый показатель помечен источником для полной прозрачности.",
+          "MarketSense использует до 50 верифицированных источников: сайты конкурентов, агрегаторы услуг, налоговые и регуляционные ресурсы, Google Maps, Statista, открытые бизнес-реестры, новостные базы данных и отраслевые отчёты. Каждый показатель помечен источником для полной прозрачности.",
       },
       {
         question: "Можно ли использовать отчёт для питча инвесторам?",
@@ -702,7 +702,7 @@ export const pageFaqs = {
       {
         question: "How often is data updated?",
         answer:
-          "Data is refreshed daily. For critical signals like competitor price drops or major news events, alerts are sent in near real-time.",
+          "The service updates data on a schedule that works for you. A convenient interface lets you configure the frequency, location, format, and delivery channel of your report — for example: a full report on your niche and area every Monday at 9 AM in PDF format. For critical signals like competitor price drops or major news events, alerts are sent in near real-time.",
       },
     ],
     ru: [
@@ -724,7 +724,7 @@ export const pageFaqs = {
       {
         question: "Как часто обновляются данные?",
         answer:
-          "Данные обновляются ежедневно. Для критических сигналов — например, снижения цен конкурентами или крупных новостных событий — уведомления приходят в режиме близком к реальному времени.",
+          "Обновление данных сервис производит по графику, удобному для вас. Удобный интерфейс позволяет настроить периодичность, локацию, формат и канал получения отчёта. Например: полный отчёт по вашей нише и району еженедельно по понедельникам в 9 утра в PDF формате. Для критических сигналов — например, снижения цен конкурентами или крупных новостных событий — уведомления приходят в режиме близком к реальному времени.",
       },
     ],
   },

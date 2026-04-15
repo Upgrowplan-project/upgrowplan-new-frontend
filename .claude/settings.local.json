@@ -84,7 +84,12 @@
       "Bash(powershell.exe -Command \"Get-Process python | Stop-Process -Force\")",
       "Bash(C:/Users/Lenovo/AppData/Local/Programs/Python/Python310/python.exe -m pip install pymorphy2 pymorphy2-dicts-ru nltk)",
       "WebFetch(domain:www.upgrowplan.com)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(cmd /c \"taskkill /PID 5736 /F\")",
+      "Bash(cmd /c \"taskkill /PID 5736 /F 2>&1\")",
+      "Bash(unzip -q \"D:\\\\UpgrowPlan\\\\market-research-service\\\\generated_reports\\\\market-research-res_9a9f8c02e547.docx\" -d docx_extract)",
+      "Bash(unzip -o \"D:\\\\UpgrowPlan\\\\market-research-service\\\\generated_reports\\\\market-research-res_9a9f8c02e547.docx\" -d docx_tmp)",
+      "Bash(sort -t_ -k2)"
     ],
     "deny": [],
     "ask": []
