@@ -86,6 +86,23 @@ export interface SoftwareAppInput {
   isFree?: boolean;
 }
 
+const DIGITAL_OFFER_EXTRAS = {
+  hasMerchantReturnPolicy: {
+    "@type": "MerchantReturnPolicy",
+    applicableCountry: "001", // worldwide
+    returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
+  },
+  shippingDetails: {
+    "@type": "OfferShippingDetails",
+    shippingRate: { "@type": "MonetaryAmount", value: "0", currency: "USD" },
+    deliveryTime: {
+      "@type": "ShippingDeliveryTime",
+      handlingTime: { "@type": "QuantitativeValue", minValue: 0, maxValue: 0, unitCode: "MIN" },
+    },
+    shippingDestination: { "@type": "DefinedRegion", addressCountry: "001" },
+  },
+};
+
 export function softwareAppSchema({
   name,
   description,
@@ -105,9 +122,11 @@ export function softwareAppSchema({
     inLanguage: ["en", "ru"],
     offers: {
       "@type": "Offer",
-      price: isFree ? "0" : undefined,
-      priceCurrency: isFree ? "USD" : undefined,
+      // All products are free (permanently free or free beta access)
+      price: "0",
+      priceCurrency: "USD",
       availability: "https://schema.org/OnlineOnly",
+      ...DIGITAL_OFFER_EXTRAS,
     },
     provider: {
       "@type": "Organization",
@@ -1175,12 +1194,15 @@ export function productSchema({ name, description, url, image, aggregateRating }
     offers: {
       "@type": "Offer",
       url,
+      price: "0",
+      priceCurrency: "USD",
       availability: "https://schema.org/OnlineOnly",
       seller: {
         "@type": "Organization",
         name: "Upgrowplan",
         url: SITE_URL,
       },
+      ...DIGITAL_OFFER_EXTRAS,
     },
     ...(aggregateRating
       ? {
@@ -1194,4 +1216,50 @@ export function productSchema({ name, description, url, image, aggregateRating }
         }
       : {}),
   };
+}
+
+// ─── Consulting products schema (/products page) ─────────────────────────────
+export interface ConsultingProduct {
+  name: string;
+  description: string;
+  price: string;       // numeric string, e.g. "200" or "0"
+  priceCurrency?: string;
+  unitText?: string;   // "MON" for monthly, omit for one-time
+}
+
+export function consultingProductsSchema(
+  products: ConsultingProduct[],
+  locale: "en" | "ru"
+) {
+  return products.map((p) => ({
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: p.name,
+    description: p.description,
+    brand: { "@type": "Brand", name: "Upgrowplan", url: SITE_URL },
+    offers: {
+      "@type": "Offer",
+      price: p.price,
+      priceCurrency: p.priceCurrency ?? "USD",
+      availability: "https://schema.org/InStock",
+      ...(p.unitText
+        ? { priceSpecification: { "@type": "UnitPriceSpecification", price: p.price, priceCurrency: p.priceCurrency ?? "USD", unitText: p.unitText } }
+        : {}),
+      hasMerchantReturnPolicy: {
+        "@type": "MerchantReturnPolicy",
+        applicableCountry: "001",
+        returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
+      },
+      shippingDetails: {
+        "@type": "OfferShippingDetails",
+        shippingRate: { "@type": "MonetaryAmount", value: "0", currency: "USD" },
+        deliveryTime: {
+          "@type": "ShippingDeliveryTime",
+          handlingTime: { "@type": "QuantitativeValue", minValue: 1, maxValue: 7, unitCode: "DAY" },
+        },
+        shippingDestination: { "@type": "DefinedRegion", addressCountry: "001" },
+      },
+      seller: { "@type": "Organization", name: "Upgrowplan", url: SITE_URL },
+    },
+  }));
 }

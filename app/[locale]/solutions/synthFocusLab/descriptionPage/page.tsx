@@ -7,8 +7,8 @@ import {
 } from "@/lib/seo/jsonld";
 import { JsonLd } from "@/components/JsonLd";
 import FaqSection from "@/components/FaqSection";
-import SynthFocusLabDescriptionPageEn from "../../../../solutions/synthFocusLab/descriptionPage/page.en";
-import SynthFocusLabDescriptionPageRu from "../../../../solutions/synthFocusLab/descriptionPage/page.ru";
+import SynthFocusLabDescriptionPageRn from "./page.rn";
+import SynthFocusLabDescriptionPageRu from "./page.ru";
 
 const SITE_URL = "https://upgrowplan.com";
 type Params = { params: { locale: string } };
@@ -44,7 +44,7 @@ export default function SynthFocusLabDescriptionLocalePage({ params }: Params) {
           productSchema({ name: solData.name, description: solData.description, url: solUrl }),
         ]}
       />
-      {locale === "ru" ? <SynthFocusLabDescriptionPageRu /> : <SynthFocusLabDescriptionPageEn />}
+      {locale === "ru" ? <SynthFocusLabDescriptionPageRu /> : <SynthFocusLabDescriptionPageRn />} 
       <FaqSection items={pageFaqs.synthFocusLabDescription[locale]} title={faqTitle} />
     </>
   );

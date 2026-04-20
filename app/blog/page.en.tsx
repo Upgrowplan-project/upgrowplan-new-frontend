@@ -1,27 +1,13 @@
 import Header from "../../components/Header";
-import { Post, staticPostsEn } from "./staticPosts";
+import { staticPostsEn } from "./staticPosts";
 import BlogPostCard from "./BlogPostCard";
-import BlogLiveUpdates from "./BlogLiveUpdates";
 
-async function getPosts(): Promise<Post[]> {
-  try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_BLOG_URL || "http://localhost:8082";
-    const res = await fetch(`${apiUrl}/api/posts`, { next: { revalidate: 300 } });
-    if (!res.ok) return staticPostsEn;
-    const data = await res.json();
-    if (!Array.isArray(data) || data.length === 0) return staticPostsEn;
-    return data.sort(
-      (a: Post, b: Post) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
-  } catch {
-    return staticPostsEn;
-  }
-}
+const apiUrl = process.env.NEXT_PUBLIC_API_BLOG_URL || "http://localhost:8082";
 
-export default async function BlogPageEn() {
-  const posts = await getPosts();
-  const apiUrl = process.env.NEXT_PUBLIC_API_BLOG_URL || "http://localhost:8082";
+export default function BlogPageEn() {
+  const posts = [...staticPostsEn].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -34,9 +20,8 @@ export default async function BlogPageEn() {
           className="mt-3 mb-5 lead"
           style={{ maxWidth: "800px", lineHeight: "1.7", fontSize: "1.125rem" }}
         >
-          Hello 👋 Here we share real-world experience: business ideas, case
-          studies, checklists, analytics, and insights from the world of
-          entrepreneurship and financial planning.
+          Practical insights on AI business planning, market research, financial
+          modelling, and entrepreneurship — from the Upgrowplan team.
         </p>
 
         <div className="mb-5">
@@ -67,21 +52,11 @@ export default async function BlogPageEn() {
           </div>
         </div>
 
-        <BlogLiveUpdates
-          existingIds={posts.map((p) => p.id)}
-          locale="en"
-          apiUrl={apiUrl}
-        />
-
-        {posts.length === 0 ? (
-          <p className="release-soon">No posts published yet 😄</p>
-        ) : (
-          <div className="row g-4">
-            {posts.map((post) => (
-              <BlogPostCard key={post.id} post={post} apiUrl={apiUrl} locale="en" />
-            ))}
-          </div>
-        )}
+        <div className="row g-4">
+          {posts.map((post) => (
+            <BlogPostCard key={post.id} post={post} apiUrl={apiUrl} locale="en" />
+          ))}
+        </div>
       </main>
     </div>
   );

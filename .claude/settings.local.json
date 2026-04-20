@@ -89,7 +89,10 @@
       "Bash(cmd /c \"taskkill /PID 5736 /F 2>&1\")",
       "Bash(unzip -q \"D:\\\\UpgrowPlan\\\\market-research-service\\\\generated_reports\\\\market-research-res_9a9f8c02e547.docx\" -d docx_extract)",
       "Bash(unzip -o \"D:\\\\UpgrowPlan\\\\market-research-service\\\\generated_reports\\\\market-research-res_9a9f8c02e547.docx\" -d docx_tmp)",
-      "Bash(sort -t_ -k2)"
+      "Bash(sort -t_ -k2)",
+      "Bash(cat .env.local)",
+      "Bash(cat .env)",
+      "WebFetch(domain:t.me)"
     ],
     "deny": [],
     "ask": []

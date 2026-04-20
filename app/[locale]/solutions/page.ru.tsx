@@ -133,52 +133,50 @@ export default function SolutionsPage() {
                     </Card.Title>
                     <Card.Text>{solution.description}</Card.Text>
                   </div>
-                  <div
-                    className="mt-3 text-muted small d-flex align-items-center"
-                    style={{ gap: "6px" }}
-                  >
-                    {solution.release && (
-                      <>
-                        <FaHourglassHalf /> Релиз {solution.release}
-                      </>
+                  <div className="mt-3 d-flex align-items-center justify-content-between gap-2">
+                    <div className="text-muted small d-flex flex-column gap-1" style={{ flex: 1 }}>
+                      {solution.release && (
+                        <span className="d-flex align-items-center gap-1">
+                          <FaHourglassHalf /> Релиз {solution.release}
+                        </span>
+                      )}
+                      {solution.hasCountrySelector && (
+                        <div>
+                          <label
+                            htmlFor="country-select"
+                            className="form-label small text-muted mb-1"
+                          >
+                            Выберите страну:
+                          </label>
+                          <select
+                            id="country-select"
+                            className="form-select form-select-sm"
+                            value={finPilotCountry}
+                            onChange={(e) => setFinPilotCountry(e.target.value)}
+                          >
+                            <option value="ru">🇷🇺 Россия</option>
+                            <option value="il">🇮🇱 Израиль</option>
+                          </select>
+                        </div>
+                      )}
+                    </div>
+                    {solution.link && (
+                      <div style={{ width: "33.333%" }}>
+                        <Link
+                          href={getLocalePath(solution.link)}
+                          className="btn btn-primary w-100"
+                          onClick={() =>
+                            trackClick(
+                              solution.elementId || (solution.title ?? "unknown"),
+                              "card",
+                            )
+                          }
+                        >
+                          {solution.ctaLabel ?? "Открыть"}
+                        </Link>
+                      </div>
                     )}
                   </div>
-                  {solution.hasCountrySelector && (
-                    <div className="mt-3">
-                      <label
-                        htmlFor="country-select"
-                        className="form-label small text-muted"
-                      >
-                        Выберите страну:
-                      </label>
-                      <select
-                        id="country-select"
-                        className="form-select"
-                        value={finPilotCountry}
-                        onChange={(e) => setFinPilotCountry(e.target.value)}
-                      >
-                        <option value="ru">🇷🇺 Россия</option>
-                        <option value="il">🇮🇱 Израиль</option>
-                      </select>
-                    </div>
-                  )}
-                  {solution.link && (
-                    <div className="mt-3">
-                      <Link
-                        href={getLocalePath(solution.link)}
-                        className="btn btn-primary w-100"
-                        style={{ minWidth: "150px" }}
-                        onClick={() =>
-                          trackClick(
-                            solution.elementId || (solution.title ?? "unknown"),
-                            "card",
-                          )
-                        }
-                      >
-                        {solution.ctaLabel ?? "Открыть"}
-                      </Link>
-                    </div>
-                  )}
                 </Card.Body>
               </Card>
             </div>
