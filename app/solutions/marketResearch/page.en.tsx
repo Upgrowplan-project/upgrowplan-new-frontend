@@ -318,6 +318,7 @@ export default function MarketResearchPage() {
   const [healthStatus, setHealthStatus] = useState<any>(null);
   const [isLoadingHealth, setIsLoadingHealth] = useState(true);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const isResearchPausedRef = useRef<boolean>(false);
 
   // Автофокус на первое поле формы и предотвращение автоскролла
   useEffect(() => {
@@ -762,7 +763,7 @@ export default function MarketResearchPage() {
   };
 
   const pollResearchStatus = async (id: string) => {
-    if (isResearchPaused) return;
+    if (isResearchPausedRef.current) return;
 
     console.log("[Market Research] Starting status polling for ID:", id);
     if (pollingIntervalRef.current) {
@@ -1114,6 +1115,7 @@ export default function MarketResearchPage() {
   };
 
   const handlePauseResearch = () => {
+    isResearchPausedRef.current = true;
     if (pollingIntervalRef.current) {
       clearInterval(pollingIntervalRef.current);
       pollingIntervalRef.current = null;
@@ -1124,6 +1126,7 @@ export default function MarketResearchPage() {
 
   const handleResumeResearch = () => {
     if (!researchId) return;
+    isResearchPausedRef.current = false; // синхронно до вызова pollResearchStatus
     setError(null);
     setIsResearchPaused(false);
     setIsSubmitting(true);

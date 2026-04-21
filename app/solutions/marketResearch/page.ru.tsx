@@ -386,6 +386,7 @@ export default function MarketResearchPage() {
   // Ref для хранения polling interval
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const pollingTokenRef = useRef<string | null>(null);
+  const isResearchPausedRef = useRef<boolean>(false);
 
   // Автофокус на первое поле формы и предотвращение автоскролла
   useEffect(() => {
@@ -928,7 +929,7 @@ export default function MarketResearchPage() {
   };
 
   const pollResearchStatus = async (id: string) => {
-    if (isResearchPaused) return;
+    if (isResearchPausedRef.current) return;
 
     console.log("=".repeat(80));
     console.log("🔄 [POLLING] Starting status polling for ID:", id);
@@ -945,8 +946,8 @@ export default function MarketResearchPage() {
 
     const pollInterval = 2500;
     const maxHardFailures = 15;
-    const maxTransientFailures = 180; // ~7.5 min with 2.5s interval
-    const maxPollingDurationMs = 45 * 60 * 1000; // 45 min
+    const maxTransientFailures = 360; // ~15 min with 2.5s interval
+    const maxPollingDurationMs = 90 * 60 * 1000; // 90 min
     const startedAt = Date.now();
 
     let pollCount = 0;
@@ -973,7 +974,7 @@ export default function MarketResearchPage() {
     };
 
     const runPoll = async () => {
-      if (pollingTokenRef.current !== pollingToken || isResearchPaused) return;
+      if (pollingTokenRef.current !== pollingToken || isResearchPausedRef.current) return;
 
       const elapsed = Date.now() - startedAt;
       if (elapsed >= maxPollingDurationMs) {
@@ -1265,6 +1266,7 @@ export default function MarketResearchPage() {
   };
 
   const handlePauseResearch = () => {
+    isResearchPausedRef.current = true;
     if (pollingIntervalRef.current) {
       clearTimeout(pollingIntervalRef.current);
       pollingIntervalRef.current = null;
@@ -1276,6 +1278,7 @@ export default function MarketResearchPage() {
 
   const handleResumeResearch = () => {
     if (!researchId) return;
+    isResearchPausedRef.current = false; // синхронно до вызова pollResearchStatus
     setError(null);
     setIsResearchPaused(false);
     setIsSubmitting(true);
