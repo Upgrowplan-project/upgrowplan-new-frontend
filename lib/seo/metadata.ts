@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-const SITE_URL = "https://upgrowplan.com";
+const SITE_URL = "https://www.upgrowplan.com";
 const SITE_NAME = "Upgrowplan";
 
 function buildOgImageUrl(title: string, description: string, locale: string): string {

@@ -3,7 +3,7 @@
  * Docs: https://schema.org | https://developers.google.com/search/docs/appearance/structured-data
  */
 
-const SITE_URL = "https://upgrowplan.com";
+const SITE_URL = "https://www.upgrowplan.com";
 const LOGO_URL = `${SITE_URL}/LogoUpGrowSmall2.png`;
 const OG_IMAGE = `${SITE_URL}/api/og?title=Upgrowplan&locale=en`;
 
