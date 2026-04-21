@@ -376,6 +376,8 @@ export default function MarketResearchPage() {
     minutes: number;
     seconds: number;
   } | null>(null);
+  const [elapsedSeconds, setElapsedSeconds] = useState<number>(0);
+  const elapsedTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Health status state
   const [healthStatus, setHealthStatus] = useState<any>(null);
@@ -731,8 +733,11 @@ export default function MarketResearchPage() {
     setError(null);
     setIsSubmitting(true);
     setIsResearchPaused(false);
+    setElapsedSeconds(0);
     setResearchStartTime(Date.now()); // Запуск таймера
     setResearchDuration(null); // Сброс предыдущей длительности
+    if (elapsedTimerRef.current) clearInterval(elapsedTimerRef.current);
+    elapsedTimerRef.current = setInterval(() => setElapsedSeconds(s => s + 1), 1000);
     console.log("[Market Research] Starting research submission...");
     console.log("[Market Research] Form data:", formData);
 
@@ -965,6 +970,10 @@ export default function MarketResearchPage() {
       }
       if (pollingTokenRef.current === pollingToken) {
         pollingTokenRef.current = null;
+      }
+      if (elapsedTimerRef.current) {
+        clearInterval(elapsedTimerRef.current);
+        elapsedTimerRef.current = null;
       }
     };
 
@@ -1271,6 +1280,10 @@ export default function MarketResearchPage() {
       clearTimeout(pollingIntervalRef.current);
       pollingIntervalRef.current = null;
     }
+    if (elapsedTimerRef.current) {
+      clearInterval(elapsedTimerRef.current);
+      elapsedTimerRef.current = null;
+    }
     pollingTokenRef.current = null;
     setIsSubmitting(false);
     setIsResearchPaused(true);
@@ -1282,6 +1295,8 @@ export default function MarketResearchPage() {
     setError(null);
     setIsResearchPaused(false);
     setIsSubmitting(true);
+    if (elapsedTimerRef.current) clearInterval(elapsedTimerRef.current);
+    elapsedTimerRef.current = setInterval(() => setElapsedSeconds(s => s + 1), 1000);
     pollResearchStatus(researchId);
   };
 
@@ -1940,12 +1955,17 @@ export default function MarketResearchPage() {
                 Система анализирует рынок с помощью AI-агентов. Процесс занимает 1-3 минуты.
               </p>
 
-              {/* Progress Bar */}
-              <div className={styles.progressBarContainer}>
-                <div
-                  className={styles.progressBar}
-                  style={{ width: `${researchStatus.progress || 0}%` }}
-                />
+              {/* Progress Bar + Timer */}
+              <div className={styles.progressBarWrapper}>
+                <div className={styles.progressBarContainer}>
+                  <div
+                    className={styles.progressBar}
+                    style={{ width: `${researchStatus.progress || 0}%` }}
+                  />
+                </div>
+                <span className={styles.elapsedTimer}>
+                  {String(Math.floor(elapsedSeconds / 60)).padStart(2, "0")}:{String(elapsedSeconds % 60).padStart(2, "0")}
+                </span>
               </div>
 
               {/* Current Status */}

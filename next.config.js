@@ -35,6 +35,17 @@ const nextConfig = {
     return config;
   },
 
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'www.upgrowplan.com' }],
+        destination: 'https://upgrowplan.com/:path*',
+        permanent: true,
+      },
+    ];
+  },
+
   async rewrites() {
     // Для реврайтов тоже используем переменные, которые уже точно определены выше
     return [

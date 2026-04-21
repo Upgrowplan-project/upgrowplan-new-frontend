@@ -449,13 +449,30 @@
   font-weight: 600;
 }
 
+.progressBarWrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
 .progressBarContainer {
-  width: 100%;
+  flex: 1;
   height: 12px;
   background: #e0e0e0;
   border-radius: 6px;
   overflow: hidden;
-  margin-bottom: 1rem;
+}
+
+.elapsedTimer {
+  flex-shrink: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1e6078;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.03em;
+  min-width: 3.2rem;
+  text-align: right;
 }
 
 .progressBar {
