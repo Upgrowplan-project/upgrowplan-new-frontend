@@ -99,12 +99,12 @@ export const pageMeta = {
   },
   about: {
     title: {
-      en: "About | AI-Powered Business Planning",
-      ru: "О нас | ИИ-платформа для бизнес-планирования",
+      en: "About | AI Business Planning Platform",
+      ru: "О платформе | ИИ-инструменты для бизнеса",
     },
     description: {
-      en: "Learn about Upgrowplan — the team and mission behind the AI platform for business planning, market research, and strategic analysis.",
-      ru: "Узнайте об Upgrowplan — команде и миссии ИИ-платформы для бизнес-планирования, исследования рынка и стратегического анализа.",
+      en: "Upgrowplan — AI platform for business plans, market research and financial modelling. Founded 2024, Tel Aviv. 230+ plans, UNIDO/EBRD methodology.",
+      ru: "Upgrowplan — ИИ-платформа для бизнес-планов, исследований рынка и финансового моделирования. Основана в 2024, Тель-Авив. 230+ планов, методология ЮНИДО/ЕБРР.",
     },
     enPath: "/about",
     ruPath: "/ru/about",
@@ -123,24 +123,24 @@ export const pageMeta = {
   },
   blog: {
     title: {
-      en: "Blog | AI Business Insights",
-      ru: "Блог | Аналитика и инсайты",
+      en: "Business Planning & AI Strategy Blog",
+      ru: "Блог: ИИ для бизнеса, планирование и рынки",
     },
     description: {
-      en: "Read expert articles on AI business planning, market research strategies, entrepreneurship, and the future of strategic analysis.",
-      ru: "Читайте экспертные статьи о бизнес-планировании с ИИ, стратегиях исследования рынка, предпринимательстве и будущем стратегического анализа.",
+      en: "Expert articles on AI business planning, market research, UNIDO standards, RAG technology, and AI hallucination prevention — for entrepreneurs and analysts.",
+      ru: "Экспертные статьи об ИИ для бизнеса, исследованиях рынка, стандартах ЮНИДО, технологии RAG и предотвращении галлюцинаций ИИ — для предпринимателей и аналитиков.",
     },
     enPath: "/blog",
     ruPath: "/ru/blog",
   },
   contacts: {
     title: {
-      en: "Contact Us",
-      ru: "Контакты",
+      en: "Contact | AI Business Planning Support",
+      ru: "Контакты | Поддержка Upgrowplan",
     },
     description: {
-      en: "Get in touch with the Upgrowplan team. We're here to answer questions about our AI business planning platform.",
-      ru: "Свяжитесь с командой Upgrowplan. Мы готовы ответить на вопросы о нашей ИИ-платформе для бизнес-планирования.",
+      en: "Get in touch with the Upgrowplan team. Questions about AI business plans, market research, or partnership — we're here to help.",
+      ru: "Свяжитесь с командой Upgrowplan. Вопросы о бизнес-планах с ИИ, исследованиях рынка или партнёрстве — мы готовы помочь.",
     },
     enPath: "/contacts",
     ruPath: "/ru/contacts",
@@ -159,36 +159,36 @@ export const pageMeta = {
   },
   solutions: {
     title: {
-      en: "AI Solutions for Business",
-      ru: "ИИ-решения для бизнеса",
+      en: "AI Tools: Business Plans, Market Research & Finance",
+      ru: "ИИ-инструменты: планы, исследования и финансы",
     },
     description: {
-      en: "Discover all Upgrowplan AI solutions: market research, business plan generation, financial modelling, social strategy, and more.",
-      ru: "Откройте все ИИ-решения Upgrowplan: исследование рынка, генерация бизнес-планов, финансовое моделирование, социальная стратегия и другое.",
+      en: "All Upgrowplan AI tools: business plan generator (UNIDO/EBRD), market research in 15 min, financial modelling, virtual focus groups, and market monitoring.",
+      ru: "Все ИИ-инструменты Upgrowplan: генератор бизнес-планов (ЮНИДО/ЕБРР), исследование рынка за 15 мин, финансовое моделирование, виртуальные фокус-группы и мониторинг.",
     },
     enPath: "/solutions",
     ruPath: "/ru/solutions",
   },
   marketResearch: {
     title: {
-      en: "AI Market Research",
-      ru: "ИИ Исследование рынка",
+      en: "AI Market Research Tool — Reports in 15 Minutes",
+      ru: "ИИ-исследование рынка — отчёт за 15 минут",
     },
     description: {
-      en: "Generate comprehensive AI-powered market research reports with competitor analysis, trends, and actionable insights in minutes.",
-      ru: "Генерируйте комплексные отчёты по исследованию рынка с ИИ: анализ конкурентов, тренды и практические выводы за считанные минуты.",
+      en: "Generate AI market research reports with real competitor data, market sizing, trends and pricing — from 50+ verified sources in 15 minutes.",
+      ru: "Генерируйте отчёты по исследованию рынка с реальными данными о конкурентах, размером рынка и ценами — из 50+ верифицированных источников за 15 минут.",
     },
     enPath: "/solutions/marketResearch",
     ruPath: "/ru/solutions/marketResearch",
   },
   marketResearchDescription: {
     title: {
-      en: "About AI Market Research",
-      ru: "О сервисе Исследование рынка",
+      en: "How AI Market Research Works | MarketSense Agent",
+      ru: "Как работает ИИ-исследование рынка | MarketSense",
     },
     description: {
-      en: "Learn how Upgrowplan's AI market research tool works — data sources, methodology, and what you get in your report.",
-      ru: "Узнайте, как работает ИИ-инструмент исследования рынка Upgrowplan — источники данных, методология и содержание отчёта.",
+      en: "MarketSense AI Agent: live web search + RAG + Skeptic Agent validation. 50 verified sources, competitor mapping, market sizing — in 15 minutes.",
+      ru: "MarketSense AI Agent: живой поиск + RAG + проверка Skeptic Agent. 50 верифицированных источников, карта конкурентов, объём рынка — за 15 минут.",
     },
     enPath: "/solutions/marketResearch/descriptionPage",
     ruPath: "/ru/solutions/marketResearch/descriptionPage",
@@ -207,48 +207,48 @@ export const pageMeta = {
   },
   planMaster: {
     title: {
-      en: "Plan Master | AI Strategic Planning",
-      ru: "Plan Master | ИИ Стратегическое планирование",
+      en: "PlanMaster AI | Business Plan Generator UNIDO/EBRD",
+      ru: "PlanMaster AI | Генератор бизнес-планов ЮНИДО/ЕБРР",
     },
     description: {
-      en: "Plan Master by Upgrowplan helps you build advanced strategic plans with AI-driven scenario analysis and forecasting.",
-      ru: "Plan Master от Upgrowplan помогает строить продвинутые стратегические планы с ИИ-анализом сценариев и прогнозированием.",
+      en: "Generate investor-ready business plans with AI — following UNIDO and EBRD standards. Financial modelling, market analysis, and Skeptic Agent hallucination check.",
+      ru: "Генерируйте бизнес-планы инвесторского качества с ИИ по стандартам ЮНИДО и ЕБРР. Финансовое моделирование, анализ рынка и проверка Skeptic Agent.",
     },
     enPath: "/solutions/planMaster",
     ruPath: "/ru/solutions/planMaster",
   },
   planMasterDescription: {
     title: {
-      en: "About Plan Master",
-      ru: "О продукте Plan Master",
+      en: "How PlanMaster AI Works | UNIDO Business Plan Method",
+      ru: "Как работает PlanMaster AI | Метод ЮНИДО/ЕБРР",
     },
     description: {
-      en: "Learn how Plan Master's AI strategic planning engine works, including methodology, inputs, and deliverables.",
-      ru: "Узнайте, как работает ИИ-движок стратегического планирования Plan Master — методология, входные данные и результаты.",
+      en: "PlanMaster AI: RAG + live search + Python financial modelling + Skeptic Agent. Outputs Word/PDF business plan following UNIDO/EBRD investor standards.",
+      ru: "PlanMaster AI: RAG + живой поиск + финансовое моделирование на Python + Skeptic Agent. Бизнес-план в Word/PDF по стандартам ЮНИДО/ЕБРР для инвесторов.",
     },
     enPath: "/solutions/planMaster/descriptionPage",
     ruPath: "/ru/solutions/planMaster/descriptionPage",
   },
   synthFocusLab: {
     title: {
-      en: "Synthetic Focus Lab | AI Virtual Respondents",
-      ru: "Synthetic Focus Lab | ИИ Виртуальные респонденты",
+      en: "Synth Focus Lab | AI Virtual Focus Groups & Surveys",
+      ru: "Synth Focus Lab | ИИ Фокус-группы и опросы",
     },
     description: {
-      en: "Run AI-powered focus groups and surveys using synthetic respondents. Get qualitative research insights without recruiting real participants.",
-      ru: "Проводите ИИ-фокус-группы и опросы с виртуальными респондентами. Получайте качественные исследования без реального рекрутинга участников.",
+      en: "Run AI-powered virtual focus groups with synthetic personas. Test product ideas, pricing, and messaging — no real participant recruitment needed.",
+      ru: "Проводите виртуальные фокус-группы с ИИ-персонами. Тестируйте продукт, ценообразование и позиционирование — без рекрутинга реальных участников.",
     },
     enPath: "/solutions/synthFocusLab",
     ruPath: "/ru/solutions/synthFocusLab",
   },
   synthFocusLabDescription: {
     title: {
-      en: "About Synthetic Focus Lab",
-      ru: "О продукте Synthetic Focus Lab",
+      en: "How Synth Focus Lab Works | AI Synthetic Respondents",
+      ru: "Как работает Synth Focus Lab | ИИ-респонденты",
     },
     description: {
-      en: "Discover how Synthetic Focus Lab uses AI personas to simulate focus group discussions and consumer surveys.",
-      ru: "Узнайте, как Synthetic Focus Lab использует ИИ-персоны для симуляции фокус-групп и потребительских опросов.",
+      en: "Synth Focus Lab builds AI personas from market data, simulates group discussions, and surfaces consumer sentiment — faster and cheaper than traditional research.",
+      ru: "Synth Focus Lab создаёт ИИ-персоны на основе рыночных данных, симулирует групповые дискуссии и выявляет потребительские настроения — быстрее и дешевле классических исследований.",
     },
     enPath: "/solutions/synthFocusLab/descriptionPage",
     ruPath: "/ru/solutions/synthFocusLab/descriptionPage",
@@ -267,36 +267,36 @@ export const pageMeta = {
   },
   finBuddy: {
     title: {
-      en: "Fin Buddy | AI Financial Planning",
-      ru: "Fin Buddy | ИИ Финансовое планирование",
+      en: "FinPilot Free | AI Financial Model & P&L Generator",
+      ru: "FinPilot Free | ИИ Финансовая модель и P&L",
     },
     description: {
-      en: "Fin Buddy generates AI-powered financial projections, P&L statements, and cash flow models for your business.",
-      ru: "Fin Buddy генерирует финансовые прогнозы, P&L и модели денежных потоков для вашего бизнеса с помощью ИИ.",
+      en: "Free AI financial modelling: P&L, cash flow, break-even, 3-year projections and sensitivity analysis. Built on Python deterministic calculations — no AI guesses.",
+      ru: "Бесплатное ИИ-финансовое моделирование: P&L, денежные потоки, точка безубыточности, прогноз на 3 года и анализ чувствительности. Python-расчёты без вероятностных моделей.",
     },
     enPath: "/solutions/fin-buddy",
     ruPath: "/ru/solutions/fin-buddy",
   },
   openAbroad: {
     title: {
-      en: "Open Abroad | International Expansion Planning",
-      ru: "Open Abroad | Планирование выхода на международный рынок",
+      en: "Open Abroad | AI International Business Expansion",
+      ru: "Open Abroad | ИИ Открытие бизнеса за рубежом",
     },
     description: {
-      en: "Plan your international business expansion with AI. Country analysis, regulatory overview, and market entry strategy.",
-      ru: "Планируйте международную экспансию бизнеса с ИИ: анализ стран, обзор регуляторики и стратегия выхода на рынок.",
+      en: "Free AI tool for international business expansion: country comparison, regulatory requirements, tax overview, and market entry strategy — for 50+ countries.",
+      ru: "Бесплатный ИИ-инструмент для открытия бизнеса за рубежом: сравнение стран, регуляторные требования, налоги и стратегия выхода — для 50+ стран.",
     },
     enPath: "/solutions/openAbroad",
     ruPath: "/ru/solutions/openAbroad",
   },
   businessPulse: {
     title: {
-      en: "Business Pulse | AI Market Monitoring",
-      ru: "Business Pulse | ИИ Мониторинг рынка",
+      en: "Business Pulse | Daily AI Competitor & Market Monitor",
+      ru: "Business Pulse | Ежедневный ИИ-мониторинг рынка",
     },
     description: {
-      en: "Monitor market trends, competitor moves, and business signals in real time with Upgrowplan's AI-powered Business Pulse.",
-      ru: "Мониторьте тренды рынка, действия конкурентов и бизнес-сигналы в реальном времени с Business Pulse от Upgrowplan.",
+      en: "Daily AI monitoring of your competitors, market trends, and industry signals. Automated alerts and weekly digest — so you never miss a market shift.",
+      ru: "Ежедневный ИИ-мониторинг конкурентов, трендов рынка и отраслевых сигналов. Автоматические оповещения и еженедельный дайджест — чтобы не пропустить изменения рынка.",
     },
     enPath: "/solutions/businessPulse",
     ruPath: "/ru/solutions/businessPulse",

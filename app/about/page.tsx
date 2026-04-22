@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { buildMetadata, pageMeta } from "@/lib/seo/metadata";
-import { aboutPageSchema, breadcrumbSchema, breadcrumbs } from "@/lib/seo/jsonld";
+import { aboutPageSchema, aboutFaqSchema, breadcrumbSchema, breadcrumbs } from "@/lib/seo/jsonld";
 import { JsonLd } from "@/components/JsonLd";
 import Header from "@/components/Header";
 import EnPage from "./page.en";
@@ -17,6 +17,7 @@ export default function AboutPage() {
       <JsonLd
         data={[
           aboutPageSchema("en"),
+          aboutFaqSchema("en"),
           breadcrumbSchema(breadcrumbs.about("en")),
         ]}
       />

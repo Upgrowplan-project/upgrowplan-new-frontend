@@ -254,6 +254,68 @@ export default function AboutPage() {
           </Card>
         </div>
 
+        {/* ── FAQ ── */}
+        <div className="row justify-content-center">
+          <FullWidthCard>
+            <h2 className="text-center mb-4" style={{ color: "#1e6078" }}>
+              Частые вопросы
+            </h2>
+            <div className="accordion" id="aboutFaqRu">
+              {[
+                {
+                  id: "faq1",
+                  q: "Что такое Upgrowplan?",
+                  a: "Upgrowplan — ИИ-платформа для предпринимателей, аналитиков и консультантов. Автоматизирует создание бизнес-планов по стандартам ЮНИДО/ЕБРР, маркетинговые исследования, финансовое моделирование и конкурентный мониторинг. Основана в 2024 году в Тель-Авиве.",
+                },
+                {
+                  id: "faq2",
+                  q: "Чем Upgrowplan отличается от ChatGPT?",
+                  a: "ChatGPT генерирует текст на основе обучающей выборки и может галлюцинировать. Upgrowplan использует архитектуру RAG: сначала агент поиска собирает живые данные из 50+ источников, Python-скрипты выполняют детерминированные финансовые расчёты, и только потом LLM обрабатывает верифицированный контекст. Встроенный Skeptic Agent проверяет каждый раздел на галлюцинации.",
+                },
+                {
+                  id: "faq3",
+                  q: "Какие методологии используются в бизнес-планах?",
+                  a: "Бизнес-планы формируются по стандартам ЮНИДО (UNIDO) и ЕБРР (EBRD) — фреймворкам, которые используют банки развития и международные инвесторы. Финансовые расчёты выполняются детерминированными Python-скриптами, а не вероятностными моделями ИИ.",
+                },
+                {
+                  id: "faq4",
+                  q: "Для кого подходят инструменты Upgrowplan?",
+                  a: "Для предпринимателей, которые готовят бизнес-план для банка или инвестора; для аналитиков, которым нужно быстрое исследование рынка; для консультантов, которые хотят автоматизировать рутину; и для стартапов, которые проверяют гипотезы через виртуальные фокус-группы.",
+                },
+                {
+                  id: "faq5",
+                  q: "Сколько стоит использование платформы?",
+                  a: "FinPilot (финансовые модели) и Relocation Service (открытие бизнеса за рубежом) — бесплатны. MarketSense AI Agent, PlanMaster AI, Synth Focus Lab и Business Pulse доступны по подписке. Актуальные тарифы — на странице каждого продукта.",
+                },
+              ].map(({ id, q, a }, i) => (
+                <div className="accordion-item border-0 mb-2" key={id} style={{ borderRadius: "8px", overflow: "hidden" }}>
+                  <h3 className="accordion-header">
+                    <button
+                      className={`accordion-button ${i !== 0 ? "collapsed" : ""}`}
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target={`#${id}`}
+                      aria-expanded={i === 0 ? "true" : "false"}
+                      style={{ fontWeight: 600, color: "#1e6078", backgroundColor: "#f0f7ff" }}
+                    >
+                      {q}
+                    </button>
+                  </h3>
+                  <div
+                    id={id}
+                    className={`accordion-collapse collapse ${i === 0 ? "show" : ""}`}
+                    data-bs-parent="#aboutFaqRu"
+                  >
+                    <div className="accordion-body" style={{ color: "#334155", lineHeight: 1.75 }}>
+                      {a}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </FullWidthCard>
+        </div>
+
         {/* Блок "Мы открыты" - на полную ширину */}
         <div className="row justify-content-center">
           <FullWidthCard>

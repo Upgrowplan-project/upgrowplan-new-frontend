@@ -225,6 +225,130 @@ export function aboutPageSchema(locale: "en" | "ru") {
     url: isRu ? `${SITE_URL}/ru/about` : `${SITE_URL}/about`,
     inLanguage: isRu ? "ru" : "en",
     mainEntity: organizationSchema(),
+    author: teamMembersSchema(),
+  };
+}
+
+// ─── Team members (Person schema) ────────────────────────────────────────────
+export function teamMembersSchema() {
+  return [
+    {
+      "@type": "Person",
+      name: "Denis Naletov",
+      alternateName: "Денис Налетов",
+      jobTitle: "Founder, Economist & Full-Stack Developer",
+      worksFor: { "@type": "Organization", name: "Upgrowplan" },
+      url: `${SITE_URL}/about`,
+      image: `${SITE_URL}/images/denis.jpg`,
+      knowsAbout: [
+        "Business planning",
+        "Financial modelling",
+        "LLM integration",
+        "RAG architecture",
+        "Market research",
+        "UNIDO/EBRD standards",
+      ],
+      description:
+        "15+ years of experience in business planning and consulting. Specialises in financial modelling, AI integration into business processes, and digital solutions for SMBs. Co-authored 230+ business plans.",
+    },
+    {
+      "@type": "Person",
+      name: "Natalia Kovaleva",
+      alternateName: "Наталья Ковалева",
+      jobTitle: "Economist & Business Analyst",
+      worksFor: { "@type": "Organization", name: "Upgrowplan" },
+      url: `${SITE_URL}/about`,
+      image: `${SITE_URL}/images/kovaleva.jpg`,
+      knowsAbout: [
+        "Financial analysis",
+        "Market research",
+        "Investment attraction",
+        "Business planning",
+        "Management accounting",
+        "Subsidies and grants",
+      ],
+      description:
+        "Financial analyst with expertise in market research, business plans, feasibility studies, investment attraction, management accounting, and credit portfolio servicing.",
+    },
+    {
+      "@type": "Person",
+      name: "Dmitry Volkov",
+      alternateName: "Дмитрий Волков",
+      jobTitle: "Web Developer & Technical Specialist",
+      worksFor: { "@type": "Organization", name: "Upgrowplan" },
+      url: `${SITE_URL}/about`,
+      image: `${SITE_URL}/images/dima.jpg`,
+      knowsAbout: [
+        "Backend development",
+        "API integration",
+        "Database management",
+        "System optimisation",
+        "Node.js",
+        "Spring Boot",
+      ],
+      description:
+        "Experienced developer specialising in server-side architecture and data processing. Handles API integrations, system optimisation, database management, and external service interactions.",
+    },
+  ];
+}
+
+// ─── About page FAQ ───────────────────────────────────────────────────────────
+export function aboutFaqSchema(locale: "en" | "ru") {
+  const isRu = locale === "ru";
+  const items = isRu
+    ? [
+        {
+          q: "Что такое Upgrowplan?",
+          a: "Upgrowplan — ИИ-платформа для предпринимателей, аналитиков и консультантов. Автоматизирует создание бизнес-планов по стандартам ЮНИДО/ЕБРР, маркетинговые исследования, финансовое моделирование и конкурентный мониторинг. Основана в 2024 году в Тель-Авиве.",
+        },
+        {
+          q: "Чем Upgrowplan отличается от ChatGPT?",
+          a: "ChatGPT генерирует текст на основе обучающей выборки и может галлюцинировать. Upgrowplan использует архитектуру RAG: сначала агент поиска собирает живые данные из 50+ источников, затем Python-скрипты выполняют детерминированные финансовые расчёты, и только потом LLM обрабатывает верифицированный контекст при температуре ≤ 0,2. Встроенный Skeptic Agent проверяет каждый раздел на галлюцинации.",
+        },
+        {
+          q: "Какие методологии используются в бизнес-планах?",
+          a: "Бизнес-планы формируются по стандартам ЮНИДО (UNIDO) и ЕБРР (EBRD) — фреймворкам, которые используют банки развития и международные инвесторы. Финансовые расчёты выполняются детерминированными Python-скриптами, а не вероятностными моделями ИИ.",
+        },
+        {
+          q: "Для кого подходят инструменты Upgrowplan?",
+          a: "Для предпринимателей, которые готовят бизнес-план для банка или инвестора; для аналитиков, которым нужно быстрое исследование рынка; для консультантов, которые хотят автоматизировать рутинную часть работы; и для стартапов, которые проверяют гипотезы через виртуальные фокус-группы.",
+        },
+        {
+          q: "Сколько стоит использование платформы?",
+          a: "FinPilot (финансовые модели) и Relocation Service (открытие бизнеса за рубежом) — бесплатны. MarketSense AI Agent, PlanMaster AI, Synth Focus Lab и Business Pulse доступны по подписке. Актуальные тарифы — на странице каждого продукта.",
+        },
+      ]
+    : [
+        {
+          q: "What is Upgrowplan?",
+          a: "Upgrowplan is an AI platform for entrepreneurs, analysts and consultants. It automates business plan creation following UNIDO/EBRD standards, market research, financial modelling, and competitor monitoring. Founded in 2024 in Tel Aviv.",
+        },
+        {
+          q: "How is Upgrowplan different from ChatGPT?",
+          a: "ChatGPT generates text from its training data and can hallucinate. Upgrowplan uses RAG architecture: a search agent collects live data from 50+ sources, Python scripts run deterministic financial calculations, and only then does the LLM process the verified context at temperature ≤ 0.2. A built-in Skeptic Agent checks every section for hallucinations.",
+        },
+        {
+          q: "What methodologies are used in the business plans?",
+          a: "Business plans follow UNIDO and EBRD standards — frameworks used by development banks and international investors. Financial calculations use deterministic Python scripts, not probabilistic AI models.",
+        },
+        {
+          q: "Who is Upgrowplan for?",
+          a: "Entrepreneurs preparing a business plan for a bank or investor; analysts who need fast market research; consultants who want to automate routine work; and startups testing hypotheses through virtual focus groups.",
+        },
+        {
+          q: "How much does Upgrowplan cost?",
+          a: "FinPilot (financial models) and Relocation Service (international business setup) are free. MarketSense AI Agent, PlanMaster AI, Synth Focus Lab and Business Pulse are available by subscription. Current pricing is on each product page.",
+        },
+      ];
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: items.map(({ q, a }) => ({
+      "@type": "Question",
+      name: q,
+      acceptedAnswer: { "@type": "Answer", text: a },
+    })),
   };
 }
 
@@ -486,34 +610,54 @@ export const pageFaqs = {
       {
         question: "What AI tools does Upgrowplan offer?",
         answer:
-          "Upgrowplan offers: PlanMaster AI (business plans), MarketSense AI (market research), Synth Focus Lab (virtual focus groups), Business Pulse (market monitoring), Fin Buddy (financial tracking), Open Abroad (international expansion), and FinPilot Free (financial modelling).",
+          "Upgrowplan offers 7 AI tools: PlanMaster AI (business plans following UNIDO/EBRD standards), MarketSense AI Agent (market research in 15 min from 50+ sources), Synth Focus Lab (virtual AI focus groups), Business Pulse (daily competitor monitoring), FinPilot Free (financial modelling, free), Open Abroad (international expansion planning, free), and Social Plan Master (AI social media strategy).",
+      },
+      {
+        question: "How is Upgrowplan different from ChatGPT for business planning?",
+        answer:
+          "ChatGPT uses training data that can be outdated and generates probabilistic outputs prone to hallucinations. Upgrowplan uses RAG architecture: a dedicated search agent collects live data from 50+ verified sources, Python scripts run deterministic financial calculations, and the LLM only processes verified context at temperature ≤ 0.2. A Skeptic Agent checks every section before delivery.",
+      },
+      {
+        question: "What does UNIDO/EBRD standard mean for a business plan?",
+        answer:
+          "UNIDO (UN Industrial Development Organization) and EBRD (European Bank for Reconstruction and Development) frameworks are the international standards used by development banks and institutional investors to evaluate business plans. Plans following these standards have a defined structure: executive summary, market analysis, production/service plan, organisational structure, financial model, and risk assessment — making them suitable for bank financing and investor presentations.",
       },
       {
         question: "Which tools are free?",
         answer:
-          "FinPilot Free and Open Abroad (Relocation Service) are available for free. Visit the service pages and get free access to test the beta versions of our products. Other tools are available on a subscription or pay-per-use basis.",
+          "FinPilot Free (financial models: P&L, cash flow, break-even, 3-year projections) and Open Abroad / Relocation Service (international business setup guide for 50+ countries) are completely free. Other tools are available on a subscription or pay-per-use basis.",
       },
       {
         question: "Can I use Upgrowplan tools for an existing business?",
         answer:
-          "Absolutely. All tools work for both startups and existing businesses. Business Pulse and MarketSense are especially useful for ongoing competitive monitoring.",
+          "Yes. All tools work for both startups and established businesses. Business Pulse and MarketSense AI are especially useful for ongoing competitive monitoring and market tracking. PlanMaster can generate strategic plans for expansion, new product lines, or investor pitches.",
       },
     ],
     ru: [
       {
         question: "Какие ИИ-инструменты предлагает Upgrowplan?",
         answer:
-          "Upgrowplan предлагает: PlanMaster AI (бизнес-планы), MarketSense AI (исследование рынка), Synth Focus Lab (виртуальные фокус-группы), Business Pulse (мониторинг рынка), Fin Buddy (финансовый учёт), Open Abroad (международная экспансия) и FinPilot Free (финансовое моделирование).",
+          "Upgrowplan предлагает 7 ИИ-инструментов: PlanMaster AI (бизнес-планы по стандартам ЮНИДО/ЕБРР), MarketSense AI Agent (исследование рынка за 15 мин из 50+ источников), Synth Focus Lab (виртуальные ИИ-фокус-группы), Business Pulse (ежедневный мониторинг конкурентов), FinPilot Free (финансовое моделирование, бесплатно), Open Abroad (планирование выхода на международный рынок, бесплатно) и Social Plan Master (ИИ-стратегия в соцсетях).",
+      },
+      {
+        question: "Чем Upgrowplan отличается от ChatGPT для бизнес-планирования?",
+        answer:
+          "ChatGPT использует обучающие данные, которые могут быть устаревшими, и генерирует вероятностные ответы, склонные к галлюцинациям. Upgrowplan использует архитектуру RAG: отдельный агент поиска собирает живые данные из 50+ верифицированных источников, Python-скрипты выполняют детерминированные финансовые расчёты, и LLM обрабатывает только проверенный контекст при температуре ≤ 0,2. Skeptic Agent проверяет каждый раздел перед выдачей.",
+      },
+      {
+        question: "Что означает стандарт ЮНИДО/ЕБРР для бизнес-плана?",
+        answer:
+          "ЮНИДО (Организация ООН по промышленному развитию) и ЕБРР (Европейский банк реконструкции и развития) — международные стандарты, которые используют банки развития и институциональные инвесторы при оценке бизнес-планов. Планы по этим стандартам имеют чёткую структуру: резюме, анализ рынка, производственный план, организационная структура, финансовая модель и оценка рисков — что делает их подходящими для банковского финансирования и инвесторских презентаций.",
       },
       {
         question: "Какие инструменты бесплатны?",
         answer:
-          "FinPilot Free и Open Abroad (Relocation Service) доступны бесплатно. Посетите страницы сервисов и получите бесплатный доступ для тестирования бета-версии продуктов. Остальные инструменты доступны по подписке или по модели оплаты за использование.",
+          "FinPilot Free (финансовые модели: P&L, денежные потоки, точка безубыточности, прогноз на 3 года) и Open Abroad / Relocation Service (руководство по открытию бизнеса за рубежом для 50+ стран) — полностью бесплатны. Остальные инструменты доступны по подписке или по модели оплаты за использование.",
       },
       {
         question: "Можно ли использовать инструменты Upgrowplan для действующего бизнеса?",
         answer:
-          "Абсолютно. Все инструменты работают как для стартапов, так и для действующих компаний. Business Pulse и MarketSense особенно полезны для постоянного мониторинга конкурентов.",
+          "Да. Все инструменты работают как для стартапов, так и для действующих компаний. Business Pulse и MarketSense AI особенно полезны для постоянного мониторинга конкурентов и отслеживания рынка. PlanMaster может создавать стратегические планы для расширения, новых продуктовых линеек или инвесторских презентаций.",
       },
     ],
   },

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { buildMetadata, pageMeta } from "@/lib/seo/metadata";
-import { itemListSchema, breadcrumbSchema, breadcrumbs, solutionData } from "@/lib/seo/jsonld";
+import { itemListSchema, breadcrumbSchema, breadcrumbs, solutionData, faqSchema, pageFaqs } from "@/lib/seo/jsonld";
 import { JsonLd } from "@/components/JsonLd";
+import FaqSection from "@/components/FaqSection";
 import EnPage from "../[locale]/solutions/page.en";
 
 const SITE_URL = "https://upgrowplan.com";
@@ -26,9 +27,11 @@ export default function SolutionsPage() {
         data={[
           itemListSchema(listItems),
           breadcrumbSchema(breadcrumbs.solutions("en")),
+          faqSchema(pageFaqs.solutions.en),
         ]}
       />
       <EnPage />
+      <FaqSection items={pageFaqs.solutions.en} title="Questions About Our Tools" />
     </>
   );
 }

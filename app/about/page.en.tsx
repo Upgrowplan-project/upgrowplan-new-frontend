@@ -94,10 +94,7 @@ export default function AboutPage() {
     <div style={{ backgroundColor: "#f8f9fa", minHeight: "100vh" }}>
 
       {/* PAGE CONTENT */}
-      <main className="container py-5">
-        <h1 className="mb-4" style={{ color: "#1e6078" }}>
-          About Upgrowplan
-        </h1>
+      <main className="container py-3">
 
         <div className="row justify-content-center">
           <FullWidthCard>
@@ -286,6 +283,68 @@ export default function AboutPage() {
               </li>
             </ul>
           </Card>
+        </div>
+
+        {/* ── FAQ ── */}
+        <div className="row justify-content-center">
+          <FullWidthCard>
+            <h2 className="text-center mb-4" style={{ color: "#1e6078" }}>
+              Frequently Asked Questions
+            </h2>
+            <div className="accordion" id="aboutFaqEn">
+              {[
+                {
+                  id: "faqe1",
+                  q: "What is Upgrowplan?",
+                  a: "Upgrowplan is an AI platform for entrepreneurs, analysts and consultants. It automates business plan creation following UNIDO/EBRD standards, market research, financial modelling, and competitor monitoring. Founded in 2024 in Tel Aviv.",
+                },
+                {
+                  id: "faqe2",
+                  q: "How is Upgrowplan different from ChatGPT?",
+                  a: "ChatGPT generates text from its training data and can hallucinate. Upgrowplan uses RAG architecture: a search agent collects live data from 50+ sources, Python scripts run deterministic financial calculations, and only then does the LLM process the verified context at temperature ≤ 0.2. A built-in Skeptic Agent checks every section for hallucinations.",
+                },
+                {
+                  id: "faqe3",
+                  q: "What methodologies are used in the business plans?",
+                  a: "Business plans follow UNIDO and EBRD standards — frameworks used by development banks and international investors. Financial calculations use deterministic Python scripts, not probabilistic AI models.",
+                },
+                {
+                  id: "faqe4",
+                  q: "Who is Upgrowplan for?",
+                  a: "Entrepreneurs preparing a business plan for a bank or investor; analysts who need fast market research; consultants who want to automate routine work; and startups testing hypotheses through virtual focus groups.",
+                },
+                {
+                  id: "faqe5",
+                  q: "How much does Upgrowplan cost?",
+                  a: "FinPilot (financial models) and Relocation Service (international business setup) are free. MarketSense AI Agent, PlanMaster AI, Synth Focus Lab and Business Pulse are available by subscription. Current pricing is on each product page.",
+                },
+              ].map(({ id, q, a }, i) => (
+                <div className="accordion-item border-0 mb-2" key={id} style={{ borderRadius: "8px", overflow: "hidden" }}>
+                  <h3 className="accordion-header">
+                    <button
+                      className={`accordion-button ${i !== 0 ? "collapsed" : ""}`}
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target={`#${id}`}
+                      aria-expanded={i === 0 ? "true" : "false"}
+                      style={{ fontWeight: 600, color: "#1e6078", backgroundColor: "#f0f7ff" }}
+                    >
+                      {q}
+                    </button>
+                  </h3>
+                  <div
+                    id={id}
+                    className={`accordion-collapse collapse ${i === 0 ? "show" : ""}`}
+                    data-bs-parent="#aboutFaqEn"
+                  >
+                    <div className="accordion-body" style={{ color: "#334155", lineHeight: 1.75 }}>
+                      {a}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </FullWidthCard>
         </div>
 
         {/* "We're open" — full-width block */}
