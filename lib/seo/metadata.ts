@@ -87,12 +87,12 @@ export const pageMeta = {
   home: {
     // Homepage bypasses the template via absolute — brand is the title itself
     title: {
-      en: "Upgrowplan | AI Business Plans & Market Research",
-      ru: "Upgrowplan | ИИ Бизнес-планы и Исследование рынка",
+      en: "Upgrowplan | AI Business Plans, Synthetic Respondents & Pitch Deck",
+      ru: "Upgrowplan | ИИ Бизнес-план, Синтетические Респонденты и Питч",
     },
     description: {
-      en: "Generate AI-powered business plans, market research reports, and strategic insights in minutes. Built for entrepreneurs and analysts.",
-      ru: "Генерируйте бизнес-планы, исследования рынка и стратегические отчёты с помощью ИИ за считанные минуты. Для предпринимателей и аналитиков.",
+      en: "Validate your idea with synthetic respondents. UNIDO/EBRD business plan in 10–20 minutes. Every figure checked by Skeptic Agent. Deliverable: Word + pitch deck.",
+      ru: "Проверь идею на синтетических респондентах. Бизнес-план по ЮНИДО/ЕБРР за 10–20 минут. Skeptic Agent проверит каждую цифру. Формат Word + питч-презентация.",
     },
     enPath: "/",
     ruPath: "/ru",

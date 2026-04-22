@@ -636,12 +636,12 @@ export default function Home() {
         <section className="hero-2026">
           <div className="container hero-grid">
             <div className="hero-copy">
-              <h1>The real world doesn't run on templates. Your plan shouldn't either.</h1>
+              <h1>Validate the idea. Model the economics. Win the investor.</h1>
               <p className="hero-subtitle">
-                We cured AI hallucinations. Upgrowplan pulls real market and
-                competitor data, simulates your buyers, and stress‑tests your
-                document with a Skeptic agent so the plan survives reality —
-                not just looks good on paper.
+                Business plan to UNIDO/EBRD standards with real market data — in 10–20 minutes.
+                Synthetic respondents surface real market pain points. Skeptic Agent verifies every figure.
+                <br />
+                <strong>Deliverable:</strong> business plan in Word + pitch deck for investor or bank.
               </p>
               <div className="hero-cta">
                 <Link
@@ -679,11 +679,10 @@ export default function Home() {
           <div className="container rag-grid">
             <div className="rag-copy">
               <h2>
-                How Upgrowplan AI agents build and verify plans on live data.
+                Upgrowplan builds and verifies business plans on live data.
                 <span className="accent-inline">
                   {" "}
-                  Not just text generation — step‑by‑step validation of every
-                  fact.
+                  Not a text generator — step‑by‑step validation of every fact.
                 </span>
               </h2>
               <Link
@@ -762,12 +761,10 @@ export default function Home() {
           <div className="container">
             <div className="proof-head">
               <h2>
-                Forget AI hallucinations. Every number in your plan has an
-                author.
+                Every figure in your business plan or market report has an author.
                 <span className="accent-inline">
                   {" "}
-                  Direct links to official reports, tax codes, and 2026 market
-                  analytics.
+                  Direct links to competitors, job market listings, raw material offers, and the 2026 tax code.
                 </span>
               </h2>
             </div>
@@ -899,11 +896,10 @@ export default function Home() {
           <div className="container skeptic-grid">
             <div className="skeptic-copy">
               <h2>
-                The only AI that isn't afraid to tell you "no".
+                Our Skeptic Agent stress‑tests your idea, uncovers hidden costs, and flags risks in overcrowded markets.
                 <span className="accent-inline">
                   {" "}
-                  Your Skeptic Agent will stress‑test the idea, uncover hidden
-                  costs, and flag overcrowded markets.
+                  Upgrowplan is honest with clients — better to warn about a potential loss than to create an illusion of profit.
                 </span>
               </h2>
               <p className="micro-copy">
@@ -976,11 +972,10 @@ export default function Home() {
           <div className="container persona-grid">
             <div className="persona-copy">
               <h2>
-                Don't guess. Ask those who will actually buy or tell you why
-                it's not interesting.
+                We build your virtual buyers and validate your hypothesis.
                 <span className="accent-inline">
                   {" "}
-                  We build virtual buyers and validate your hypothesis.
+                  Now you can ask those who will actually buy — or tell you why they won't.
                 </span>
               </h2>
               <p>
@@ -1280,11 +1275,10 @@ export default function Home() {
           <div className="container">
             <div className="anti-title-row">
               <h2>
-                Stop copying other people’s mistakes.
+                We abandoned templates entirely.
                 <span className="accent-inline">
                   {" "}
-                  A template is just an “average temperature.” We build your
-                  business on live data from your city, street, and niche.
+                  Every word in your business plan is generated at the moment of request. We build your business on live data from your city, street, and niche.
                 </span>
               </h2>
             </div>
@@ -1349,26 +1343,18 @@ export default function Home() {
                 </div>
               </div>
               <div className="col-lg-4 ps-lg-5">
-                <h2>Upgrowplan is not a builder. It’s intelligence.</h2>
                 <p className="micro-copy">
-                  Templates are poison for startups. They create false safety
-                  using numbers that have nothing to do with your street.
-                </p>
-                <p className="micro-copy">
-                  We’ve abandoned boilerplates. Every word in your plan is
-                  generated at request time:
+                  Upgrowplan doesn’t play with templates. They create false confidence using numbers that have nothing to do with your business.
                 </p>
                 <ul>
                   <li>
-                    Live search: agents walk the web of your city.
+                    Live search: our agents walk the streets of your city and scan your direct competitors’ sites.
                   </li>
                   <li>
-                    No fluff: we write about the prices of your neighbor next
-                    door.
+                    No fluff: we write about the prices of your neighbor next door.
                   </li>
                   <li>
-                    Hypothesis check: data is verified against taxes and trends
-                    as of April 2026.
+                    Hypothesis check: data is verified against trends and benchmarks from this month.
                   </li>
                 </ul>
               </div>
@@ -1383,11 +1369,10 @@ export default function Home() {
                 <div className="row align-items-center gy-4">
                   <div className="col-lg-5 text-center">
                     <h2 className="deep-title">
-                      15 minutes of truth vs 60 seconds of fiction.
+                      Our business plan isn’t built in 30 seconds.
                       <span className="accent-inline">
                         {" "}
-                        Fast food takes a minute — but you can’t live on it.
-                        Real strategy needs time to verify every fact.
+                        Collecting and verifying data, forming and surveying your virtual buyers, and running every fact through the Skeptic Agent — that takes 10–15 minutes.
                       </span>
                     </h2>
                   </div>
