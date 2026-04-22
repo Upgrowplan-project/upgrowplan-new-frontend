@@ -3,12 +3,7 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
-import Header from "../../components/Header";
-
 export default function AboutPage() {
-  const [menuOpen, setMenuOpen] = useState(false);
-
   const Card = ({ children }: { children: React.ReactNode }) => (
     <div className="col-md-6 mb-4 d-flex justify-content-center">
       <div
@@ -97,7 +92,6 @@ export default function AboutPage() {
 
   return (
     <div style={{ backgroundColor: "#f8f9fa", minHeight: "100vh" }}>
-      <Header />
 
       {/* PAGE CONTENT */}
       <main className="container py-5">

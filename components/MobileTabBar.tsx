@@ -87,15 +87,20 @@ export default function MobileTabBar({
         bottom: 0,
         left: 0,
         right: 0,
-        height: "70px",
+        height: "calc(70px + env(safe-area-inset-bottom))",
+        paddingBottom: "env(safe-area-inset-bottom)",
         backgroundColor: "rgba(255, 255, 255, 0.95)",
         backdropFilter: "blur(10px)",
+        WebkitBackdropFilter: "blur(10px)",
         borderTop: "1px solid rgba(1, 52, 110, 0.1)",
         display: "flex",
         justifyContent: "space-around",
         alignItems: "center",
         zIndex: 998,
         boxShadow: "0 -4px 12px rgba(1, 52, 110, 0.08)",
+        transform: "translateZ(0)",
+        WebkitTransform: "translateZ(0)",
+        willChange: "transform",
       }}
     >
       {tabs.map((tab) => {

@@ -230,7 +230,7 @@ main {
   }
 
   main {
-    padding-bottom: 80px;
+    padding-bottom: calc(80px + env(safe-area-inset-bottom));
   }
 
   .home-2026 {
@@ -240,7 +240,7 @@ main {
   }
 
   .home-2026 main {
-    padding-bottom: 80px;
+    padding-bottom: calc(80px + env(safe-area-inset-bottom));
     overflow-x: hidden;
   }
 

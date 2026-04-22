@@ -3,12 +3,7 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
-import Header from "../../components/Header";
-
 export default function AboutPage() {
-  const [menuOpen, setMenuOpen] = useState(false);
-
   const Card = ({ children }: { children: React.ReactNode }) => (
     <div className="col-md-6 mb-4 d-flex justify-content-center">
       <div
@@ -97,13 +92,9 @@ export default function AboutPage() {
 
   return (
     <div style={{ backgroundColor: "#f8f9fa", minHeight: "100vh" }}>
-      <Header />
 
       {/* КОНТЕНТ СТРАНИЦЫ */}
-      <main className="container py-5">
-        <h1 className="mb-4" style={{ color: "#1e6078" }}>
-          О проекте Upgrowplan
-        </h1>
+      <main className="container py-3">
 
         <div className="row justify-content-center">
           <FullWidthCard>
@@ -185,45 +176,6 @@ export default function AboutPage() {
               </li>
             </ul>
           </Card>
-        </div>
-
-        {/* Блок "Кратко о нас" - на полную ширину */}
-        <div className="row justify-content-center">
-          <FullWidthCard>
-            <h2 className="text-center" style={{ color: "#1e6078" }}>
-              Кратко о нас
-            </h2>
-            <div className="table-responsive">
-              <table className="table table-striped">
-                <tbody>
-                  <tr>
-                    <td>Бизнес-планов</td>
-                    <td>230+</td>
-                  </tr>
-                  <tr>
-                    <td>Финансовых моделей</td>
-                    <td>35+</td>
-                  </tr>
-                  <tr>
-                    <td>Маркетинговых исследований</td>
-                    <td>28</td>
-                  </tr>
-                  <tr>
-                    <td>Привлечено инвестиций и кредитов</td>
-                    <td>$2,45 млн+</td>
-                  </tr>
-                  <tr>
-                    <td>Опыт в бизнесе и технологиях</td>
-                    <td>15+ лет</td>
-                  </tr>
-                  <tr>
-                    <td>Интеграция ИИ</td>
-                    <td>LLM + RAG + API + Custom datasets</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </FullWidthCard>
         </div>
 
         <div className="row">

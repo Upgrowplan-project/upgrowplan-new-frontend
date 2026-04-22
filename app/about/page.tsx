@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { buildMetadata, pageMeta } from "@/lib/seo/metadata";
 import { aboutPageSchema, breadcrumbSchema, breadcrumbs } from "@/lib/seo/jsonld";
 import { JsonLd } from "@/components/JsonLd";
+import Header from "@/components/Header";
 import EnPage from "./page.en";
 
 export const metadata: Metadata = buildMetadata({
@@ -19,6 +20,7 @@ export default function AboutPage() {
           breadcrumbSchema(breadcrumbs.about("en")),
         ]}
       />
+      <Header />
       <EnPage />
     </>
   );

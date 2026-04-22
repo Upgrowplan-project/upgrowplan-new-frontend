@@ -92,7 +92,8 @@
       "Bash(sort -t_ -k2)",
       "Bash(cat .env.local)",
       "Bash(cat .env)",
-      "WebFetch(domain:t.me)"
+      "WebFetch(domain:t.me)",
+      "Bash(git diff *)"
     ],
     "deny": [],
     "ask": []
