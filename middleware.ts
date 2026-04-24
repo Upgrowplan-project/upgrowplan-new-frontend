@@ -8,7 +8,7 @@ export function middleware(request: NextRequest) {
   if (pathname === '/en' || pathname.startsWith('/en/')) {
     const cleanPath = pathname === '/en' ? '/' : pathname.replace(/^\/en/, '');
     const url = new URL(`${cleanPath}${request.nextUrl.search}`, request.url);
-    const response = NextResponse.redirect(url, { status: 307 });
+    const response = NextResponse.redirect(url, { status: 301 });
     response.cookies.set('NEXT_LOCALE', 'en', { path: '/', maxAge: 31536000 });
     return response;
   }

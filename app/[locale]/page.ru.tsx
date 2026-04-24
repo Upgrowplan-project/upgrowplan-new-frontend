@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Header from "../../components/Header";
 import { useEffect, useMemo, useRef, useState } from "react";
-import mapboxgl from "mapbox-gl";
+import type { Map as MapboxMap, Marker as MapboxMarker } from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { Modal } from "react-bootstrap";
 import ContactForm from "../../components/ContactForm";
@@ -54,9 +54,9 @@ export default function Home() {
   const pulseRef = useRef<HTMLDivElement | null>(null);
   const antiSliderRef = useRef<HTMLDivElement | null>(null);
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
-  const mapRef = useRef<mapboxgl.Map | null>(null);
-  const userMarkerRef = useRef<mapboxgl.Marker | null>(null);
-  const bizMarkersRef = useRef<mapboxgl.Marker[]>([]);
+  const mapRef = useRef<MapboxMap | null>(null);
+  const userMarkerRef = useRef<MapboxMarker | null>(null);
+  const bizMarkersRef = useRef<MapboxMarker[]>([]);
   const [skepticActive, setSkepticActive] = useState(false);
   const [confidence, setConfidence] = useState(0);
   const [openSources, setOpenSources] = useState<Set<number>>(new Set());
@@ -585,47 +585,57 @@ export default function Home() {
 
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
-    mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
+    let cancelled = false;
 
-    const defaultCenter: [number, number] = [34.9896, 32.794];
-    const map = new mapboxgl.Map({
-      container: mapContainerRef.current,
-      style: "mapbox://styles/mapbox/streets-v12",
-      center: defaultCenter,
-      zoom: 12.2,
-      interactive: true,
-    });
+    (async () => {
+      const { default: mapboxgl } = await import("mapbox-gl");
+      if (cancelled || !mapContainerRef.current || mapRef.current) return;
 
-    mapRef.current = map;
+      mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
 
-    const addBusinessMarkers = (center: [number, number]) => {
-      bizMarkersRef.current.forEach((marker) => marker.remove());
-      bizMarkersRef.current = [];
-      const offsets = [
-        [0.008, 0.004],
-        [-0.006, 0.003],
-        [0.004, -0.006],
-        [-0.004, -0.005],
-        [0.002, 0.008],
-      ];
-      offsets.forEach(([dx, dy], idx) => {
-        const el = document.createElement("div");
-        el.className = `biz-marker ${idx % 2 === 0 ? "biz-red" : "biz-yellow"}`;
-        el.innerHTML = `<span>${idx + 1}</span>`;
-        const marker = new mapboxgl.Marker({ element: el })
-          .setLngLat([center[0] + dx, center[1] + dy])
-          .addTo(map);
-        bizMarkersRef.current.push(marker);
+      const defaultCenter: [number, number] = [34.9896, 32.794];
+      const map = new mapboxgl.Map({
+        container: mapContainerRef.current,
+        style: "mapbox://styles/mapbox/streets-v12",
+        center: defaultCenter,
+        zoom: 12.2,
+        interactive: true,
       });
-    };
 
-    map.on("load", () => {
-      addBusinessMarkers(defaultCenter);
-    });
+      mapRef.current = map;
+
+      const addBusinessMarkers = (center: [number, number]) => {
+        bizMarkersRef.current.forEach((marker) => marker.remove());
+        bizMarkersRef.current = [];
+        const offsets = [
+          [0.008, 0.004],
+          [-0.006, 0.003],
+          [0.004, -0.006],
+          [-0.004, -0.005],
+          [0.002, 0.008],
+        ];
+        offsets.forEach(([dx, dy], idx) => {
+          const el = document.createElement("div");
+          el.className = `biz-marker ${idx % 2 === 0 ? "biz-red" : "biz-yellow"}`;
+          el.innerHTML = `<span>${idx + 1}</span>`;
+          const marker = new mapboxgl.Marker({ element: el })
+            .setLngLat([center[0] + dx, center[1] + dy])
+            .addTo(map);
+          bizMarkersRef.current.push(marker);
+        });
+      };
+
+      map.on("load", () => {
+        addBusinessMarkers(defaultCenter);
+      });
+    })();
 
     return () => {
-      map.remove();
-      mapRef.current = null;
+      cancelled = true;
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
     };
   }, []);
 
@@ -633,48 +643,55 @@ export default function Home() {
     if (!userLocation || !mapRef.current) return;
     const center: [number, number] = [userLocation.lon, userLocation.lat];
     mapRef.current.flyTo({ center, zoom: 13 });
-    if (!userMarkerRef.current) {
-      const el = document.createElement("div");
-      el.className = "user-marker";
-      userMarkerRef.current = new mapboxgl.Marker({ element: el })
-        .setLngLat(center)
-        .addTo(mapRef.current);
-    } else {
-      userMarkerRef.current.setLngLat(center);
-    }
-    const offsets = [
-      [0.004, 0.003],
-      [-0.004, 0.002],
-      [0.003, -0.004],
-      [-0.003, -0.003],
-      [0.002, 0.005],
-    ];
-    bizMarkersRef.current.forEach((marker) => marker.remove());
-    bizMarkersRef.current = [];
-    offsets.forEach(([dx, dy], idx) => {
-      const el = document.createElement("div");
-      el.className = `biz-marker ${idx % 2 === 0 ? "biz-red" : "biz-yellow"}`;
-      el.innerHTML = `<span>${idx + 1}</span>`;
-      const marker = new mapboxgl.Marker({ element: el })
-        .setLngLat([center[0] + dx, center[1] + dy])
-        .addTo(mapRef.current!);
-      bizMarkersRef.current.push(marker);
-    });
 
     const controller = new AbortController();
-    const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
-    fetch(
-      `https://api.mapbox.com/geocoding/v5/mapbox.places/${center[0]},${center[1]}.json?types=neighborhood,locality,place&language=ru&access_token=${token}`,
-      { signal: controller.signal },
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        const feature = data?.features?.[0];
-        if (feature?.place_name) {
-          setGeoLabel(feature.place_name);
-        }
-      })
-      .catch(() => {});
+
+    (async () => {
+      const { default: mapboxgl } = await import("mapbox-gl");
+      if (!mapRef.current) return;
+
+      if (!userMarkerRef.current) {
+        const el = document.createElement("div");
+        el.className = "user-marker";
+        userMarkerRef.current = new mapboxgl.Marker({ element: el })
+          .setLngLat(center)
+          .addTo(mapRef.current);
+      } else {
+        userMarkerRef.current.setLngLat(center);
+      }
+      const offsets = [
+        [0.004, 0.003],
+        [-0.004, 0.002],
+        [0.003, -0.004],
+        [-0.003, -0.003],
+        [0.002, 0.005],
+      ];
+      bizMarkersRef.current.forEach((marker) => marker.remove());
+      bizMarkersRef.current = [];
+      offsets.forEach(([dx, dy], idx) => {
+        const el = document.createElement("div");
+        el.className = `biz-marker ${idx % 2 === 0 ? "biz-red" : "biz-yellow"}`;
+        el.innerHTML = `<span>${idx + 1}</span>`;
+        const marker = new mapboxgl.Marker({ element: el })
+          .setLngLat([center[0] + dx, center[1] + dy])
+          .addTo(mapRef.current!);
+        bizMarkersRef.current.push(marker);
+      });
+
+      const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
+      fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${center[0]},${center[1]}.json?types=neighborhood,locality,place&language=ru&access_token=${token}`,
+        { signal: controller.signal },
+      )
+        .then((res) => res.json())
+        .then((data) => {
+          const feature = data?.features?.[0];
+          if (feature?.place_name) {
+            setGeoLabel(feature.place_name);
+          }
+        })
+        .catch(() => {});
+    })();
 
     return () => controller.abort();
   }, [userLocation]);
