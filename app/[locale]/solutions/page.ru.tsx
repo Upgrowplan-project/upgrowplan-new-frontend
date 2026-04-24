@@ -73,12 +73,12 @@ export default function SolutionsPage() {
       elementId: "relocation-service-card",
     },
     {
-      title: "Synth Focus Lab",
+      title: "Synth Focus Lab — Синтетические респонденты",
       description:
-        "Виртуальная панель респондентов. Создание фокус-групп и анализ ответов респондентов по входным параметрам. Тонкая настройка демографии, возраста, социальных и финансовых парметров целевой аудитории.",
+        "Проверьте бизнес-идею на виртуальных покупателях за 15 минут. Синтетические респонденты заменяют дорогие фокус-группы — без рекрутинга, без ожидания. Точность 85–92% по сравнению с реальными участниками.",
       icon: <FiUsers className="me-2 text-warning" />,
       release: "весна 2026",
-      link: "/solutions/synthFocusLab/descriptionPage",
+      link: "/solutions/synthetic-customer-research",
       elementId: "synth-focus-lab-description-card",
       ctaLabel: "Подробнее",
     },

@@ -94,7 +94,9 @@
       "Bash(cat .env)",
       "WebFetch(domain:t.me)",
       "Bash(git diff *)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(mkdir -p \"d:/UpgrowPlan/upgrowplan_new/app/[locale]/ai-business-plan-generator\")",
+      "Bash(mkdir -p \"d:/UpgrowPlan/upgrowplan_new/app/[locale]/why-upgrowplan\")"
     ],
     "deny": [],
     "ask": []

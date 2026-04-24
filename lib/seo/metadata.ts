@@ -301,4 +301,40 @@ export const pageMeta = {
     enPath: "/solutions/businessPulse",
     ruPath: "/ru/solutions/businessPulse",
   },
+  aiBizPlanGenerator: {
+    title: {
+      en: "AI Business Plan Generator — UNIDO/EBRD Standard in 20 Minutes",
+      ru: "ИИ Генератор бизнес-планов | ЮНИДО/ЕБРР за 20 минут",
+    },
+    description: {
+      en: "Generate an investor-ready business plan with AI: real data from 50+ sources, Skeptic Agent verification, financial model (P&L, cash flow, break-even), Word + pitch deck. No consultants needed.",
+      ru: "Создайте бизнес-план для инвестора с ИИ: реальные данные из 50+ источников, проверка Skeptic Agent, финансовая модель (P&L, денежный поток, точка безубыточности), Word + питч. Без консультантов.",
+    },
+    enPath: "/ai-business-plan-generator",
+    ruPath: "/ru/ai-business-plan-generator",
+  },
+  whyUpgrowplan: {
+    title: {
+      en: "Why Upgrowplan vs ChatGPT, Consultants & Upmetrics",
+      ru: "Почему Upgrowplan, а не ChatGPT, консультант или Upmetrics",
+    },
+    description: {
+      en: "Upgrowplan vs ChatGPT vs traditional consultants: RAG architecture, Skeptic Agent hallucination check, UNIDO/EBRD methodology, Python financial calculations. See the full comparison.",
+      ru: "Upgrowplan против ChatGPT и консультантов: RAG-архитектура, Skeptic Agent, методология ЮНИДО/ЕБРР, Python-расчёты. Сравнительная таблица и разбор отличий.",
+    },
+    enPath: "/why-upgrowplan",
+    ruPath: "/ru/why-upgrowplan",
+  },
+  syntheticCustomerResearch: {
+    title: {
+      en: "Synthetic Customer Research | AI Alternative to Focus Groups",
+      ru: "Синтетические респонденты | ИИ-исследование без фокус-групп",
+    },
+    description: {
+      en: "Test your business idea on virtual buyers in 15 minutes. AI synthetic respondents replace expensive focus groups — no recruitment, no waiting, 85–92% accuracy.",
+      ru: "Проверьте бизнес-идею на виртуальных покупателях за 15 минут. Синтетические респонденты заменяют дорогие фокус-группы — без рекрутинга, без ожидания, точность 85–92%.",
+    },
+    enPath: "/solutions/synthetic-customer-research",
+    ruPath: "/ru/solutions/synthetic-customer-research",
+  },
 } as const;

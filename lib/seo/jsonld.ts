@@ -845,6 +845,172 @@ export const pageFaqs = {
       },
     ],
   },
+  aiBizPlanGenerator: {
+    en: [
+      {
+        question: "What does an AI business plan generator produce?",
+        answer: "Upgrowplan's PlanMaster AI generates a complete investor-ready business plan: executive summary, market analysis with competitor mapping, financial model (P&L, cash flow, break-even, 3-year projections), marketing strategy, operational plan, and risk assessment — delivered as a Word (.docx) file plus a pitch deck.",
+      },
+      {
+        question: "How long does it take to generate a business plan with AI?",
+        answer: "The full process takes 10–20 minutes. The AI needs time to collect live data from 50+ verified sources, run Python-based financial calculations, and pass each section through Skeptic Agent validation before producing the final document.",
+      },
+      {
+        question: "What makes this different from ChatGPT or a business plan template?",
+        answer: "Templates are static — they don't include your actual market data. ChatGPT generates text from training data and can hallucinate numbers. PlanMaster uses RAG architecture: a search agent collects live competitor prices, market size, and industry data; Python scripts run deterministic financial calculations; and a Skeptic Agent cross-checks every figure before the document is produced.",
+      },
+      {
+        question: "Does the AI business plan follow UNIDO or EBRD standards?",
+        answer: "Yes. PlanMaster generates plans following UNIDO (UN Industrial Development Organization) and EBRD (European Bank for Reconstruction and Development) frameworks — the international standards used by development banks and institutional investors. This structure is accepted by banks, grant committees, and investment funds.",
+      },
+      {
+        question: "Can I get a pitch deck as well as the business plan?",
+        answer: "Yes. In addition to the Word business plan document, PlanMaster generates a pitch deck summarising the key investment thesis, market opportunity, financials, and competitive positioning.",
+      },
+      {
+        question: "Which countries and industries does the AI business plan generator support?",
+        answer: "PlanMaster supports any country and industry. You specify the country, city, currency, and business type (B2B, B2C, B2B2C). The system adapts tax assumptions, market context, and financial benchmarks automatically.",
+      },
+    ],
+    ru: [
+      {
+        question: "Что выдаёт ИИ-генератор бизнес-планов?",
+        answer: "PlanMaster AI от Upgrowplan генерирует полноценный бизнес-план для инвесторов: резюме, анализ рынка с картой конкурентов, финансовая модель (P&L, денежный поток, точка безубыточности, прогноз на 3 года), маркетинговая стратегия, операционный план и оценка рисков — в формате Word (.docx) плюс питч-презентация.",
+      },
+      {
+        question: "Сколько времени занимает генерация бизнес-плана с ИИ?",
+        answer: "Полный процесс занимает 10–20 минут. ИИ собирает живые данные из 50+ верифицированных источников, выполняет финансовые расчёты на Python и проверяет каждый раздел через Skeptic Agent перед выдачей документа.",
+      },
+      {
+        question: "Чем это отличается от ChatGPT или шаблона бизнес-плана?",
+        answer: "Шаблоны статичны — в них нет ваших реальных рыночных данных. ChatGPT генерирует текст на основе обучающих данных и может галлюцинировать. PlanMaster использует RAG-архитектуру: агент поиска собирает живые данные о конкурентах и рынке, Python-скрипты выполняют детерминированные расчёты, а Skeptic Agent проверяет каждую цифру.",
+      },
+      {
+        question: "Соответствует ли бизнес-план стандартам ЮНИДО или ЕБРР?",
+        answer: "Да. PlanMaster генерирует планы по стандартам ЮНИДО (Организация ООН по промышленному развитию) и ЕБРР (Европейский банк реконструкции и развития) — международным стандартам, которые используют банки развития и институциональные инвесторы. Такая структура принимается банками, грантовыми комитетами и инвестиционными фондами.",
+      },
+      {
+        question: "Можно ли получить питч-презентацию вместе с бизнес-планом?",
+        answer: "Да. Помимо Word-документа, PlanMaster генерирует питч-презентацию с ключевым инвестиционным тезисом, анализом рынка, финансами и конкурентным позиционированием.",
+      },
+      {
+        question: "Какие страны и отрасли поддерживает генератор?",
+        answer: "PlanMaster поддерживает любую страну и отрасль. Вы указываете страну, город, валюту и тип бизнеса (B2B, B2C, B2B2C). Система автоматически адаптирует налоговые допущения, рыночный контекст и финансовые бенчмарки.",
+      },
+    ],
+  },
+  whyUpgrowplan: {
+    en: [
+      {
+        question: "What is the main difference between Upgrowplan and ChatGPT for business planning?",
+        answer: "ChatGPT generates text from training data — it cannot access current market prices, competitor data, or real financial benchmarks. It produces plausible-sounding but often inaccurate numbers. Upgrowplan uses RAG: a live search agent collects real data from 50+ sources, Python scripts run deterministic financial calculations, and a Skeptic Agent validates every figure before the document is produced.",
+      },
+      {
+        question: "How does Upgrowplan prevent AI hallucinations?",
+        answer: "Every business plan goes through a three-layer validation: (1) Search agents collect live data from verified sources before any text is generated. (2) Financial calculations use deterministic Python scripts — not probabilistic AI estimates. (3) A Skeptic Agent reviews each section, flags unrealistic assumptions (e.g. 90% market share, 300% margins), and requires corrections before finalising.",
+      },
+      {
+        question: "How does Upgrowplan compare to Upmetrics or LivePlan?",
+        answer: "Upmetrics and LivePlan are template-and-wizard tools — you fill in the data, they format the document. Upgrowplan actively researches the market, finds your competitors, sizes the opportunity, builds the financial model from your inputs, and validates the output. The result is a data-backed document, not a formatted template.",
+      },
+      {
+        question: "Is Upgrowplan cheaper than hiring a business plan consultant?",
+        answer: "A professional business plan consultant typically charges $1,500–$5,000 and takes 2–4 weeks. Upgrowplan produces a comparable investor-ready document in 10–20 minutes at a fraction of the cost — with live market data and structured financial modelling included.",
+      },
+      {
+        question: "Does Upgrowplan follow recognised international standards?",
+        answer: "Yes. Plans follow UNIDO (UN Industrial Development Organization) and EBRD (European Bank for Reconstruction and Development) frameworks — the standards used by development banks, grant committees, and international investors to evaluate submissions.",
+      },
+    ],
+    ru: [
+      {
+        question: "В чём главное отличие Upgrowplan от ChatGPT для бизнес-планирования?",
+        answer: "ChatGPT генерирует текст на основе обучающих данных — он не может получить актуальные рыночные цены, данные конкурентов или реальные финансовые бенчмарки. Он выдаёт правдоподобно звучащие, но часто неточные цифры. Upgrowplan использует RAG: агент живого поиска собирает данные из 50+ источников, Python-скрипты выполняют детерминированные расчёты, а Skeptic Agent проверяет каждую цифру.",
+      },
+      {
+        question: "Как Upgrowplan предотвращает галлюцинации ИИ?",
+        answer: "Каждый бизнес-план проходит трёхуровневую проверку: (1) Агенты поиска собирают живые данные из верифицированных источников до генерации текста. (2) Финансовые расчёты выполняются детерминированными Python-скриптами, а не вероятностными моделями. (3) Skeptic Agent проверяет каждый раздел, помечает нереалистичные допущения (доля рынка 90%, маржа 300%) и требует исправлений.",
+      },
+      {
+        question: "Как Upgrowplan сравнивается с Upmetrics или другими конструкторами?",
+        answer: "Upmetrics и LivePlan — это инструменты по шаблону: вы вводите данные, они форматируют документ. Upgrowplan активно исследует рынок, находит конкурентов, оценивает объём возможности, строит финансовую модель из ваших вводных и валидирует результат. Итог — документ на основе реальных данных, а не отформатированный шаблон.",
+      },
+      {
+        question: "Дешевле ли Upgrowplan, чем нанять консультанта?",
+        answer: "Профессиональный консультант по бизнес-планам берёт 100 000–400 000 руб. и тратит 2–4 недели. Upgrowplan создаёт сопоставимый документ инвесторского качества за 10–20 минут — с живыми рыночными данными и структурированным финансовым моделированием.",
+      },
+      {
+        question: "Соответствует ли Upgrowplan признанным международным стандартам?",
+        answer: "Да. Планы следуют стандартам ЮНИДО (Организация ООН по промышленному развитию) и ЕБРР (Европейский банк реконструкции и развития) — стандартам, которые используют банки развития, грантовые комитеты и международные инвесторы.",
+      },
+    ],
+  },
+  syntheticCustomerResearch: {
+    en: [
+      {
+        question: "What are synthetic respondents?",
+        answer:
+          "Synthetic respondents are AI personas with defined demographics, income level, age, lifestyle, and behaviour patterns. They simulate how real buyers would react to your product, price, or message — without recruiting actual participants.",
+      },
+      {
+        question: "How accurate are synthetic respondents compared to real focus groups?",
+        answer:
+          "Research comparing AI synthetic panels to traditional focus groups shows 85–92% alignment in purchase intent and sentiment direction. Synthetic respondents are best for early-stage validation, concept testing, and pricing research — where speed and cost matter most.",
+      },
+      {
+        question: "How is this different from a traditional focus group?",
+        answer:
+          "Traditional focus groups take 2–4 weeks to recruit, cost $3,000–$10,000 per session, and are limited by geography. Synthetic respondents are available in minutes, cost a fraction of the price, and can be configured for any demographic or geography instantly.",
+      },
+      {
+        question: "Can I test pricing sensitivity with synthetic respondents?",
+        answer:
+          "Yes. One of the most valuable use cases is pricing research. You can configure panels to test willingness-to-pay at different price points — simulating the Van Westendorp model or conjoint-style analysis without the logistics of a real survey.",
+      },
+      {
+        question: "Which tool does Upgrowplan use for synthetic respondent research?",
+        answer:
+          "Upgrowplan's Synth Focus Lab creates virtual focus groups with AI synthetic respondents. You define your audience, describe the concept, and receive structured feedback — purchase intent, objections, sentiment, and actionable insights.",
+      },
+      {
+        question: "What types of research can I run?",
+        answer:
+          "Concept testing, product-market fit validation, pricing sensitivity, brand perception, ad copy testing, UX feedback, and competitive positioning — all with a configurable audience of 5 to 50+ AI personas.",
+      },
+    ],
+    ru: [
+      {
+        question: "Что такое синтетические респонденты?",
+        answer:
+          "Синтетические респонденты — это ИИ-персоны с заданными демографией, уровнем дохода, возрастом, образом жизни и поведенческими паттернами. Они симулируют реакцию реальных покупателей на ваш продукт, цену или сообщение — без рекрутинга живых участников.",
+      },
+      {
+        question: "Насколько точны синтетические респонденты по сравнению с реальными фокус-группами?",
+        answer:
+          "Исследования, сравнивающие ИИ-панели с традиционными фокус-группами, показывают 85–92% совпадение по намерению купить и направлению настроений. Синтетические респонденты лучше всего работают для валидации на ранних этапах, тестирования концепций и ценового исследования.",
+      },
+      {
+        question: "Чем это отличается от традиционной фокус-группы?",
+        answer:
+          "Традиционные фокус-группы занимают 2–4 недели на рекрутинг, стоят от 150 000 до 500 000 рублей за сессию и ограничены географией. Синтетические респонденты доступны за минуты, стоят кратно меньше и настраиваются под любую демографию мгновенно.",
+      },
+      {
+        question: "Можно ли тестировать ценовую чувствительность с синтетическими респондентами?",
+        answer:
+          "Да. Одно из ценнейших применений — ценовое исследование. Вы настраиваете панель для тестирования готовности платить при разных ценах — симулируя модель Van Westendorp или conjoint-анализ без логистики реального опроса.",
+      },
+      {
+        question: "Какой инструмент Upgrowplan использует для исследования с синтетическими респондентами?",
+        answer:
+          "Synth Focus Lab от Upgrowplan создаёт виртуальные фокус-группы с ИИ-синтетическими респондентами. Вы задаёте аудиторию, описываете концепцию и получаете структурированную обратную связь: намерение купить, возражения, настроения и практические инсайты.",
+      },
+      {
+        question: "Какие виды исследований можно проводить?",
+        answer:
+          "Тестирование концепций, валидация product-market fit, ценовая чувствительность, восприятие бренда, тестирование рекламных текстов, UX-обратная связь и конкурентное позиционирование — всё с настраиваемой аудиторией от 5 до 50+ ИИ-персон.",
+      },
+    ],
+  },
   businessPulse: {
     en: [
       {
@@ -1239,6 +1405,58 @@ export const howToSteps = {
         {
           name: "Получите проанализированные инсайты",
           text: "Получите структурированное резюме ключевых выводов, разбивку настроений, типичные возражения и практические рекомендации на основе ответов всей панели.",
+        },
+      ],
+    },
+  },
+  syntheticCustomerResearch: {
+    en: {
+      name: "How to Run AI Synthetic Customer Research with Synth Focus Lab",
+      description:
+        "Test your business idea on virtual buyers in 15 minutes — no focus group recruiting needed.",
+      totalTime: "PT15M",
+      url: `${SITE_URL}/solutions/synthetic-customer-research`,
+      steps: [
+        {
+          name: "Describe your idea and define your audience",
+          text: "Enter the product or concept you want to test. Set target audience parameters: age range, income level, location, and lifestyle characteristics.",
+        },
+        {
+          name: "AI builds a panel of synthetic personas",
+          text: "Synth Focus Lab generates 5–50+ AI personas, each with a unique demographic, behavioural, and financial profile calibrated against real population data.",
+        },
+        {
+          name: "Personas react to your concept",
+          text: "Each AI persona responds to your product idea, raises objections, asks questions, and names the price they would pay — simulating authentic buyer reactions.",
+        },
+        {
+          name: "Receive a structured insight report",
+          text: "Get a full analysis: purchase intent score, top objections, willingness-to-pay range, product strengths and weaknesses — all within 15 minutes.",
+        },
+      ],
+    },
+    ru: {
+      name: "Как провести ИИ-исследование покупателей с Synth Focus Lab",
+      description:
+        "Проверьте бизнес-идею на виртуальных покупателях за 15 минут — без рекрутинга фокус-группы.",
+      totalTime: "PT15M",
+      url: `${SITE_URL}/ru/solutions/synthetic-customer-research`,
+      steps: [
+        {
+          name: "Опишите идею и определите аудиторию",
+          text: "Введите продукт или концепцию для тестирования. Задайте параметры целевой аудитории: возраст, уровень дохода, геолокация и образ жизни.",
+        },
+        {
+          name: "ИИ создаёт панель синтетических персон",
+          text: "Synth Focus Lab генерирует 5–50+ ИИ-персон, каждая с уникальным демографическим, поведенческим и финансовым профилем, откалиброванным по реальным данным населения.",
+        },
+        {
+          name: "Персоны реагируют на вашу концепцию",
+          text: "Каждая ИИ-персона отвечает на вашу идею продукта, высказывает возражения, задаёт вопросы и называет цену, которую готова заплатить.",
+        },
+        {
+          name: "Получите структурированный отчёт с инсайтами",
+          text: "Полный анализ: индекс намерения купить, топ-возражения, диапазон готовности платить, сильные и слабые стороны продукта — за 15 минут.",
         },
       ],
     },

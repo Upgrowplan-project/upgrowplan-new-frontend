@@ -67,12 +67,12 @@ export default function SolutionsPage() {
       elementId: "relocation-service-card",
     },
     {
-      title: "Synth Focus Lab",
+      title: "Synth Focus Lab — Synthetic Respondents",
       description:
-        "Virtual panel of respondents. Creating focus groups and analyzing respondents' answers based on input parameters. Fine-tuning demographics, age, social and financial parameters of the target audience.",
+        "Test your business idea on virtual buyers in 15 minutes. AI synthetic respondents replace expensive focus groups — no recruiting, no waiting. 85–92% accuracy compared to real participants.",
       icon: <FiUsers className="me-2 text-warning" />,
       release: "Spring 2026",
-      link: "/solutions/synthFocusLab/descriptionPage",
+      link: "/solutions/synthetic-customer-research",
       elementId: "synth-focus-lab-description-card",
       ctaLabel: "Learn more",
     },
