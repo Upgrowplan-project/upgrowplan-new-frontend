@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
@@ -32,7 +32,7 @@ const translations = {
   },
 };
 
-export default function Header() {
+function HeaderContent() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false);
@@ -460,5 +460,13 @@ export default function Header() {
         </div>
       </nav>
     </header>
+  );
+}
+
+export default function Header() {
+  return (
+    <Suspense fallback={null}>
+      <HeaderContent />
+    </Suspense>
   );
 }

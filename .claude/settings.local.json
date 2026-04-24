@@ -93,7 +93,8 @@
       "Bash(cat .env.local)",
       "Bash(cat .env)",
       "WebFetch(domain:t.me)",
-      "Bash(git diff *)"
+      "Bash(git diff *)",
+      "Bash(npm run *)"
     ],
     "deny": [],
     "ask": []

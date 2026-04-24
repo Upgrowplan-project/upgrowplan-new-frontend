@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import Header from "../../components/Header";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Map as MapboxMap, Marker as MapboxMarker } from "mapbox-gl";
@@ -10,8 +9,7 @@ import { Modal } from "react-bootstrap";
 import ContactForm from "../../components/ContactForm";
 
 export default function Home() {
-  const pathname = usePathname();
-  const locale = pathname.startsWith("/ru") ? "ru" : "en";
+  const locale = "ru";
 
   const logLines = useMemo(
     () => [
