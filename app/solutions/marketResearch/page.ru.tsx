@@ -354,18 +354,26 @@ export default function MarketResearchPage() {
   const buildCompletionSubtitle = () => {
     const productName =
       enhancedReport?.product_name || formData.productName || "Маркетинговый отчет";
-    const fullDesc =
-      (formData.productDescription || enhancedReport?.industry || "").trim();
+    const industry = (enhancedReport?.industry || "").trim();
     const location =
       enhancedReport?.location ||
       [formData.region, formData.country].filter(Boolean).join(", ");
+    // Короткий subtitle: только название • отрасль • локация
+    return [productName, industry, location].filter(Boolean).join(" • ");
+  };
 
-    const shortDesc = fullDesc ? fullDesc.split(".")[0].trim() : "";
-    const left = `${productName}${fullDesc ? " " + fullDesc : ""}`.trim();
-    const middle = `${productName}${shortDesc ? " " + shortDesc : ""}`.trim();
-    const right = location || "";
-
-    return [left, middle, right].filter(Boolean).join(" • ");
+  // 2–3 строки из executive summary для отображения на странице результатов
+  const buildExecutiveSummaryPreview = (): string[] => {
+    const es = enhancedReport?.executive_summary;
+    if (!es) return [];
+    const lines: string[] = [];
+    if (es.market_opportunity_summary) {
+      lines.push(es.market_opportunity_summary);
+    }
+    if (es.key_findings?.length) {
+      lines.push(...es.key_findings.slice(0, 2));
+    }
+    return lines.slice(0, 3);
   };
 
   // Таймер и метрики исследования
@@ -2068,18 +2076,20 @@ export default function MarketResearchPage() {
                 <p className={styles.reportSubtitle}>{buildCompletionSubtitle()}</p>
               </div>
               <div className={styles.resultsBody}>
-                <div className={styles.section}>
-                  <p
-                    style={{
-                      fontSize: "1.2rem",
-                      textAlign: "center",
-                      padding: "2rem 1rem",
-                      color: "#1e6078",
-                      fontWeight: 600,
-                    }}
-                  >
+                <div className={styles.section} style={{ textAlign: "center", padding: "1.5rem 1rem 0.5rem" }}>
+                  <p style={{ fontSize: "1.2rem", color: "#1e6078", fontWeight: 600, marginBottom: "1rem" }}>
                     ✅ Ваш маркетинговый отчет успешно сформирован!
                   </p>
+                  {/* Краткий preview из executive summary */}
+                  {buildExecutiveSummaryPreview().length > 0 && (
+                    <ul style={{ listStyle: "none", padding: 0, margin: "0 auto", maxWidth: 600, textAlign: "left" }}>
+                      {buildExecutiveSummaryPreview().map((line, i) => (
+                        <li key={i} style={{ fontSize: "0.95rem", color: "#374151", padding: "0.3rem 0", borderLeft: "3px solid #D04A02", paddingLeft: "0.75rem", marginBottom: "0.4rem" }}>
+                          {line}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
 
                 <div className={styles.section}>
@@ -2123,7 +2133,8 @@ export default function MarketResearchPage() {
               </div>
             </div>
           </div>
-        )}\n        {researchReport && !enhancedReport && (
+        )}
+        {researchReport && !enhancedReport && (
           <div className={styles.resultsSection}>
             <div className={styles.resultsCard}>
               <div className={styles.resultsHeader}>

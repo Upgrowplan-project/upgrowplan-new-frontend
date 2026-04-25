@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@stomp/stompjs": "^7.2.0",
+    "@vercel/blob": "^2.3.3",
     "aos": "^2.3.4",
     "axios": "^1.11.0",
     "bootstrap": "^5.3.7",

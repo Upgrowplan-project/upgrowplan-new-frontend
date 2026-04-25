@@ -1,10 +1,24 @@
-// Static blog posts data
-// These posts are pre-loaded and displayed immediately
-// New posts from the database will be added dynamically
+// Static blog posts data — fallback when Blob storage is unavailable
 
 export interface Post {
     id: number;
     message: string;
+    createdAt: string;
+    mediaUrl?: string;
+    forwardAuthor?: string;
+}
+
+export interface BilingualPost {
+    id: number;
+    slug?: string;
+    titleRu?: string;
+    titleEn?: string;
+    descriptionRu?: string;
+    descriptionEn?: string;
+    category?: string;
+    author?: string;
+    messageRu: string;
+    messageEn: string;
     createdAt: string;
     mediaUrl?: string;
     forwardAuthor?: string;
@@ -936,3 +950,21 @@ The difference between information and intelligence is analysis. AI competitive 
         createdAt: "2025-04-20T10:00:00Z",
     },
 ];
+
+// Unified bilingual fallback — EN posts with empty RU, RU post with empty EN
+export const allStaticPosts: BilingualPost[] = [
+    ...staticPostsEn.map((p) => ({
+        id: p.id,
+        messageRu: "",
+        messageEn: p.message,
+        createdAt: p.createdAt,
+        mediaUrl: p.mediaUrl,
+        forwardAuthor: p.forwardAuthor,
+    })),
+    {
+        id: 1,
+        messageRu: staticPostsRu[0].message,
+        messageEn: "",
+        createdAt: staticPostsRu[0].createdAt,
+    },
+].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());

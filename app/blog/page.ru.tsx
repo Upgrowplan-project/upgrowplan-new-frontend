@@ -1,27 +1,21 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import Header from "../../components/Header";
-import { Post, staticPostsRu } from "./staticPosts";
+import { BilingualPost } from "./staticPosts";
 import BlogPostCard from "./BlogPostCard";
-import BlogLiveUpdates from "./BlogLiveUpdates";
+import AdminBlogPanel from "./AdminBlogPanel";
 
-async function getPosts(): Promise<Post[]> {
-  try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_BLOG_URL || "http://localhost:8082";
-    const res = await fetch(`${apiUrl}/api/posts`, { next: { revalidate: 300 } });
-    if (!res.ok) return staticPostsRu;
-    const data = await res.json();
-    if (!Array.isArray(data) || data.length === 0) return staticPostsRu;
-    return data.sort(
-      (a: Post, b: Post) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
-  } catch {
-    return staticPostsRu;
-  }
-}
+export default function BlogPageRu() {
+  const [posts, setPosts] = useState<BilingualPost[]>([]);
+  const [loading, setLoading] = useState(true);
 
-export default async function BlogPageRu() {
-  const posts = await getPosts();
-  const apiUrl = process.env.NEXT_PUBLIC_API_BLOG_URL || "http://localhost:8082";
+  useEffect(() => {
+    fetch("/api/blog/posts")
+      .then((r) => r.json())
+      .then((data) => { setPosts(data); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, []);
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -30,10 +24,7 @@ export default async function BlogPageRu() {
       <main className="container py-5" style={{ flex: 1 }}>
         <h1 className="text-brand mb-4">Блог Upgrowplan</h1>
 
-        <p
-          className="mt-3 mb-5 lead"
-          style={{ maxWidth: "800px", lineHeight: "1.7", fontSize: "1.125rem" }}
-        >
+        <p className="mt-3 mb-5 lead" style={{ maxWidth: "800px", lineHeight: "1.7", fontSize: "1.125rem" }}>
           Привет 👋 Здесь мы делимся реальным опытом: бизнес-идеи, кейсы,
           чек-листы, аналитика и инсайты из мира предпринимательства и
           финансового планирования.
@@ -49,7 +40,7 @@ export default async function BlogPageRu() {
               target="_blank"
               rel="noopener noreferrer"
               className="btn btn-outline-primary d-flex align-items-center gap-2"
-              style={{ borderRadius: "8px", padding: "0.5rem 1rem", transition: "all 0.3s ease" }}
+              style={{ borderRadius: "8px", padding: "0.5rem 1rem" }}
             >
               <img src="/icons/telegram.svg" alt="Telegram" width={24} height={24} />
               <span>Telegram</span>
@@ -59,7 +50,7 @@ export default async function BlogPageRu() {
               target="_blank"
               rel="noopener noreferrer"
               className="btn btn-outline-primary d-flex align-items-center gap-2"
-              style={{ borderRadius: "8px", padding: "0.5rem 1rem", transition: "all 0.3s ease" }}
+              style={{ borderRadius: "8px", padding: "0.5rem 1rem" }}
             >
               <img src="/icons/vk.svg" alt="VK" width={24} height={24} />
               <span>VK</span>
@@ -67,21 +58,31 @@ export default async function BlogPageRu() {
           </div>
         </div>
 
-        <BlogLiveUpdates
-          existingIds={posts.map((p) => p.id)}
-          locale="ru"
-          apiUrl={apiUrl}
-        />
-
-        {posts.length === 0 ? (
+        {loading ? (
+          <p style={{ color: "#94a3b8" }}>Загрузка постов…</p>
+        ) : posts.length === 0 ? (
           <p className="release-soon">Посты ещё не опубликованы 😄</p>
         ) : (
           <div className="row g-4">
             {posts.map((post) => (
-              <BlogPostCard key={post.id} post={post} apiUrl={apiUrl} locale="ru" />
+              <BlogPostCard
+                key={post.id}
+                message={post.messageRu || post.messageEn}
+                createdAt={post.createdAt}
+                slug={post.slug}
+                title={post.titleRu || post.titleEn}
+                description={post.descriptionRu || post.descriptionEn}
+                category={post.category}
+                author={post.author}
+                mediaUrl={post.mediaUrl}
+                forwardAuthor={post.forwardAuthor}
+                locale="ru"
+              />
             ))}
           </div>
         )}
+
+        <AdminBlogPanel posts={posts} onPostsChange={setPosts} />
       </main>
     </div>
   );

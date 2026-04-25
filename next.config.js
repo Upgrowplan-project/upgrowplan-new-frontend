@@ -3,6 +3,9 @@
 const nextConfig = {
   typescript: { ignoreBuildErrors: true },
   eslint: { ignoreDuringBuilds: true },
+  experimental: {
+    serverComponentsExternalPackages: ["@vercel/blob"],
+  },
 
   env: {
     // Теперь мы говорим: возьми переменную из системы,

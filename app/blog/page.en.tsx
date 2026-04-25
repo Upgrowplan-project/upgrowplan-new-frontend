@@ -1,13 +1,20 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import Header from "../../components/Header";
-import { staticPostsEn } from "./staticPosts";
+import { BilingualPost } from "./staticPosts";
 import BlogPostCard from "./BlogPostCard";
 
-const apiUrl = process.env.NEXT_PUBLIC_API_BLOG_URL || "http://localhost:8082";
-
 export default function BlogPageEn() {
-  const posts = [...staticPostsEn].sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  );
+  const [posts, setPosts] = useState<BilingualPost[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/blog/posts")
+      .then((r) => r.json())
+      .then((data) => { setPosts(data); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, []);
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -16,10 +23,7 @@ export default function BlogPageEn() {
       <main className="container py-5" style={{ flex: 1 }}>
         <h1 className="text-brand mb-4">Upgrowplan Blog</h1>
 
-        <p
-          className="mt-3 mb-5 lead"
-          style={{ maxWidth: "800px", lineHeight: "1.7", fontSize: "1.125rem" }}
-        >
+        <p className="mt-3 mb-5 lead" style={{ maxWidth: "800px", lineHeight: "1.7", fontSize: "1.125rem" }}>
           Practical insights on AI business planning, market research, financial
           modelling, and entrepreneurship — from the Upgrowplan team.
         </p>
@@ -34,7 +38,7 @@ export default function BlogPageEn() {
               target="_blank"
               rel="noopener noreferrer"
               className="btn btn-outline-primary d-flex align-items-center gap-2"
-              style={{ borderRadius: "8px", padding: "0.5rem 1rem", transition: "all 0.3s ease" }}
+              style={{ borderRadius: "8px", padding: "0.5rem 1rem" }}
             >
               <img src="/icons/telegram.svg" alt="Telegram" width={24} height={24} />
               <span>Telegram</span>
@@ -44,7 +48,7 @@ export default function BlogPageEn() {
               target="_blank"
               rel="noopener noreferrer"
               className="btn btn-outline-primary d-flex align-items-center gap-2"
-              style={{ borderRadius: "8px", padding: "0.5rem 1rem", transition: "all 0.3s ease" }}
+              style={{ borderRadius: "8px", padding: "0.5rem 1rem" }}
             >
               <img src="/icons/vk.svg" alt="VK" width={24} height={24} />
               <span>VK</span>
@@ -52,11 +56,29 @@ export default function BlogPageEn() {
           </div>
         </div>
 
-        <div className="row g-4">
-          {posts.map((post) => (
-            <BlogPostCard key={post.id} post={post} apiUrl={apiUrl} locale="en" />
-          ))}
-        </div>
+        {loading ? (
+          <p style={{ color: "#94a3b8" }}>Loading posts…</p>
+        ) : posts.length === 0 ? (
+          <p>No posts yet.</p>
+        ) : (
+          <div className="row g-4">
+            {posts.map((post) => (
+              <BlogPostCard
+                key={post.id}
+                message={post.messageEn || post.messageRu}
+                createdAt={post.createdAt}
+                slug={post.slug}
+                title={post.titleEn || post.titleRu}
+                description={post.descriptionEn || post.descriptionRu}
+                category={post.category}
+                author={post.author}
+                mediaUrl={post.mediaUrl}
+                forwardAuthor={post.forwardAuthor}
+                locale="en"
+              />
+            ))}
+          </div>
+        )}
       </main>
     </div>
   );
