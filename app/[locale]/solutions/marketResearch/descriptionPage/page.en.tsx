@@ -169,6 +169,7 @@ function BetaForm() {
   const [email, setEmail] = useState("");
   const [isChecked, setIsChecked] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -179,17 +180,16 @@ function BetaForm() {
     }
     if (!isChecked) return;
     setError("");
-
+    setLoading(true);
     try {
-      const API_BASE =
-        process.env.NEXT_PUBLIC_MONITORING_API_URL || "http://localhost:8000";
+      const API_BASE = process.env.NEXT_PUBLIC_MONITORING_API_URL || "http://localhost:8000";
       await fetch(`${API_BASE}/api/monitoring/contact`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: "",
           email,
-          message: `User (${email}) is interested in the marketResearch product.`,
+          message: `запрос на бета-тестирование MarketSense AI получен`,
         }),
       });
       setSubmitted(true);
@@ -197,6 +197,8 @@ function BetaForm() {
       setIsChecked(false);
     } catch (err) {
       console.error("Error sending beta request:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -204,9 +206,7 @@ function BetaForm() {
     return (
       <div style={{ display: "flex", alignItems: "center", gap: 10, color: "#16a34a" }}>
         <span style={{ fontSize: 20 }}>✔</span>
-        <span style={{ fontWeight: 600 }}>
-          Thank you for your interest in our product! We will notify you about beta access via email.
-        </span>
+        <span style={{ fontWeight: 600 }}>Thank you for your interest! We will get back to you shortly.</span>
       </div>
     );
   }
@@ -214,14 +214,11 @@ function BetaForm() {
   return (
     <form onSubmit={onSubmit} style={{ maxWidth: 420 }}>
       <div className="mb-3">
-        <label
-          htmlFor="beta-email"
-          className="form-label small fw-semibold text-secondary"
-        >
+        <label htmlFor="beta-email-mr-en" className="form-label small fw-semibold text-secondary">
           Email
         </label>
         <input
-          id="beta-email"
+          id="beta-email-mr-en"
           type="email"
           className="form-control form-control-lg rounded-3 border-0 shadow-sm"
           placeholder="you@example.com"
@@ -236,28 +233,23 @@ function BetaForm() {
         <input
           className="form-check-input"
           type="checkbox"
-          id="beta-policy-en"
+          id="beta-policy-mr-en"
           checked={isChecked}
           onChange={() => setIsChecked(!isChecked)}
         />
-        <label className="form-check-label" htmlFor="beta-policy-en">
+        <label className="form-check-label" htmlFor="beta-policy-mr-en">
           By sending this message I have read and agree with the{" "}
-          <a href="/privacy" target="_blank">
-            Privacy Policy
-          </a>{" "}
-          and the{" "}
-          <a href="/privacy" target="_blank">
-            Personal Data Processing Policy
-          </a>.
+          <a href="/privacy" target="_blank">Privacy Policy</a>{" "}and the{" "}
+          <a href="/privacy" target="_blank">Personal Data Processing Policy</a>.
         </label>
       </div>
       <button
         type="submit"
         className="btn btn-lg w-100 rounded-3 fw-semibold border-0"
-        style={{ backgroundColor: "#0683f5", color: "#fff" }}
-        disabled={!isChecked}
+        style={{ backgroundColor: loading ? "#5aabf7" : "#0683f5", color: "#fff", transition: "background-color 0.2s" }}
+        disabled={!isChecked || loading}
       >
-        Reserve a spot
+        {loading ? "Sending..." : "Confirm"}
       </button>
     </form>
   );
@@ -619,6 +611,91 @@ export default function MarketResearchDescriptionPageEn() {
           </div>
         </section>
 
+        {/* FAQ Section */}
+        <section className="py-5 px-3">
+          <div className="container" style={{ maxWidth: "52rem" }}>
+            <h2 className="h4 fw-bold mb-4" style={{ color: "#1e6078" }}>
+              Frequently Asked Questions
+            </h2>
+            {[
+              {
+                q: "What is AI market research?",
+                a: "AI market research is automated market analysis where artificial intelligence collects and processes data about competitors, target audiences, and trends in minutes instead of weeks. MarketSense AI generates a structured report with insights adapted to a specific jurisdiction and industry.",
+              },
+              {
+                q: "How does AI conduct market research?",
+                a: "MarketSense AI uses a multi-agent RAG architecture: specialized agents analyze the competitive landscape, consumer demand, price segments, and market trends in parallel. A Skeptic Agent verifies conclusions for contradictions. The result is a verified report with sources in 8–15 minutes.",
+              },
+              {
+                q: "How is AI market research different from manual analysis?",
+                a: "Manual analysis takes 2–4 weeks and costs from $2,000. MarketSense AI delivers a comparable depth report in 15 minutes. The key difference is iteration speed: you can test several hypotheses in a single day and make decisions based on data, not intuition.",
+              },
+            ].map(({ q, a }) => (
+              <details
+                key={q}
+                style={{
+                  borderBottom: "1px solid #e2e8f0",
+                  paddingBottom: "1rem",
+                  marginBottom: "1rem",
+                }}
+              >
+                <summary
+                  style={{
+                    fontWeight: 600,
+                    fontSize: "1rem",
+                    color: "#0f172a",
+                    cursor: "pointer",
+                    listStyle: "none",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  {q}
+                  <span style={{ color: "#0683f5", fontSize: "1.25rem", marginLeft: "0.5rem" }}>+</span>
+                </summary>
+                <p style={{ marginTop: "0.75rem", color: "#475569", lineHeight: 1.65, fontSize: "0.95rem" }}>
+                  {a}
+                </p>
+              </details>
+            ))}
+          </div>
+        </section>
+
+        {/* Internal links */}
+        <section className="py-4 px-3">
+          <div className="container" style={{ maxWidth: "52rem" }}>
+            <h2 className="h5 fw-bold mb-3" style={{ color: "#1e6078" }}>
+              Other Upgrowplan tools
+            </h2>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem" }}>
+              {[
+                { label: "PlanMaster AI — business plans", href: "/ai-business-plan-generator" },
+                { label: "Synth Focus Lab — audience research", href: "/solutions/synthetic-customer-research" },
+                { label: "Why not ChatGPT?", href: "/why-upgrowplan" },
+              ].map(({ label, href }) => (
+                <a
+                  key={href}
+                  href={href}
+                  style={{
+                    display: "inline-block",
+                    padding: "0.5rem 1rem",
+                    borderRadius: "0.5rem",
+                    border: "1px solid #bfdbfe",
+                    background: "#eff6ff",
+                    color: "#1d4ed8",
+                    fontSize: "0.9rem",
+                    fontWeight: 500,
+                    textDecoration: "none",
+                  }}
+                >
+                  {label}
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
+
         <section
           className="py-5 px-3"
           style={{
@@ -630,11 +707,10 @@ export default function MarketResearchDescriptionPageEn() {
         >
           <div className="container">
             <h2 className="h5 fw-bold mb-3" style={{ color: "#0f172a" }}>
-              Become a beta tester
+              Join the beta test
             </h2>
             <p className="mb-4" style={{ color: "#334155", maxWidth: "36rem" }}>
-              The product is almost ready. Leave your email to get an invite to the closed beta
-              and a lifetime 50% discount for the first 100 founders.
+              Leave your email to receive an invitation to test the beta version.
             </p>
             <BetaForm />
           </div>

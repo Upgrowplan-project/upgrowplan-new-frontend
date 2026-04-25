@@ -1,8 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import Header from "../../../components/Header";
-import Footer from "../../../components/Footer";
 
 const FONT = '"Inter", "SF Pro Display", "Segoe UI", Arial, sans-serif';
 
@@ -30,6 +30,14 @@ const faqs = [
   {
     q: "How do I get started?",
     a: "Open Synth Focus Lab, describe your idea and target audience. The AI builds personas and runs the session — results in 15 minutes.",
+  },
+  {
+    q: "How do I validate a business idea without real surveys?",
+    a: "Use synthetic respondents. Configure an AI panel matching your target audience — age, income, lifestyle — describe your concept, and receive purchase intent score, top objections, and pricing insights in 15 minutes. No recruiting, no scheduling costs.",
+  },
+  {
+    q: "What is the fastest way to test a business idea before launch?",
+    a: "Synth Focus Lab lets you test a business idea on a virtual buyer panel in 15 minutes — with 85–92% accuracy compared to real focus groups. Enter your concept, price, and audience — and get a structured insight report.",
   },
 ];
 
@@ -470,8 +478,128 @@ export default function SyntheticCustomerResearchEn() {
           </div>
         </section>
 
+        {/* Other tools */}
+        <section style={{ padding: "2.5rem 1rem", background: "#f7fbff" }}>
+          <div style={{ maxWidth: 900, margin: "0 auto" }}>
+            <h2 style={{ fontSize: "1.15rem", fontWeight: 700, color: "#01346e", marginBottom: "1.25rem", fontFamily: FONT }}>
+              Other Upgrowplan tools
+            </h2>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "1rem" }}>
+              {[
+                { href: "/ai-business-plan-generator", icon: "📑", title: "PlanMaster AI", desc: "AI business plan generator following UNIDO/EBRD standards — with live market data and pitch deck." },
+                { href: "/solutions/marketResearch/descriptionPage", icon: "🔍", title: "MarketSense AI", desc: "AI agent for full market research — discovery, analysis, and verified data sources." },
+                { href: "/why-upgrowplan", icon: "⚡", title: "Why Upgrowplan?", desc: "How Upgrowplan differs from ChatGPT, consultants, and templates — a direct comparison." },
+              ].map((tool) => (
+                <Link key={tool.href} href={tool.href} style={{ display: "block", background: "#fff", border: "1px solid #d9ebf5", borderRadius: 10, padding: "1rem 1.25rem", textDecoration: "none" }}>
+                  <div style={{ fontSize: "1.3rem", marginBottom: "0.4rem" }}>{tool.icon}</div>
+                  <div style={{ fontSize: "0.95rem", fontWeight: 700, color: "#01346e", marginBottom: "0.3rem", fontFamily: FONT }}>{tool.title}</div>
+                  <p style={{ fontSize: "0.85rem", color: "#475569", margin: 0, lineHeight: 1.5, fontFamily: FONT }}>{tool.desc}</p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Beta form */}
+        <section id="beta-form" className="py-5 px-3" style={{ background: "linear-gradient(145deg, #e8f4fc 0%, #f5f9ff 45%, #eef6ff 100%)" }}>
+          <div className="container">
+            <h2 className="h5 fw-bold mb-3" style={{ color: "#0f172a" }}>Join the beta test</h2>
+            <p className="mb-4" style={{ color: "#334155", maxWidth: "36rem" }}>
+              Leave your email to receive an invitation to test the beta version.
+            </p>
+            <SynthBetaForm />
+          </div>
+        </section>
+
       </main>
-      <Footer />
     </div>
+  );
+}
+
+function SynthBetaForm() {
+  const [email, setEmail] = useState("");
+  const [isChecked, setIsChecked] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setError("Please enter a valid email");
+      return;
+    }
+    if (!isChecked) return;
+    setError("");
+    setLoading(true);
+    try {
+      const API_BASE = process.env.NEXT_PUBLIC_MONITORING_API_URL || "http://localhost:8000";
+      await fetch(`${API_BASE}/api/monitoring/contact`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: "",
+          email,
+          message: `запрос на бета-тестирование Synth Focus Lab получен`,
+        }),
+      });
+      setSubmitted(true);
+      setEmail("");
+      setIsChecked(false);
+    } catch (err) {
+      console.error("Error sending beta request:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (submitted) {
+    return (
+      <div style={{ display: "flex", alignItems: "center", gap: 10, color: "#16a34a" }}>
+        <span style={{ fontSize: 20 }}>✔</span>
+        <span style={{ fontWeight: 600 }}>Thank you for your interest! We will get back to you shortly.</span>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={onSubmit} style={{ maxWidth: 420 }}>
+      <div className="mb-3">
+        <label htmlFor="beta-email-synth-en" className="form-label small fw-semibold text-secondary">Email</label>
+        <input
+          id="beta-email-synth-en"
+          type="email"
+          className="form-control form-control-lg rounded-3 border-0 shadow-sm"
+          placeholder="you@example.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          autoComplete="email"
+        />
+        {error && <div className="text-danger small mt-2">{error}</div>}
+      </div>
+      <div className="form-check mb-3">
+        <input
+          className="form-check-input"
+          type="checkbox"
+          id="beta-policy-synth-en"
+          checked={isChecked}
+          onChange={() => setIsChecked(!isChecked)}
+        />
+        <label className="form-check-label" htmlFor="beta-policy-synth-en">
+          By sending this message I have read and agree with the{" "}
+          <a href="/privacy" target="_blank">Privacy Policy</a>{" "}and the{" "}
+          <a href="/privacy" target="_blank">Personal Data Processing Policy</a>.
+        </label>
+      </div>
+      <button
+        type="submit"
+        className="btn btn-lg w-100 rounded-3 fw-semibold border-0"
+        style={{ backgroundColor: loading ? "#5aabf7" : "#0683f5", color: "#fff", transition: "background-color 0.2s" }}
+        disabled={!isChecked || loading}
+      >
+        {loading ? "Sending..." : "Confirm"}
+      </button>
+    </form>
   );
 }

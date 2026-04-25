@@ -1,51 +1,8 @@
-import type { Metadata } from "next";
-import { buildMetadata, pageMeta } from "@/lib/seo/metadata";
-import {
-  faqSchema, pageFaqs, breadcrumbSchema,
-  howToSchema, howToSteps,
-  productSchema, solutionData,
-} from "@/lib/seo/jsonld";
-import { JsonLd } from "@/components/JsonLd";
-import FaqSection from "@/components/FaqSection";
-import PlanMasterDescriptionPageEn from "../../../../solutions/planMaster/descriptionPage/page.en";
-import PlanMasterDescriptionPageRu from "../../../../solutions/planMaster/descriptionPage/page.ru";
+import { redirect } from "next/navigation";
 
-const SITE_URL = "https://upgrowplan.com";
 type Params = { params: { locale: string } };
 
-export async function generateMetadata({ params }: Params): Promise<Metadata> {
+export default function PlanMasterDescriptionRedirect({ params }: Params) {
   const locale = params.locale === "ru" ? "ru" : "en";
-  const meta = pageMeta.planMasterDescription;
-  const path = locale === "ru" ? meta.ruPath : meta.enPath;
-  return buildMetadata({ locale, path, ...meta });
-}
-
-export default function PlanMasterDescriptionLocalePage({ params }: Params) {
-  const locale = params.locale === "ru" ? "ru" : "en";
-  const faqTitle = locale === "ru" ? "Вопросы о PlanMaster AI" : "PlanMaster AI — FAQ";
-  const crumbs = [
-    { name: "Home", url: locale === "ru" ? `${SITE_URL}/ru` : SITE_URL },
-    {
-      name: locale === "ru" ? "Решения" : "Solutions",
-      url: locale === "ru" ? `${SITE_URL}/ru/solutions` : `${SITE_URL}/solutions`,
-    },
-    { name: "PlanMaster AI" },
-  ];
-  const solData = solutionData.planMaster[locale];
-  const solUrl = `${SITE_URL}${locale === "ru" ? "/ru" : ""}${solutionData.planMaster.url}`;
-
-  return (
-    <>
-      <JsonLd
-        data={[
-          faqSchema(pageFaqs.planMasterDescription[locale]),
-          breadcrumbSchema(crumbs),
-          howToSchema(howToSteps.planMaster[locale]),
-          productSchema({ name: solData.name, description: solData.description, url: solUrl }),
-        ]}
-      />
-      {locale === "ru" ? <PlanMasterDescriptionPageRu /> : <PlanMasterDescriptionPageEn />}
-      <FaqSection items={pageFaqs.planMasterDescription[locale]} title={faqTitle} />
-    </>
-  );
+  redirect(locale === "ru" ? "/ru/ai-business-plan-generator" : "/ai-business-plan-generator");
 }

@@ -169,6 +169,7 @@ function BetaForm() {
   const [email, setEmail] = useState("");
   const [isChecked, setIsChecked] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -179,17 +180,16 @@ function BetaForm() {
     }
     if (!isChecked) return;
     setError("");
-
+    setLoading(true);
     try {
-      const API_BASE =
-        process.env.NEXT_PUBLIC_MONITORING_API_URL || "http://localhost:8000";
+      const API_BASE = process.env.NEXT_PUBLIC_MONITORING_API_URL || "http://localhost:8000";
       await fetch(`${API_BASE}/api/monitoring/contact`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: "",
           email,
-          message: `Пользователь (${email}) интересуется продуктом marketResearch.`,
+          message: `запрос на бета-тестирование MarketSense AI получен`,
         }),
       });
       setSubmitted(true);
@@ -197,6 +197,8 @@ function BetaForm() {
       setIsChecked(false);
     } catch (err) {
       console.error("Error sending beta request:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -204,9 +206,7 @@ function BetaForm() {
     return (
       <div style={{ display: "flex", alignItems: "center", gap: 10, color: "#16a34a" }}>
         <span style={{ fontSize: 20 }}>✔</span>
-        <span style={{ fontWeight: 600 }}>
-          Спасибо за интерес к нашему продукту! Мы сообщим вам о доступе к тестированию посредством email.
-        </span>
+        <span style={{ fontWeight: 600 }}>Спасибо за ваш интерес! Мы свяжемся с вами в ближайшее время.</span>
       </div>
     );
   }
@@ -214,14 +214,11 @@ function BetaForm() {
   return (
     <form onSubmit={onSubmit} style={{ maxWidth: 420 }}>
       <div className="mb-3">
-        <label
-          htmlFor="beta-email"
-          className="form-label small fw-semibold text-secondary"
-        >
+        <label htmlFor="beta-email-mr-ru" className="form-label small fw-semibold text-secondary">
           Email
         </label>
         <input
-          id="beta-email"
+          id="beta-email-mr-ru"
           type="email"
           className="form-control form-control-lg rounded-3 border-0 shadow-sm"
           placeholder="you@example.com"
@@ -236,28 +233,23 @@ function BetaForm() {
         <input
           className="form-check-input"
           type="checkbox"
-          id="beta-policy-ru"
+          id="beta-policy-mr-ru"
           checked={isChecked}
           onChange={() => setIsChecked(!isChecked)}
         />
-        <label className="form-check-label" htmlFor="beta-policy-ru">
+        <label className="form-check-label" htmlFor="beta-policy-mr-ru">
           Отправляя данное сообщение, я ознакомился и согласился с{" "}
-          <a href="/privacy" target="_blank">
-            Политикой конфиденциальности
-          </a>{" "}
-          и{" "}
-          <a href="/privacy" target="_blank">
-            Политикой обработки персональных данных
-          </a>.
+          <a href="/privacy" target="_blank">Политикой конфиденциальности</a>{" "}и{" "}
+          <a href="/privacy" target="_blank">Политикой обработки персональных данных</a>.
         </label>
       </div>
       <button
         type="submit"
         className="btn btn-lg w-100 rounded-3 fw-semibold border-0"
-        style={{ backgroundColor: "#0683f5", color: "#fff" }}
-        disabled={!isChecked}
+        style={{ backgroundColor: loading ? "#5aabf7" : "#0683f5", color: "#fff", transition: "background-color 0.2s" }}
+        disabled={!isChecked || loading}
       >
-        Забронировать место в очереди
+        {loading ? "Отправка..." : "Подтвердить"}
       </button>
     </form>
   );
@@ -625,6 +617,91 @@ export default function MarketResearchDescriptionPage() {
           </div>
         </section>
 
+        {/* FAQ Section */}
+        <section className="py-5 px-3">
+          <div className="container" style={{ maxWidth: "52rem" }}>
+            <h2 className="h4 fw-bold mb-4" style={{ color: "#1e6078" }}>
+              Часто задаваемые вопросы
+            </h2>
+            {[
+              {
+                q: "Что такое ИИ-маркетинговое исследование?",
+                a: "ИИ-маркетинговое исследование — это автоматизированный анализ рынка, при котором искусственный интеллект собирает и обрабатывает данные о конкурентах, целевой аудитории и трендах за минуты вместо недель. MarketSense AI генерирует структурированный отчёт с выводами, адаптированными под конкретную юрисдикцию и отрасль.",
+              },
+              {
+                q: "Как ИИ проводит маркетинговое исследование?",
+                a: "MarketSense AI использует мультиагентную архитектуру RAG: специализированные агенты анализируют конкурентную среду, потребительский спрос, ценовые сегменты и рыночные тренды параллельно. Скептик-агент проверяет выводы на противоречия. Результат — верифицированный отчёт с источниками за 8–15 минут.",
+              },
+              {
+                q: "Чем ИИ-исследование отличается от ручного анализа рынка?",
+                a: "Ручной анализ занимает 2–4 недели и стоит от $2 000. MarketSense AI выдаёт сопоставимый по глубине отчёт за 15 минут. Ключевое отличие — скорость итерации: вы можете проверить несколько гипотез за один день и принять решение на основе данных, а не интуиции.",
+              },
+            ].map(({ q, a }) => (
+              <details
+                key={q}
+                style={{
+                  borderBottom: "1px solid #e2e8f0",
+                  paddingBottom: "1rem",
+                  marginBottom: "1rem",
+                }}
+              >
+                <summary
+                  style={{
+                    fontWeight: 600,
+                    fontSize: "1rem",
+                    color: "#0f172a",
+                    cursor: "pointer",
+                    listStyle: "none",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  {q}
+                  <span style={{ color: "#0683f5", fontSize: "1.25rem", marginLeft: "0.5rem" }}>+</span>
+                </summary>
+                <p style={{ marginTop: "0.75rem", color: "#475569", lineHeight: 1.65, fontSize: "0.95rem" }}>
+                  {a}
+                </p>
+              </details>
+            ))}
+          </div>
+        </section>
+
+        {/* Internal links */}
+        <section className="py-4 px-3">
+          <div className="container" style={{ maxWidth: "52rem" }}>
+            <h2 className="h5 fw-bold mb-3" style={{ color: "#1e6078" }}>
+              Другие инструменты Upgrowplan
+            </h2>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem" }}>
+              {[
+                { label: "PlanMaster AI — бизнес-планы", href: "/ru/ai-business-plan-generator" },
+                { label: "Synth Focus Lab — исследование аудитории", href: "/ru/solutions/synthetic-customer-research" },
+                { label: "Почему не ChatGPT?", href: "/ru/why-upgrowplan" },
+              ].map(({ label, href }) => (
+                <a
+                  key={href}
+                  href={href}
+                  style={{
+                    display: "inline-block",
+                    padding: "0.5rem 1rem",
+                    borderRadius: "0.5rem",
+                    border: "1px solid #bfdbfe",
+                    background: "#eff6ff",
+                    color: "#1d4ed8",
+                    fontSize: "0.9rem",
+                    fontWeight: 500,
+                    textDecoration: "none",
+                  }}
+                >
+                  {label}
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
+
         <section
           className="py-5 px-3"
           style={{
@@ -636,11 +713,10 @@ export default function MarketResearchDescriptionPage() {
         >
           <div className="container">
             <h2 className="h5 fw-bold mb-3" style={{ color: "#0f172a" }}>
-              Станьте бета-тестером
+              Приглашаем протестировать продукт
             </h2>
             <p className="mb-4" style={{ color: "#334155", maxWidth: "36rem" }}>
-              Продукт почти готов. Оставьте email, чтобы получить приглашение в
-              закрытую бету и вечную скидку 50% для первых 100 основателей.
+              Оставьте email, чтобы получить приглашение для тестирования бета-версии.
             </p>
             <BetaForm />
           </div>

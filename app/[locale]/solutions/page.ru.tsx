@@ -60,7 +60,7 @@ export default function SolutionsPage() {
         "Генерация экспертного бизнес-плана на основе современной методологии, живого поиска и верифицированных данных. Нулевая толерантность к ИИ-галлюцинациям. Удобный чат запроса. Документ готов к презентации инвесторам.",
       icon: <FiFileText className="me-2 text-danger" />,
       release: "весна 2026",
-      link: "/solutions/planMaster/descriptionPage",
+      link: "/ai-business-plan-generator",
       elementId: "planmaster-description-card",
       ctaLabel: "Подробнее",
     },

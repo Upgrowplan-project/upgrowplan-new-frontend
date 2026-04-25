@@ -977,6 +977,94 @@ function VectorChoice() {
    7. BETA CTA
 ══════════════════════════════════════════════════════════════════ */
 
+function BpBetaForm() {
+  const [email, setEmail] = useState("");
+  const [isChecked, setIsChecked] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setError("Please enter a valid email");
+      return;
+    }
+    if (!isChecked) return;
+    setError("");
+    setLoading(true);
+    try {
+      const API_BASE = process.env.NEXT_PUBLIC_MONITORING_API_URL || "http://localhost:8000";
+      await fetch(`${API_BASE}/api/monitoring/contact`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: "",
+          email,
+          message: `запрос на бета-тестирование Business Pulse Workspace получен`,
+        }),
+      });
+      setSubmitted(true);
+      setEmail("");
+      setIsChecked(false);
+    } catch (err) {
+      console.error("Error sending beta request:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (submitted) {
+    return (
+      <div style={{ display: "flex", alignItems: "center", gap: 10, color: "#16a34a", justifyContent: "center" }}>
+        <span style={{ fontSize: 20 }}>✔</span>
+        <span style={{ fontWeight: 600 }}>Thank you for your interest! We will get back to you shortly.</span>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={onSubmit} style={{ maxWidth: 420, margin: "0 auto", textAlign: "left" }}>
+      <div className="mb-3">
+        <label htmlFor="beta-email-bp-en" className="form-label small fw-semibold text-secondary">Email</label>
+        <input
+          id="beta-email-bp-en"
+          type="email"
+          className="form-control form-control-lg rounded-3 border-0 shadow-sm"
+          placeholder="you@example.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          autoComplete="email"
+        />
+        {error && <div className="text-danger small mt-2">{error}</div>}
+      </div>
+      <div className="form-check mb-3">
+        <input
+          className="form-check-input"
+          type="checkbox"
+          id="beta-policy-bp-en"
+          checked={isChecked}
+          onChange={() => setIsChecked(!isChecked)}
+        />
+        <label className="form-check-label" htmlFor="beta-policy-bp-en">
+          By sending this message I have read and agree with the{" "}
+          <a href="/privacy" target="_blank">Privacy Policy</a>{" "}and the{" "}
+          <a href="/privacy" target="_blank">Personal Data Processing Policy</a>.
+        </label>
+      </div>
+      <button
+        type="submit"
+        className="btn btn-lg w-100 rounded-3 fw-semibold border-0"
+        style={{ backgroundColor: loading ? "#5aabf7" : "#0683f5", color: "#fff", transition: "background-color 0.2s" }}
+        disabled={!isChecked || loading}
+      >
+        {loading ? "Sending..." : "Confirm"}
+      </button>
+    </form>
+  );
+}
+
 function BetaSection() {
   return (
     <section style={{
@@ -997,22 +1085,46 @@ function BetaSection() {
         <h2 style={{ fontSize: "clamp(1.8rem,4vw,2.8rem)", fontWeight: 800, color: "#1e6078", marginBottom: 16 }}>
           Try Business Pulse for free
         </h2>
-        <p style={{ color: "#64748b", fontSize: 17, maxWidth: 520, margin: "0 auto 14px", lineHeight: 1.7 }}>
+        <p style={{ color: "#64748b", fontSize: 17, maxWidth: 520, margin: "0 auto 40px", lineHeight: 1.7 }}>
           3 months of free access for early beta users. No card required.
         </p>
-        <p style={{ color: "#94a3b8", fontSize: 14, marginBottom: 40 }}>
-          120+ founders already track competitors with Business Pulse
+        <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "#0f172a", marginBottom: 8 }}>
+          Join the beta test
+        </h3>
+        <p style={{ color: "#64748b", fontSize: 15, maxWidth: 400, margin: "0 auto 28px" }}>
+          Leave your email to receive an invitation to test the beta version.
         </p>
-        <a href="#workspace" style={{
-          display: "inline-block", padding: "16px 48px", borderRadius: 14,
-          background: "#0683f5", color: "#fff", fontWeight: 800, fontSize: 17,
-          textDecoration: "none", boxShadow: "0 6px 28px rgba(6,131,245,0.4)",
-          transition: "transform 0.15s, box-shadow 0.2s",
-        }}
-        onMouseOver={e => { const el = e.currentTarget as HTMLAnchorElement; el.style.transform = "translateY(-3px)"; el.style.boxShadow = "0 10px 36px rgba(6,131,245,0.5)"; }}
-        onMouseOut={e => { const el = e.currentTarget as HTMLAnchorElement; el.style.transform = ""; el.style.boxShadow = "0 6px 28px rgba(6,131,245,0.4)"; }}>
-          Join Beta →
-        </a>
+        <BpBetaForm />
+        <div style={{ marginTop: "3rem", textAlign: "left", maxWidth: "36rem", margin: "3rem auto 0" }}>
+          <p style={{ fontWeight: 700, color: "#1e6078", marginBottom: "0.75rem", fontSize: "1rem" }}>
+            Other Upgrowplan tools
+          </p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem" }}>
+            {[
+              { label: "PlanMaster AI — business plans", href: "/ai-business-plan-generator" },
+              { label: "MarketSense AI — market research", href: "/solutions/marketResearch/descriptionPage" },
+              { label: "Synth Focus Lab — audience research", href: "/solutions/synthetic-customer-research" },
+            ].map(({ label, href }) => (
+              <a
+                key={href}
+                href={href}
+                style={{
+                  display: "inline-block",
+                  padding: "0.5rem 1rem",
+                  borderRadius: "0.5rem",
+                  border: "1px solid #bfdbfe",
+                  background: "#eff6ff",
+                  color: "#1d4ed8",
+                  fontSize: "0.9rem",
+                  fontWeight: 500,
+                  textDecoration: "none",
+                }}
+              >
+                {label}
+              </a>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );

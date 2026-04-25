@@ -54,7 +54,7 @@ export default function SolutionsPage() {
         "Generates an expert business plan based on modern methodology, live search and verified data. Clear handling of hallucinations. User-friendly request chat and investor-ready documents.",
       icon: <FiFileText className="me-2 text-danger" />,
       release: "Spring 2026",
-      link: "/solutions/planMaster/descriptionPage",
+      link: "/ai-business-plan-generator",
       elementId: "planmaster-description-card",
       ctaLabel: "Learn more",
     },

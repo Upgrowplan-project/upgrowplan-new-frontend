@@ -729,6 +729,21 @@ export const pageFaqs = {
         answer:
           "Yes. The report is structured for business use — with clear sections, data visualisations, and source references. It can be downloaded and included in investor decks or strategic documents.",
       },
+      {
+        question: "What is AI market research?",
+        answer:
+          "AI market research is automated analysis where artificial intelligence collects and processes competitor data, audience insights, and market trends in minutes instead of weeks. MarketSense AI generates a structured report adapted to a specific jurisdiction and industry.",
+      },
+      {
+        question: "How does AI conduct market research?",
+        answer:
+          "MarketSense AI uses a multi-agent RAG architecture: specialized agents analyze competitive landscape, consumer demand, price segments, and market trends in parallel. A Skeptic Agent verifies conclusions for contradictions, producing a verified report in 8–15 minutes.",
+      },
+      {
+        question: "How is AI market research different from manual analysis?",
+        answer:
+          "Manual analysis takes 2–4 weeks and costs from $2,000. MarketSense AI delivers a comparable depth report in 15 minutes, enabling you to test multiple hypotheses in a single day and make data-driven decisions faster.",
+      },
     ],
     ru: [
       {
@@ -750,6 +765,21 @@ export const pageFaqs = {
         question: "Можно ли использовать отчёт для питча инвесторам?",
         answer:
           "Да. Отчёт структурирован для делового использования — с чёткими разделами, визуализацией данных и ссылками на источники. Его можно скачать и включить в инвесторские презентации или стратегические документы.",
+      },
+      {
+        question: "Что такое ИИ-маркетинговое исследование?",
+        answer:
+          "ИИ-маркетинговое исследование — автоматизированный анализ рынка, при котором ИИ собирает и обрабатывает данные о конкурентах, целевой аудитории и трендах за минуты вместо недель. MarketSense AI генерирует структурированный отчёт, адаптированный под конкретную юрисдикцию и отрасль.",
+      },
+      {
+        question: "Как ИИ проводит маркетинговое исследование?",
+        answer:
+          "MarketSense AI использует мультиагентную архитектуру RAG: специализированные агенты анализируют конкурентную среду, потребительский спрос, ценовые сегменты и тренды параллельно. Скептик-агент проверяет выводы на противоречия, выдавая верифицированный отчёт за 8–15 минут.",
+      },
+      {
+        question: "Чем ИИ-исследование отличается от ручного анализа рынка?",
+        answer:
+          "Ручной анализ занимает 2–4 недели и стоит от 150 000 ₽. MarketSense AI выдаёт сопоставимый по глубине отчёт за 15 минут, позволяя проверить несколько гипотез за один день и принимать решения на основе данных.",
       },
     ],
   },
@@ -871,6 +901,14 @@ export const pageFaqs = {
         question: "Which countries and industries does the AI business plan generator support?",
         answer: "PlanMaster supports any country and industry. You specify the country, city, currency, and business type (B2B, B2C, B2B2C). The system adapts tax assumptions, market context, and financial benchmarks automatically.",
       },
+      {
+        question: "How do I write a business plan with AI?",
+        answer: "With PlanMaster AI: describe your business idea and target market, set the country and business type, and the system automatically collects live market data, builds a financial model using Python calculations, validates every figure through Skeptic Agent, and delivers a complete Word document with pitch deck in 10–20 minutes.",
+      },
+      {
+        question: "What is the best AI tool for writing a business plan?",
+        answer: "The best AI business plan tool collects live market data (not training-data guesses), runs real financial calculations, and validates output before delivery. PlanMaster AI does all three: RAG-based live search, deterministic Python financial modelling, and Skeptic Agent validation — following UNIDO/EBRD international standards.",
+      },
     ],
     ru: [
       {
@@ -896,6 +934,14 @@ export const pageFaqs = {
       {
         question: "Какие страны и отрасли поддерживает генератор?",
         answer: "PlanMaster поддерживает любую страну и отрасль. Вы указываете страну, город, валюту и тип бизнеса (B2B, B2C, B2B2C). Система автоматически адаптирует налоговые допущения, рыночный контекст и финансовые бенчмарки.",
+      },
+      {
+        question: "Как написать бизнес-план с помощью ИИ?",
+        answer: "С PlanMaster AI: опишите бизнес-идею и целевой рынок, укажите страну и тип бизнеса — система автоматически соберёт живые рыночные данные, построит финансовую модель на Python-расчётах, проверит каждую цифру через Skeptic Agent и выдаст готовый Word-документ с питч-презентацией за 10–20 минут.",
+      },
+      {
+        question: "Какой ИИ лучше всего подходит для написания бизнес-плана?",
+        answer: "Лучший ИИ для бизнес-плана собирает живые рыночные данные (не угадывает из обучающей выборки), выполняет реальные финансовые расчёты и валидирует результат перед выдачей. PlanMaster AI делает всё три: RAG-поиск живых данных, детерминированное финансовое моделирование на Python и проверка Skeptic Agent — по стандартам ЮНИДО/ЕБРР.",
       },
     ],
   },
@@ -977,6 +1023,14 @@ export const pageFaqs = {
         answer:
           "Concept testing, product-market fit validation, pricing sensitivity, brand perception, ad copy testing, UX feedback, and competitive positioning — all with a configurable audience of 5 to 50+ AI personas.",
       },
+      {
+        question: "How do I validate a business idea without real surveys?",
+        answer: "Use synthetic respondents. Configure an AI panel matching your target audience — age, income, lifestyle, purchase behaviour — describe your concept or product, and receive structured feedback: purchase intent score, top objections, sentiment direction, and pricing insights. No recruiting, no scheduling, no waiting. Results in 15 minutes.",
+      },
+      {
+        question: "What is the fastest way to test a business idea before launch?",
+        answer: "Synth Focus Lab lets you test a business idea on a virtual buyer panel in 15 minutes. AI synthetic respondents simulate how your target segment reacts to your concept, pricing, and messaging — giving you 85–92% accurate feedback compared to real focus groups, at a fraction of the cost and time.",
+      },
     ],
     ru: [
       {
@@ -1008,6 +1062,14 @@ export const pageFaqs = {
         question: "Какие виды исследований можно проводить?",
         answer:
           "Тестирование концепций, валидация product-market fit, ценовая чувствительность, восприятие бренда, тестирование рекламных текстов, UX-обратная связь и конкурентное позиционирование — всё с настраиваемой аудиторией от 5 до 50+ ИИ-персон.",
+      },
+      {
+        question: "Как проверить бизнес-идею без опроса реальных людей?",
+        answer: "Используйте синтетических респондентов. Настройте ИИ-панель под свою целевую аудиторию — возраст, доход, образ жизни, поведение при покупке — опишите концепцию и получите структурированную обратную связь: оценку намерения купить, основные возражения, направление настроений и ценовые инсайты. Без рекрутинга и ожидания — за 15 минут.",
+      },
+      {
+        question: "Как быстро протестировать бизнес-идею перед запуском?",
+        answer: "Synth Focus Lab позволяет протестировать бизнес-идею на виртуальной панели покупателей за 15 минут. ИИ-синтетические респонденты симулируют реакцию вашего целевого сегмента на концепцию, цену и сообщение — с точностью 85–92% по сравнению с реальными фокус-группами, в разы дешевле и быстрее.",
       },
     ],
   },
