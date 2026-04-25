@@ -96,7 +96,8 @@
       "Bash(git diff *)",
       "Bash(npm run *)",
       "Bash(mkdir -p \"d:/UpgrowPlan/upgrowplan_new/app/[locale]/ai-business-plan-generator\")",
-      "Bash(mkdir -p \"d:/UpgrowPlan/upgrowplan_new/app/[locale]/why-upgrowplan\")"
+      "Bash(mkdir -p \"d:/UpgrowPlan/upgrowplan_new/app/[locale]/why-upgrowplan\")",
+      "WebFetch(domain:upgrowplan.com)"
     ],
     "deny": [],
     "ask": []

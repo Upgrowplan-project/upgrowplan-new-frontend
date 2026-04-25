@@ -4,5 +4,13 @@
   "installCommand": "npm install",
   "env": {
     "NODE_ENV": "production"
-  }
+  },
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "upgrowplan.com" }],
+      "destination": "https://www.upgrowplan.com/:path*",
+      "permanent": true
+    }
+  ]
 }
