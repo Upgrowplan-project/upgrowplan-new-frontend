@@ -2274,7 +2274,8 @@ export default function Home() {
           padding: 1.25rem;
           display: grid;
           gap: 1rem;
-          min-height: 360px;
+          height: 360px;
+          overflow: hidden;
           transition:
             opacity 0.25s ease,
             transform 0.25s ease;
