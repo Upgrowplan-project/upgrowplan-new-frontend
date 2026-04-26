@@ -75,7 +75,7 @@ export default function Home() {
       preferences: ["Price/Quality", "Quiet", "Trust", "Old school"],
       data: "Based on 620 local reviews",
       caseTitle: "Craft beer bar in the neighborhood",
-      image: "/images/personas/mark.jpg",
+      image: "/images/personas/mark.webp",
       dialog: [
         {
           speaker: "skeptic",
@@ -153,7 +153,7 @@ export default function Home() {
       preferences: ["Unit economics", "Operations", "Quality", "Competition"],
       data: "Based on 1.2k HoReCa reviews",
       caseTitle: "Tool‑sharing service",
-      image: "/images/personas/anna.jpg",
+      image: "/images/personas/anna.webp",
       dialog: [
         {
           speaker: "skeptic",
@@ -704,7 +704,7 @@ export default function Home() {
                 href={getLocalePath("/solutions/planMaster/descriptionPage")}
                 className="btn btn-primary btn-lg"
               >
-                Learn More
+                Learn more about PlanMaster AI
               </Link>
             </div>
             <div className="rag-console">
@@ -1089,7 +1089,7 @@ export default function Home() {
                   href={getLocalePath("/solutions/synthFocusLab/descriptionPage")}
                   className="btn btn-primary btn-lg"
                 >
-                  Learn More
+                  Learn more about Synth Focus Lab
                 </Link>
               </div>
             </div>

@@ -99,7 +99,8 @@
       "Bash(mkdir -p \"d:/UpgrowPlan/upgrowplan_new/app/[locale]/why-upgrowplan\")",
       "WebFetch(domain:upgrowplan.com)",
       "Bash(npm install *)",
-      "Bash(.venv/Scripts/python -c ' *)"
+      "Bash(.venv/Scripts/python -c ' *)",
+      "Bash(node -e \"const pkg = require\\('./node_modules/@vercel/blob/package.json'\\); console.log\\(pkg.version\\)\")"
     ],
     "deny": [],
     "ask": []

@@ -58,6 +58,10 @@ export default function BlogPageRu() {
           </div>
         </div>
 
+        <div className="mb-4">
+          <AdminBlogPanel posts={posts} onPostsChange={setPosts} />
+        </div>
+
         {loading ? (
           <p style={{ color: "#94a3b8" }}>Загрузка постов…</p>
         ) : posts.length === 0 ? (
@@ -81,8 +85,6 @@ export default function BlogPageRu() {
             ))}
           </div>
         )}
-
-        <AdminBlogPanel posts={posts} onPostsChange={setPosts} />
       </main>
     </div>
   );

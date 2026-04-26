@@ -88,7 +88,7 @@ export default function Home() {
       preferences: ["Цена/Качество", "Тишина", "Доверие", "Как раньше"],
       data: "Основано на 620 локальных отзывах",
       caseTitle: "Крафтовое пиво на районе",
-      image: "/images/personas/mark.jpg",
+      image: "/images/personas/mark.webp",
       dialog: [
         {
           speaker: "skeptic",
@@ -166,7 +166,7 @@ export default function Home() {
       preferences: ["Юнит-экономика", "Операционка", "Качество", "Конкуренция"],
       data: "Основано на 1.2k HoReCa отзывах",
       caseTitle: "Шеринг инструментов «СтройСам»",
-      image: "/images/personas/anna.jpg",
+      image: "/images/personas/anna.webp",
       dialog: [
         {
           speaker: "skeptic",

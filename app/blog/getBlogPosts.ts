@@ -1,16 +1,25 @@
 import { allStaticPosts, BilingualPost } from "./staticPosts";
 
-const BLOB_NAME = "blog-posts.json";
+const BLOB_PATHNAME = "blog-posts.json";
+const HAS_BLOB = !!process.env.BLOB_READ_WRITE_TOKEN;
+
+async function getBlobUrl(): Promise<string | null> {
+  try {
+    const { list } = await import("@vercel/blob");
+    const { blobs } = await list({ prefix: "blog-posts" });
+    const found = blobs.find((b) => b.pathname === BLOB_PATHNAME);
+    return found?.url ?? null;
+  } catch {
+    return null;
+  }
+}
 
 export async function getBlogPosts(): Promise<BilingualPost[]> {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
-    return allStaticPosts;
-  }
+  if (!HAS_BLOB) return allStaticPosts;
   try {
-    const { head } = await import("@vercel/blob");
-    const blobInfo = await head(BLOB_NAME).catch(() => null);
-    if (blobInfo?.url) {
-      const res = await fetch(blobInfo.url, { cache: "no-store" });
+    const url = await getBlobUrl();
+    if (url) {
+      const res = await fetch(url, { cache: "no-store" });
       if (res.ok) {
         const posts: BilingualPost[] = await res.json();
         return [...posts].sort(

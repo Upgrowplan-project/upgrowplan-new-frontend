@@ -4,42 +4,34 @@ interface FormattedPostContentProps {
   message: string;
 }
 
-/**
- * Component to format blog post content with:
- * - Line breaks
- * - Bullet lists
- * - Bold text
- * - Links
- */
 export default function FormattedPostContent({ message }: FormattedPostContentProps) {
-  // Split message into paragraphs
-  const paragraphs = message.split('\n\n');
+  const paragraphs = message.split("\n\n");
 
   return (
     <div className="formatted-post-content">
       {paragraphs.map((paragraph, pIndex) => {
-        // Check if paragraph is a bullet list
-        const lines = paragraph.split('\n');
-        const isList = lines.every(line => line.trim().startsWith('•') || line.trim().startsWith('-') || line.trim() === '');
-        
-        if (isList && lines.some(line => line.trim().startsWith('•') || line.trim().startsWith('-'))) {
+        const lines = paragraph.split("\n");
+        const isList = lines.every(
+          (line) => line.trim().startsWith("•") || line.trim().startsWith("-") || line.trim() === ""
+        );
+
+        if (isList && lines.some((line) => line.trim().startsWith("•") || line.trim().startsWith("-"))) {
           return (
-            <ul key={pIndex} style={{ marginBottom: '1rem', paddingLeft: '1.5rem' }}>
+            <ul key={pIndex} style={{ marginBottom: "1rem", paddingLeft: "1.5rem" }}>
               {lines
-                .filter(line => line.trim().startsWith('•') || line.trim().startsWith('-'))
+                .filter((line) => line.trim().startsWith("•") || line.trim().startsWith("-"))
                 .map((line, lIndex) => (
-                  <li key={lIndex} style={{ marginBottom: '0.5rem' }}>
-                    {formatInlineText(line.replace(/^[•\-]\s*/, ''))}
+                  <li key={lIndex} style={{ marginBottom: "0.5rem" }}>
+                    {formatInlineText(line.replace(/^[•\-]\s*/, ""))}
                   </li>
                 ))}
             </ul>
           );
         }
 
-        // Regular paragraph
         if (paragraph.trim()) {
           return (
-            <p key={pIndex} style={{ marginBottom: '1rem', lineHeight: '1.7' }}>
+            <p key={pIndex} style={{ marginBottom: "1rem", lineHeight: "1.7" }}>
               {formatInlineText(paragraph)}
             </p>
           );
@@ -51,45 +43,52 @@ export default function FormattedPostContent({ message }: FormattedPostContentPr
   );
 }
 
-/**
- * Format inline text with bold, links, etc.
- */
 function formatInlineText(text: string): React.ReactNode {
-  // Handle bold text (**text** or __text__)
+  // Pattern order: links first, then bold, then italic
   const parts: React.ReactNode[] = [];
   let remaining = text;
   let key = 0;
 
-  // Simple bold pattern
-  const boldPattern = /(\*\*|__)(.*?)\1/g;
+  // Process links [text](url), bold **text**, italic *text*
+  const pattern = /\[([^\]]+)\]\((https?:\/\/[^\)]+)\)|\*\*(.+?)\*\*|\*([^*]+)\*/g;
   let match;
   let lastIndex = 0;
 
-  while ((match = boldPattern.exec(text)) !== null) {
-    // Add text before match
+  while ((match = pattern.exec(text)) !== null) {
     if (match.index > lastIndex) {
       parts.push(text.substring(lastIndex, match.index));
     }
-    
-    // Add bold text
-    parts.push(
-      <strong key={`bold-${key++}`} style={{ fontWeight: '600', color: '#1e6078' }}>
-        {match[2]}
-      </strong>
-    );
-    
+
+    if (match[1] !== undefined && match[2] !== undefined) {
+      // Link [text](url)
+      parts.push(
+        <a key={`link-${key++}`} href={match[2]} target="_blank" rel="noopener noreferrer"
+          style={{ color: "#0683f5", textDecoration: "underline" }}>
+          {match[1]}
+        </a>
+      );
+    } else if (match[3] !== undefined) {
+      // Bold **text**
+      parts.push(
+        <strong key={`bold-${key++}`} style={{ fontWeight: 600, color: "#1e6078" }}>
+          {match[3]}
+        </strong>
+      );
+    } else if (match[4] !== undefined) {
+      // Italic *text*
+      parts.push(
+        <em key={`italic-${key++}`} style={{ fontStyle: "italic" }}>
+          {match[4]}
+        </em>
+      );
+    }
+
     lastIndex = match.index + match[0].length;
   }
 
-  // Add remaining text
   if (lastIndex < text.length) {
     parts.push(text.substring(lastIndex));
   }
 
-  // If no formatting found, return original text
-  if (parts.length === 0) {
-    return text;
-  }
-
-  return <>{parts}</>;
+  return parts.length === 0 ? text : <>{parts}</>;
 }
