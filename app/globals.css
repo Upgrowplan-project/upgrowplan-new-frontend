@@ -1,3 +1,9 @@
+/* Force font-display: swap on Bootstrap Icons to eliminate FOIT-related CLS */
+@font-face {
+  font-family: "bootstrap-icons";
+  font-display: swap;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;

@@ -15,6 +15,7 @@ import "./globals.css";
 const inter = Inter({
   subsets: ["latin", "cyrillic"],
   variable: "--font-inter",
+  display: "swap",
 });
 
 export const viewport: Viewport = {

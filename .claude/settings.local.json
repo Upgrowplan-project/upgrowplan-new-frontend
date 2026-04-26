@@ -98,7 +98,8 @@
       "Bash(mkdir -p \"d:/UpgrowPlan/upgrowplan_new/app/[locale]/ai-business-plan-generator\")",
       "Bash(mkdir -p \"d:/UpgrowPlan/upgrowplan_new/app/[locale]/why-upgrowplan\")",
       "WebFetch(domain:upgrowplan.com)",
-      "Bash(npm install *)"
+      "Bash(npm install *)",
+      "Bash(.venv/Scripts/python -c ' *)"
     ],
     "deny": [],
     "ask": []

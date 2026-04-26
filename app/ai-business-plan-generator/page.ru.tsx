@@ -4,7 +4,11 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Header from "../../components/Header";
-import IntelligenceLabV3 from "../solutions/planMaster/descriptionPage/IntelligenceLab-v3";
+import dynamic from "next/dynamic";
+const IntelligenceLabV3 = dynamic(
+  () => import("../solutions/planMaster/descriptionPage/IntelligenceLab-v3"),
+  { ssr: false, loading: () => <div style={{ height: "420px", background: "#f8fafc", borderRadius: "1rem" }} /> }
+);
 
 const FONT = '"Inter", "SF Pro Display", "Segoe UI", Arial, sans-serif';
 
