@@ -6,6 +6,11 @@ module.exports = {
     // Locale prefix — redirected to non-prefixed EN routes
     "/en",
     "/en/*",
+    // API routes — not web pages
+    "/api",
+    "/api/*",
+    "/ru/api",
+    "/ru/api/*",
     // App-level pages (not for indexing)
     "/account",
     "/ru/account",
@@ -96,9 +101,9 @@ module.exports = {
       priority,
       lastmod: config.autoLastmod ? new Date().toISOString() : undefined,
       alternateRefs: [
-        { href: `https://www.upgrowplan.com${enPath}`, hreflang: "en" },
-        { href: `https://www.upgrowplan.com${ruPath}`, hreflang: "ru" },
-        { href: `https://www.upgrowplan.com${enPath}`, hreflang: "x-default" },
+        { href: `https://www.upgrowplan.com${enPath}`, hreflang: "en", hrefIsAbsolute: true },
+        { href: `https://www.upgrowplan.com${ruPath}`, hreflang: "ru", hrefIsAbsolute: true },
+        { href: `https://www.upgrowplan.com${enPath}`, hreflang: "x-default", hrefIsAbsolute: true },
       ],
     };
   },

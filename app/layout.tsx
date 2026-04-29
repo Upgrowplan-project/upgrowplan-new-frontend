@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   },
   description:
     "Generate AI-powered business plans, market research reports, and strategic insights in minutes. Built for entrepreneurs and analysts.",
-  metadataBase: new URL("https://upgrowplan.com"),
+  metadataBase: new URL("https://www.upgrowplan.com"),
   icons: {
     icon: "/favicon.ico",
   },

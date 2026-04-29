@@ -100,7 +100,10 @@
       "WebFetch(domain:upgrowplan.com)",
       "Bash(npm install *)",
       "Bash(.venv/Scripts/python -c ' *)",
-      "Bash(node -e \"const pkg = require\\('./node_modules/@vercel/blob/package.json'\\); console.log\\(pkg.version\\)\")"
+      "Bash(node -e \"const pkg = require\\('./node_modules/@vercel/blob/package.json'\\); console.log\\(pkg.version\\)\")",
+      "Bash(.venv/Scripts/python -)",
+      "WebFetch(domain:pagespeed.web.dev)",
+      "Bash(awk -F: '$1 < 900 {last=$0} $1 >= 900 {print last; exit}')"
     ],
     "deny": [],
     "ask": []

@@ -30,6 +30,7 @@ async function savePosts(posts: BilingualPost[]) {
     await put(BLOB_PATHNAME, JSON.stringify(posts), {
       access: "public",
       addRandomSuffix: false,
+      allowOverwrite: true,
       contentType: "application/json",
     });
   }

@@ -531,8 +531,8 @@ export default function MarketResearchPage() {
     business_tech: "Технологии для бизнеса",
     marketplace: "Маркетплейс / Платформа",
     p2p_platform: "P2P Платформа",
-    saas_b2b: "B2B SaaS",
-    saas_b2c: "B2C SaaS",
+    saas_b2b: "B2B SaaS / Онлайн-сервис для бизнеса",
+    saas_b2c: "B2C SaaS / Онлайн-сервис для частных лиц",
     cloud_platform: "Облачная платформа",
     industrial_equipment: "Промышленное оборудование",
     logistics: "Логистика",
@@ -631,8 +631,8 @@ export default function MarketResearchPage() {
     { value: "pet_services",       label: "Зоотовары и ветеринария",         category: "Велнес и красота" },
     // Образование и профессии
     { value: "education",          label: "Образование",                     category: "Образование и услуги" },
-    { value: "consulting",         label: "Консалтинг",                      category: "Образование и услуги" },
-    { value: "professional_services", label: "Профессиональные услуги",      category: "Образование и услуги" },
+    { value: "consulting",         label: "Консалтинг (услуги людей)",       category: "Образование и услуги" },
+    { value: "professional_services", label: "Профессиональные услуги (агентства, аутсорс)", category: "Образование и услуги" },
     { value: "legal_services",     label: "Юридические услуги",              category: "Образование и услуги" },
     // Дом и быт
     { value: "home_services",      label: "Дом и быт (клининг, ремонт)",     category: "Дом и быт" },
@@ -640,8 +640,8 @@ export default function MarketResearchPage() {
     { value: "construction",       label: "Строительство",                   category: "Дом и быт" },
     // Цифровые продукты
     { value: "digital_apps",       label: "Цифровые приложения (B2C)",       category: "Цифровые продукты" },
-    { value: "saas_b2b",           label: "B2B SaaS",                        category: "Цифровые продукты" },
-    { value: "saas_b2c",           label: "B2C SaaS",                        category: "Цифровые продукты" },
+    { value: "saas_b2b",           label: "B2B SaaS / Онлайн-сервис для бизнеса", category: "Цифровые продукты" },
+    { value: "saas_b2c",           label: "B2C SaaS / Онлайн-сервис для частных лиц", category: "Цифровые продукты" },
     { value: "cloud_platform",     label: "Облачная платформа",              category: "Цифровые продукты" },
     { value: "marketplace",        label: "Маркетплейс / Платформа",         category: "Цифровые продукты" },
     { value: "p2p_platform",       label: "P2P платформа",                   category: "Цифровые продукты" },

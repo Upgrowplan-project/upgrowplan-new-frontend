@@ -10,4 +10,4 @@ Disallow: /ru/monitoring
 Disallow: /fin-model/
 Disallow: /ru/fin-model/
 
-Sitemap: https://upgrowplan.com/sitemap.xml
+Sitemap: https://www.upgrowplan.com/sitemap.xml
