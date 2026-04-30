@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { buildMetadata, pageMeta } from "@/lib/seo/metadata";
-import { organizationSchema, websiteSchema, faqSchema, pageFaqs } from "@/lib/seo/jsonld";
+import { organizationSchema, websiteSchema, faqSchema, pageFaqs, speakableSchema } from "@/lib/seo/jsonld";
 import { JsonLd } from "@/components/JsonLd";
 import FaqSection from "@/components/FaqSection";
 import HomePageEn from "./page.en";
@@ -20,7 +20,21 @@ export default function HomePage({ params }: Params) {
   const faqTitle = locale === "ru" ? "Часто задаваемые вопросы" : "Frequently Asked Questions";
   return (
     <>
-      <JsonLd data={[organizationSchema(), websiteSchema(), faqSchema(pageFaqs.home[locale])]} />
+      <JsonLd data={[
+        organizationSchema(),
+        websiteSchema(),
+        speakableSchema({
+          url: locale === "ru" ? "https://www.upgrowplan.com/ru" : "https://www.upgrowplan.com",
+          name: locale === "ru"
+            ? "Upgrowplan — ИИ Генератор бизнес-планов с валидацией рынка, синтетическими респондентами и финансовой моделью"
+            : "Upgrowplan — AI Business Plan Generator with Market Validation, Synthetic Respondents & Financial Model",
+          description: locale === "ru"
+            ? "ИИ-генератор бизнес-планов, который сначала валидирует: тест на синтетических респондентах, живое исследование рынка из 50+ источников, план по ЮНИДО/ЕБРР, Python-финансовая модель — проверено Skeptic Agent, без галлюцинаций."
+            : "AI business plan generator that validates before it generates: synthetic respondent testing, live market research from 50+ sources, UNIDO/EBRD investor-ready plan, Python financial model — Skeptic Agent verified, no hallucinations.",
+          locale,
+        }),
+        faqSchema(pageFaqs.home[locale]),
+      ]} />
       {locale === "ru" ? <HomePageRu /> : <HomePageEn />}
       <FaqSection items={pageFaqs.home[locale]} title={faqTitle} />
     </>

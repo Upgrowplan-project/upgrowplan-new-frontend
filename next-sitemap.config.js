@@ -2,6 +2,8 @@
 module.exports = {
   siteUrl: "https://www.upgrowplan.com",
   generateRobotsTxt: false, // robots.txt managed manually in /public/robots.txt
+  // Blog posts are served by /blog-sitemap.xml (dynamic route handler)
+  // This config only generates sitemap-0.xml for static pages (merged in sitemap.xml index)
   exclude: [
     // Locale prefix — redirected to non-prefixed EN routes
     "/en",

@@ -87,48 +87,48 @@ export const pageMeta = {
   home: {
     // Homepage bypasses the template via absolute — brand is the title itself
     title: {
-      en: "Upgrowplan | AI Business Plans, Synthetic Respondents & Pitch Deck",
-      ru: "Upgrowplan | ИИ Бизнес-план, Синтетические Респонденты и Питч",
+      en: "Upgrowplan — AI Business Plan Generator with Market Validation, Synthetic Respondents & Financial Model",
+      ru: "Upgrowplan — ИИ Генератор бизнес-планов с валидацией рынка, синтетическими респондентами и финансовой моделью",
     },
     description: {
-      en: "Validate your idea with synthetic respondents. UNIDO/EBRD business plan in 10–20 minutes. Every figure checked by Skeptic Agent. Deliverable: Word + pitch deck.",
-      ru: "Проверь идею на синтетических респондентах. Бизнес-план по ЮНИДО/ЕБРР за 10–20 минут. Skeptic Agent проверит каждую цифру. Формат Word + питч-презентация.",
+      en: "Generate an investor-ready business plan in 20 minutes: validate your idea on synthetic respondents, get real market research from 50+ sources, build a full financial model (P&L, cash flow, break-even) — UNIDO/EBRD standard, Skeptic Agent verified, no hallucinations.",
+      ru: "Создайте бизнес-план инвесторского уровня за 20 минут: проверьте идею на синтетических респондентах, получите исследование рынка из 50+ источников, постройте финансовую модель (P&L, денежный поток, точка безубыточности) — стандарт ЮНИДО/ЕБРР, проверка Skeptic Agent, без галлюцинаций.",
     },
     enPath: "/",
     ruPath: "/ru",
   },
   about: {
     title: {
-      en: "About | AI Business Planning Platform",
-      ru: "О платформе | ИИ-инструменты для бизнеса",
+      en: "About Upgrowplan — AI Business Validation Platform | Founded Tel Aviv 2024",
+      ru: "О платформе Upgrowplan — ИИ-валидация бизнеса | Основана Тель-Авив 2024",
     },
     description: {
-      en: "Upgrowplan — AI platform for business plans, market research and financial modelling. Founded 2024, Tel Aviv. 230+ plans, UNIDO/EBRD methodology.",
-      ru: "Upgrowplan — ИИ-платформа для бизнес-планов, исследований рынка и финансового моделирования. Основана в 2024, Тель-Авив. 230+ планов, методология ЮНИДО/ЕБРР.",
+      en: "Upgrowplan is an AI-powered business validation platform: market simulation, synthetic respondents, UNIDO/EBRD plans, financial modelling. Founded 2024, Tel Aviv. 230+ investor-ready plans delivered.",
+      ru: "Upgrowplan — ИИ-платформа для валидации бизнеса: симуляция рынка, синтетические респонденты, планы по ЮНИДО/ЕБРР, финансовое моделирование. Основана в 2024, Тель-Авив. 230+ планов для инвесторов.",
     },
     enPath: "/about",
     ruPath: "/ru/about",
   },
   products: {
     title: {
-      en: "Products | AI Business Planning Tools",
-      ru: "Продукты | ИИ-инструменты для бизнес-планирования",
+      en: "Upgrowplan Products — AI Business Validation Suite for Founders & Analysts",
+      ru: "Продукты Upgrowplan — ИИ-инструменты для валидации бизнеса: для фаундеров и аналитиков",
     },
     description: {
-      en: "Explore Upgrowplan's suite of AI tools: business plan generation, market research, financial modelling, virtual respondents, and more.",
-      ru: "Изучите набор ИИ-инструментов Upgrowplan: генерация бизнес-планов, исследование рынка, финансовое моделирование, виртуальные респонденты и другое.",
+      en: "Explore Upgrowplan's AI validation suite: market simulation on synthetic respondents, UNIDO/EBRD business plan generator, live market research, financial modelling, competitor monitoring — built for founders, analysts, and investors.",
+      ru: "Инструменты Upgrowplan для валидации бизнеса: симуляция рынка на синтетических респондентах, генератор бизнес-планов по ЮНИДО/ЕБРР, живые исследования рынка, финансовое моделирование, мониторинг конкурентов — для фаундеров, аналитиков и инвесторов.",
     },
     enPath: "/products",
     ruPath: "/ru/products",
   },
   blog: {
     title: {
-      en: "Business Planning & AI Strategy Blog",
-      ru: "Блог: ИИ для бизнеса, планирование и рынки",
+      en: "AI Business Validation Blog — Market Simulation, Investor Plans & Startup Research",
+      ru: "Блог об ИИ-валидации бизнеса — симуляция рынка, планы для инвесторов и исследования стартапов",
     },
     description: {
-      en: "Expert articles on AI business planning, market research, UNIDO standards, RAG technology, and AI hallucination prevention — for entrepreneurs and analysts.",
-      ru: "Экспертные статьи об ИИ для бизнеса, исследованиях рынка, стандартах ЮНИДО, технологии RAG и предотвращении галлюцинаций ИИ — для предпринимателей и аналитиков.",
+      en: "Expert articles on AI business validation, market simulation, synthetic respondents, UNIDO/EBRD standards, RAG technology, and hallucination-free AI — for founders and analysts.",
+      ru: "Экспертные статьи об ИИ-валидации бизнеса, симуляции рынка, синтетических респондентах, стандартах ЮНИДО/ЕБРР, RAG-технологии и ИИ без галлюцинаций — для фаундеров и аналитиков.",
     },
     enPath: "/blog",
     ruPath: "/ru/blog",
@@ -159,24 +159,24 @@ export const pageMeta = {
   },
   solutions: {
     title: {
-      en: "AI Tools: Business Plans, Market Research & Finance",
-      ru: "ИИ-инструменты: планы, исследования и финансы",
+      en: "AI Business Plan Generator & Validation Tools — Market Research, Financial Model, Synthetic Respondents",
+      ru: "ИИ Генератор бизнес-планов и инструменты валидации — исследование рынка, финансовая модель, синтетические респонденты",
     },
     description: {
-      en: "All Upgrowplan AI tools: business plan generator (UNIDO/EBRD), market research in 15 min, financial modelling, virtual focus groups, and market monitoring.",
-      ru: "Все ИИ-инструменты Upgrowplan: генератор бизнес-планов (ЮНИДО/ЕБРР), исследование рынка за 15 мин, финансовое моделирование, виртуальные фокус-группы и мониторинг.",
+      en: "One platform, complete workflow: validate idea on synthetic respondents → live market research from 50+ sources → UNIDO/EBRD business plan → Python financial model → investor pitch deck. No consultants, no hallucinations.",
+      ru: "Одна платформа, полный процесс: валидация идеи на синтетических респондентах → живое исследование рынка из 50+ источников → бизнес-план ЮНИДО/ЕБРР → Python-финансовая модель → питч для инвесторов. Без консультантов, без галлюцинаций.",
     },
     enPath: "/solutions",
     ruPath: "/ru/solutions",
   },
   marketResearch: {
     title: {
-      en: "AI Market Research Tool — Reports in 15 Minutes",
-      ru: "ИИ-исследование рынка — отчёт за 15 минут",
+      en: "AI Market Research — Live Data from 50+ Sources, Competitor Analysis in 15 Minutes",
+      ru: "ИИ-исследование рынка — живые данные из 50+ источников, анализ конкурентов за 15 минут",
     },
     description: {
-      en: "Generate AI market research reports with real competitor data, market sizing, trends and pricing — from 50+ verified sources in 15 minutes.",
-      ru: "Генерируйте отчёты по исследованию рынка с реальными данными о конкурентах, размером рынка и ценами — из 50+ верифицированных источников за 15 минут.",
+      en: "MarketSense AI Agent: live web search + RAG + Skeptic Agent validation. Get competitor mapping, market sizing, pricing trends, and entry barriers from 50+ verified sources — in 15 minutes, not weeks.",
+      ru: "MarketSense AI Agent: живой поиск + RAG + проверка Skeptic Agent. Карта конкурентов, объём рынка, ценовые тренды и барьеры входа из 50+ верифицированных источников — за 15 минут, а не недели.",
     },
     enPath: "/solutions/marketResearch",
     ruPath: "/ru/solutions/marketResearch",
@@ -303,36 +303,36 @@ export const pageMeta = {
   },
   aiBizPlanGenerator: {
     title: {
-      en: "AI Business Plan Generator — UNIDO/EBRD Standard in 20 Minutes",
-      ru: "ИИ Генератор бизнес-планов | ЮНИДО/ЕБРР за 20 минут",
+      en: "AI Business Plan Generator — Idea Validation + Market Research + Financial Model + UNIDO/EBRD Plan in 20 Min",
+      ru: "ИИ Генератор бизнес-планов — валидация идеи + исследование рынка + финансовая модель + план ЮНИДО/ЕБРР за 20 мин",
     },
     description: {
-      en: "Generate an investor-ready business plan with AI: real data from 50+ sources, Skeptic Agent verification, financial model (P&L, cash flow, break-even), Word + pitch deck. No consultants needed.",
-      ru: "Создайте бизнес-план для инвестора с ИИ: реальные данные из 50+ источников, проверка Skeptic Agent, финансовая модель (P&L, денежный поток, точка безубыточности), Word + питч. Без консультантов.",
+      en: "The only AI business plan generator that validates before it generates: synthetic respondent testing, live market research from 50+ sources, Python financial model (P&L, cash flow, break-even), Skeptic Agent hallucination check — delivered as Word + pitch deck. No consultants needed.",
+      ru: "Единственный ИИ-генератор бизнес-планов, который сначала валидирует: тест на синтетических респондентах, живое исследование рынка из 50+ источников, Python-финансовая модель (P&L, денежный поток, точка безубыточности), проверка Skeptic Agent — в формате Word + питч. Без консультантов.",
     },
     enPath: "/ai-business-plan-generator",
     ruPath: "/ru/ai-business-plan-generator",
   },
   whyUpgrowplan: {
     title: {
-      en: "Why Upgrowplan vs ChatGPT, Consultants & Upmetrics",
-      ru: "Почему Upgrowplan, а не ChatGPT, консультант или Upmetrics",
+      en: "Why Upgrowplan vs ChatGPT, Consultants & Upmetrics — AI Business Plan Generator That Validates First",
+      ru: "Почему Upgrowplan, а не ChatGPT, консультанты и Upmetrics — ИИ-генератор бизнес-планов, который сначала валидирует",
     },
     description: {
-      en: "Upgrowplan vs ChatGPT vs traditional consultants: RAG architecture, Skeptic Agent hallucination check, UNIDO/EBRD methodology, Python financial calculations. See the full comparison.",
-      ru: "Upgrowplan против ChatGPT и консультантов: RAG-архитектура, Skeptic Agent, методология ЮНИДО/ЕБРР, Python-расчёты. Сравнительная таблица и разбор отличий.",
+      en: "Upgrowplan vs ChatGPT vs consultants vs Upmetrics: the difference is validation before generation — synthetic respondent testing, RAG with live data, Skeptic Agent hallucination check, Python financial model, UNIDO/EBRD methodology. Full comparison.",
+      ru: "Upgrowplan против ChatGPT, консультантов и Upmetrics: разница — в валидации до генерации: тест на синтетических респондентах, RAG с живыми данными, Skeptic Agent против галлюцинаций, Python-финансовая модель, методология ЮНИДО/ЕБРР. Полное сравнение.",
     },
     enPath: "/why-upgrowplan",
     ruPath: "/ru/why-upgrowplan",
   },
   syntheticCustomerResearch: {
     title: {
-      en: "Synthetic Customer Research | AI Alternative to Focus Groups",
-      ru: "Синтетические респонденты | ИИ-исследование без фокус-групп",
+      en: "AI Market Simulation — Validate Your Idea on Synthetic Respondents in 15 Minutes",
+      ru: "ИИ-симуляция рынка — протестируй идею на синтетических респондентах за 15 минут",
     },
     description: {
-      en: "Test your business idea on virtual buyers in 15 minutes. AI synthetic respondents replace expensive focus groups — no recruitment, no waiting, 85–92% accuracy.",
-      ru: "Проверьте бизнес-идею на виртуальных покупателях за 15 минут. Синтетические респонденты заменяют дорогие фокус-группы — без рекрутинга, без ожидания, точность 85–92%.",
+      en: "Replace expensive focus groups with AI market simulation: synthetic respondents built from real market data, 85–92% accuracy, instant results. Test product ideas, pricing, messaging — no recruitment needed.",
+      ru: "Замените дорогие фокус-группы ИИ-симуляцией рынка: синтетические респонденты на основе реальных данных, точность 85–92%, мгновенный результат. Тестируйте идеи, цены, позиционирование — без рекрутинга.",
     },
     enPath: "/solutions/synthetic-customer-research",
     ruPath: "/ru/solutions/synthetic-customer-research",

@@ -21,8 +21,12 @@ export function organizationSchema() {
       height: 512,
     },
     description:
-      "AI-powered business planning platform. Generate business plans, market research reports, financial models and strategic insights in minutes.",
+      "AI business plan generator that validates before it generates. Upgrowplan combines AI market simulation on synthetic respondents, live market research from 50+ sources, UNIDO/EBRD business plan generation, and Python financial modelling — all data Skeptic Agent verified, no hallucinations. Founded 2024, Tel Aviv.",
     foundingDate: "2024",
+    foundingLocation: {
+      "@type": "Place",
+      name: "Tel Aviv, Israel",
+    },
     contactPoint: {
       "@type": "ContactPoint",
       contactType: "customer support",
@@ -32,6 +36,17 @@ export function organizationSchema() {
     sameAs: [
       "https://t.me/upgrowplan",
       "https://vk.com/upgrowplan",
+    ],
+    knowsAbout: [
+      "AI business plan generation",
+      "UNIDO business plan methodology",
+      "EBRD business plan standards",
+      "AI market research",
+      "Synthetic respondents",
+      "AI market simulation",
+      "Financial modelling",
+      "RAG architecture",
+      "Skeptic Agent hallucination prevention",
     ],
   };
 }
@@ -44,7 +59,7 @@ export function websiteSchema() {
     name: "Upgrowplan",
     url: SITE_URL,
     description:
-      "AI-powered platform for business plans, market research, financial modelling and strategic analysis.",
+      "AI business plan generator that validates before it generates: synthetic respondent market simulation, live market research from 50+ sources, UNIDO/EBRD investor-ready plan, Python financial model — Skeptic Agent verified, no hallucinations.",
     inLanguage: ["en", "ru"],
     potentialAction: {
       "@type": "SearchAction",
@@ -53,6 +68,33 @@ export function websiteSchema() {
         urlTemplate: `${SITE_URL}/blog?q={search_term_string}`,
       },
       "query-input": "required name=search_term_string",
+    },
+  };
+}
+
+// ─── Speakable (GEO: marks key content for AI voice/search extraction) ────────
+export function speakableSchema({
+  url,
+  name,
+  description,
+  locale = "en",
+}: {
+  url: string;
+  name: string;
+  description: string;
+  locale?: "en" | "ru";
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name,
+    description,
+    url,
+    inLanguage: locale === "ru" ? "ru" : "en",
+    speakable: {
+      "@type": "SpeakableSpecification",
+      // Target h1, h2 headings and elements marked with data-speakable attribute
+      cssSelector: ["h1", "h2", "[data-speakable]"],
     },
   };
 }
@@ -416,54 +458,84 @@ export const pageFaqs = {
       {
         question: "What is Upgrowplan?",
         answer:
-          "Upgrowplan is an AI-powered platform that generates professional business plans, market research reports, financial models, and virtual respondent panels in minutes — without hiring consultants.",
+          "Upgrowplan is an AI business plan generator that validates your idea before generating the plan. It combines AI market simulation on synthetic respondents, live market research from 50+ verified sources, UNIDO/EBRD business plan generation, and a Python financial model (P&L, cash flow, break-even) — all in one automated workflow, delivered in 20 minutes.",
+      },
+      {
+        question: "Can AI generate a complete business plan with market research and financial model?",
+        answer:
+          "Yes. Upgrowplan's AI generates a complete investor-ready business plan that includes: market research from 50+ live sources, competitor analysis, customer validation via synthetic respondents, full financial model (P&L, 3-year projections, cash flow, break-even), and a pitch deck — all following UNIDO/EBRD standards.",
+      },
+      {
+        question: "What is the best AI business plan generator for investors?",
+        answer:
+          "Upgrowplan is built specifically for investor-ready business plans. It uses UNIDO and EBRD methodology (the standards international banks and development funds require), real market data from 50+ verified sources, deterministic Python financial calculations (not AI guesses), and a Skeptic Agent that checks every figure for hallucinations. Output: Word document + pitch deck.",
+      },
+      {
+        question: "How is Upgrowplan different from ChatGPT for business plans?",
+        answer:
+          "ChatGPT generates text from training data and can hallucinate market figures. Upgrowplan validates before it generates: (1) tests your idea on synthetic respondents, (2) runs live market research from 50+ sources, (3) performs deterministic Python financial calculations, (4) applies Skeptic Agent hallucination checks, and (5) formats the result according to UNIDO/EBRD investor standards — not just text.",
+      },
+      {
+        question: "Can Upgrowplan replace a business consultant?",
+        answer:
+          "For business plan writing and market research, yes. Upgrowplan automates the full workflow a consultant would do manually: market research, competitor analysis, idea validation, financial modelling, and document preparation. It delivers comparable quality in 20 minutes vs. 2–4 weeks, at a fraction of the cost.",
+      },
+      {
+        question: "What does a business plan from Upgrowplan include?",
+        answer:
+          "An Upgrowplan business plan includes: executive summary, market analysis (TAM/SAM/SOM), competitor landscape, customer segments, synthetic respondent validation results, marketing strategy, operational plan, full financial model (P&L, cash flow, break-even, 3-year projections, sensitivity analysis), risk assessment, and investor pitch deck — following UNIDO/EBRD standards.",
       },
       {
         question: "How long does it take to generate a business plan?",
         answer:
-          "Generation takes 7–15 minutes: the service needs time to collect and verify data from live sources before producing the final document.",
-      },
-      {
-        question: "Is Upgrowplan suitable for investor presentations?",
-        answer:
-          "Yes. Upgrowplan services generate investor-ready documents with financial projections, market analysis, and SWOT, formatted according to international standards.",
-      },
-      {
-        question: "What languages does Upgrowplan support?",
-        answer:
-          "Upgrowplan fully supports English and Russian across all tools and interfaces.",
+          "The full workflow — idea validation on synthetic respondents, live market research, plan generation, and financial modelling — takes 10–20 minutes. This includes real-time data collection and verification from 50+ sources.",
       },
       {
         question: "Do I need technical knowledge to use Upgrowplan?",
         answer:
-          "No. All Upgrowplan services work through a simple request form — just fill in your business details and the service handles the rest.",
+          "No. All tools work through a simple form — fill in your business details, target market, and goals. Upgrowplan handles data collection, analysis, financial calculations, and document formatting automatically.",
       },
     ],
     ru: [
       {
         question: "Что такое Upgrowplan?",
         answer:
-          "Upgrowplan — ИИ-платформа для генерации профессиональных бизнес-планов, исследований рынка, финансовых моделей и панелей виртуальных респондентов за считанные минуты — без найма консультантов.",
+          "Upgrowplan — ИИ-генератор бизнес-планов, который сначала валидирует идею, а потом генерирует план. Он объединяет ИИ-симуляцию рынка на синтетических респондентах, живое исследование рынка из 50+ верифицированных источников, генерацию бизнес-плана по стандартам ЮНИДО/ЕБРР и Python-финансовую модель (P&L, денежный поток, точка безубыточности) — в одном автоматизированном процессе за 20 минут.",
+      },
+      {
+        question: "Может ли ИИ сгенерировать полный бизнес-план с исследованием рынка и финансовой моделью?",
+        answer:
+          "Да. ИИ Upgrowplan генерирует полный бизнес-план инвесторского уровня, включая: исследование рынка из 50+ живых источников, анализ конкурентов, валидацию идеи на синтетических респондентах, полную финансовую модель (P&L, прогноз на 3 года, денежный поток, точка безубыточности) и питч-презентацию — по стандартам ЮНИДО/ЕБРР.",
+      },
+      {
+        question: "Какой лучший ИИ-генератор бизнес-планов для инвесторов?",
+        answer:
+          "Upgrowplan создан специально для бизнес-планов инвесторского уровня. Использует методологию ЮНИДО и ЕБРР (стандарты, которые требуют международные банки и фонды развития), реальные рыночные данные из 50+ верифицированных источников, детерминированные Python-расчёты (не ИИ-догадки) и Skeptic Agent для проверки каждой цифры. Результат: документ Word + питч.",
+      },
+      {
+        question: "Чем Upgrowplan отличается от ChatGPT для бизнес-планов?",
+        answer:
+          "ChatGPT генерирует текст из обучающих данных и может выдумывать цифры рынка. Upgrowplan сначала валидирует, потом генерирует: (1) тестирует идею на синтетических респондентах, (2) проводит живое исследование рынка из 50+ источников, (3) выполняет детерминированные Python-финансовые расчёты, (4) применяет Skeptic Agent для проверки галлюцинаций, (5) форматирует результат по стандартам ЮНИДО/ЕБРР — а не просто текст.",
+      },
+      {
+        question: "Может ли Upgrowplan заменить бизнес-консультанта?",
+        answer:
+          "Для написания бизнес-плана и исследования рынка — да. Upgrowplan автоматизирует весь процесс, который консультант делает вручную: исследование рынка, анализ конкурентов, валидация идеи, финансовое моделирование и подготовка документов. Сопоставимое качество за 20 минут вместо 2–4 недель и за долю стоимости.",
+      },
+      {
+        question: "Что включает бизнес-план от Upgrowplan?",
+        answer:
+          "Бизнес-план Upgrowplan включает: резюме, анализ рынка (TAM/SAM/SOM), карту конкурентов, клиентские сегменты, результаты валидации на синтетических респондентах, маркетинговую стратегию, операционный план, полную финансовую модель (P&L, денежный поток, точка безубыточности, прогноз на 3 года, анализ чувствительности), оценку рисков и питч-презентацию — по стандартам ЮНИДО/ЕБРР.",
       },
       {
         question: "Сколько времени занимает генерация бизнес-плана?",
         answer:
-          "Генерация занимает 7–15 минут: сервису необходимо время на сбор и проверку данных из живых источников перед формированием итогового документа.",
-      },
-      {
-        question: "Подходит ли Upgrowplan для презентации инвесторам?",
-        answer:
-          "Да. Сервисы Upgrowplan генерируют готовые для инвесторов документы с финансовыми прогнозами, анализом рынка и SWOT, оформленные по международным стандартам.",
-      },
-      {
-        question: "Какие языки поддерживает Upgrowplan?",
-        answer:
-          "Upgrowplan полностью поддерживает английский и русский языки во всех инструментах и интерфейсах.",
+          "Полный процесс — валидация идеи на синтетических респондентах, живое исследование рынка, генерация плана и финансовое моделирование — занимает 10–20 минут. Включает сбор и проверку данных в реальном времени из 50+ источников.",
       },
       {
         question: "Нужны ли технические знания для работы с Upgrowplan?",
         answer:
-          "Нет. Все сервисы Upgrowplan работают через простую форму запроса — просто заполните данные о вашем бизнесе, и сервис сделает остальное.",
+          "Нет. Все инструменты работают через простую форму — укажите детали бизнеса, целевой рынок и цели. Upgrowplan автоматически выполняет сбор данных, анализ, финансовые расчёты и форматирование документов.",
       },
     ],
   },
