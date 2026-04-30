@@ -3,6 +3,7 @@ import { buildMetadata, pageMeta } from "@/lib/seo/metadata";
 import { blogSchema, breadcrumbSchema, breadcrumbs } from "@/lib/seo/jsonld";
 import { JsonLd } from "@/components/JsonLd";
 import EnPage from "./page.en";
+import { getBlogPosts } from "./getBlogPosts";
 
 export const metadata: Metadata = buildMetadata({
   locale: "en",
@@ -10,7 +11,8 @@ export const metadata: Metadata = buildMetadata({
   ...pageMeta.blog,
 });
 
-export default function BlogPage() {
+export default async function BlogPage() {
+  const posts = await getBlogPosts();
   return (
     <>
       <JsonLd
@@ -19,7 +21,7 @@ export default function BlogPage() {
           breadcrumbSchema(breadcrumbs.blog("en")),
         ]}
       />
-      <EnPage />
+      <EnPage initialPosts={posts} />
     </>
   );
 }

@@ -1,5 +1,3 @@
-import FormattedPostContent from "../../components/FormattedPostContent";
-
 interface BlogPostCardProps {
   message: string;
   createdAt: string;
@@ -13,6 +11,12 @@ interface BlogPostCardProps {
   locale: "ru" | "en";
 }
 
+function getExcerpt(text: string, maxLen = 200): string {
+  const clean = text.replace(/[#\n]/g, " ").replace(/\s+/g, " ").trim();
+  if (clean.length <= maxLen) return clean;
+  return clean.slice(0, maxLen).replace(/\s\S*$/, "") + "…";
+}
+
 export default function BlogPostCard({
   message, createdAt, slug, title, description,
   category, author, mediaUrl, forwardAuthor, locale,
@@ -22,6 +26,7 @@ export default function BlogPostCard({
     : undefined;
 
   const displayAuthor = forwardAuthor || author;
+  const excerpt = description || getExcerpt(message);
 
   return (
     <div className="col-12">
@@ -56,23 +61,21 @@ export default function BlogPostCard({
               </span>
             )}
 
-            {title && postUrl ? (
+            {postUrl ? (
               <h2 style={{ fontSize: "1.2rem", fontWeight: 700, color: "#1e6078", marginBottom: "0.5rem" }}>
-                <a href={postUrl} style={{ color: "inherit", textDecoration: "none" }}>{title}</a>
+                <a href={postUrl} style={{ color: "inherit", textDecoration: "none" }}>
+                  {title || getExcerpt(message, 80)}
+                </a>
               </h2>
-            ) : title ? (
+            ) : (
               <h2 style={{ fontSize: "1.2rem", fontWeight: 700, color: "#1e6078", marginBottom: "0.5rem" }}>
-                {title}
+                {title || getExcerpt(message, 80)}
               </h2>
-            ) : null}
-
-            {description && (
-              <p style={{ color: "#475569", fontSize: "0.95rem", marginBottom: "0.75rem", lineHeight: 1.6 }}>
-                {description}
-              </p>
             )}
 
-            {!title && <FormattedPostContent message={message} />}
+            <p style={{ color: "#475569", fontSize: "0.95rem", marginBottom: "0.75rem", lineHeight: 1.6 }}>
+              {excerpt}
+            </p>
 
             <div className="mt-3 pt-3" style={{ borderTop: "1px solid #e0e0e0", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.5rem" }}>
               <div>

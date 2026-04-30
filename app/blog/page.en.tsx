@@ -1,20 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Header from "../../components/Header";
 import { BilingualPost } from "./staticPosts";
 import BlogPostCard from "./BlogPostCard";
 
-export default function BlogPageEn() {
-  const [posts, setPosts] = useState<BilingualPost[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetch("/api/blog/posts")
-      .then((r) => r.json())
-      .then((data) => { setPosts(data); setLoading(false); })
-      .catch(() => setLoading(false));
-  }, []);
+export default function BlogPageEn({ initialPosts = [] }: { initialPosts?: BilingualPost[] }) {
+  const [posts] = useState<BilingualPost[]>(initialPosts);
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -56,16 +48,14 @@ export default function BlogPageEn() {
           </div>
         </div>
 
-        {loading ? (
-          <p style={{ color: "#94a3b8" }}>Loading posts…</p>
-        ) : posts.length === 0 ? (
+        {posts.filter((p) => p.messageEn).length === 0 ? (
           <p>No posts yet.</p>
         ) : (
           <div className="row g-4">
-            {posts.map((post) => (
+            {posts.filter((p) => p.messageEn).map((post) => (
               <BlogPostCard
                 key={post.id}
-                message={post.messageEn || post.messageRu}
+                message={post.messageEn}
                 createdAt={post.createdAt}
                 slug={post.slug}
                 title={post.titleEn || post.titleRu}

@@ -1,21 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Header from "../../components/Header";
 import { BilingualPost } from "./staticPosts";
 import BlogPostCard from "./BlogPostCard";
 import AdminBlogPanel from "./AdminBlogPanel";
 
-export default function BlogPageRu() {
-  const [posts, setPosts] = useState<BilingualPost[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetch("/api/blog/posts")
-      .then((r) => r.json())
-      .then((data) => { setPosts(data); setLoading(false); })
-      .catch(() => setLoading(false));
-  }, []);
+export default function BlogPageRu({ initialPosts = [] }: { initialPosts?: BilingualPost[] }) {
+  const [posts, setPosts] = useState<BilingualPost[]>(initialPosts);
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -62,16 +54,14 @@ export default function BlogPageRu() {
           <AdminBlogPanel posts={posts} onPostsChange={setPosts} />
         </div>
 
-        {loading ? (
-          <p style={{ color: "#94a3b8" }}>Загрузка постов…</p>
-        ) : posts.length === 0 ? (
+        {posts.filter((p) => p.messageRu).length === 0 ? (
           <p className="release-soon">Посты ещё не опубликованы 😄</p>
         ) : (
           <div className="row g-4">
-            {posts.map((post) => (
+            {posts.filter((p) => p.messageRu).map((post) => (
               <BlogPostCard
                 key={post.id}
-                message={post.messageRu || post.messageEn}
+                message={post.messageRu}
                 createdAt={post.createdAt}
                 slug={post.slug}
                 title={post.titleRu || post.titleEn}
