@@ -8,7 +8,6 @@ import AOSWrapper from "./AOSWrapper";
 
 // CSS here covers ALL pages including English routes (non-prefixed /solutions/... etc.)
 import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap-icons/font/bootstrap-icons.css";
 import "aos/dist/aos.css";
 import "./globals.css";
 

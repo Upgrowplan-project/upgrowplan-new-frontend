@@ -4,6 +4,7 @@ import { getBlogPostBySlug, getBlogPosts } from "../../../blog/getBlogPosts";
 import { JsonLd } from "@/components/JsonLd";
 import Header from "@/components/Header";
 import FormattedPostContent from "@/components/FormattedPostContent";
+import { applyInternalLinks } from "@/lib/blog/internalLinks";
 
 const SITE_URL = "https://www.upgrowplan.com";
 
@@ -25,12 +26,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const description = (isRu ? post.descriptionRu : post.descriptionEn) || "";
   const url = `${SITE_URL}/${params.locale}/blog/${params.slug}`;
   const enUrl = `${SITE_URL}/blog/${params.slug}`;
+  const ruUrl = `${SITE_URL}/ru/blog/${params.slug}`;
   return {
     title: `${title} | Upgrowplan`,
     description,
     alternates: {
       canonical: url,
-      languages: { en: enUrl, ru: `${SITE_URL}/ru/blog/${params.slug}`, "x-default": enUrl },
+      languages: {
+        en: enUrl,
+        "x-default": enUrl,
+        ...(post.messageRu ? { ru: ruUrl } : {}),
+        ...(post.messageEn ? {} : {}),
+      },
     },
     openGraph: { title, description, url, type: "article" },
   };
@@ -41,9 +48,11 @@ export default async function BlogPostLocalePage({ params }: Props) {
   if (!post) notFound();
 
   const isRu = params.locale === "ru";
-  const message = isRu
-    ? post.messageRu || post.messageEn
-    : post.messageEn || post.messageRu;
+  const locale = isRu ? "ru" : "en";
+  const message = applyInternalLinks(
+    isRu ? post.messageRu || post.messageEn : post.messageEn || post.messageRu,
+    locale
+  );
   const title = (isRu ? post.titleRu : post.titleEn) || "";
   const description = (isRu ? post.descriptionRu : post.descriptionEn) || "";
   const url = `${SITE_URL}${isRu ? "/ru" : ""}/blog/${params.slug}`;

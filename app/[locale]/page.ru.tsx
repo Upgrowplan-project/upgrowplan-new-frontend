@@ -71,9 +71,15 @@ export default function Home() {
     });
   };
   const shuffle = <T,>(items: T[]) => {
+    // Deterministic shuffle to avoid hydration/layout jumps on first paint.
     const copy = [...items];
+    let seed = 20260503;
+    const next = () => {
+      seed = (seed * 1664525 + 1013904223) % 4294967296;
+      return seed / 4294967296;
+    };
     for (let i = copy.length - 1; i > 0; i -= 1) {
-      const j = Math.floor(Math.random() * (i + 1));
+      const j = Math.floor(next() * (i + 1));
       [copy[i], copy[j]] = [copy[j], copy[i]];
     }
     return copy;
@@ -315,8 +321,9 @@ export default function Home() {
       ],
     },
   ];
-  const [shuffledPersonas, setShuffledPersonas] = useState(personas);
-  const [visiblePersonas, setVisiblePersonas] = useState(personas.slice(0, 3));
+  const initialShuffledPersonas = useMemo(() => shuffle(personas), []);
+  const [shuffledPersonas] = useState(initialShuffledPersonas);
+  const [visiblePersonas] = useState(initialShuffledPersonas.slice(0, 3));
   const [activePersona, setActivePersona] = useState(0);
   const [visibleDialog, setVisibleDialog] = useState<
     Array<{
@@ -418,13 +425,6 @@ export default function Home() {
 
     return () => clearTimeout(typingTimer);
   }, [charIndex, isPausing, lineIndex, logLines]);
-
-  useEffect(() => {
-    const shuffled = shuffle(personas);
-    setShuffledPersonas(shuffled);
-    setVisiblePersonas(shuffled.slice(0, 3));
-    setActivePersona(0);
-  }, []);
 
   useEffect(() => {
     if (!proofRef.current) return;
@@ -582,7 +582,7 @@ export default function Home() {
   }, [geoStatus]);
 
   useEffect(() => {
-    if (!mapContainerRef.current || mapRef.current) return;
+    if (!pulseActive || !mapContainerRef.current || mapRef.current) return;
     let cancelled = false;
 
     (async () => {
@@ -635,7 +635,7 @@ export default function Home() {
         mapRef.current = null;
       }
     };
-  }, []);
+  }, [pulseActive]);
 
   useEffect(() => {
     if (!userLocation || !mapRef.current) return;

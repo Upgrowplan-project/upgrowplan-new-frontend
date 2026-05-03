@@ -8,6 +8,14 @@ const HAS_BLOB = !!process.env.BLOB_READ_WRITE_TOKEN;
 // In-memory fallback for local dev (resets on restart)
 let memoryStore: BilingualPost[] | null = null;
 
+async function safeReadJson(req: NextRequest) {
+  try {
+    return await req.json();
+  } catch {
+    return null;
+  }
+}
+
 async function loadPosts(): Promise<BilingualPost[]> {
   if (HAS_BLOB) {
     try {
@@ -46,9 +54,16 @@ export async function GET(req: NextRequest) {
 
 // POST — add post
 export async function POST(req: NextRequest) {
-  const { password, post } = await req.json();
+  const body = await safeReadJson(req);
+  if (!body || typeof body !== "object") {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+  const { password, post } = body as { password?: string; post?: Partial<BilingualPost> };
   if (password !== ADMIN_PASSWORD)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!post) {
+    return NextResponse.json({ error: "Post payload is required" }, { status: 400 });
+  }
   const posts = await loadPosts();
   const newPost: BilingualPost = {
     ...post,
@@ -61,9 +76,16 @@ export async function POST(req: NextRequest) {
 
 // PUT — edit post
 export async function PUT(req: NextRequest) {
-  const { password, post } = await req.json();
+  const body = await safeReadJson(req);
+  if (!body || typeof body !== "object") {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+  const { password, post } = body as { password?: string; post?: Partial<BilingualPost> };
   if (password !== ADMIN_PASSWORD)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!post || typeof (post as { id?: number }).id !== "number") {
+    return NextResponse.json({ error: "Post with numeric id is required" }, { status: 400 });
+  }
   const posts = await loadPosts();
   await savePosts(posts.map((p) => (p.id === post.id ? { ...p, ...post } : p)));
   return NextResponse.json(post);
@@ -71,9 +93,16 @@ export async function PUT(req: NextRequest) {
 
 // DELETE — remove post
 export async function DELETE(req: NextRequest) {
-  const { password, id } = await req.json();
+  const body = await safeReadJson(req);
+  if (!body || typeof body !== "object") {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+  const { password, id } = body as { password?: string; id?: number };
   if (password !== ADMIN_PASSWORD)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (typeof id !== "number") {
+    return NextResponse.json({ error: "Numeric id is required" }, { status: 400 });
+  }
   const posts = await loadPosts();
   await savePosts(posts.filter((p) => p.id !== id));
   return NextResponse.json({ ok: true });

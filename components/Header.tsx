@@ -92,6 +92,13 @@ function HeaderContent() {
   };
 
   const homeLink = locale === "en" ? "/" : "/ru";
+  const GlobeIcon = () => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
+      <ellipse cx="12" cy="12" rx="4.5" ry="9" stroke="currentColor" strokeWidth="1.4" />
+      <path d="M3 12h18M5 8h14M5 16h14" stroke="currentColor" strokeWidth="1.4" />
+    </svg>
+  );
 
   return (
     <header style={{ position: "sticky", top: 0, zIndex: 1000, margin: 0 }}>
@@ -115,11 +122,13 @@ function HeaderContent() {
             }}
             title="Home"
           >
-            <img
+            <Image
               src="/icons/home-icon.png"
               alt="Home"
               width={32}
               height={32}
+              sizes="32px"
+              priority={false}
               style={{ maxWidth: "100%", height: "auto" }}
             />
           </Link>
@@ -167,7 +176,7 @@ function HeaderContent() {
             aria-label="Switch language"
             title={locale === "en" ? "Переключить на РУ" : "Switch to EN"}
           >
-            <i className="bi bi-globe" />
+            <GlobeIcon />
           </button>
         </div>
 
@@ -273,7 +282,7 @@ function HeaderContent() {
                 aria-label="Switch language"
                 title={locale === "en" ? "Переключить язык" : "Switch language"}
               >
-                <i className="bi bi-globe" />
+                <GlobeIcon />
               </button>
 
               {/* Language dropdown menu */}

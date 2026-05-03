@@ -4,6 +4,7 @@ import { getBlogPostBySlug, getBlogPosts } from "../getBlogPosts";
 import { JsonLd } from "@/components/JsonLd";
 import Header from "@/components/Header";
 import FormattedPostContent from "@/components/FormattedPostContent";
+import { applyInternalLinks } from "@/lib/blog/internalLinks";
 
 const SITE_URL = "https://www.upgrowplan.com";
 
@@ -20,12 +21,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const title = post.titleEn || post.titleRu || "Blog";
   const description = post.descriptionEn || post.descriptionRu || "";
   const url = `${SITE_URL}/blog/${params.slug}`;
+  const ruUrl = `${SITE_URL}/ru/blog/${params.slug}`;
   return {
     title: `${title} | Upgrowplan Blog`,
     description,
     alternates: {
       canonical: url,
-      languages: { en: url, ru: `${SITE_URL}/ru/blog/${params.slug}`, "x-default": url },
+      languages: {
+        en: url,
+        "x-default": url,
+        ...(post.messageRu ? { ru: ruUrl } : {}),
+      },
     },
     openGraph: { title, description, url, type: "article" },
   };
@@ -35,7 +41,7 @@ export default async function BlogPostPage({ params }: Props) {
   const post = await getBlogPostBySlug(params.slug);
   if (!post) notFound();
 
-  const message = post.messageEn || post.messageRu;
+  const message = applyInternalLinks(post.messageEn || post.messageRu, "en");
   const title = post.titleEn || post.titleRu || "";
   const description = post.descriptionEn || post.descriptionRu || "";
   const url = `${SITE_URL}/blog/${params.slug}`;

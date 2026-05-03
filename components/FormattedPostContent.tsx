@@ -50,7 +50,8 @@ function formatInlineText(text: string): React.ReactNode {
   let key = 0;
 
   // Process links [text](url), bold **text**, italic *text*
-  const pattern = /\[([^\]]+)\]\((https?:\/\/[^\)]+)\)|\*\*(.+?)\*\*|\*([^*]+)\*/g;
+  // Supports both absolute (https://...) and relative (/path) URLs
+  const pattern = /\[([^\]]+)\]\(([^\)]+)\)|\*\*(.+?)\*\*|\*([^*]+)\*/g;
   let match;
   let lastIndex = 0;
 
@@ -60,10 +61,15 @@ function formatInlineText(text: string): React.ReactNode {
     }
 
     if (match[1] !== undefined && match[2] !== undefined) {
-      // Link [text](url)
+      const href = match[2];
+      const isExternal = href.startsWith("http");
       parts.push(
-        <a key={`link-${key++}`} href={match[2]} target="_blank" rel="noopener noreferrer"
-          style={{ color: "#0683f5", textDecoration: "underline" }}>
+        <a
+          key={`link-${key++}`}
+          href={href}
+          {...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+          style={{ color: "#0683f5", textDecoration: "underline" }}
+        >
           {match[1]}
         </a>
       );
