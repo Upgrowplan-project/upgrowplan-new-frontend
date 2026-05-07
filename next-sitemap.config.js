@@ -1,9 +1,10 @@
 /** @type {import('next-sitemap').IConfig} */
 module.exports = {
   siteUrl: "https://www.upgrowplan.com",
-  generateRobotsTxt: false, // robots.txt managed manually in /public/robots.txt
+  generateRobotsTxt: false,    // robots.txt managed manually in /public/robots.txt
+  generateIndexSitemap: false, // sitemap.xml managed manually — includes blog-sitemap.xml
   // Blog posts are served by /blog-sitemap.xml (dynamic route handler)
-  // This config only generates sitemap-0.xml for static pages (merged in sitemap.xml index)
+  // sitemap.xml is a manual index referencing sitemap-0.xml + blog-sitemap.xml
   exclude: [
     // Locale prefix — redirected to non-prefixed EN routes
     "/en",

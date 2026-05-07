@@ -6,7 +6,61 @@ import { BilingualPost } from "./staticPosts";
 interface Props {
   posts: BilingualPost[];
   onPostsChange: (posts: BilingualPost[]) => void;
+  locale?: "ru" | "en";
 }
+
+const ui = {
+  ru: {
+    propose: "+ Предложить пост",
+    accessTitle: "Доступ для авторов",
+    passwordPlaceholder: "Пароль",
+    loginBtn: "Войти",
+    loggingIn: "Проверка...",
+    wrongPassword: "Неверный пароль",
+    serverError: "Ошибка сервера — попробуйте ещё раз",
+    noConnection: "Нет соединения с сервером",
+    adminTitle: "⚙ Панель администратора",
+    close: "Закрыть",
+    addPost: "+ Добавить пост",
+    editPostTitle: "Редактировать пост",
+    newPostTitle: "Новый пост",
+    save: "Сохранить изменения",
+    publish: "Опубликовать",
+    saving: "Сохранение...",
+    cancel: "Отмена",
+    postsCount: (n: number) => `Посты (${n}):`,
+    editBtn: "Изменить",
+    deleteBtn: "Удалить",
+    deleteConfirm: "Удалить этот пост?",
+    fillOne: "Заполните хотя бы одно поле (RU или EN)",
+    saveError: "Ошибка сохранения",
+  },
+  en: {
+    propose: "+ Propose a post",
+    accessTitle: "Author access",
+    passwordPlaceholder: "Password",
+    loginBtn: "Log in",
+    loggingIn: "Checking...",
+    wrongPassword: "Incorrect password",
+    serverError: "Server error — please try again",
+    noConnection: "No connection to server",
+    adminTitle: "⚙ Admin panel",
+    close: "Close",
+    addPost: "+ Add post",
+    editPostTitle: "Edit post",
+    newPostTitle: "New post",
+    save: "Save changes",
+    publish: "Publish",
+    saving: "Saving...",
+    cancel: "Cancel",
+    postsCount: (n: number) => `Posts (${n}):`,
+    editBtn: "Edit",
+    deleteBtn: "Delete",
+    deleteConfirm: "Delete this post?",
+    fillOne: "Fill in at least one field (RU or EN)",
+    saveError: "Save error",
+  },
+} as const;
 
 const EMPTY_FORM = {
   slug: "",
@@ -143,7 +197,8 @@ function RichTextarea({
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
-export default function AdminBlogPanel({ posts, onPostsChange }: Props) {
+export default function AdminBlogPanel({ posts, onPostsChange, locale = "ru" }: Props) {
+  const t = ui[locale];
   const [open, setOpen] = useState(false);
   const [password, setPassword] = useState("");
   const [authed, setAuthed] = useState(false);
@@ -161,10 +216,10 @@ export default function AdminBlogPanel({ posts, onPostsChange }: Props) {
       .then((res) => {
         setLoading(false);
         if (res.ok) { setAuthed(true); setAuthError(""); }
-        else if (res.status === 401) setAuthError("Неверный пароль");
-        else setAuthError("Ошибка сервера — попробуйте ещё раз");
+        else if (res.status === 401) setAuthError(t.wrongPassword);
+        else setAuthError(t.serverError);
       })
-      .catch(() => { setLoading(false); setAuthError("Нет соединения с сервером"); });
+      .catch(() => { setLoading(false); setAuthError(t.noConnection); });
   }
 
   function openAdd() {
@@ -194,7 +249,7 @@ export default function AdminBlogPanel({ posts, onPostsChange }: Props) {
 
   async function handleSave() {
     if (!form.messageRu.trim() && !form.messageEn.trim()) {
-      setError("Заполните хотя бы одно поле (RU или EN)");
+      setError(t.fillOne);
       return;
     }
     setLoading(true);
@@ -218,7 +273,7 @@ export default function AdminBlogPanel({ posts, onPostsChange }: Props) {
       body: JSON.stringify({ password, post: postData }),
     });
     setLoading(false);
-    if (!res.ok) { setError("Ошибка сохранения"); return; }
+    if (!res.ok) { setError(t.saveError); return; }
     const refreshed = await fetch("/api/blog/posts").then((r) => r.json());
     onPostsChange(refreshed);
     setShowForm(false);
@@ -226,7 +281,7 @@ export default function AdminBlogPanel({ posts, onPostsChange }: Props) {
   }
 
   async function handleDelete(id: number) {
-    if (!confirm("Удалить этот пост?")) return;
+    if (!confirm(t.deleteConfirm)) return;
     setLoading(true);
     await fetch("/api/blog/admin", {
       method: "DELETE",
@@ -264,7 +319,7 @@ export default function AdminBlogPanel({ posts, onPostsChange }: Props) {
           padding: "0.5rem 1.25rem", cursor: "pointer", fontWeight: 600, fontSize: "0.9rem",
         }}
       >
-        + Предложить пост
+        {t.propose}
       </button>
     );
   }
@@ -277,15 +332,15 @@ export default function AdminBlogPanel({ posts, onPostsChange }: Props) {
         padding: "1.5rem", maxWidth: "22rem",
       }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-          <h3 style={{ margin: 0, color: "#0f172a", fontSize: "1rem" }}>Доступ для авторов</h3>
+          <h3 style={{ margin: 0, color: "#0f172a", fontSize: "1rem" }}>{t.accessTitle}</h3>
           <button onClick={() => setOpen(false)} style={{ ...btnSecondary, padding: "0.2rem 0.6rem", fontSize: "0.8rem" }}>✕</button>
         </div>
         <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleAuth()}
-          placeholder="Пароль" style={{ ...inputStyle, marginBottom: "0.75rem" }} />
+          placeholder={t.passwordPlaceholder} style={{ ...inputStyle, marginBottom: "0.75rem" }} />
         {authError && <p style={{ color: "#dc2626", fontSize: "0.85rem", margin: "0 0 0.5rem" }}>{authError}</p>}
         <button onClick={handleAuth} disabled={loading} style={btnPrimary}>
-          {loading ? "Проверка..." : "Войти"}
+          {loading ? t.loggingIn : t.loginBtn}
         </button>
       </div>
     );
@@ -297,18 +352,18 @@ export default function AdminBlogPanel({ posts, onPostsChange }: Props) {
       background: "#f8fafc", border: "2px solid #0683f5", borderRadius: "1rem", padding: "1.5rem",
     }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-        <h3 style={{ margin: 0, color: "#0f172a", fontSize: "1.1rem" }}>⚙ Панель администратора</h3>
-        <button onClick={() => setOpen(false)} style={{ ...btnSecondary, padding: "0.25rem 0.75rem" }}>Закрыть</button>
+        <h3 style={{ margin: 0, color: "#0f172a", fontSize: "1.1rem" }}>{t.adminTitle}</h3>
+        <button onClick={() => setOpen(false)} style={{ ...btnSecondary, padding: "0.25rem 0.75rem" }}>{t.close}</button>
       </div>
 
       {!showForm && (
-        <button onClick={openAdd} style={{ ...btnPrimary, marginBottom: "1.5rem" }}>+ Добавить пост</button>
+        <button onClick={openAdd} style={{ ...btnPrimary, marginBottom: "1.5rem" }}>{t.addPost}</button>
       )}
 
       {showForm && (
         <div style={{ background: "#fff", borderRadius: "0.75rem", padding: "1.25rem", marginBottom: "1.5rem", border: "1px solid #e2e8f0" }}>
           <h4 style={{ margin: "0 0 1rem", color: "#0f172a" }}>
-            {editId ? "Редактировать пост" : "Новый пост"}
+            {editId ? t.editPostTitle : t.newPostTitle}
           </h4>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem", marginBottom: "1rem" }}>
@@ -392,10 +447,10 @@ export default function AdminBlogPanel({ posts, onPostsChange }: Props) {
 
           <div style={{ display: "flex", gap: "0.75rem" }}>
             <button onClick={handleSave} disabled={loading} style={btnPrimary}>
-              {loading ? "Сохранение..." : editId ? "Сохранить изменения" : "Опубликовать"}
+              {loading ? t.saving : editId ? t.save : t.publish}
             </button>
             <button onClick={() => { setShowForm(false); setEditId(null); }} style={btnSecondary}>
-              Отмена
+              {t.cancel}
             </button>
           </div>
         </div>
@@ -403,7 +458,7 @@ export default function AdminBlogPanel({ posts, onPostsChange }: Props) {
 
       <div style={{ borderTop: "1px solid #e2e8f0", paddingTop: "1rem" }}>
         <p style={{ color: "#64748b", fontSize: "0.85rem", marginBottom: "0.75rem" }}>
-          Посты ({posts.length}):
+          {t.postsCount(posts.length)}
         </p>
         {posts.map((post) => (
           <div key={post.id} style={{
@@ -424,11 +479,11 @@ export default function AdminBlogPanel({ posts, onPostsChange }: Props) {
             <div style={{ display: "flex", gap: "0.5rem", flexShrink: 0 }}>
               <button onClick={() => openEdit(post)}
                 style={{ background: "#eff6ff", color: "#1d4ed8", border: "none", borderRadius: "0.5rem", padding: "0.35rem 0.75rem", cursor: "pointer", fontSize: "0.8rem", fontWeight: 600 }}>
-                Изменить
+                {t.editBtn}
               </button>
               <button onClick={() => handleDelete(post.id)}
                 style={{ background: "#fee2e2", color: "#dc2626", border: "none", borderRadius: "0.5rem", padding: "0.35rem 0.75rem", cursor: "pointer", fontSize: "0.8rem", fontWeight: 600 }}>
-                Удалить
+                {t.deleteBtn}
               </button>
             </div>
           </div>

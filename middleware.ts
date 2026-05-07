@@ -3,6 +3,16 @@ import { NextRequest, NextResponse } from 'next/server';
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
+  // Trailing slash → canonical path (301 Permanent Redirect)
+  // Prevents GSC "Redirect error" from implicit Next.js 308 trailing-slash redirects
+  if (pathname.length > 1 && pathname.endsWith('/')) {
+    const cleanPath = pathname.slice(0, -1);
+    return NextResponse.redirect(
+      new URL(`${cleanPath}${request.nextUrl.search}`, request.url),
+      { status: 301 }
+    );
+  }
+
   // /en or /en/* → redirect to canonical path without /en prefix
   // (keeps URLs clean: /blog not /en/blog)
   if (pathname === '/en' || pathname.startsWith('/en/')) {

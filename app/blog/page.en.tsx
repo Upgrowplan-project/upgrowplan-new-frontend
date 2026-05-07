@@ -4,9 +4,10 @@ import { useState } from "react";
 import Header from "../../components/Header";
 import { BilingualPost } from "./staticPosts";
 import BlogPostCard from "./BlogPostCard";
+import AdminBlogPanel from "./AdminBlogPanel";
 
 export default function BlogPageEn({ initialPosts = [] }: { initialPosts?: BilingualPost[] }) {
-  const [posts] = useState<BilingualPost[]>(initialPosts);
+  const [posts, setPosts] = useState<BilingualPost[]>(initialPosts);
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -19,6 +20,10 @@ export default function BlogPageEn({ initialPosts = [] }: { initialPosts?: Bilin
           Practical insights on AI business planning, market research, financial
           modelling, and entrepreneurship — from the Upgrowplan team.
         </p>
+
+        <div className="mb-4">
+          <AdminBlogPanel posts={posts} onPostsChange={setPosts} locale="en" />
+        </div>
 
         <div className="mb-5">
           <p className="mb-3" style={{ fontWeight: "500", color: "#1e6078" }}>
@@ -48,14 +53,14 @@ export default function BlogPageEn({ initialPosts = [] }: { initialPosts?: Bilin
           </div>
         </div>
 
-        {posts.filter((p) => p.messageEn).length === 0 ? (
+        {posts.length === 0 ? (
           <p>No posts yet.</p>
         ) : (
           <div className="row g-4">
-            {posts.filter((p) => p.messageEn).map((post) => (
+            {posts.map((post) => (
               <BlogPostCard
                 key={post.id}
-                message={post.messageEn}
+                message={post.messageEn || post.messageRu}
                 createdAt={post.createdAt}
                 slug={post.slug}
                 title={post.titleEn || post.titleRu}

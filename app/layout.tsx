@@ -8,6 +8,7 @@ import AOSWrapper from "./AOSWrapper";
 
 // CSS here covers ALL pages including English routes (non-prefixed /solutions/... etc.)
 import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap-icons/font/bootstrap-icons.css";
 import "aos/dist/aos.css";
 import "./globals.css";
 
@@ -40,10 +41,10 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/og-image.png",
+        url: "/api/og?title=Upgrowplan&description=AI+Business+Plan+Generator&locale=en",
         width: 1200,
         height: 630,
-        alt: "Upgrowplan",
+        alt: "Upgrowplan — AI Business Plan Generator",
       },
     ],
   },

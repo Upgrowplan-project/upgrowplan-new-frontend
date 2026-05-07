@@ -51,17 +51,17 @@ export default function BlogPageRu({ initialPosts = [] }: { initialPosts?: Bilin
         </div>
 
         <div className="mb-4">
-          <AdminBlogPanel posts={posts} onPostsChange={setPosts} />
+          <AdminBlogPanel posts={posts} onPostsChange={setPosts} locale="ru" />
         </div>
 
-        {posts.filter((p) => p.messageRu).length === 0 ? (
+        {posts.length === 0 ? (
           <p className="release-soon">Посты ещё не опубликованы 😄</p>
         ) : (
           <div className="row g-4">
-            {posts.filter((p) => p.messageRu).map((post) => (
+            {posts.map((post) => (
               <BlogPostCard
                 key={post.id}
-                message={post.messageRu}
+                message={post.messageRu || post.messageEn}
                 createdAt={post.createdAt}
                 slug={post.slug}
                 title={post.titleRu || post.titleEn}
