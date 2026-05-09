@@ -69,12 +69,35 @@ interface FormData {
   targetAudience: string;
   competitors: string;
 }
+interface PipelineAgent {
+  name: string;
+  status: "waiting" | "running" | "completed" | "timeout" | "failed";
+  started_at?: string;
+  elapsed_s?: number;
+  wave?: number;
+}
+
+interface PipelineEvent {
+  time: string;
+  text: string;
+  level: "info" | "warn";
+}
+
+interface PipelineStatus {
+  agents: PipelineAgent[];
+  events: PipelineEvent[];
+  progress: number;
+  wave_current: number;
+  wave_total: number;
+}
+
 interface ResearchStatus {
   research_id: string;
   status: "pending" | "in_progress" | "completed" | "failed";
   progress: number;
   current_stage: string;
   error?: string;
+  pipeline_status?: PipelineStatus;
 }
 
 interface MarketSize {
@@ -1522,30 +1545,166 @@ export default function MarketResearchPage() {
           </div>
         </div>
 
-        {researchStatus && researchStatus.status !== "completed" && (
-          <div className={styles.progressSection}>
-            <div className={styles.progressCard}>
-              <h2>Выполняется исследование...</h2>
-              <p className={styles.progressInfoText}>
-                Исследование рынка может занять от 3 до 7 минут. Мы собираем
-                данные из разных источников, проверяем их актуальность,
-                анализируем и сводим в отчет.
-              </p>
-              <div className={styles.progressBarContainer}>
-                <div
-                  className={styles.progressBar}
-                  style={{ width: `${researchStatus.progress || 0}%` }}
-                />
+        {researchStatus && researchStatus.status !== "completed" && (() => {
+          const pipeline = researchStatus.pipeline_status;
+          const progressPct = pipeline?.progress ?? researchStatus.progress ?? 0;
+          const _elapsedSec = researchStartTime ? Math.floor((Date.now() - researchStartTime) / 1000) : 0;
+          const elapsedMin = Math.floor(_elapsedSec / 60);
+          const etaMin = progressPct > 5
+            ? Math.ceil(elapsedMin / progressPct * (100 - progressPct))
+            : null;
+
+          const WAVE_LABELS: Record<number, string> = {
+            1: "Data Collection",
+            2: "Financial Model",
+            3: "Validation",
+          };
+          const WAVE_AGENTS: Record<number, string[]> = {
+            1: ["MarketSizingAgent", "CompetitorAnalysisAgent", "TargetAudienceAgent", "TrendsAnalysisAgent", "ConsumerInsightsAgent"],
+            2: ["FinancialModelingAgent"],
+            3: ["ValidationAgent"],
+          };
+          const AGENT_DISPLAY: Record<string, string> = {
+            "MarketSizingAgent":       "Market Sizing",
+            "CompetitorAnalysisAgent": "Competitors",
+            "TargetAudienceAgent":     "Target Audience",
+            "TrendsAnalysisAgent":     "Trends",
+            "ConsumerInsightsAgent":   "Consumer Insights",
+            "FinancialModelingAgent":  "Financial Model",
+            "ValidationAgent":         "Validation",
+          };
+          const STATUS_ICON: Record<string, string> = {
+            waiting:   "○",
+            running:   "⏳",
+            completed: "✓",
+            timeout:   "⚠",
+            failed:    "✗",
+          };
+          const STATUS_COLOR: Record<string, string> = {
+            waiting:   "#94a3b8",
+            running:   "#3b82f6",
+            completed: "#22c55e",
+            timeout:   "#f97316",
+            failed:    "#ef4444",
+          };
+
+          const agentMap: Record<string, PipelineAgent> = {};
+          (pipeline?.agents ?? []).forEach(a => { agentMap[a.name] = a; });
+
+          return (
+            <div className={styles.progressSection}>
+              <div className={styles.progressCard}>
+                <h2>🔬 Research in Progress...</h2>
+
+                <div className={styles.progressBarWrapper}>
+                  <div className={styles.progressBarContainer}>
+                    <div
+                      className={styles.progressBar}
+                      style={{ width: `${progressPct}%` }}
+                    />
+                  </div>
+                  <span className={styles.elapsedTimer}>
+                    {String(Math.floor(_elapsedSec / 60)).padStart(2, "0")}:{String(_elapsedSec % 60).padStart(2, "0")}
+                  </span>
+                </div>
+
+                <div className={styles.statusRow}>
+                  <span className={styles.progressBadge}>{progressPct}%</span>
+                  <span className={styles.statusText}>
+                    {researchStatus.current_stage}
+                    {etaMin !== null && etaMin > 0 && (
+                      <span style={{ marginLeft: 8, color: "#94a3b8", fontSize: "0.85em" }}>
+                        ~{etaMin} min left
+                      </span>
+                    )}
+                  </span>
+                </div>
+
+                {pipeline ? (
+                  <div style={{ marginTop: "1rem" }}>
+                    {[1, 2, 3].map(wave => {
+                      const waveAgentNames = WAVE_AGENTS[wave] ?? [];
+                      const hasAnyActivity = waveAgentNames.some(n => agentMap[n]);
+                      if (!hasAnyActivity && wave > (pipeline.wave_current ?? 1)) return null;
+                      return (
+                        <div key={wave} style={{ marginBottom: "0.75rem" }}>
+                          <div style={{
+                            fontSize: "0.72rem",
+                            fontWeight: 600,
+                            color: "#64748b",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.05em",
+                            marginBottom: "0.3rem",
+                          }}>
+                            Phase {wave}: {WAVE_LABELS[wave]}
+                          </div>
+                          {waveAgentNames.map(agentName => {
+                            const agent = agentMap[agentName];
+                            const status = agent?.status ?? "waiting";
+                            const icon = STATUS_ICON[status] ?? "○";
+                            const color = STATUS_COLOR[status] ?? "#94a3b8";
+                            const elapsed = agent?.elapsed_s;
+                            return (
+                              <div key={agentName} style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "0.5rem",
+                                padding: "0.2rem 0",
+                                fontSize: "0.88rem",
+                              }}>
+                                <span style={{ color, fontWeight: 700, minWidth: "1.1rem", textAlign: "center" }}>{icon}</span>
+                                <span style={{ color: status === "waiting" ? "#94a3b8" : "#e2e8f0" }}>
+                                  {AGENT_DISPLAY[agentName] ?? agentName}
+                                </span>
+                                {elapsed != null && elapsed > 0 && (
+                                  <span style={{ marginLeft: "auto", color: "#64748b", fontSize: "0.78rem" }}>
+                                    {elapsed < 60 ? `${Math.round(elapsed)}s` : `${(elapsed / 60).toFixed(1)}m`}
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className={styles.progressInfoText}>
+                    AI agents are analyzing the market. This may take 3–15 minutes.
+                  </p>
+                )}
+
+                {pipeline && pipeline.events && pipeline.events.length > 0 && (
+                  <div style={{
+                    marginTop: "0.75rem",
+                    borderTop: "1px solid rgba(255,255,255,0.06)",
+                    paddingTop: "0.6rem",
+                  }}>
+                    <div style={{ fontSize: "0.72rem", color: "#64748b", marginBottom: "0.3rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                      Live Events
+                    </div>
+                    {pipeline.events.map((ev, i) => (
+                      <div key={i} style={{
+                        fontSize: "0.78rem",
+                        color: ev.level === "warn" ? "#f97316" : "#94a3b8",
+                        padding: "0.1rem 0",
+                        display: "flex",
+                        gap: "0.5rem",
+                      }}>
+                        <span style={{ color: "#475569", minWidth: "3rem" }}>{ev.time}</span>
+                        <span>{ev.text}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <p className={styles.progressSubtext} style={{ marginTop: "0.75rem" }}>
+                  ID: {researchId}
+                </p>
               </div>
-              <p className={styles.progressText}>
-                {researchStatus.progress || 0}% - {researchStatus.current_stage}
-              </p>
-              <p className={styles.progressSubtext}>
-                ID исследования: {researchId}
-              </p>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {enhancedReport && (
           <div className={styles.resultsSection}>

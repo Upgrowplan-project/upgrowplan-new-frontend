@@ -55,9 +55,6 @@ export default function WhyUpgrowplanEn() {
             <p style={{ fontSize: "1.1rem", color: "#171717", maxWidth: 640, margin: "0 auto 2rem", lineHeight: 1.65 }}>
               AI without data verification is an expensive generator of plausible mistakes. Here is how Upgrowplan solves the hallucination problem that makes ordinary AI plans unusable for banks and investors.
             </p>
-            <Link href="/solutions/planMaster" style={{ background: "#0683f5", color: "#fff", padding: "0.85rem 2rem", borderRadius: 8, textDecoration: "none", fontWeight: 700, fontSize: "1rem" }}>
-              Try PlanMaster AI
-            </Link>
           </div>
         </section>
 
@@ -139,9 +136,6 @@ export default function WhyUpgrowplanEn() {
               Generate a business plan with PlanMaster AI and compare it to what ChatGPT produces. The difference is visible from the first section.
             </p>
             <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
-              <Link href="/solutions/planMaster" style={{ background: "#0683f5", color: "#fff", padding: "0.85rem 2rem", borderRadius: 8, textDecoration: "none", fontWeight: 700, fontSize: "1rem" }}>
-                Try PlanMaster AI
-              </Link>
               <Link href="/solutions" style={{ background: "transparent", color: "#d9ebf5", padding: "0.85rem 2rem", borderRadius: 8, textDecoration: "none", fontWeight: 600, fontSize: "1rem", border: "2px solid rgba(217,235,245,0.4)" }}>
                 All tools
               </Link>

@@ -59,12 +59,15 @@ export default async function BlogPostLocalePage({ params }: Props) {
   const author = post.author || "Upgrowplan team";
   const datePublished = post.createdAt.slice(0, 10);
 
+  const ogImageUrl = `${SITE_URL}/api/og?title=${encodeURIComponent(title)}&description=${encodeURIComponent(description)}&locale=${locale}`;
+
   const articleSchema = {
     "@context": "https://schema.org",
     "@type": "Article",
     headline: title,
     description,
     inLanguage: isRu ? "ru" : "en",
+    image: { "@type": "ImageObject", url: ogImageUrl, width: 1200, height: 630 },
     author: { "@type": "Person", name: author },
     publisher: {
       "@type": "Organization",

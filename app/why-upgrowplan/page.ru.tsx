@@ -77,9 +77,6 @@ export default function WhyUpgrowplanRu() {
             <p style={{ fontSize: "1.1rem", color: "#171717", maxWidth: 640, margin: "0 auto 2rem", lineHeight: 1.65 }}>
               ИИ без верификации данных — это дорогой генератор правдоподобных ошибок. Вот как Upgrowplan решает проблему галлюцинаций, которая делает обычные ИИ-планы непригодными для банков и инвесторов.
             </p>
-            <Link href="/ru/solutions/planMaster" style={{ background: "#0683f5", color: "#fff", padding: "0.85rem 2rem", borderRadius: 8, textDecoration: "none", fontWeight: 700, fontSize: "1rem" }}>
-              Попробовать PlanMaster AI
-            </Link>
           </div>
         </section>
 
@@ -161,9 +158,6 @@ export default function WhyUpgrowplanRu() {
               Создайте бизнес-план с PlanMaster AI и сравните с тем, что даёт ChatGPT. Разница видна с первого раздела.
             </p>
             <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
-              <Link href="/ru/solutions/planMaster" style={{ background: "#0683f5", color: "#fff", padding: "0.85rem 2rem", borderRadius: 8, textDecoration: "none", fontWeight: 700, fontSize: "1rem" }}>
-                Попробовать PlanMaster AI
-              </Link>
               <Link href="/ru/solutions" style={{ background: "transparent", color: "#d9ebf5", padding: "0.85rem 2rem", borderRadius: 8, textDecoration: "none", fontWeight: 600, fontSize: "1rem", border: "2px solid rgba(217,235,245,0.4)" }}>
                 Все инструменты
               </Link>

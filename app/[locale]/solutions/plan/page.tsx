@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { buildMetadata, pageMeta } from "@/lib/seo/metadata";
-import { softwareAppSchema, breadcrumbSchema, breadcrumbs, solutionData } from "@/lib/seo/jsonld";
+import { softwareAppSchema, breadcrumbSchema, breadcrumbs, solutionData, speakableSchema } from "@/lib/seo/jsonld";
 import { JsonLd } from "@/components/JsonLd";
 import PlanPageEn from "../../../solutions/plan/page.en";
 import PlanPageRu from "../../../solutions/plan/page.ru";
@@ -25,6 +25,7 @@ export default function PlanLocalePage({ params }: Params) {
         data={[
           softwareAppSchema({ ...data, url, isFree: solutionData.plan.isFree }),
           breadcrumbSchema(breadcrumbs.solutionPage(locale, data.name)),
+          speakableSchema({ url, name: data.name, description: data.description, locale }),
         ]}
       />
       {locale === "ru" ? <PlanPageRu /> : <PlanPageEn />}

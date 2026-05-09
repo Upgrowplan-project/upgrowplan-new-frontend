@@ -700,12 +700,6 @@ export default function Home() {
                   Not a text generator — step‑by‑step validation of every fact.
                 </span>
               </h2>
-              <Link
-                href={getLocalePath("/solutions/planMaster/descriptionPage")}
-                className="btn btn-primary btn-lg"
-              >
-                Learn more about PlanMaster AI
-              </Link>
             </div>
             <div className="rag-console">
               <div className="console-header">Live Validation...</div>
@@ -1656,7 +1650,7 @@ export default function Home() {
                 )}
                 <div className="reality-actions">
                   <Link
-                    href={getLocalePath("/solutions/planMaster/descriptionPage")}
+                    href={getLocalePath("/ai-business-plan-generator")}
                     className="btn btn-primary btn-lg"
                   >
                     Create a business plan

@@ -103,9 +103,19 @@
       "Bash(node -e \"const pkg = require\\('./node_modules/@vercel/blob/package.json'\\); console.log\\(pkg.version\\)\")",
       "Bash(.venv/Scripts/python -)",
       "WebFetch(domain:pagespeed.web.dev)",
-      "Bash(awk -F: '$1 < 900 {last=$0} $1 >= 900 {print last; exit}')"
+      "Bash(awk -F: '$1 < 900 {last=$0} $1 >= 900 {print last; exit}')",
+      "Bash(cat > *)",
+      "Bash(Get-ChildItem -Path \"D:\\\\UpgrowPlan\\\\market-research-service\" -Recurse -Filter \"*.py\")",
+      "Bash(Select-Object FullName)",
+      "Bash(git clone *)",
+      "Bash(Select-String -Path \"D:\\\\UpgrowPlan\\\\market-research-service\\\\app\\\\archetypes\\\\*.py\" -Pattern \"avg_check=Decimal\")",
+      "Bash(Select-Object Filename, LineNumber, Line)",
+      "Bash(Format-Table -AutoSize)"
     ],
     "deny": [],
-    "ask": []
+    "ask": [],
+    "additionalDirectories": [
+      "\\tmp"
+    ]
   }
 }

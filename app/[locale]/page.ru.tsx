@@ -841,12 +841,6 @@ export default function Home() {
                 инсайты, которых нет в данных. Он может только выбрать и
                 структурировать то, что реально существует.
               </p>
-              <Link
-                href={getLocalePath("/solutions/planMaster/descriptionPage")}
-                className="btn btn-primary btn-lg"
-              >
-                Подробнее
-              </Link>
             </div>
             <div className="rag-console">
               <div className="console-header">Онлайн Валидация...</div>
@@ -1835,7 +1829,7 @@ export default function Home() {
                 )}
                 <div className="reality-actions">
                   <Link
-                    href="/ru/solutions/planMaster/descriptionPage"
+                    href="/ru/ai-business-plan-generator"
                     className="btn btn-primary btn-lg"
                   >
                     Создать бизнес-план

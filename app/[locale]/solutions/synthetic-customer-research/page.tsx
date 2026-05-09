@@ -9,6 +9,7 @@ import {
   howToSteps,
   softwareAppSchema,
   solutionData,
+  speakableSchema,
 } from "@/lib/seo/jsonld";
 import { JsonLd } from "@/components/JsonLd";
 import SyntheticCustomerResearchRu from "../../../solutions/synthetic-customer-research/page.ru";
@@ -78,6 +79,14 @@ export default function SyntheticCustomerResearchPage({ params }: Params) {
               ? ["синтетические респонденты", "виртуальные фокус-группы", "ИИ-исследование", "тестирование идей"]
               : ["synthetic respondents", "virtual focus groups", "AI research", "idea validation"],
             isFree: solutionData.synthFocusLab.isFree,
+          }),
+          speakableSchema({
+            url: synthUrl,
+            name: isRu ? "Synth Focus Lab — Синтетические респонденты" : "Synth Focus Lab — Synthetic Respondents",
+            description: isRu
+              ? "Виртуальные фокус-группы с ИИ-синтетическими респондентами за 15 минут."
+              : "Virtual focus groups with AI synthetic respondents in 15 minutes.",
+            locale,
           }),
         ]}
       />
