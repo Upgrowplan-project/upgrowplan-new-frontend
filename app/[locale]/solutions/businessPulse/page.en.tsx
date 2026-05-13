@@ -956,7 +956,7 @@ function VectorChoice() {
                 </li>
               ))}
             </ul>
-            <a href="/ru/solutions/marketResearch/descriptionPage" style={{
+            <a href="/solutions/marketResearch/descriptionPage" style={{
               display: "block", textAlign: "center", padding: "13px 0", borderRadius: 12,
               background: "transparent", color: "#0683f5", fontWeight: 700, fontSize: 15,
               textDecoration: "none", border: "2px solid #0683f5",

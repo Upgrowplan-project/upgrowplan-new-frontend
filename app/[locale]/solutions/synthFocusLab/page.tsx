@@ -10,9 +10,15 @@ type Params = { params: { locale: string } };
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const locale = params.locale === "ru" ? "ru" : "en";
-  const meta = pageMeta.synthFocusLab;
+  const meta = pageMeta.syntheticCustomerResearch;
   const path = locale === "ru" ? meta.ruPath : meta.enPath;
-  return buildMetadata({ locale, path, ...meta });
+  return {
+    ...buildMetadata({ locale, path, ...meta }),
+    robots: {
+      index: false,
+      follow: true,
+    },
+  };
 }
 
 export default function SynthFocusLabLocalePage({ params }: Params) {

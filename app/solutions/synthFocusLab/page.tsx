@@ -8,9 +8,13 @@ const SITE_URL = "https://upgrowplan.com";
 
 export const metadata: Metadata = buildMetadata({
   locale: "en",
-  path: pageMeta.synthFocusLab.enPath,
-  ...pageMeta.synthFocusLab,
+  path: pageMeta.syntheticCustomerResearch.enPath,
+  ...pageMeta.syntheticCustomerResearch,
 });
+metadata.robots = {
+  index: false,
+  follow: true,
+};
 
 export default function SynthFocusLabPage() {
   const data = solutionData.synthFocusLab.en;

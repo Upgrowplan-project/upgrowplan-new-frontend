@@ -131,7 +131,7 @@ export default function SyntheticCustomerResearchRu() {
             </p>
             <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
               <Link
-                href="/ru/solutions/synthFocusLab"
+                href="#beta-form"
                 style={{
                   background: "#0683f5",
                   color: "#fff",
@@ -146,7 +146,7 @@ export default function SyntheticCustomerResearchRu() {
                 Запустить исследование
               </Link>
               <Link
-                href="/ru/solutions/synthFocusLab/descriptionPage"
+                href="#how-it-works"
                 style={{
                   background: "transparent",
                   color: "#1e6078",
@@ -192,7 +192,7 @@ export default function SyntheticCustomerResearchRu() {
         </section>
 
         {/* How it works */}
-        <section style={{ padding: "3.5rem 1rem", background: "#f7fbff" }}>
+        <section id="how-it-works" style={{ padding: "3.5rem 1rem", background: "#f7fbff" }}>
           <div style={{ maxWidth: 900, margin: "0 auto" }}>
             <h2
               style={{
@@ -466,7 +466,7 @@ export default function SyntheticCustomerResearchRu() {
               Synth Focus Lab — инструмент Upgrowplan для виртуальных фокус-групп. Опишите идею, настройте аудиторию, получите отчёт за 15 минут.
             </p>
             <Link
-              href="/ru/solutions/synthFocusLab"
+              href="#beta-form"
               style={{
                 background: "#0683f5",
                 color: "#ffffff",

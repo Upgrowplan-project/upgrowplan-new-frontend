@@ -3,6 +3,7 @@
 const nextConfig = {
   typescript: { ignoreBuildErrors: true },
   eslint: { ignoreDuringBuilds: true },
+  skipTrailingSlashRedirect: true,
   experimental: {
     serverComponentsExternalPackages: ["@vercel/blob"],
   },
@@ -36,6 +37,51 @@ const nextConfig = {
       };
     }
     return config;
+  },
+
+  async redirects() {
+    return [
+      {
+        source: "/solutions/",
+        destination: "/solutions",
+        permanent: true,
+      },
+      {
+        source: "/ru/solutions/",
+        destination: "/ru/solutions",
+        permanent: true,
+      },
+      {
+        source: "/solutions/planMaster",
+        destination: "/ai-business-plan-generator",
+        permanent: true,
+      },
+      {
+        source: "/ru/solutions/planMaster",
+        destination: "/ru/ai-business-plan-generator",
+        permanent: true,
+      },
+      {
+        source: "/solutions/planMaster/descriptionPage",
+        destination: "/ai-business-plan-generator",
+        permanent: true,
+      },
+      {
+        source: "/ru/solutions/planMaster/descriptionPage",
+        destination: "/ru/ai-business-plan-generator",
+        permanent: true,
+      },
+      {
+        source: "/solutions/synthFocusLab/descriptionPage",
+        destination: "/solutions/synthetic-customer-research",
+        permanent: true,
+      },
+      {
+        source: "/ru/solutions/synthFocusLab/descriptionPage",
+        destination: "/ru/solutions/synthetic-customer-research",
+        permanent: true,
+      },
+    ];
   },
 
   async rewrites() {

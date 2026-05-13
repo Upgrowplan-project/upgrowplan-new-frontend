@@ -1,34 +1,9 @@
-import type { Metadata } from "next";
-import { buildMetadata, pageMeta } from "@/lib/seo/metadata";
-import { softwareAppSchema, breadcrumbSchema, breadcrumbs, solutionData, faqSchema, pageFaqs } from "@/lib/seo/jsonld";
-import { JsonLd } from "@/components/JsonLd";
-import PlanMasterPageEn from "./page.en";
-import PlanMasterPageRu from "./page.ru";
-
-const SITE_URL = "https://upgrowplan.com";
+import { redirect } from "next/navigation";
 type Params = { params: { locale: string } };
-
-export async function generateMetadata({ params }: Params): Promise<Metadata> {
-  const locale = params.locale === "ru" ? "ru" : "en";
-  const meta = pageMeta.planMaster;
-  const path = locale === "ru" ? meta.ruPath : meta.enPath;
-  return buildMetadata({ locale, path, ...meta });
-}
 
 export default function PlanMasterLocalePage({ params }: Params) {
   const locale = params.locale === "ru" ? "ru" : "en";
-  const data = solutionData.planMaster[locale];
-  const url = `${SITE_URL}${locale === "ru" ? "/ru" : ""}${solutionData.planMaster.url}`;
-  return (
-    <>
-      <JsonLd
-        data={[
-          softwareAppSchema({ ...data, url, isFree: solutionData.planMaster.isFree }),
-          breadcrumbSchema(breadcrumbs.solutionPage(locale, data.name)),
-          faqSchema(pageFaqs.planMaster[locale]),
-        ]}
-      />
-      {locale === "ru" ? <PlanMasterPageRu /> : <PlanMasterPageEn />}
-    </>
+  redirect(
+    locale === "ru" ? "/ru/ai-business-plan-generator" : "/ai-business-plan-generator"
   );
 }

@@ -29,7 +29,7 @@ const tabs: TabItem[] = [
     id: 3,
     icon: "bi-magic",
     label: { ru: "", en: "" },
-    href: "/solutions/planMaster/descriptionPage",
+    href: "/ai-business-plan-generator",
   },
   {
     id: 4,

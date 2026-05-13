@@ -1080,7 +1080,7 @@ export default function Home() {
               </div>
               <div className="persona-cta">
                 <Link
-                  href={getLocalePath("/solutions/synthFocusLab/descriptionPage")}
+                  href={getLocalePath("/solutions/synthetic-customer-research")}
                   className="btn btn-primary btn-lg"
                 >
                   Learn more about Synth Focus Lab

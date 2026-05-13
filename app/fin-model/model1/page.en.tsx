@@ -552,7 +552,7 @@ export default function FinModelPage() {
                onChange={(e) => setIsPrivacyAgreed(e.target.checked)}
              />
              <label className="form-check-label" htmlFor="privacy-check-en" style={{fontSize: '0.9em', textAlign: 'left'}}>
-               By submitting the form, you agree to the <a href="/en/privacy" target="_blank" rel="noreferrer">Privacy Policy</a>
+               By submitting the form, you agree to the <a href="/privacy" target="_blank" rel="noreferrer">Privacy Policy</a>
              </label>
           </div>
 

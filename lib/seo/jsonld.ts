@@ -1240,7 +1240,7 @@ export const solutionData = {
         "Генерирует экспертный бизнес-план на основе современной методологии, живого поиска и проверенных данных. Документы для инвесторов с чёткой обработкой галлюцинаций ИИ.",
       keywords: ["бизнес-план", "PlanMaster", "ИИ", "инвестор", "стратегия"],
     },
-    url: "/solutions/planMaster",
+    url: "/ai-business-plan-generator",
     isFree: false,
   },
   synthFocusLab: {
@@ -1256,7 +1256,7 @@ export const solutionData = {
         "Виртуальная панель ИИ-респондентов. Создавайте фокус-группы и анализируйте ответы с учётом демографических, социальных и финансовых параметров.",
       keywords: ["фокус-группа", "виртуальные респонденты", "ИИ", "исследование рынка"],
     },
-    url: "/solutions/synthFocusLab",
+    url: "/solutions/synthetic-customer-research",
     isFree: false,
   },
   socialPlanMaster: {
