@@ -115,7 +115,7 @@ export default function SyntheticCustomerResearchRu() {
                 fontFamily: FONT,
               }}
             >
-              Проверьте бизнес-идею на виртуальных покупателях за 15 минут
+              ИИ-инструмент синтетического customer research для виртуальных покупателей
             </h1>
             <p
               style={{
@@ -127,7 +127,7 @@ export default function SyntheticCustomerResearchRu() {
                 fontFamily: FONT,
               }}
             >
-              Синтетические респонденты заменяют дорогие фокус-группы. Без рекрутинга, без ожидания — точность 85–92% по сравнению с реальными участниками.
+              Upgrowplan проводит синтетическое customer research на виртуальных покупателях, построенных по реальным рыночным паттернам, помогая командам проверять спрос, цены, возражения и позиционирование за минуты без рекрутинга участников.
             </p>
             <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
               <Link

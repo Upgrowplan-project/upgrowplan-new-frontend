@@ -211,10 +211,10 @@ export default function AiBizPlanGeneratorEn() {
               AI · BUSINESS PLAN · UNIDO/EBRD
             </div>
             <h1 style={{ fontSize: "clamp(2.4rem, 4vw, 3.8rem)", fontWeight: 700, color: "#1e6078", lineHeight: 1.15, marginBottom: "1.25rem" }}>
-              AI Business Plan Generator
+              AI Business Plan Generator for Investor-Ready Startup Plans
             </h1>
             <p style={{ fontSize: "1.1rem", color: "#171717", maxWidth: 640, margin: "0 auto 0.75rem", lineHeight: 1.65 }}>
-              An investor-ready business plan with real market data, financial model, and pitch deck — built by AI following international standards.
+              Upgrowplan is an AI-powered business plan generator that helps founders validate demand, run live market research, build financial models, and generate investor-ready plans compliant with UNIDO and EBRD standards.
             </p>
             <p style={{ fontSize: "1rem", color: "#1e6078", fontWeight: 600, marginBottom: "2rem" }}>
               UNIDO / EBRD Standard · Skeptic Agent · 10–20 min · Word + Pitch Deck

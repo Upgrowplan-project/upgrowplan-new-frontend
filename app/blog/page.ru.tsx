@@ -8,18 +8,28 @@ import AdminBlogPanel from "./AdminBlogPanel";
 
 export default function BlogPageRu({ initialPosts = [] }: { initialPosts?: BilingualPost[] }) {
   const [posts, setPosts] = useState<BilingualPost[]>(initialPosts);
+  const visiblePosts = posts.filter(
+    (post) =>
+      post.slug &&
+      post.titleEn?.trim() &&
+      post.descriptionEn?.trim() &&
+      post.messageEn?.trim() &&
+      post.titleRu?.trim() &&
+      post.descriptionRu?.trim() &&
+      post.messageRu?.trim()
+  );
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <Header />
 
       <main className="container py-5" style={{ flex: 1 }}>
-        <h1 className="text-brand mb-4">Блог Upgrowplan</h1>
+        <h1 className="text-brand mb-4">Блог об ИИ-валидации бизнеса</h1>
 
         <p className="mt-3 mb-5 lead" style={{ maxWidth: "800px", lineHeight: "1.7", fontSize: "1.125rem" }}>
-          Привет 👋 Здесь мы делимся реальным опытом: бизнес-идеи, кейсы,
-          чек-листы, аналитика и инсайты из мира предпринимательства и
-          финансового планирования.
+          Upgrowplan публикует практические материалы об ИИ-исследованиях
+          рынка, бизнес-планах, валидации стартапов, финансовом моделировании
+          и подготовке к работе с инвесторами.
         </p>
 
         <div className="mb-5">
@@ -54,18 +64,18 @@ export default function BlogPageRu({ initialPosts = [] }: { initialPosts?: Bilin
           <AdminBlogPanel posts={posts} onPostsChange={setPosts} locale="ru" />
         </div>
 
-        {posts.length === 0 ? (
+        {visiblePosts.length === 0 ? (
           <p className="release-soon">Посты ещё не опубликованы 😄</p>
         ) : (
           <div className="row g-4">
-            {posts.map((post) => (
+            {visiblePosts.map((post) => (
               <BlogPostCard
                 key={post.id}
-                message={post.messageRu || post.messageEn}
+                message={post.messageRu}
                 createdAt={post.createdAt}
                 slug={post.slug}
-                title={post.titleRu || post.titleEn}
-                description={post.descriptionRu || post.descriptionEn}
+                title={post.titleRu}
+                description={post.descriptionRu}
                 category={post.category}
                 author={post.author}
                 mediaUrl={post.mediaUrl}

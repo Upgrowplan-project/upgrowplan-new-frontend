@@ -353,18 +353,17 @@ export default function MarketResearchDescriptionPageEn() {
           <div className="container">
             <div className="mr-hero-badge">
               <span className="pulse-dot" />
-              Market Sense Service
+              AI Market Research Tool
             </div>
             <h1 className="mr-hero-title">
-              Market Research Agent:
+              AI Market Research Tool:
               <br />
-              <span className="accent">Deep market analysis with zero margin for error.</span>
+              <span className="accent">Live web research, competitor analysis, and market sizing.</span>
             </h1>
             <div className="mr-hero-grid">
               <div className="mr-hero-text">
                 <p className="subtitle">
-                  A multi‑agent system that replaces a month of consulting with 15 minutes of
-                  precise computation.
+                  MarketSense is an AI market research tool that helps founders and analysts collect live web data, validate sources, map competitors, and estimate market size in minutes instead of weeks.
                 </p>
               </div>
               <div className="rag-console">

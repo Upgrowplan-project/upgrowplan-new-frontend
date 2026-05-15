@@ -313,3 +313,111 @@ const [lastSubmittedFormData, setLastSubmittedFormData] = useState<FormData | nu
 ---
 
 **Статус:** Все изменения работают офлайн, готовы к продакшену!
+
+---
+
+# SEO Week 1 - Index Cleanup
+
+**Дата:** 2026-05-13
+**Статус:** ✅ Реализовано локально, готово к деплою
+
+## Что сделано
+
+### 1. Legacy URL для PlanMaster переведены в canonical flow
+
+- ` /solutions/planMaster`
+- ` /ru/solutions/planMaster`
+- ` /solutions/planMaster/descriptionPage`
+- ` /ru/solutions/planMaster/descriptionPage`
+
+Теперь все эти URL ведут на:
+
+- ` /ai-business-plan-generator`
+- ` /ru/ai-business-plan-generator`
+
+**Файлы:**
+- `next.config.js`
+- `app/[locale]/solutions/planMaster/page.tsx`
+- `app/solutions/planMaster/page.tsx`
+- `app/solutions/planMaster/descriptionPage/page.tsx`
+
+### 2. Legacy URL для Synth Focus Lab description переведены на canonical страницу
+
+- ` /solutions/synthFocusLab/descriptionPage`
+- ` /ru/solutions/synthFocusLab/descriptionPage`
+
+Теперь они ведут на:
+
+- ` /solutions/synthetic-customer-research`
+- ` /ru/solutions/synthetic-customer-research`
+
+**Файлы:**
+- `next.config.js`
+- `app/solutions/synthFocusLab/descriptionPage/page.tsx`
+
+### 3. Старая ветка `synthFocusLab` выведена из канонической индексации
+
+Legacy route сохранен как рабочий продуктовый экран, но:
+
+- canonical metadata переведены на `synthetic-customer-research`
+- robots для legacy страницы переведены в `noindex, follow`
+- schema URL больше не рекламирует `synthFocusLab` как основной SEO URL
+
+**Файлы:**
+- `app/[locale]/solutions/synthFocusLab/page.tsx`
+- `app/solutions/synthFocusLab/page.tsx`
+- `lib/seo/jsonld.ts`
+
+### 4. Внутренние SEO-шумные ссылки очищены
+
+Исправлены hardcoded ссылки, которые создавали мусорные сигналы:
+
+- `/en/privacy` -> `/privacy`
+- `/en/solutions/marketResearch` -> `/solutions/marketResearch`
+- английская ссылка на русский `marketResearch/descriptionPage`
+- ссылки с главной и лендинга synthetic-customer-research на legacy `synthFocusLab`
+
+**Файлы:**
+- `app/fin-model/model1/page.en.tsx`
+- `app/[locale]/solutions/marketResearch/descriptionPage/page.en.tsx`
+- `app/[locale]/solutions/businessPulse/page.en.tsx`
+- `app/[locale]/page.en.tsx`
+- `app/[locale]/page.ru.tsx`
+- `app/solutions/synthetic-customer-research/page.en.tsx`
+- `app/solutions/synthetic-customer-research/page.ru.tsx`
+
+### 5. Sitemap пересобран после cleanup
+
+- `public/sitemap.xml` обновлен после `npm run build`
+- legacy `planMaster` и `synthFocusLab` URL больше не публикуются как sitemap entries
+
+## Проверка
+
+- [x] `npm run build`
+- [x] `next-sitemap` отработал в postbuild
+- [x] canonical cleanup внесен в код
+- [x] redirects добавлены
+- [x] внутренние legacy ссылки сокращены
+
+## Todo после деплоя
+
+- [ ] Деплой на production
+- [ ] Повторно отправить `sitemap.xml` в GSC
+- [ ] Запустить `Validate fix` для:
+- [ ] `Страница с переадресацией`
+- [ ] `Ошибка переадресации`
+- [ ] `Не найдено (404)`
+- [ ] `Канонический URL не выбран / не совпадает`
+- [ ] Проверить через GSC URL Inspection:
+- [ ] `/ai-business-plan-generator`
+- [ ] `/solutions/synthetic-customer-research`
+- [ ] `/solutions/marketResearch/descriptionPage`
+- [ ] `/solutions`
+
+## Следующая неделя
+
+- Переписать `title` и `meta description` для страниц с показами и нулевым CTR
+- Проверить mobile CWV/CLS на шаблонах с наибольшими показами
+- Ужать query overlap между `solutions`, `ai-business-plan-generator`, `about`, `blog`
+
+**Статус:** Week 1 SEO cleanup завершен локально.

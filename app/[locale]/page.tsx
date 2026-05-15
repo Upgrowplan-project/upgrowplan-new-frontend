@@ -3,6 +3,7 @@ import { buildMetadata, pageMeta } from "@/lib/seo/metadata";
 import { organizationSchema, websiteSchema, faqSchema, pageFaqs, speakableSchema } from "@/lib/seo/jsonld";
 import { JsonLd } from "@/components/JsonLd";
 import FaqSection from "@/components/FaqSection";
+import Header from "@/components/Header";
 import HomePageEn from "./page.en";
 import HomePageRu from "./page.ru";
 
@@ -35,6 +36,7 @@ export default function HomePage({ params }: Params) {
         }),
         faqSchema(pageFaqs.home[locale]),
       ]} />
+      <Header />
       {locale === "ru" ? <HomePageRu /> : <HomePageEn />}
       <FaqSection items={pageFaqs.home[locale]} title={faqTitle} />
     </>

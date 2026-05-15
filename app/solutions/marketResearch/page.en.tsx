@@ -12,6 +12,81 @@ import {
   FiRefreshCw,
 } from "react-icons/fi";
 
+// Countries list: value=English (sent to API), label=English display
+// Sorted alphabetically by label
+const COUNTRIES = [
+  { value: "Argentina", label: "Argentina" },
+  { value: "Armenia", label: "Armenia" },
+  { value: "Australia", label: "Australia" },
+  { value: "Austria", label: "Austria" },
+  { value: "Azerbaijan", label: "Azerbaijan" },
+  { value: "Bangladesh", label: "Bangladesh" },
+  { value: "Belarus", label: "Belarus" },
+  { value: "Belgium", label: "Belgium" },
+  { value: "Brazil", label: "Brazil" },
+  { value: "Bulgaria", label: "Bulgaria" },
+  { value: "Canada", label: "Canada" },
+  { value: "Chile", label: "Chile" },
+  { value: "China", label: "China" },
+  { value: "Colombia", label: "Colombia" },
+  { value: "Croatia", label: "Croatia" },
+  { value: "Czech Republic", label: "Czech Republic" },
+  { value: "Denmark", label: "Denmark" },
+  { value: "Egypt", label: "Egypt" },
+  { value: "Estonia", label: "Estonia" },
+  { value: "Finland", label: "Finland" },
+  { value: "France", label: "France" },
+  { value: "Georgia", label: "Georgia" },
+  { value: "Germany", label: "Germany" },
+  { value: "Greece", label: "Greece" },
+  { value: "Hungary", label: "Hungary" },
+  { value: "India", label: "India" },
+  { value: "Indonesia", label: "Indonesia" },
+  { value: "Ireland", label: "Ireland" },
+  { value: "Israel", label: "Israel" },
+  { value: "Italy", label: "Italy" },
+  { value: "Japan", label: "Japan" },
+  { value: "Kazakhstan", label: "Kazakhstan" },
+  { value: "South Korea", label: "Korea (South)" },
+  { value: "Kyrgyzstan", label: "Kyrgyzstan" },
+  { value: "Latvia", label: "Latvia" },
+  { value: "Lithuania", label: "Lithuania" },
+  { value: "Malaysia", label: "Malaysia" },
+  { value: "Mexico", label: "Mexico" },
+  { value: "Moldova", label: "Moldova" },
+  { value: "Morocco", label: "Morocco" },
+  { value: "Netherlands", label: "Netherlands" },
+  { value: "New Zealand", label: "New Zealand" },
+  { value: "Nigeria", label: "Nigeria" },
+  { value: "Norway", label: "Norway" },
+  { value: "Pakistan", label: "Pakistan" },
+  { value: "Peru", label: "Peru" },
+  { value: "Philippines", label: "Philippines" },
+  { value: "Poland", label: "Poland" },
+  { value: "Portugal", label: "Portugal" },
+  { value: "Romania", label: "Romania" },
+  { value: "Russia", label: "Russia" },
+  { value: "Saudi Arabia", label: "Saudi Arabia" },
+  { value: "Serbia", label: "Serbia" },
+  { value: "Singapore", label: "Singapore" },
+  { value: "Slovakia", label: "Slovakia" },
+  { value: "South Africa", label: "South Africa" },
+  { value: "Spain", label: "Spain" },
+  { value: "Sri Lanka", label: "Sri Lanka" },
+  { value: "Sweden", label: "Sweden" },
+  { value: "Switzerland", label: "Switzerland" },
+  { value: "Taiwan", label: "Taiwan" },
+  { value: "Tajikistan", label: "Tajikistan" },
+  { value: "Thailand", label: "Thailand" },
+  { value: "Turkey", label: "Turkey" },
+  { value: "UAE", label: "UAE" },
+  { value: "UK", label: "United Kingdom" },
+  { value: "USA", label: "United States" },
+  { value: "Ukraine", label: "Ukraine" },
+  { value: "Uzbekistan", label: "Uzbekistan" },
+  { value: "Vietnam", label: "Vietnam" },
+] as const;
+
 type BusinessType = "B2B" | "B2C" | "B2B2C" | "C2C" | "D2C";
 type ProductType =
   // B2C категории
@@ -579,7 +654,7 @@ export default function MarketResearchPage() {
   ];
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -1338,16 +1413,21 @@ export default function MarketResearchPage() {
 
                 <div className={styles.formGroupRow}>
                   <div className={styles.formGroup}>
-                    <label className={styles.label}>Страна *</label>
-                    <input
-                      type="text"
+                    <label className={styles.label}>Country *</label>
+                    <select
                       name="country"
                       value={formData.country}
                       onChange={handleInputChange}
                       className={styles.input}
-                      placeholder="Например: Россия или США"
                       required
-                    />
+                    >
+                      <option value="">— Select country —</option>
+                      {COUNTRIES.map((c) => (
+                        <option key={c.value} value={c.value}>
+                          {c.label}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   <div className={styles.formGroup}>

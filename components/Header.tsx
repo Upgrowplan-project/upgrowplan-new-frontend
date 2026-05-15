@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, type MouseEvent as ReactMouseEvent } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
@@ -92,6 +92,11 @@ function HeaderContent() {
   };
 
   const homeLink = locale === "en" ? "/" : "/ru";
+  const toggleLanguageDropdown = (event: ReactMouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setLanguageDropdownOpen((prev) => !prev);
+  };
   const GlobeIcon = () => (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
@@ -101,13 +106,14 @@ function HeaderContent() {
   );
 
   return (
-    <header style={{ position: "sticky", top: 0, zIndex: 1000, margin: 0 }}>
+    <header style={{ position: "sticky", top: 0, zIndex: 5000, margin: 0, overflow: "visible" }}>
       <nav
         className="navbar navbar-expand-md navbar-light"
         style={{
           backgroundColor: "#d7ecf6",
           margin: 0,
           padding: "0.5rem 1rem",
+          overflow: "visible",
         }}
       >
         {/* Mobile: Home icon on the left */}
@@ -151,7 +157,13 @@ function HeaderContent() {
           />
           <span
             className="ms-2"
-            style={{ color: "#1e6078", fontWeight: "bold" }}
+            style={{
+              color: "#1e6078",
+              fontWeight: "bold",
+              fontFamily:
+                'var(--font-inter), "Inter", "SF Pro Display", "Segoe UI", Arial, sans-serif',
+              letterSpacing: "0.01em",
+            }}
           >
             Upgrowplan
           </span>
@@ -266,7 +278,8 @@ function HeaderContent() {
             >
               {/* Desktop: Language switcher with dropdown */}
               <button
-                onClick={() => setLanguageDropdownOpen(!languageDropdownOpen)}
+                type="button"
+                onClick={toggleLanguageDropdown}
                 style={{
                   background: "none",
                   border: "none",
@@ -278,6 +291,8 @@ function HeaderContent() {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
+                  position: "relative",
+                  zIndex: 5001,
                 }}
                 aria-label="Switch language"
                 title={locale === "en" ? "Переключить язык" : "Switch language"}
@@ -296,7 +311,7 @@ function HeaderContent() {
                     border: "1px solid #d0d0d0",
                     borderRadius: "8px",
                     boxShadow: "0 8px 16px rgba(0, 0, 0, 0.15)",
-                    zIndex: 1100,
+                    zIndex: 5002,
                     width: "auto",
                     minWidth: "110px",
                     marginTop: "0.5rem",
@@ -307,6 +322,7 @@ function HeaderContent() {
                     // If RU is current: EN first, RU second
                     <>
                       <button
+                        type="button"
                         onClick={() => {
                           switchLocale("en");
                           setLanguageDropdownOpen(false);
@@ -345,6 +361,7 @@ function HeaderContent() {
                         <span>en</span>
                       </button>
                       <button
+                        type="button"
                         onClick={() => {
                           switchLocale("ru");
                           setLanguageDropdownOpen(false);
@@ -386,6 +403,7 @@ function HeaderContent() {
                     // If EN is current: RU first, EN second
                     <>
                       <button
+                        type="button"
                         onClick={() => {
                           switchLocale("ru");
                           setLanguageDropdownOpen(false);
@@ -424,6 +442,7 @@ function HeaderContent() {
                         <span>ru</span>
                       </button>
                       <button
+                        type="button"
                         onClick={() => {
                           switchLocale("en");
                           setLanguageDropdownOpen(false);

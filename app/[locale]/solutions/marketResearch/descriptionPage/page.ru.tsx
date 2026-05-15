@@ -359,18 +359,17 @@ export default function MarketResearchDescriptionPage() {
           <div className="container">
             <div className="mr-hero-badge">
               <span className="pulse-dot" />
-              Market Sense Service
+              ИИ-инструмент исследования рынка
             </div>
             <h1 className="mr-hero-title">
-              Market Research Agent:
+              ИИ-инструмент исследования рынка:
               <br />
-              <span className="accent">Глубокий анализ рынка без права на ошибку.</span>
+              <span className="accent">Живые веб-данные, анализ конкурентов и оценка рынка.</span>
             </h1>
             <div className="mr-hero-grid">
               <div className="mr-hero-text">
                 <p className="subtitle">
-                  Мультиагентная система, которая заменяет месяц работы консалтингового агентства
-                  15-ю минутами безупречных вычислений.
+                  MarketSense — ИИ-инструмент исследования рынка, который помогает фаундерам и аналитикам собирать живые веб-данные, валидировать источники, картировать конкурентов и оценивать объём рынка за минуты, а не недели.
                 </p>
               </div>
               <div className="rag-console">

@@ -86,11 +86,11 @@ export default function SolutionsPage() {
 
       <main className="container py-5">
         <h1 className="mb-4" style={{ color: "#1e6078" }}>
-          Automated financial, marketing and analytics tools
+          AI startup validation tools
         </h1>
         <p style={{ color: "#0785f6", fontSize: "1.1rem" }}>
-          Solutions for people who value their time and are ready to use modern
-          technologies.
+          Upgrowplan offers AI tools for startup validation, market research,
+          financial modeling, business plans, and investor preparation.
         </p>
         <div className="row g-4">
           {solutions.map((solution, index) => (

@@ -61,9 +61,9 @@ export default function AboutLocalePage({ params }: Params) {
               margin: "0 auto 1rem",
             }}>
               {isRu ? (
-                <>Upgrowplan — ИИ-инструменты<br /><span style={{ color: "#0683f5" }}>для серьёзного бизнеса</span></>
+                <>Upgrowplan — ИИ-платформа<br /><span style={{ color: "#0683f5" }}>валидации бизнеса</span></>
               ) : (
-                <>Upgrowplan — AI tools<br /><span style={{ color: "#0683f5" }}>built for serious business</span></>
+                <>Upgrowplan — AI business<br /><span style={{ color: "#0683f5" }}>validation platform</span></>
               )}
             </h1>
             <p style={{
@@ -74,8 +74,8 @@ export default function AboutLocalePage({ params }: Params) {
               margin: "0 auto 1.25rem",
             }}>
               {isRu
-                ? <><strong>Upgrowplan</strong> — платформа ИИ-инструментов для предпринимателей, аналитиков и консультантов. Основана в 2024 году в Тель-Авиве. Автоматизирует бизнес-планы, маркетинговые исследования, финансовое моделирование и конкурентный мониторинг.</>
-                : <><strong>Upgrowplan</strong> is an AI platform for entrepreneurs, analysts and consultants. Founded in 2024 in Tel Aviv. Automates business plans, market research, financial modelling and competitor monitoring.</>
+                ? <><strong>Upgrowplan</strong> — ИИ-платформа валидации бизнеса для фаундеров, аналитиков и консультантов. Основана в 2024 году в Тель-Авиве, чтобы сократить разрыв между сырыми данными и стратегическим планированием.</>
+                : <><strong>Upgrowplan</strong> is an AI business validation platform for founders, analysts and consultants. Founded in 2024 in Tel Aviv, it bridges the gap between raw data and strategic planning.</>
               }
             </p>
             <p style={{

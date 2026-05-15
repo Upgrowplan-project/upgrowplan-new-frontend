@@ -99,12 +99,12 @@ export const pageMeta = {
   },
   about: {
     title: {
-      en: "About Upgrowplan — AI Business Validation Platform | Founded Tel Aviv 2024",
-      ru: "О платформе Upgrowplan — ИИ-валидация бизнеса | Основана Тель-Авив 2024",
+      en: "Upgrowplan: AI Business Validation Platform | Based in Tel Aviv",
+      ru: "Upgrowplan: ИИ-платформа валидации бизнеса | Тель-Авив",
     },
     description: {
-      en: "Upgrowplan is an AI-powered business validation platform: market simulation, synthetic respondents, UNIDO/EBRD plans, financial modelling. Founded 2024, Tel Aviv. 230+ investor-ready plans delivered.",
-      ru: "Upgrowplan — ИИ-платформа для валидации бизнеса: симуляция рынка, синтетические респонденты, планы по ЮНИДО/ЕБРР, финансовое моделирование. Основана в 2024, Тель-Авив. 230+ планов для инвесторов.",
+      en: "Upgrowplan is an AI business validation platform based in Tel Aviv. Founded in 2024 to bridge the gap between raw data and strategic planning for founders, analysts, and consultants.",
+      ru: "Upgrowplan — ИИ-платформа валидации бизнеса из Тель-Авива. Основана в 2024 году, чтобы сократить разрыв между сырыми данными и стратегическим планированием для фаундеров, аналитиков и консультантов.",
     },
     enPath: "/about",
     ruPath: "/ru/about",
@@ -123,12 +123,12 @@ export const pageMeta = {
   },
   blog: {
     title: {
-      en: "AI Business Validation Blog — Market Simulation, Investor Plans & Startup Research",
-      ru: "Блог об ИИ-валидации бизнеса — симуляция рынка, планы для инвесторов и исследования стартапов",
+      en: "AI Business Validation Blog | Market Research, Business Plans, Financial Models",
+      ru: "Блог об ИИ-валидации бизнеса | Исследования рынка, бизнес-планы, финансовые модели",
     },
     description: {
-      en: "Expert articles on AI business validation, market simulation, synthetic respondents, UNIDO/EBRD standards, RAG technology, and hallucination-free AI — for founders and analysts.",
-      ru: "Экспертные статьи об ИИ-валидации бизнеса, симуляции рынка, синтетических респондентах, стандартах ЮНИДО/ЕБРР, RAG-технологии и ИИ без галлюцинаций — для фаундеров и аналитиков.",
+      en: "Guides on AI market research, business plan writing, startup validation, financial modeling, and investor preparation for founders, analysts, and consultants.",
+      ru: "Практические материалы об ИИ-исследованиях рынка, бизнес-планах, валидации стартапов, финансовом моделировании и подготовке к работе с инвесторами для фаундеров, аналитиков и консультантов.",
     },
     enPath: "/blog",
     ruPath: "/ru/blog",
@@ -159,12 +159,12 @@ export const pageMeta = {
   },
   solutions: {
     title: {
-      en: "AI Business Plan Generator & Validation Tools — Market Research, Financial Model, Synthetic Respondents",
-      ru: "ИИ Генератор бизнес-планов и инструменты валидации — исследование рынка, финансовая модель, синтетические респонденты",
+      en: "AI Startup Validation Tools | Market Research, Financial Modeling, Business Plans",
+      ru: "ИИ-инструменты валидации стартапа | Исследование рынка, финмодели, бизнес-планы",
     },
     description: {
-      en: "One platform, complete workflow: validate idea on synthetic respondents → live market research from 50+ sources → UNIDO/EBRD business plan → Python financial model → investor pitch deck. No consultants, no hallucinations.",
-      ru: "Одна платформа, полный процесс: валидация идеи на синтетических респондентах → живое исследование рынка из 50+ источников → бизнес-план ЮНИДО/ЕБРР → Python-финансовая модель → питч для инвесторов. Без консультантов, без галлюцинаций.",
+      en: "Explore Upgrowplan's AI tools for startup validation: synthetic respondents, live market research, financial modeling, business plans, and investor decks.",
+      ru: "Изучите ИИ-инструменты Upgrowplan для валидации стартапов: синтетические респонденты, живые исследования рынка, финансовое моделирование, бизнес-планы и инвесторские материалы.",
     },
     enPath: "/solutions",
     ruPath: "/ru/solutions",
@@ -183,12 +183,12 @@ export const pageMeta = {
   },
   marketResearchDescription: {
     title: {
-      en: "How AI Market Research Works | MarketSense Agent",
-      ru: "Как работает ИИ-исследование рынка | MarketSense",
+      en: "AI Market Research Tool | Live Web Research, Competitor Analysis, Market Sizing",
+      ru: "ИИ-инструмент исследования рынка | Живые данные, анализ конкурентов, оценка рынка",
     },
     description: {
-      en: "MarketSense AI Agent: live web search + RAG + Skeptic Agent validation. 50 verified sources, competitor mapping, market sizing — in 15 minutes.",
-      ru: "MarketSense AI Agent: живой поиск + RAG + проверка Skeptic Agent. 50 верифицированных источников, карта конкурентов, объём рынка — за 15 минут.",
+      en: "Run AI-powered market research with live web data, competitor mapping, source validation, and market sizing in minutes with MarketSense AI Agent.",
+      ru: "Проводите ИИ-исследование рынка с живыми веб-данными, картой конкурентов, валидацией источников и оценкой объёма рынка за считанные минуты с MarketSense AI Agent.",
     },
     enPath: "/solutions/marketResearch/descriptionPage",
     ruPath: "/ru/solutions/marketResearch/descriptionPage",
@@ -303,12 +303,12 @@ export const pageMeta = {
   },
   aiBizPlanGenerator: {
     title: {
-      en: "AI Business Plan Generator — Idea Validation + Market Research + Financial Model + UNIDO/EBRD Plan in 20 Min",
-      ru: "ИИ Генератор бизнес-планов — валидация идеи + исследование рынка + финансовая модель + план ЮНИДО/ЕБРР за 20 мин",
+      en: "AI Business Plan Generator | Get Investor-Ready in 20 Min",
+      ru: "ИИ-генератор бизнес-планов | Инвесторский уровень за 20 минут",
     },
     description: {
-      en: "The only AI business plan generator that validates before it generates: synthetic respondent testing, live market research from 50+ sources, Python financial model (P&L, cash flow, break-even), Skeptic Agent hallucination check — delivered as Word + pitch deck. No consultants needed.",
-      ru: "Единственный ИИ-генератор бизнес-планов, который сначала валидирует: тест на синтетических респондентах, живое исследование рынка из 50+ источников, Python-финансовая модель (P&L, денежный поток, точка безубыточности), проверка Skeptic Agent — в формате Word + питч. Без консультантов.",
+      en: "Create an investor-ready business plan with AI: validate demand with synthetic respondents, run live market research, build a financial model, and generate a plan compliant with UNIDO and EBRD standards.",
+      ru: "Создайте бизнес-план инвесторского уровня с помощью ИИ: проверьте спрос на синтетических респондентах, выполните живое исследование рынка, постройте финансовую модель и получите план по стандартам ЮНИДО и ЕБРР.",
     },
     enPath: "/ai-business-plan-generator",
     ruPath: "/ru/ai-business-plan-generator",
@@ -327,12 +327,12 @@ export const pageMeta = {
   },
   syntheticCustomerResearch: {
     title: {
-      en: "AI Market Simulation — Validate Your Idea on Synthetic Respondents in 15 Minutes",
-      ru: "ИИ-симуляция рынка — протестируй идею на синтетических респондентах за 15 минут",
+      en: "AI Synthetic Customer Research Tool | Test Ideas on Virtual Buyers",
+      ru: "ИИ-инструмент синтетического customer research | Проверка идей на виртуальных покупателях",
     },
     description: {
-      en: "Replace expensive focus groups with AI market simulation: synthetic respondents built from real market data, 85–92% accuracy, instant results. Test product ideas, pricing, messaging — no recruitment needed.",
-      ru: "Замените дорогие фокус-группы ИИ-симуляцией рынка: синтетические респонденты на основе реальных данных, точность 85–92%, мгновенный результат. Тестируйте идеи, цены, позиционирование — без рекрутинга.",
+      en: "Run AI synthetic customer research with virtual buyers built from real market patterns. Test demand, pricing, objections, and messaging in minutes without recruiting participants.",
+      ru: "Проводите ИИ-сustomer research на виртуальных покупателях, построенных по реальным рыночным паттернам. Проверяйте спрос, цены, возражения и позиционирование за минуты без рекрутинга участников.",
     },
     enPath: "/solutions/synthetic-customer-research",
     ruPath: "/ru/solutions/synthetic-customer-research",

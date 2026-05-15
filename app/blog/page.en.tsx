@@ -8,17 +8,28 @@ import AdminBlogPanel from "./AdminBlogPanel";
 
 export default function BlogPageEn({ initialPosts = [] }: { initialPosts?: BilingualPost[] }) {
   const [posts, setPosts] = useState<BilingualPost[]>(initialPosts);
+  const visiblePosts = posts.filter(
+    (post) =>
+      post.slug &&
+      post.titleEn?.trim() &&
+      post.descriptionEn?.trim() &&
+      post.messageEn?.trim() &&
+      post.titleRu?.trim() &&
+      post.descriptionRu?.trim() &&
+      post.messageRu?.trim()
+  );
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <Header />
 
       <main className="container py-5" style={{ flex: 1 }}>
-        <h1 className="text-brand mb-4">Upgrowplan Blog</h1>
+        <h1 className="text-brand mb-4">AI Business Validation Blog</h1>
 
         <p className="mt-3 mb-5 lead" style={{ maxWidth: "800px", lineHeight: "1.7", fontSize: "1.125rem" }}>
-          Practical insights on AI business planning, market research, financial
-          modelling, and entrepreneurship — from the Upgrowplan team.
+          Upgrowplan publishes practical guides on AI market research, business
+          plan writing, startup validation, financial modeling, and investor
+          preparation for founders, analysts, and consultants.
         </p>
 
         <div className="mb-4">
@@ -53,18 +64,18 @@ export default function BlogPageEn({ initialPosts = [] }: { initialPosts?: Bilin
           </div>
         </div>
 
-        {posts.length === 0 ? (
+        {visiblePosts.length === 0 ? (
           <p>No posts yet.</p>
         ) : (
           <div className="row g-4">
-            {posts.map((post) => (
+            {visiblePosts.map((post) => (
               <BlogPostCard
                 key={post.id}
-                message={post.messageEn || post.messageRu}
+                message={post.messageEn}
                 createdAt={post.createdAt}
                 slug={post.slug}
-                title={post.titleEn || post.titleRu}
-                description={post.descriptionEn || post.descriptionRu}
+                title={post.titleEn}
+                description={post.descriptionEn}
                 category={post.category}
                 author={post.author}
                 mediaUrl={post.mediaUrl}

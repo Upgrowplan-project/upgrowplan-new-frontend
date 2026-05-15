@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Header from "../../components/Header";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Map as MapboxMap, Marker as MapboxMarker } from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -775,8 +774,6 @@ export default function Home() {
 
   return (
     <div className="home-2026">
-      <Header />
-
       <main>
         <section className="hero-2026">
           <div className="container hero-grid">

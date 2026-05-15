@@ -115,7 +115,7 @@ export default function SyntheticCustomerResearchEn() {
                 fontFamily: FONT,
               }}
             >
-              Test your business idea on virtual buyers in 15 minutes
+              AI synthetic customer research for virtual buyer testing
             </h1>
             <p
               style={{
@@ -127,7 +127,7 @@ export default function SyntheticCustomerResearchEn() {
                 fontFamily: FONT,
               }}
             >
-              AI synthetic respondents replace expensive focus groups. No recruiting, no waiting — 85–92% accuracy compared to real participants.
+              Upgrowplan runs AI synthetic customer research with virtual buyers built from real market patterns, helping teams test demand, pricing, objections, and messaging in minutes without recruiting participants.
             </p>
             <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
               <Link

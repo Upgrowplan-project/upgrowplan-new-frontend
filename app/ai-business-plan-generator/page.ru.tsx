@@ -211,10 +211,10 @@ export default function AiBizPlanGeneratorRu() {
               ИИ · БИЗНЕС-ПЛАН · ЮНИДО/ЕБРР
             </div>
             <h1 style={{ fontSize: "clamp(2.4rem, 4vw, 3.8rem)", fontWeight: 700, color: "#1e6078", lineHeight: 1.15, marginBottom: "1.25rem" }}>
-              ИИ-генератор бизнес-планов
+              ИИ-генератор бизнес-планов для проектов инвесторского уровня
             </h1>
             <p style={{ fontSize: "1.1rem", color: "#171717", maxWidth: 640, margin: "0 auto 0.75rem", lineHeight: 1.65 }}>
-              Бизнес-план для инвестора, банка или гранта — с реальными данными рынка, финансовой моделью и питч-презентацией.
+              Upgrowplan — ИИ-генератор бизнес-планов, который помогает проверить спрос, провести живое исследование рынка, построить финансовую модель и подготовить бизнес-план по стандартам ЮНИДО и ЕБРР.
             </p>
             <p style={{ fontSize: "1rem", color: "#1e6078", fontWeight: 600, marginBottom: "2rem" }}>
               Стандарты ЮНИДО / ЕБРР · Skeptic Agent · 10–20 минут · Word + питч
