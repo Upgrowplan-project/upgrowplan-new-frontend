@@ -1,4 +1,4 @@
-import { getBlogPosts } from "@/app/blog/getBlogPosts";
+import { getCanonicalBlogPosts } from "@/app/blog/getBlogPosts";
 
 const SITE_URL = "https://www.upgrowplan.com";
 
@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 3600; // refresh every hour
 
 export async function GET() {
-  const posts = await getBlogPosts();
+  const posts = await getCanonicalBlogPosts();
 
   const urls = posts
     .filter((p) => p.slug)

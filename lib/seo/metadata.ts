@@ -202,8 +202,8 @@ export const pageMeta = {
       en: "Create a professional AI-generated business plan in minutes. Tailored for investors, banks, and internal strategy.",
       ru: "Создайте профессиональный бизнес-план с помощью ИИ за несколько минут. Для инвесторов, банков и внутренней стратегии.",
     },
-    enPath: "/solutions/plan",
-    ruPath: "/ru/solutions/plan",
+    enPath: "/ai-business-plan-generator",
+    ruPath: "/ru/ai-business-plan-generator",
   },
   planMaster: {
     title: {
@@ -214,8 +214,8 @@ export const pageMeta = {
       en: "Generate investor-ready business plans with AI — following UNIDO and EBRD standards. Financial modelling, market analysis, and Skeptic Agent hallucination check.",
       ru: "Генерируйте бизнес-планы инвесторского качества с ИИ по стандартам ЮНИДО и ЕБРР. Финансовое моделирование, анализ рынка и проверка Skeptic Agent.",
     },
-    enPath: "/solutions/planMaster",
-    ruPath: "/ru/solutions/planMaster",
+    enPath: "/ai-business-plan-generator",
+    ruPath: "/ru/ai-business-plan-generator",
   },
   planMasterDescription: {
     title: {
@@ -226,8 +226,8 @@ export const pageMeta = {
       en: "PlanMaster AI: RAG + live search + Python financial modelling + Skeptic Agent. Outputs Word/PDF business plan following UNIDO/EBRD investor standards.",
       ru: "PlanMaster AI: RAG + живой поиск + финансовое моделирование на Python + Skeptic Agent. Бизнес-план в Word/PDF по стандартам ЮНИДО/ЕБРР для инвесторов.",
     },
-    enPath: "/solutions/planMaster/descriptionPage",
-    ruPath: "/ru/solutions/planMaster/descriptionPage",
+    enPath: "/ai-business-plan-generator",
+    ruPath: "/ru/ai-business-plan-generator",
   },
   synthFocusLab: {
     title: {
@@ -250,8 +250,8 @@ export const pageMeta = {
       en: "Synth Focus Lab builds AI personas from market data, simulates group discussions, and surfaces consumer sentiment — faster and cheaper than traditional research.",
       ru: "Synth Focus Lab создаёт ИИ-персоны на основе рыночных данных, симулирует групповые дискуссии и выявляет потребительские настроения — быстрее и дешевле классических исследований.",
     },
-    enPath: "/solutions/synthFocusLab/descriptionPage",
-    ruPath: "/ru/solutions/synthFocusLab/descriptionPage",
+    enPath: "/solutions/synthetic-customer-research",
+    ruPath: "/ru/solutions/synthetic-customer-research",
   },
   socialPlanMaster: {
     title: {

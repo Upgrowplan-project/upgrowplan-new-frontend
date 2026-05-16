@@ -3,6 +3,22 @@ import { allStaticPosts, staticPostsRuBilingual, enPostMeta, BilingualPost } fro
 const BLOB_PATHNAME = "blog-posts.json";
 const HAS_BLOB = !!process.env.BLOB_READ_WRITE_TOKEN;
 
+export const BLOG_SLUG_REDIRECTS: Record<string, string> = {
+  "crocs-brandsories": "crocs-brand-story-idiotic-footwear",
+  "netflix-brandsory": "netflix-40-dollar-late-fee-story",
+  "how-upgrowplan-works-rag": "how-upgrowplan-rag-works",
+  "ai-bubble-gigants-race": "ai-bubble-investment-who-pays",
+  "informal-metrics-memes-kfactor": "informal-business-metrics-memes-kfactor",
+  "pivot-business-strategy": "pivot-business-strategy-slack-instagram",
+  "planned-obsolescence-business": "planned-obsolescence-for-against",
+  "dyson-5127-prototypes": "dyson-5127-prototypes-innovation",
+  "gde-tsennik-introvert": "price-tag-introverts-buying-behavior",
+  "5-answers-client-says-expensive": "5-responses-client-says-too-expensive",
+  "marketing-quotes-founders": "marketing-quotes-drucker-kotler-godin",
+  "ecommerce-moved": "ecommerce-moved-tiktok-youtube-instagram",
+  "ai-adolescence-risks": "ai-adolescence-risks-amodei",
+};
+
 const mirroredLocalePairs: Array<{ enId: number; ruId: number }> = [
   { enId: 207, ruId: 1016 },
   { enId: 208, ruId: 1015 },
@@ -395,6 +411,11 @@ export async function getBlogPosts(): Promise<BilingualPost[]> {
   } catch {}
 
   return enrichPosts(allStaticPosts);
+}
+
+export async function getCanonicalBlogPosts(): Promise<BilingualPost[]> {
+  const posts = await getBlogPosts();
+  return posts.filter((post) => post.slug && !BLOG_SLUG_REDIRECTS[post.slug]);
 }
 
 export async function getBlogPostBySlug(slug: string): Promise<BilingualPost | null> {

@@ -29,6 +29,8 @@ module.exports = {
     "/solutions/finBuddy",
     "/ru/solutions/finBuddy",
     // Redirected pages — canonical is /ai-business-plan-generator
+    "/solutions/plan",
+    "/ru/solutions/plan",
     "/solutions/planMaster",
     "/ru/solutions/planMaster",
     "/solutions/planMaster/descriptionPage",

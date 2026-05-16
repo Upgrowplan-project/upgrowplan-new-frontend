@@ -493,7 +493,7 @@ export default function SyntheticCustomerResearchRu() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "1rem" }}>
               {[
                 { href: "/ru/ai-business-plan-generator", icon: "📑", title: "PlanMaster AI", desc: "ИИ-генератор бизнес-планов по стандартам ЮНИДО/ЕБРР с реальными данными рынка и питч-презентацией." },
-                { href: "/ru/solutions/marketResearch/descriptionPage", icon: "🔍", title: "MarketSense AI", desc: "ИИ-агент для полноценного маркетингового исследования — поиск, анализ, верификация данных." },
+                { href: "/ru/solutions/marketResearch", icon: "🔍", title: "MarketSense AI", desc: "ИИ-агент для полноценного маркетингового исследования — поиск, анализ, верификация данных." },
                 { href: "/ru/why-upgrowplan", icon: "⚡", title: "Почему Upgrowplan?", desc: "Чем Upgrowplan отличается от ChatGPT, консультанта и шаблонов — конкретное сравнение." },
               ].map((tool) => (
                 <Link key={tool.href} href={tool.href} style={{ display: "block", background: "#fff", border: "1px solid #d9ebf5", borderRadius: 10, padding: "1rem 1.25rem", textDecoration: "none" }}>

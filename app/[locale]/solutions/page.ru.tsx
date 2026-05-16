@@ -40,7 +40,7 @@ export default function SolutionsPage() {
         "ИИ-агент поиска, анализа и выполнения полноценного маркетингового исследования. Верификация ресурсов и данных, адаптация под ваши ежедневные задачи.",
       icon: <FiCpu className="me-2 text-primary" />,
       release: "весна 2026",
-      link: "/solutions/marketResearch/descriptionPage",
+      link: "/solutions/marketResearch",
       elementId: "market-research-description-card",
       ctaLabel: "Подробнее",
     },

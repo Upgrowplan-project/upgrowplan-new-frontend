@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { buildMetadata, pageMeta } from "@/lib/seo/metadata";
-import { softwareAppSchema, breadcrumbSchema, breadcrumbs, solutionData, speakableSchema } from "@/lib/seo/jsonld";
+import { softwareAppSchema, breadcrumbSchema, breadcrumbs, solutionData, speakableSchema, faqSchema, pageFaqs } from "@/lib/seo/jsonld";
 import { JsonLd } from "@/components/JsonLd";
+import FaqSection from "@/components/FaqSection";
 import OpenAbroadPageEn from "../../../solutions/openAbroad/page.en";
 import OpenAbroadPageRu from "../../../solutions/openAbroad/page.ru";
 
@@ -19,16 +20,19 @@ export default function OpenAbroadLocalePage({ params }: Params) {
   const locale = params.locale === "ru" ? "ru" : "en";
   const data = solutionData.openAbroad[locale];
   const url = `${SITE_URL}${locale === "ru" ? "/ru" : ""}${solutionData.openAbroad.url}`;
+  const faqTitle = locale === "ru" ? "Вопросы об Open Abroad" : "Open Abroad FAQ";
   return (
     <>
       <JsonLd
         data={[
           softwareAppSchema({ ...data, url, isFree: solutionData.openAbroad.isFree }),
           breadcrumbSchema(breadcrumbs.solutionPage(locale, data.name)),
+          faqSchema(pageFaqs.openAbroad[locale]),
           speakableSchema({ url, name: data.name, description: data.description, locale }),
         ]}
       />
       {locale === "ru" ? <OpenAbroadPageRu /> : <OpenAbroadPageEn />}
+      <FaqSection items={pageFaqs.openAbroad[locale]} title={faqTitle} />
     </>
   );
 }

@@ -110,7 +110,11 @@
       "Bash(git clone *)",
       "Bash(Select-String -Path \"D:\\\\UpgrowPlan\\\\market-research-service\\\\app\\\\archetypes\\\\*.py\" -Pattern \"avg_check=Decimal\")",
       "Bash(Select-Object Filename, LineNumber, Line)",
-      "Bash(Format-Table -AutoSize)"
+      "Bash(Format-Table -AutoSize)",
+      "Bash(.venv311/Scripts/python.exe -c ' *)",
+      "Bash(\".venv311/Scripts/python.exe\" -m py_compile tests/quality_lab/quality_lab_core.py)",
+      "Bash(cd /mnt/d/UpgrowPlan/market-research-service 2>/dev/null || true; python3 -c \" *)",
+      "Read(//mnt/d/UpgrowPlan/**)"
     ],
     "deny": [],
     "ask": [],

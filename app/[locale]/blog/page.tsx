@@ -5,7 +5,7 @@ import { JsonLd } from "@/components/JsonLd";
 import FaqSection from "@/components/FaqSection";
 import BlogPageEn from "../../blog/page.en";
 import BlogPageRu from "../../blog/page.ru";
-import { getBlogPosts } from "../../blog/getBlogPosts";
+import { getCanonicalBlogPosts } from "../../blog/getBlogPosts";
 
 type Params = { params: { locale: string } };
 
@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 export default async function BlogLocalePage({ params }: Params) {
   const locale = params.locale === "ru" ? "ru" : "en";
   const faqTitle = locale === "ru" ? "Вопросы о бизнес-планировании с ИИ" : "AI Business Planning — FAQ";
-  const posts = await getBlogPosts();
+  const posts = await getCanonicalBlogPosts();
   return (
     <>
       <JsonLd

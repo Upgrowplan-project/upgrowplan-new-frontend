@@ -677,6 +677,114 @@ export const pageFaqs = {
       },
     ],
   },
+  finBuddy: {
+    en: [
+      {
+        question: "What is Fin Buddy?",
+        answer:
+          "Fin Buddy is Upgrowplan's AI-assisted financial modelling tool for founders and analysts. It helps build P&L, cash flow, break-even, and scenario-based forecasts faster than manual spreadsheets.",
+      },
+      {
+        question: "Who should use Fin Buddy?",
+        answer:
+          "Fin Buddy is designed for startup founders, small business owners, consultants, and analysts who need fast financial projections for planning, fundraising, or internal decision-making.",
+      },
+      {
+        question: "What outputs can Fin Buddy generate?",
+        answer:
+          "Fin Buddy can generate core business finance outputs such as revenue projections, operating cost models, gross margin estimates, break-even analysis, and simple scenario comparisons.",
+      },
+    ],
+    ru: [
+      {
+        question: "Что такое Fin Buddy?",
+        answer:
+          "Fin Buddy — это инструмент Upgrowplan для финансового моделирования с ИИ. Он помогает быстрее собирать P&L, cash flow, точку безубыточности и сценарные прогнозы, чем ручная работа в таблицах.",
+      },
+      {
+        question: "Для кого подходит Fin Buddy?",
+        answer:
+          "Fin Buddy подходит фаундерам стартапов, владельцам малого бизнеса, консультантам и аналитикам, которым нужны быстрые финансовые прогнозы для планирования, привлечения инвестиций и внутренних решений.",
+      },
+      {
+        question: "Какие результаты выдаёт Fin Buddy?",
+        answer:
+          "Fin Buddy помогает строить прогноз выручки, модель расходов, оценку маржинальности, анализ точки безубыточности и простые сравнения сценариев.",
+      },
+    ],
+  },
+  openAbroad: {
+    en: [
+      {
+        question: "What is Open Abroad?",
+        answer:
+          "Open Abroad is Upgrowplan's AI-assisted relocation and market entry tool. It helps compare countries, regulatory factors, and market conditions for international expansion.",
+      },
+      {
+        question: "Who is Open Abroad for?",
+        answer:
+          "Open Abroad is useful for founders, small business owners, and consultants evaluating where to relocate a company, launch a new entity, or expand into a new international market.",
+      },
+      {
+        question: "What does Open Abroad analyse?",
+        answer:
+          "The tool analyses country-specific business conditions such as taxation, legal setup, documentation, market accessibility, and practical expansion considerations.",
+      },
+    ],
+    ru: [
+      {
+        question: "Что такое Open Abroad?",
+        answer:
+          "Open Abroad — это инструмент Upgrowplan для оценки релокации и выхода на зарубежные рынки с помощью ИИ. Он помогает сравнивать страны, регуляторные условия и рыночную среду.",
+      },
+      {
+        question: "Для кого подходит Open Abroad?",
+        answer:
+          "Open Abroad полезен фаундерам, владельцам малого бизнеса и консультантам, которые выбирают страну для релокации компании, открытия юрлица или международной экспансии.",
+      },
+      {
+        question: "Что анализирует Open Abroad?",
+        answer:
+          "Инструмент анализирует налоги, юридические условия, требования к документам, доступность рынка и практические факторы выхода в новую страну.",
+      },
+    ],
+  },
+  socialPlanMaster: {
+    en: [
+      {
+        question: "What is Social Plan Master?",
+        answer:
+          "Social Plan Master is Upgrowplan's AI social media strategy tool. It helps define content direction, audience priorities, and platform-specific messaging for business growth.",
+      },
+      {
+        question: "Who should use Social Plan Master?",
+        answer:
+          "It is designed for founders, marketers, consultants, and small teams that need a structured social media plan without building one manually from scratch.",
+      },
+      {
+        question: "What does Social Plan Master produce?",
+        answer:
+          "The tool helps generate content themes, audience insights, channel recommendations, and a more consistent social media plan aligned with business goals.",
+      },
+    ],
+    ru: [
+      {
+        question: "Что такое Social Plan Master?",
+        answer:
+          "Social Plan Master — это инструмент Upgrowplan для построения стратегии в социальных сетях с помощью ИИ. Он помогает определить контентные направления, приоритеты аудитории и позиционирование по платформам.",
+      },
+      {
+        question: "Для кого подходит Social Plan Master?",
+        answer:
+          "Он подходит фаундерам, маркетологам, консультантам и небольшим командам, которым нужна структурная стратегия в соцсетях без ручной сборки с нуля.",
+      },
+      {
+        question: "Что выдаёт Social Plan Master?",
+        answer:
+          "Инструмент помогает формировать контентные темы, инсайты по аудитории, рекомендации по каналам и более последовательный social media plan, связанный с бизнес-целями.",
+      },
+    ],
+  },
   solutions: {
     en: [
       {
@@ -1224,7 +1332,7 @@ export const solutionData = {
         "Создайте профессиональный бизнес-план с помощью ИИ за несколько минут. Для инвесторов, банков и внутренней стратегии.",
       keywords: ["бизнес-план", "ИИ", "инвестор", "финансовые прогнозы"],
     },
-    url: "/solutions/plan",
+    url: "/ai-business-plan-generator",
     isFree: true,
   },
   planMaster: {
@@ -1369,7 +1477,7 @@ export const howToSteps = {
       description:
         "Generate a complete investor-ready business plan in 5–10 minutes using PlanMaster AI — no consultants needed.",
       totalTime: "PT10M",
-      url: `${SITE_URL}/solutions/planMaster`,
+      url: `${SITE_URL}/ai-business-plan-generator`,
       steps: [
         {
           name: "Describe your business idea",
@@ -1398,7 +1506,7 @@ export const howToSteps = {
       description:
         "Создайте полноценный бизнес-план для инвесторов за 5–10 минут с PlanMaster AI — без консультантов.",
       totalTime: "PT10M",
-      url: `${SITE_URL}/ru/solutions/planMaster`,
+      url: `${SITE_URL}/ru/ai-business-plan-generator`,
       steps: [
         {
           name: "Опишите бизнес-идею",

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { getBlogPostBySlug, getBlogPosts } from "../getBlogPosts";
+import { notFound, redirect } from "next/navigation";
+import { BLOG_SLUG_REDIRECTS, getBlogPostBySlug, getCanonicalBlogPosts } from "../getBlogPosts";
 import { JsonLd } from "@/components/JsonLd";
 import Header from "@/components/Header";
 import FormattedPostContent from "@/components/FormattedPostContent";
@@ -11,11 +11,18 @@ const SITE_URL = "https://www.upgrowplan.com";
 type Props = { params: { slug: string } };
 
 export async function generateStaticParams() {
-  const posts = await getBlogPosts();
+  const posts = await getCanonicalBlogPosts();
   return posts.filter((p) => p.slug).map((p) => ({ slug: p.slug! }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const canonicalSlug = BLOG_SLUG_REDIRECTS[params.slug];
+  if (canonicalSlug) {
+    return {
+      alternates: { canonical: `${SITE_URL}/blog/${canonicalSlug}` },
+      robots: { index: false, follow: true },
+    };
+  }
   const post = await getBlogPostBySlug(params.slug);
   if (!post) return {};
   const title = post.titleEn || post.titleRu || "Blog";
@@ -38,6 +45,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function BlogPostPage({ params }: Props) {
+  const canonicalSlug = BLOG_SLUG_REDIRECTS[params.slug];
+  if (canonicalSlug) {
+    redirect(`/blog/${canonicalSlug}`);
+  }
   const post = await getBlogPostBySlug(params.slug);
   if (!post) notFound();
 

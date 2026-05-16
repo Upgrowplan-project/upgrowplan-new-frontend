@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { buildMetadata, pageMeta } from "@/lib/seo/metadata";
-import { softwareAppSchema, breadcrumbSchema, breadcrumbs, solutionData, speakableSchema } from "@/lib/seo/jsonld";
+import { softwareAppSchema, breadcrumbSchema, breadcrumbs, solutionData, speakableSchema, faqSchema, pageFaqs } from "@/lib/seo/jsonld";
 import { JsonLd } from "@/components/JsonLd";
+import FaqSection from "@/components/FaqSection";
 import EnPage from "./page.en";
 import RuPage from "./page.ru";
 
@@ -19,16 +20,19 @@ export default function FinBuddyPage({ params }: Params) {
   const locale = params.locale === "ru" ? "ru" : "en";
   const data = solutionData.finBuddy[locale];
   const url = `${SITE_URL}${locale === "ru" ? "/ru" : ""}${solutionData.finBuddy.url}`;
+  const faqTitle = locale === "ru" ? "Вопросы о Fin Buddy" : "Fin Buddy FAQ";
   return (
     <>
       <JsonLd
         data={[
           softwareAppSchema({ ...data, url, isFree: solutionData.finBuddy.isFree }),
           breadcrumbSchema(breadcrumbs.solutionPage(locale, data.name)),
+          faqSchema(pageFaqs.finBuddy[locale]),
           speakableSchema({ url, name: data.name, description: data.description, locale }),
         ]}
       />
       {locale === "ru" ? <RuPage /> : <EnPage />}
+      <FaqSection items={pageFaqs.finBuddy[locale]} title={faqTitle} />
     </>
   );
 }

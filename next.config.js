@@ -42,6 +42,16 @@ const nextConfig = {
   async redirects() {
     return [
       {
+        source: "/en",
+        destination: "/",
+        permanent: true,
+      },
+      {
+        source: "/en/:path*",
+        destination: "/:path*",
+        permanent: true,
+      },
+      {
         source: "/solutions/",
         destination: "/solutions",
         permanent: true,
@@ -49,6 +59,31 @@ const nextConfig = {
       {
         source: "/ru/solutions/",
         destination: "/ru/solutions",
+        permanent: true,
+      },
+      {
+        source: "/privacy/ru/privacy",
+        destination: "/ru/privacy",
+        permanent: true,
+      },
+      {
+        source: "/ru/contacts/contacts",
+        destination: "/ru/contacts",
+        permanent: true,
+      },
+      {
+        source: "/contacts/contacts",
+        destination: "/contacts",
+        permanent: true,
+      },
+      {
+        source: "/solutions/plan",
+        destination: "/ai-business-plan-generator",
+        permanent: true,
+      },
+      {
+        source: "/ru/solutions/plan",
+        destination: "/ru/ai-business-plan-generator",
         permanent: true,
       },
       {

@@ -148,6 +148,15 @@ type ProductType =
   | "real_estate"
   // Транспорт
   | "transport_mobility"
+  // Ремонт и сервис
+  | "auto_services"
+  | "electronics_repair"
+  // Ивент
+  | "event_services"
+  // Мебель и интерьер
+  | "furniture_interior"
+  // Аптека и оптика
+  | "pharmacy_optics"
   // Общее
   | "other";
 type ResearchGoal =
@@ -621,7 +630,7 @@ export default function MarketResearchPage() {
   const productTypeToIndustry: Record<ProductType, string> = {
     retail_fmcg: "Розница и FMCG",
     fashion_apparel: "Мода и одежда",
-    electronics: "Техника и электроника",
+    electronics: "Магазины электроники и гаджетов",
     food_beverage: "Food & Beverage",
     digital_apps: "Цифровые приложения",
     manufacturing: "Производство",
@@ -635,11 +644,11 @@ export default function MarketResearchPage() {
     cloud_platform: "Облачная платформа",
     industrial_equipment: "Промышленное оборудование",
     logistics: "Логистика",
-    construction: "Строительство",
+    construction: "Строительство и подрядчики",
     energy: "Энергетика",
     agriculture: "Сельское хозяйство",
     consulting: "Консалтинг",
-    healthcare: "Медицина",
+    healthcare: "Медицина и клиники",
     education: "Образование",
     tourism_hospitality: "Туризм и гостиничный бизнес",
     financial_services: "Финансовые услуги",
@@ -647,12 +656,17 @@ export default function MarketResearchPage() {
     professional_services: "Профессиональные услуги",
     wellness_fitness: "Фитнес и Велнес",
     beauty_personal_care: "Красота и уход",
-    home_services: "Дом и быт",
+    home_services: "Дом и быт: клининг, ремонт, бытовые услуги",
     legal_services: "Юридические услуги",
     pet_services: "Зоотовары и ветеринария",
-    entertainment_media: "Развлечения и медиа",
+    entertainment_media: "Развлечения и медиа (онлайн)",
     real_estate: "Недвижимость",
-    transport_mobility: "Транспорт и мобильность",
+    transport_mobility: "Транспорт: такси, каршеринг, мобильность",
+    auto_services: "Автосервис и уход за автомобилем",
+    electronics_repair: "Ремонт техники и сервисные центры",
+    event_services: "Организация мероприятий",
+    furniture_interior: "Мебель, интерьер и декор",
+    pharmacy_optics: "Аптека и оптика",
     other: "Другое",
   };
 
@@ -684,11 +698,11 @@ export default function MarketResearchPage() {
   ];
 
   const revenueRangeOptions = [
-    { value: "under_1m" as RevenueRange, label: "До 1 млн ₽/год" },
-    { value: "1m_10m" as RevenueRange, label: "1–10 млн ₽/год" },
-    { value: "10m_50m" as RevenueRange, label: "10–50 млн ₽/год" },
-    { value: "50m_500m" as RevenueRange, label: "50–500 млн ₽/год" },
-    { value: "over_500m" as RevenueRange, label: "Свыше 500 млн ₽/год" },
+    { value: "under_1m" as RevenueRange, label: "Менее $15K/год" },
+    { value: "1m_10m" as RevenueRange, label: "$15K – $150K/год" },
+    { value: "10m_50m" as RevenueRange, label: "$150K – $750K/год" },
+    { value: "50m_500m" as RevenueRange, label: "$750K – $7.5M/год" },
+    { value: "over_500m" as RevenueRange, label: "Свыше $7.5M/год" },
   ];
 
   const businessTypeOptions = [
@@ -715,50 +729,56 @@ export default function MarketResearchPage() {
   ];
 
   const productTypeOptions: { value: ProductType; label: string; category: string }[] = [
-    // Розница и потребительские товары
-    { value: "retail_fmcg",        label: "Розница и FMCG",                  category: "Розница" },
-    { value: "fashion_apparel",    label: "Мода и одежда",                   category: "Розница" },
-    { value: "electronics",        label: "Техника и электроника",            category: "Розница" },
-    { value: "food_beverage",      label: "Продукты питания и напитки",       category: "Розница" },
     // HoReCa
-    { value: "horeca",             label: "HoReCa (кафе, рестораны, отели)", category: "HoReCa" },
-    { value: "tourism_hospitality",label: "Туризм и гостиничный бизнес",     category: "HoReCa" },
-    // Велнес и красота
-    { value: "wellness_fitness",   label: "Фитнес и Велнес",                 category: "Велнес и красота" },
-    { value: "beauty_personal_care",label: "Красота и уход",                 category: "Велнес и красота" },
-    { value: "healthcare",         label: "Медицина и клиники",              category: "Велнес и красота" },
-    { value: "pet_services",       label: "Зоотовары и ветеринария",         category: "Велнес и красота" },
-    // Образование и профессии
-    { value: "education",          label: "Образование",                     category: "Образование и услуги" },
-    { value: "consulting",         label: "Консалтинг (услуги людей)",       category: "Образование и услуги" },
-    { value: "professional_services", label: "Профессиональные услуги (агентства, аутсорс)", category: "Образование и услуги" },
-    { value: "legal_services",     label: "Юридические услуги",              category: "Образование и услуги" },
-    // Дом и быт
-    { value: "home_services",      label: "Дом и быт (клининг, ремонт)",     category: "Дом и быт" },
-    { value: "real_estate",        label: "Недвижимость",                    category: "Дом и быт" },
-    { value: "construction",       label: "Строительство",                   category: "Дом и быт" },
-    // Цифровые продукты
-    { value: "digital_apps",       label: "Цифровые приложения (B2C)",       category: "Цифровые продукты" },
-    { value: "saas_b2b",           label: "B2B SaaS / Онлайн-сервис для бизнеса", category: "Цифровые продукты" },
-    { value: "saas_b2c",           label: "B2C SaaS / Онлайн-сервис для частных лиц", category: "Цифровые продукты" },
-    { value: "cloud_platform",     label: "Облачная платформа",              category: "Цифровые продукты" },
-    { value: "marketplace",        label: "Маркетплейс / Платформа",         category: "Цифровые продукты" },
-    { value: "p2p_platform",       label: "P2P платформа",                   category: "Цифровые продукты" },
-    { value: "entertainment_media",label: "Развлечения и медиа",             category: "Цифровые продукты" },
+    { value: "horeca",              label: "HoReCa (кафе, рестораны, бары, отели)", category: "HoReCa и питание" },
+    { value: "tourism_hospitality", label: "Туризм и гостиничный бизнес",           category: "HoReCa и питание" },
+    { value: "food_beverage",       label: "Продукты питания и напитки (производство/продажа)", category: "HoReCa и питание" },
+    // Ремонт и сервис
+    { value: "auto_services",       label: "Автосервис, автомойка, шиномонтаж",      category: "Ремонт и сервис" },
+    { value: "electronics_repair",  label: "Ремонт техники (телефоны, ноутбуки, бытовая)", category: "Ремонт и сервис" },
+    { value: "home_services",       label: "Дом и быт (клининг, бытовые услуги, курьеры)", category: "Ремонт и сервис" },
+    // Розница и потребительские товары
+    { value: "retail_fmcg",         label: "Розница и FMCG (магазины, супермаркеты)", category: "Розница" },
+    { value: "fashion_apparel",     label: "Мода и одежда",                           category: "Розница" },
+    { value: "electronics",         label: "Магазины электроники и гаджетов",          category: "Розница" },
+    { value: "furniture_interior",  label: "Мебель, интерьер и декор",                category: "Розница" },
+    { value: "pharmacy_optics",     label: "Аптека, оптика, медицинские товары",       category: "Розница" },
+    // Здоровье и красота
+    { value: "wellness_fitness",    label: "Фитнес, йога, велнес, спа",               category: "Здоровье и красота" },
+    { value: "beauty_personal_care",label: "Салоны красоты, барбершопы, маникюр",     category: "Здоровье и красота" },
+    { value: "healthcare",          label: "Медицинские клиники и диагностика",        category: "Здоровье и красота" },
+    { value: "pet_services",        label: "Зоомагазины и ветеринария",               category: "Здоровье и красота" },
+    // Образование и профессиональные услуги
+    { value: "education",           label: "Образование и онлайн-обучение",            category: "Образование и услуги" },
+    { value: "consulting",          label: "Консалтинг (персональные услуги)",         category: "Образование и услуги" },
+    { value: "professional_services",label: "Агентства и аутсорсинг (маркетинг, HR, бухгалтерия)", category: "Образование и услуги" },
+    { value: "legal_services",      label: "Юридические услуги",                      category: "Образование и услуги" },
+    { value: "event_services",      label: "Организация мероприятий и ивент-агентства", category: "Образование и услуги" },
+    // Недвижимость и строительство
+    { value: "real_estate",         label: "Недвижимость (агентства, PropTech)",       category: "Недвижимость и строительство" },
+    { value: "construction",        label: "Строительство и ремонт помещений",         category: "Недвижимость и строительство" },
+    // Цифровые продукты и SaaS
+    { value: "digital_apps",        label: "Мобильные и веб-приложения (B2C)",         category: "Цифровые продукты" },
+    { value: "saas_b2b",            label: "B2B SaaS / Онлайн-сервисы для бизнеса",    category: "Цифровые продукты" },
+    { value: "saas_b2c",            label: "B2C SaaS / Онлайн-сервисы для частных лиц", category: "Цифровые продукты" },
+    { value: "cloud_platform",      label: "Облачная платформа / инфраструктура",      category: "Цифровые продукты" },
+    { value: "marketplace",         label: "Маркетплейс / Агрегатор",                 category: "Цифровые продукты" },
+    { value: "p2p_platform",        label: "P2P платформа",                           category: "Цифровые продукты" },
+    { value: "entertainment_media", label: "Развлечения, медиа, стриминг (онлайн)",    category: "Цифровые продукты" },
     // B2B и промышленность
-    { value: "manufacturing",      label: "Производство",                    category: "B2B и промышленность" },
-    { value: "wholesale_trade",    label: "Оптовая торговля",                category: "B2B и промышленность" },
-    { value: "corporate_solutions",label: "Корпоративные решения",           category: "B2B и промышленность" },
-    { value: "business_tech",      label: "Технологии для бизнеса",          category: "B2B и промышленность" },
-    { value: "industrial_equipment",label: "Промышленное оборудование",      category: "B2B и промышленность" },
-    { value: "logistics",          label: "Логистика",                       category: "B2B и промышленность" },
-    { value: "energy",             label: "Энергетика",                      category: "B2B и промышленность" },
-    { value: "agriculture",        label: "Сельское хозяйство",              category: "B2B и промышленность" },
-    { value: "transport_mobility", label: "Транспорт и мобильность",         category: "B2B и промышленность" },
+    { value: "manufacturing",       label: "Производство",                            category: "B2B и промышленность" },
+    { value: "wholesale_trade",     label: "Оптовая торговля",                        category: "B2B и промышленность" },
+    { value: "corporate_solutions", label: "Корпоративные решения",                   category: "B2B и промышленность" },
+    { value: "business_tech",       label: "Технологии для бизнеса",                  category: "B2B и промышленность" },
+    { value: "industrial_equipment",label: "Промышленное оборудование",               category: "B2B и промышленность" },
+    { value: "logistics",           label: "Логистика и доставка",                    category: "B2B и промышленность" },
+    { value: "transport_mobility",  label: "Транспорт: такси, каршеринг, мобильность", category: "B2B и промышленность" },
+    { value: "energy",              label: "Энергетика",                              category: "B2B и промышленность" },
+    { value: "agriculture",         label: "Сельское хозяйство",                      category: "B2B и промышленность" },
     // Финансы
-    { value: "financial_services", label: "Финансовые услуги",               category: "Финансы" },
+    { value: "financial_services",  label: "Финансовые услуги и страхование",          category: "Финансы" },
     // Общее
-    { value: "other",              label: "Другое",                          category: "Другое" },
+    { value: "other",               label: "Другое",                                  category: "Другое" },
   ];
 
   // Grouped structure for the multi-select panel
@@ -2104,132 +2124,155 @@ export default function MarketResearchPage() {
           const agentMap: Record<string, PipelineAgent> = {};
           (pipeline?.agents ?? []).forEach(a => { agentMap[a.name] = a; });
 
+          // ── Палитра терминала (как в descriptionPage HERO) ──────────────
+          const T = {
+            bg:        "#0f1f2a",
+            headerBg:  "#0b1a21",
+            border:    "#01346e",
+            textMain:  "rgba(236,246,255,0.90)",
+            textDim:   "#4b7ab0",
+            textMuted: "rgba(236,246,255,0.55)",
+            accent:    "#8bc4ff",
+            green:     "#7dd36e",
+            orange:    "#f97316",
+            red:       "#ef4444",
+            mono:      '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace',
+          } as const;
+
           return (
             <div className={styles.progressSection}>
-              <div className={styles.progressCard}>
-                <h2>🔬 Выполняется исследование...</h2>
+              {/* ── TERMINAL CARD ───────────────────────────────────────────── */}
+              <div style={{
+                background: T.bg,
+                borderRadius: 14,
+                border: `1px solid ${T.border}`,
+                boxShadow: "0 12px 32px rgba(1,52,110,0.22)",
+                overflow: "hidden",
+              }}>
 
-                {/* Overall progress bar + timer */}
-                <div className={styles.progressBarWrapper}>
-                  <div className={styles.progressBarContainer}>
-                    <div
-                      className={styles.progressBar}
-                      style={{ width: `${progressPct}%` }}
-                    />
+                {/* ── TITLE BAR ── */}
+                <div style={{
+                  background: T.headerBg,
+                  padding: "0.65rem 1.1rem",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  borderBottom: `1px solid rgba(1,52,110,0.5)`,
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                    {/* Traffic-light dots */}
+                    <span style={{ width: 9, height: 9, borderRadius: "50%", background: T.red,    display: "inline-block" }} />
+                    <span style={{ width: 9, height: 9, borderRadius: "50%", background: "#f59e0b", display: "inline-block" }} />
+                    <span style={{ width: 9, height: 9, borderRadius: "50%", background: T.green,  display: "inline-block" }} />
+                    <span style={{ color: T.accent, fontSize: "0.82rem", fontWeight: 600, marginLeft: "0.5rem", fontFamily: T.mono }}>
+                      AI Research Log
+                    </span>
                   </div>
-                  <span className={styles.elapsedTimer}>
+                  <span style={{ color: T.textDim, fontSize: "0.78rem", fontFamily: T.mono, fontVariantNumeric: "tabular-nums" }}>
                     {String(Math.floor(elapsedSeconds / 60)).padStart(2, "0")}:{String(elapsedSeconds % 60).padStart(2, "0")}
                   </span>
                 </div>
 
-                <div className={styles.statusRow}>
-                  <span className={styles.progressBadge}>{progressPct}%</span>
-                  <span className={styles.statusText}>
+                {/* ── PROGRESS BAR ── */}
+                <div style={{ padding: "0.6rem 1.1rem 0", background: "rgba(11,26,33,0.6)" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                    <div style={{ flex: 1, height: 3, background: "rgba(1,52,110,0.35)", borderRadius: 2 }}>
+                      <div style={{
+                        height: "100%", width: `${progressPct}%`,
+                        background: `linear-gradient(90deg, #0683f5, ${T.accent})`,
+                        borderRadius: 2, transition: "width 0.5s ease",
+                      }} />
+                    </div>
+                    <span style={{ color: T.accent, fontSize: "0.75rem", fontWeight: 700, fontFamily: T.mono, minWidth: "2.5rem" }}>
+                      {progressPct}%
+                    </span>
+                  </div>
+                  <div style={{ color: T.textMuted, fontSize: "0.74rem", marginTop: "0.35rem", fontFamily: T.mono }}>
                     {researchStatus.current_stage}
-                    {etaMin !== null && etaMin > 0 && (
-                      <span style={{ marginLeft: 8, color: "#94a3b8", fontSize: "0.85em" }}>
-                        ~{etaMin} мин осталось
-                      </span>
-                    )}
-                  </span>
+                    {etaMin !== null && etaMin > 0 && ` — ~${etaMin} мин`}
+                  </div>
                 </div>
 
-                {/* Wave + agent rows */}
-                {pipeline ? (
-                  <div style={{ marginTop: "1rem" }}>
-                    {[1, 2, 3].map(wave => {
-                      const waveAgentNames = WAVE_AGENTS[wave] ?? [];
-                      const hasAnyActivity = waveAgentNames.some(n => agentMap[n]);
-                      if (!hasAnyActivity && wave > (pipeline.wave_current ?? 1)) return null;
-                      return (
-                        <div key={wave} style={{ marginBottom: "0.75rem" }}>
-                          <div style={{
-                            fontSize: "0.72rem",
-                            fontWeight: 600,
-                            color: "#64748b",
-                            textTransform: "uppercase",
-                            letterSpacing: "0.05em",
-                            marginBottom: "0.3rem",
-                          }}>
-                            Этап {wave}: {WAVE_LABELS[wave]}
-                          </div>
-                          {waveAgentNames.map(agentName => {
-                            const agent = agentMap[agentName];
-                            const status = agent?.status ?? "waiting";
-                            const icon = STATUS_ICON[status] ?? "○";
-                            const color = STATUS_COLOR[status] ?? "#94a3b8";
-                            const elapsed = agent?.elapsed_s;
-                            return (
-                              <div key={agentName} style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "0.5rem",
-                                padding: "0.2rem 0",
-                                fontSize: "0.88rem",
-                              }}>
-                                <span style={{ color, fontWeight: 700, minWidth: "1.1rem", textAlign: "center" }}>{icon}</span>
-                                <span style={{ color: status === "waiting" ? "#94a3b8" : "#e2e8f0" }}>
-                                  {AGENT_DISPLAY[agentName] ?? agentName}
-                                </span>
-                                {elapsed != null && elapsed > 0 && (
-                                  <span style={{ marginLeft: "auto", color: "#64748b", fontSize: "0.78rem" }}>
-                                    {elapsed < 60 ? `${Math.round(elapsed)}с` : `${(elapsed / 60).toFixed(1)}м`}
+                {/* ── BODY ── */}
+                <div style={{ padding: "0.7rem 1.1rem 0.9rem", fontFamily: T.mono }}>
+
+                  {/* Waves + agents */}
+                  {pipeline ? (
+                    <div>
+                      {[1, 2, 3].map(wave => {
+                        const waveAgentNames = WAVE_AGENTS[wave] ?? [];
+                        const hasAnyActivity = waveAgentNames.some(n => agentMap[n]);
+                        if (!hasAnyActivity && wave > (pipeline.wave_current ?? 1)) return null;
+                        return (
+                          <div key={wave} style={{ marginBottom: "0.55rem" }}>
+                            <div style={{ fontSize: "0.68rem", color: T.textDim, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "0.25rem" }}>
+                              ── Этап {wave}: {WAVE_LABELS[wave]}
+                            </div>
+                            {waveAgentNames.map(agentName => {
+                              const agent = agentMap[agentName];
+                              const status = agent?.status ?? "waiting";
+                              const icon = { waiting: "○", running: "▶", completed: "✓", timeout: "⚠", failed: "✗" }[status] ?? "○";
+                              const color = { waiting: T.textDim, running: "#3b82f6", completed: T.green, timeout: T.orange, failed: T.red }[status] ?? T.textDim;
+                              const elapsed = agent?.elapsed_s;
+                              return (
+                                <div key={agentName} style={{ display: "flex", alignItems: "center", gap: "0.45rem", padding: "0.12rem 0", fontSize: "0.80rem" }}>
+                                  <span style={{ color, fontWeight: 700, minWidth: "0.9rem", textAlign: "center" }}>{icon}</span>
+                                  <span style={{ color: status === "waiting" ? T.textDim : T.textMain }}>
+                                    {AGENT_DISPLAY[agentName] ?? agentName}
                                   </span>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  /* Fallback: simple stage list when pipeline_status not yet available */
-                  <div className={styles.agentStages}>
-                    {[
-                      [10, "Анализ рынка"], [30, "Конкуренты"], [50, "Целевая аудитория"],
-                      [60, "Тренды"], [70, "Потребители"], [80, "Финансовая модель"], [95, "Валидация"],
-                    ].map(([threshold, label], idx) => (
-                      <div key={idx} className={styles.stageItem + (progressPct >= (threshold as number) ? ' ' + styles.stageActive : '')}>
-                        <div className={styles.stageIcon}>
-                          {progressPct >= (threshold as number) ? '✓' : String(idx + 1)}
-                        </div>
-                        <div className={styles.stageInfo}>
-                          <div className={styles.stageName}>{label}</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Live event feed */}
-                {pipeline && pipeline.events && pipeline.events.length > 0 && (
-                  <div style={{
-                    marginTop: "0.75rem",
-                    borderTop: "1px solid rgba(255,255,255,0.06)",
-                    paddingTop: "0.6rem",
-                  }}>
-                    <div style={{ fontSize: "0.72rem", color: "#64748b", marginBottom: "0.3rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                      Последние события
+                                  {elapsed != null && elapsed > 0 && (
+                                    <span style={{ marginLeft: "auto", color: T.textDim, fontSize: "0.72rem" }}>
+                                      {elapsed < 60 ? `${Math.round(elapsed)}с` : `${(elapsed / 60).toFixed(1)}м`}
+                                    </span>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        );
+                      })}
                     </div>
-                    {pipeline.events.map((ev, i) => (
-                      <div key={i} style={{
-                        fontSize: "0.78rem",
-                        color: ev.level === "warn" ? "#f97316" : "#94a3b8",
-                        padding: "0.1rem 0",
-                        display: "flex",
-                        gap: "0.5rem",
-                      }}>
-                        <span style={{ color: "#475569", minWidth: "3rem" }}>{ev.time}</span>
-                        <span>{ev.text}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                  ) : (
+                    /* Fallback: простой список этапов */
+                    <div>
+                      {([
+                        [10, "Анализ рынка"], [30, "Конкуренты"], [50, "Целевая аудитория"],
+                        [60, "Тренды"], [70, "Потребители"], [80, "Финансовая модель"], [95, "Валидация"],
+                      ] as [number, string][]).map(([threshold, label], idx) => (
+                        <div key={idx} style={{ display: "flex", alignItems: "center", gap: "0.45rem", padding: "0.12rem 0", fontSize: "0.80rem" }}>
+                          <span style={{ color: progressPct >= threshold ? T.green : T.textDim, fontWeight: 700 }}>
+                            {progressPct >= threshold ? "✓" : "○"}
+                          </span>
+                          <span style={{ color: progressPct >= threshold ? T.textMain : T.textDim }}>
+                            {label}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
-                <p className={styles.progressSubtext} style={{ marginTop: "0.75rem" }}>
-                  ID: {researchId}
-                </p>
+                  {/* Live event feed */}
+                  {pipeline && pipeline.events && pipeline.events.length > 0 && (
+                    <div style={{ marginTop: "0.7rem", borderTop: `1px solid rgba(1,52,110,0.4)`, paddingTop: "0.55rem" }}>
+                      <div style={{ fontSize: "0.68rem", color: T.textDim, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "0.35rem" }}>
+                        ── События
+                      </div>
+                      {pipeline.events.slice(-7).map((ev, i) => (
+                        <div key={i} style={{ fontSize: "0.75rem", color: ev.level === "warn" ? T.orange : T.textMuted, padding: "0.07rem 0", display: "flex", gap: "0.5rem" }}>
+                          <span style={{ color: T.textDim, minWidth: "3.2rem", flexShrink: 0 }}>{ev.time}</span>
+                          <span>{ev.text}</span>
+                        </div>
+                      ))}
+                      {/* Blinking cursor */}
+                      <div style={{ color: T.accent, fontSize: "0.80rem", marginTop: "0.25rem" }}>▮</div>
+                    </div>
+                  )}
+
+                  {/* Research ID */}
+                  <div style={{ marginTop: "0.6rem", fontSize: "0.70rem", color: T.textDim }}>
+                    ID: {researchId}
+                  </div>
+                </div>
               </div>
             </div>
           );

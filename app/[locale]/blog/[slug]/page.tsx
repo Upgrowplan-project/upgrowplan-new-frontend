@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { getBlogPostBySlug, getBlogPosts } from "../../../blog/getBlogPosts";
+import { notFound, redirect } from "next/navigation";
+import { BLOG_SLUG_REDIRECTS, getBlogPostBySlug, getCanonicalBlogPosts } from "../../../blog/getBlogPosts";
 import { JsonLd } from "@/components/JsonLd";
 import Header from "@/components/Header";
 import FormattedPostContent from "@/components/FormattedPostContent";
@@ -11,7 +11,7 @@ const SITE_URL = "https://www.upgrowplan.com";
 type Props = { params: { locale: string; slug: string } };
 
 export async function generateStaticParams() {
-  const posts = await getBlogPosts();
+  const posts = await getCanonicalBlogPosts();
   const slugged = posts.filter((p) => p.slug);
   return ["ru", "en"].flatMap((locale) =>
     slugged.map((p) => ({ locale, slug: p.slug! }))
@@ -19,6 +19,15 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const canonicalSlug = BLOG_SLUG_REDIRECTS[params.slug];
+  if (canonicalSlug) {
+    const isRu = params.locale === "ru";
+    const canonicalPath = isRu ? `/ru/blog/${canonicalSlug}` : `/blog/${canonicalSlug}`;
+    return {
+      alternates: { canonical: `${SITE_URL}${canonicalPath}` },
+      robots: { index: false, follow: true },
+    };
+  }
   const post = await getBlogPostBySlug(params.slug);
   if (!post) return {};
   const isRu = params.locale === "ru";
@@ -44,6 +53,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function BlogPostLocalePage({ params }: Props) {
+  const canonicalSlug = BLOG_SLUG_REDIRECTS[params.slug];
+  if (canonicalSlug) {
+    redirect(params.locale === "ru" ? `/ru/blog/${canonicalSlug}` : `/blog/${canonicalSlug}`);
+  }
   const post = await getBlogPostBySlug(params.slug);
   if (!post) notFound();
 

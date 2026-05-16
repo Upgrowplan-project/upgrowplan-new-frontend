@@ -956,7 +956,7 @@ function VectorChoice() {
                 </li>
               ))}
             </ul>
-            <a href="/solutions/marketResearch/descriptionPage" style={{
+            <a href="/solutions/marketResearch" style={{
               display: "block", textAlign: "center", padding: "13px 0", borderRadius: 12,
               background: "transparent", color: "#0683f5", fontWeight: 700, fontSize: 15,
               textDecoration: "none", border: "2px solid #0683f5",
@@ -1102,7 +1102,7 @@ function BetaSection() {
           <div style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem" }}>
             {[
               { label: "PlanMaster AI — business plans", href: "/ai-business-plan-generator" },
-              { label: "MarketSense AI — market research", href: "/solutions/marketResearch/descriptionPage" },
+              { label: "MarketSense AI — market research", href: "/solutions/marketResearch" },
               { label: "Synth Focus Lab — audience research", href: "/solutions/synthetic-customer-research" },
             ].map(({ label, href }) => (
               <a
