@@ -6,14 +6,20 @@ import FaqSection from "@/components/FaqSection";
 import EnPage from "./page.en";
 import RuPage from "./page.ru";
 
-const SITE_URL = "https://upgrowplan.com";
+const SITE_URL = "https://www.upgrowplan.com";
 type Params = { params: { locale: string } };
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const locale = params.locale === "ru" ? "ru" : "en";
   const meta = pageMeta.finBuddy;
   const path = locale === "ru" ? meta.ruPath : meta.enPath;
-  return buildMetadata({ locale, path, ...meta });
+  const isRu = locale === "ru";
+  return {
+    ...buildMetadata({ locale, path, ...meta }),
+    keywords: isRu
+      ? ["ИИ финансовая модель", "P&L онлайн бесплатно", "точка безубыточности калькулятор", "финансовый прогноз стартап", "FinPilot", "финмодель бесплатно"]
+      : ["AI financial model", "free P&L generator", "break-even calculator online", "startup financial forecast", "FinPilot free", "financial modeling tool"],
+  };
 }
 
 export default function FinBuddyPage({ params }: Params) {

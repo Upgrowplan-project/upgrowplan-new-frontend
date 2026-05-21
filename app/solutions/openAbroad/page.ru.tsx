@@ -816,7 +816,7 @@ export default function OpenAbroadPage() {
       <section className={styles.footerInfo}>
         <p>
           Powered by AI • Все данные проходят верификацию •
-          <a href="https://upgrowplan.com" className="nav-link-custom">
+          <a href="https://www.upgrowplan.com" className="nav-link-custom">
             {" "}
             Upgrowplan
           </a>

@@ -4,7 +4,7 @@ import { softwareAppSchema, breadcrumbSchema, breadcrumbs, solutionData } from "
 import { JsonLd } from "@/components/JsonLd";
 import EnPage from "./page.en";
 
-const SITE_URL = "https://upgrowplan.com";
+const SITE_URL = "https://www.upgrowplan.com";
 
 export const metadata: Metadata = buildMetadata({
   locale: "en",

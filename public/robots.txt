@@ -11,3 +11,4 @@ Disallow: /fin-model/
 Disallow: /ru/fin-model/
 
 Sitemap: https://www.upgrowplan.com/sitemap.xml
+Sitemap: https://www.upgrowplan.com/blog-sitemap.xml

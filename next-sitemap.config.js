@@ -2,9 +2,10 @@
 module.exports = {
   siteUrl: "https://www.upgrowplan.com",
   generateRobotsTxt: false,    // robots.txt managed manually in /public/robots.txt
-  generateIndexSitemap: false, // sitemap.xml managed manually — includes blog-sitemap.xml
+  generateIndexSitemap: false, // sitemap.xml managed manually — is a sitemapindex referencing sitemap-0.xml + blog-sitemap.xml
+  sitemapBaseFileName: "sitemap-pages", // outputs sitemap-pages.xml; sitemap-0.xml is manually maintained and referenced from sitemap.xml index
   // Blog posts are served by /blog-sitemap.xml (dynamic route handler)
-  // sitemap.xml is a manual index referencing sitemap-0.xml + blog-sitemap.xml
+  // sitemap.xml is a manual sitemapindex referencing sitemap-0.xml + blog-sitemap.xml
   exclude: [
     // Locale prefix — redirected to non-prefixed EN routes
     "/en",

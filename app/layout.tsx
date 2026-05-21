@@ -22,6 +22,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
+  themeColor: "#0683f5",
 };
 
 export const metadata: Metadata = {
@@ -35,6 +36,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://www.upgrowplan.com"),
   icons: {
     icon: "/favicon.ico",
+    apple: "/images/LogoUpGrowSmall2.png",
   },
   openGraph: {
     siteName: "Upgrowplan",

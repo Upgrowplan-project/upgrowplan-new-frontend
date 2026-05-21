@@ -6,14 +6,20 @@ import FaqSection from "@/components/FaqSection";
 import SocialPlanMasterPageEn from "../../../solutions/socialPlanMaster/page.en";
 import SocialPlanMasterPageRu from "../../../solutions/socialPlanMaster/page.ru";
 
-const SITE_URL = "https://upgrowplan.com";
+const SITE_URL = "https://www.upgrowplan.com";
 type Params = { params: { locale: string } };
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const locale = params.locale === "ru" ? "ru" : "en";
   const meta = pageMeta.socialPlanMaster;
   const path = locale === "ru" ? meta.ruPath : meta.enPath;
-  return buildMetadata({ locale, path, ...meta });
+  const isRu = locale === "ru";
+  return {
+    ...buildMetadata({ locale, path, ...meta }),
+    keywords: isRu
+      ? ["ИИ стратегия соцсетей", "контент-план ИИ", "Social Plan Master", "SMM стратегия", "автоматизация соцсетей", "анализ аудитории соцсети"]
+      : ["AI social media strategy", "content plan AI", "Social Plan Master", "SMM automation", "social media content planner", "audience analysis tool"],
+  };
 }
 
 export default function SocialPlanMasterLocalePage({ params }: Params) {

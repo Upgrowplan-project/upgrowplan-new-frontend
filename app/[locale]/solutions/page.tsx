@@ -13,7 +13,7 @@ import FaqSection from "@/components/FaqSection";
 import SolutionsPageEn from "./page.en";
 import SolutionsPageRu from "./page.ru";
 
-const SITE_URL = "https://upgrowplan.com";
+const SITE_URL = "https://www.upgrowplan.com";
 
 type Params = { params: { locale: string } };
 

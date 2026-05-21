@@ -5,7 +5,7 @@ import { JsonLd } from "@/components/JsonLd";
 import SynthFocusLabPageEn from "../../../solutions/synthFocusLab/page.en";
 import SynthFocusLabPageRu from "../../../solutions/synthFocusLab/page.ru";
 
-const SITE_URL = "https://upgrowplan.com";
+const SITE_URL = "https://www.upgrowplan.com";
 type Params = { params: { locale: string } };
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {

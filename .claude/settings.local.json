@@ -114,7 +114,11 @@
       "Bash(.venv311/Scripts/python.exe -c ' *)",
       "Bash(\".venv311/Scripts/python.exe\" -m py_compile tests/quality_lab/quality_lab_core.py)",
       "Bash(cd /mnt/d/UpgrowPlan/market-research-service 2>/dev/null || true; python3 -c \" *)",
-      "Read(//mnt/d/UpgrowPlan/**)"
+      "Read(//mnt/d/UpgrowPlan/**)",
+      "Bash(powershell -c \"Select-String -Path 'D:\\\\UpgrowPlan\\\\market-research-service\\\\tests\\\\quality_lab\\\\quality_lab_core.py' -Pattern 'has_physical|has_digital|place_id.*comp|google_places.*comp' | Select-Object LineNumber, Line | Select-Object -First 20\")",
+      "Bash(powershell -c \"Select-String -Path 'D:\\\\UpgrowPlan\\\\market-research-service\\\\app\\\\agents\\\\financial_modeling_agent.py' -Pattern '₽|рублей|RUB|руб' -Encoding UTF8 | Select-Object LineNumber, Line | Select-Object -First 20\")",
+      "Bash(powershell -c \"Select-String -Path 'D:\\\\UpgrowPlan\\\\market-research-service\\\\tests\\\\quality_lab\\\\quality_lab_core.py' -Pattern 'def ' | Select-Object LineNumber, Line | Select-Object -First 40\")",
+      "Bash(powershell -c \"Select-String -Path 'D:\\\\UpgrowPlan\\\\market-research-service\\\\tests\\\\quality_lab\\\\quality_lab_core.py' -Pattern 'def ' | Select-Object LineNumber, Line | Select-Object -Skip 40 -First 40\")"
     ],
     "deny": [],
     "ask": [],

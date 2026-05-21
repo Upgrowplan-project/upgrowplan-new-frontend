@@ -6,14 +6,20 @@ import FaqSection from "@/components/FaqSection";
 import OpenAbroadPageEn from "../../../solutions/openAbroad/page.en";
 import OpenAbroadPageRu from "../../../solutions/openAbroad/page.ru";
 
-const SITE_URL = "https://upgrowplan.com";
+const SITE_URL = "https://www.upgrowplan.com";
 type Params = { params: { locale: string } };
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const locale = params.locale === "ru" ? "ru" : "en";
   const meta = pageMeta.openAbroad;
   const path = locale === "ru" ? meta.ruPath : meta.enPath;
-  return buildMetadata({ locale, path, ...meta });
+  const isRu = locale === "ru";
+  return {
+    ...buildMetadata({ locale, path, ...meta }),
+    keywords: isRu
+      ? ["открыть бизнес за рубежом", "регистрация компании за границей", "Open Abroad ИИ", "сравнение юрисдикций", "налоги за рубежом", "международная экспансия"]
+      : ["open business abroad", "international company registration", "Open Abroad AI", "jurisdiction comparison", "business expansion tool", "global market entry"],
+  };
 }
 
 export default function OpenAbroadLocalePage({ params }: Params) {

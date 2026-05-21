@@ -5,14 +5,20 @@ import { JsonLd } from "@/components/JsonLd";
 import MarketResearchPageEn from "../../../solutions/marketResearch/page.en";
 import MarketResearchPageRu from "../../../solutions/marketResearch/page.ru";
 
-const SITE_URL = "https://upgrowplan.com";
+const SITE_URL = "https://www.upgrowplan.com";
 type Params = { params: { locale: string } };
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const locale = params.locale === "ru" ? "ru" : "en";
   const meta = pageMeta.marketResearch;
   const path = locale === "ru" ? meta.ruPath : meta.enPath;
-  return buildMetadata({ locale, path, ...meta });
+  const isRu = locale === "ru";
+  return {
+    ...buildMetadata({ locale, path, ...meta }),
+    keywords: isRu
+      ? ["ИИ исследование рынка", "анализ конкурентов онлайн", "MarketSense AI", "оценка рынка", "объём рынка TAM SAM SOM", "исследование рынка за 15 минут"]
+      : ["AI market research", "competitor analysis tool", "MarketSense AI", "market sizing tool", "TAM SAM SOM analysis", "automated market research"],
+  };
 }
 
 export default function MarketResearchLocalePage({ params }: Params) {

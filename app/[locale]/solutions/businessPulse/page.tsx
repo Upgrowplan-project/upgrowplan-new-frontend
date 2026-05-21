@@ -6,14 +6,20 @@ import FaqSection from "@/components/FaqSection";
 import BusinessPulsePageEn from "./page.en";
 import BusinessPulsePageRu from "./page.ru";
 
-const SITE_URL = "https://upgrowplan.com";
+const SITE_URL = "https://www.upgrowplan.com";
 type Params = { params: { locale: string } };
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const locale = params.locale === "ru" ? "ru" : "en";
   const meta = pageMeta.businessPulse;
   const path = locale === "ru" ? meta.ruPath : meta.enPath;
-  return buildMetadata({ locale, path, ...meta });
+  const isRu = locale === "ru";
+  return {
+    ...buildMetadata({ locale, path, ...meta }),
+    keywords: isRu
+      ? ["мониторинг конкурентов ИИ", "Business Pulse", "мониторинг рынка", "анализ конкурентов онлайн", "ежедневный мониторинг бизнеса", "алерты конкуренты"]
+      : ["AI competitor monitoring", "Business Pulse", "market monitoring tool", "competitor analysis AI", "daily market intelligence", "competitor alerts"],
+  };
 }
 
 export default function BusinessPulseLocalePage({ params }: Params) {

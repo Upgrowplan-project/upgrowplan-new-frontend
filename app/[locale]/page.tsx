@@ -13,7 +13,13 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const locale = params.locale === "ru" ? "ru" : "en";
   const meta = pageMeta.home;
   const path = locale === "ru" ? meta.ruPath : meta.enPath;
-  return buildMetadata({ locale, path, ...meta });
+  const isRu = locale === "ru";
+  return {
+    ...buildMetadata({ locale, path, ...meta }),
+    keywords: isRu
+      ? ["ИИ генератор бизнес-планов", "создать бизнес-план", "валидация бизнес-идеи", "синтетические респонденты", "исследование рынка ИИ", "финансовая модель онлайн", "ЮНИДО бизнес-план", "Upgrowplan"]
+      : ["AI business plan generator", "business plan AI", "market research AI", "synthetic respondents", "startup validation", "financial model generator", "UNIDO business plan", "Upgrowplan"],
+  };
 }
 
 export default function HomePage({ params }: Params) {
