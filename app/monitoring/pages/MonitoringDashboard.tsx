@@ -21,7 +21,16 @@ import { ServiceCard } from "../components/ServiceCard";
 import { AlertsList } from "../components/AlertsList";
 import { ServiceHistoryChart } from "../components/ServiceHistoryChart";
 import { RatingsDashboard } from "../components/RatingsDashboard";
+import dynamic from "next/dynamic";
 import { Service } from "../types/monitoring";
+
+const QualityLabDashboard = dynamic(
+  () =>
+    import("../components/QualityLabDashboard").then(
+      (m) => m.QualityLabDashboard
+    ),
+  { ssr: false }
+);
 import Header from "@/components/Header";
 
 export const MonitoringDashboard: React.FC = () => {
@@ -106,7 +115,7 @@ export const MonitoringDashboard: React.FC = () => {
     return (
       <Container className="mt-5">
         <Alert variant="danger">
-          <Alert.Title>Error Loading Dashboard</Alert.Title>
+          <Alert.Heading>Error Loading Dashboard</Alert.Heading>
           {error ||
             "An unknown error occurred while connecting to the monitoring service."}
           <div className="mt-3">
@@ -391,6 +400,12 @@ export const MonitoringDashboard: React.FC = () => {
           <Tab eventKey="emails" title={`✉️ ${t("tabs.emails")}`}>
             <div className="mt-4">
               <EmailsTab />
+            </div>
+          </Tab>
+
+          <Tab eventKey="quality-lab" title={`🧪 ${t("tabs.quality_lab")}`}>
+            <div className="mt-4">
+              <QualityLabDashboard />
             </div>
           </Tab>
         </Tabs>

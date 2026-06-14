@@ -4,7 +4,8 @@
     "tabs": {
         "health": "Здоровье системы",
         "ratings": "Оценки пользователей",
-        "emails": "Мониторинг почты"
+        "emails": "Мониторинг почты",
+        "quality_lab": "Quality Lab"
     },
     "status": {
         "overall": "Общий статус системы",

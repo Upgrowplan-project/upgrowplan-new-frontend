@@ -3,66 +3,48 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { CSSTransition } from "react-transition-group";
 import styles from "./auth.module.css";
-import { registerByEmail, login, JwtResponse } from "./authService"; // импорт JwtResponse
+import { registerByEmail, login, JwtResponse } from "./authService";
 
-export default function EmailRegisterForm({
-  showEmailForm = true,
-  mode = "register",
-}: {
-  showEmailForm?: boolean;
-  mode?: "register" | "login";
-}) {
+interface Props {
+  mode: "register" | "login";
+  onRegisterDone?: () => void;
+}
+
+export default function EmailRegisterForm({ mode, onRegisterDone }: Props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>(
-    {}
-  );
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [passwordHint, setPasswordHint] = useState("");
   const router = useRouter();
 
   function handlePasswordChange(value: string) {
     setPassword(value);
-
     let strength = 0;
     if (value.length >= 8) strength++;
     if (/[A-Z]/.test(value)) strength++;
     if (/[0-9]/.test(value)) strength++;
     if (/[^A-Za-z0-9]/.test(value)) strength++;
-
     setPasswordStrength(strength);
-
     if (strength <= 1) setPasswordHint("Password is weak");
     else if (strength === 2) setPasswordHint("Password is medium");
     else setPasswordHint("Password is strong");
   }
 
-  // регистрация
   async function onRegister(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
     setErrors({});
 
-    // Проверка пароля
     const passwordRules = [
       { regex: /.{8,}/, message: "Password must be at least 8 characters" },
-      {
-        regex: /[A-Z]/,
-        message: "Password must contain at least one uppercase letter",
-      },
-      {
-        regex: /[a-z]/,
-        message: "Password must contain at least one lowercase letter",
-      },
+      { regex: /[A-Z]/, message: "Password must contain at least one uppercase letter" },
+      { regex: /[a-z]/, message: "Password must contain at least one lowercase letter" },
       { regex: /[0-9]/, message: "Password must contain at least one digit" },
-      {
-        regex: /[^A-Za-z0-9]/,
-        message: "Password must contain at least one special character",
-      },
+      { regex: /[^A-Za-z0-9]/, message: "Password must contain at least one special character" },
     ];
 
     const failedRule = passwordRules.find((rule) => !rule.regex.test(password));
@@ -73,35 +55,25 @@ export default function EmailRegisterForm({
     }
 
     try {
-      const res: JwtResponse = await registerByEmail(email, password);
-      localStorage.setItem("token", res.token);
-      localStorage.setItem("email", res.email);
-      router.push("/account");
+      await registerByEmail(email, password);
+      onRegisterDone?.();
     } catch (err: any) {
-      setErrors({
-        email: err.message || "Registration error",
-        password: undefined,
-      });
+      setErrors({ email: err.message || "Registration error" });
     } finally {
       setSubmitting(false);
     }
   }
 
-  // вход
   async function onLogin(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
     setErrors({});
     try {
       const res: JwtResponse = await login(email, password);
-      localStorage.setItem("token", res.token);
       localStorage.setItem("email", res.email);
       router.push("/account");
     } catch (err: any) {
-      console.error("Login error response:", err.response?.data);
-      setErrors({
-        email: err.message || "Login error",
-      });
+      setErrors({ email: err.message || "Login error" });
     } finally {
       setSubmitting(false);
     }
@@ -109,9 +81,7 @@ export default function EmailRegisterForm({
 
   function renderPasswordStrength() {
     const score = passwordStrength;
-    const strengthText =
-      score <= 2 ? "Weak" : score === 3 ? "Medium" : "Strong";
-
+    const strengthText = score <= 2 ? "Weak" : score === 3 ? "Medium" : "Strong";
     return (
       <div className="mt-2">
         <div className="d-flex gap-1">
@@ -119,18 +89,14 @@ export default function EmailRegisterForm({
             <div
               key={i}
               style={{ height: "6px" }}
-              className={`flex-grow-1 rounded ${
-                i <= score ? "bg-success" : "bg-light"
-              }`}
+              className={`flex-grow-1 rounded ${i <= score ? "bg-success" : "bg-light"}`}
             />
           ))}
         </div>
         {password && <p className="mt-1 small text-muted">{passwordHint}</p>}
         <div className="d-flex align-items-center gap-1 mt-1">
           {Array.from({ length: 5 }, (_, i) => (
-            <span key={i} style={{ color: i < score ? "#0683f5" : "#ddd" }}>
-              ★
-            </span>
+            <span key={i} style={{ color: i < score ? "#0683f5" : "#ddd" }}>★</span>
           ))}
           <span className="ms-2">{strengthText}</span>
         </div>
@@ -139,157 +105,103 @@ export default function EmailRegisterForm({
   }
 
   return (
-    <>
-      {showEmailForm && (
-        <CSSTransition
-          in={showEmailForm}
-          timeout={300}
-          classNames={{
-            enter: styles.fadeSlideEnter,
-            enterActive: styles.fadeSlideEnterActive,
-            exit: styles.fadeSlideExit,
-            exitActive: styles.fadeSlideExitActive,
-          }}
-          unmountOnExit
-        >
-          <div className={styles.formCard}>
-            {mode === "login" ? (
-              <form onSubmit={onLogin} noValidate>
-                <div className="mb-3">
-                  <label htmlFor="login-email" className="form-label">
-                    Email
-                  </label>
-                  <input
-                    id="login-email"
-                    className={`form-control ${
-                      errors.email ? "is-invalid" : ""
-                    }`}
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                  {errors.email && (
-                    <div className="invalid-feedback">{errors.email}</div>
-                  )}
-                </div>
-
-                <div className="mb-3">
-                  <label htmlFor="login-password" className="form-label">
-                    Password
-                  </label>
-                  <div className={styles.passwordWrapper}>
-                    <input
-                      id="login-password"
-                      className={`form-control ${
-                        errors.password ? "is-invalid" : ""
-                      } ${styles.passwordInput}`}
-                      type={showPassword ? "text" : "password"}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                    />
-                    <span
-                      className={styles.showPassIcon}
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      <Image
-                        src={
-                          showPassword ? "/images/eye1.png" : "/images/eye.png"
-                        }
-                        alt="Show password"
-                        width={32}
-                        height={32}
-                      />
-                    </span>
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  className={`${styles.mainBtn} ${styles.loginBtn} w-100`}
-                  disabled={submitting}
-                >
-                  {submitting ? "Logging in…" : "Login"}
-                </button>
-              </form>
-            ) : (
-              <form onSubmit={onRegister} noValidate>
-                <div className="mb-3">
-                  <label htmlFor="reg-email" className="form-label">
-                    Email
-                  </label>
-                  <input
-                    id="reg-email"
-                    className={`form-control ${
-                      errors.email ? "is-invalid" : ""
-                    }`}
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                  {errors.email && (
-                    <div className="invalid-feedback">{errors.email}</div>
-                  )}
-                </div>
-
-                <div className="mb-3">
-                  <label htmlFor="reg-password" className="form-label">
-                    Password
-                  </label>
-                  <div className={styles.passwordWrapper}>
-                    <input
-                      id="reg-password"
-                      className={`form-control ${
-                        errors.password ? "is-invalid" : ""
-                      } ${styles.passwordInput}`}
-                      type={showPassword ? "text" : "password"}
-                      value={password}
-                      onChange={(e) => handlePasswordChange(e.target.value)}
-                      required
-                    />
-                    <span
-                      className={styles.showPassIcon}
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      <Image
-                        src={
-                          showPassword ? "/images/eye1.png" : "/images/eye.png"
-                        }
-                        alt="Показать пароль"
-                        width={32}
-                        height={32}
-                      />
-                    </span>
-                  </div>
-                  {errors.password && (
-                    <div className="invalid-feedback">{errors.password}</div>
-                  )}
-
-                  <div
-                    className="mt-2"
-                    style={{ fontSize: "0.85rem", color: "#666" }}
-                  >
-                    Password must be at least 8 characters, include upper and
-                    lower case letters, digits and special characters.
-                  </div>
-
-                  {renderPasswordStrength()}
-                </div>
-
-                <button
-                  type="submit"
-                  className={`${styles.mainBtn} ${styles.registerBtn} w-100`}
-                  disabled={submitting}
-                >
-                  {submitting ? "Registering…" : "Register"}
-                </button>
-              </form>
-            )}
+    <div className={styles.formCard}>
+      {mode === "login" ? (
+        <form onSubmit={onLogin} noValidate>
+          <div className="mb-3">
+            <label htmlFor="login-email" className="form-label">Email</label>
+            <input
+              id="login-email"
+              className={`form-control ${errors.email ? "is-invalid" : ""}`}
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+            {errors.email && <div className="invalid-feedback">{errors.email}</div>}
           </div>
-        </CSSTransition>
+
+          <div className="mb-3">
+            <label htmlFor="login-password" className="form-label">Password</label>
+            <div className={styles.passwordWrapper}>
+              <input
+                id="login-password"
+                className={`form-control ${errors.password ? "is-invalid" : ""} ${styles.passwordInput}`}
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <span className={styles.showPassIcon} onClick={() => setShowPassword(!showPassword)}>
+                <Image
+                  src={showPassword ? "/images/eye1.png" : "/images/eye.png"}
+                  alt="Show password"
+                  width={32}
+                  height={32}
+                />
+              </span>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            className={`${styles.mainBtn} ${styles.loginBtn} w-100`}
+            disabled={submitting}
+          >
+            {submitting ? "Logging in…" : "Login"}
+          </button>
+        </form>
+      ) : (
+        <form onSubmit={onRegister} noValidate>
+          <div className="mb-3">
+            <label htmlFor="reg-email" className="form-label">Email</label>
+            <input
+              id="reg-email"
+              className={`form-control ${errors.email ? "is-invalid" : ""}`}
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+            {errors.email && <div className="invalid-feedback">{errors.email}</div>}
+          </div>
+
+          <div className="mb-3">
+            <label htmlFor="reg-password" className="form-label">Password</label>
+            <div className={styles.passwordWrapper}>
+              <input
+                id="reg-password"
+                className={`form-control ${errors.password ? "is-invalid" : ""} ${styles.passwordInput}`}
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => handlePasswordChange(e.target.value)}
+                required
+              />
+              <span className={styles.showPassIcon} onClick={() => setShowPassword(!showPassword)}>
+                <Image
+                  src={showPassword ? "/images/eye1.png" : "/images/eye.png"}
+                  alt="Показать пароль"
+                  width={32}
+                  height={32}
+                />
+              </span>
+            </div>
+            {errors.password && <div className="invalid-feedback d-block">{errors.password}</div>}
+            <div className="mt-2" style={{ fontSize: "0.85rem", color: "#666" }}>
+              Password must be at least 8 characters, include upper and lower case letters, digits and special characters.
+            </div>
+            {renderPasswordStrength()}
+          </div>
+
+          <button
+            type="submit"
+            className={`${styles.mainBtn} ${styles.registerBtn} w-100`}
+            disabled={submitting}
+          >
+            {submitting ? "Registering…" : "Register"}
+          </button>
+        </form>
       )}
-    </>
+    </div>
   );
 }

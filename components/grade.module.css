@@ -1,0 +1,475 @@
+/* ── Wrapper & Card ───────────────────────────────────── */
+.wrapper {
+  max-width: 580px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 1.75rem 2rem 2rem;
+  box-shadow: 0 4px 28px rgba(30, 96, 120, 0.09), 0 1px 4px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(30, 96, 120, 0.08);
+  overflow: hidden;
+}
+
+/* ── Header ───────────────────────────────────────────── */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+.headerIcon {
+  font-size: 1.4rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.headerText {
+  flex: 1;
+}
+
+.headerText h3 {
+  margin: 0 0 0.15rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1e6078;
+}
+
+.headerText p {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #9ca3af;
+}
+
+.stepCount {
+  font-size: 0.8rem;
+  color: #b0b8c1;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  background: #f5f7f9;
+  border-radius: 8px;
+  padding: 0.2rem 0.55rem;
+}
+
+/* ── Progress bar ─────────────────────────────────────── */
+.progressTrack {
+  height: 3px;
+  background: #f0f4f6;
+  border-radius: 2px;
+  margin-bottom: 0.8rem;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #1e6078, #2d9bba);
+  border-radius: 2px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Step dots ────────────────────────────────────────── */
+.dots {
+  display: flex;
+  gap: 0.45rem;
+  margin-bottom: 1.6rem;
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #e5e7eb;
+  transition: background 0.25s ease, transform 0.25s ease, width 0.25s ease;
+}
+
+.dotActive {
+  background: #1e6078;
+  transform: scale(1.15);
+  width: 18px;
+  border-radius: 4px;
+}
+
+/* ── Slide animations ─────────────────────────────────── */
+.stepWrap {
+  overflow: hidden;
+  min-height: 240px;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(32px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-32px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.enterFwd {
+  animation: slideInRight 0.26s ease-out;
+}
+
+.enterBck {
+  animation: slideInLeft 0.26s ease-out;
+}
+
+/* ── Step text ────────────────────────────────────────── */
+.stepTitle {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin-bottom: 0.3rem;
+  line-height: 1.35;
+}
+
+.stepHint {
+  font-size: 0.8rem;
+  color: #9ca3af;
+  margin-bottom: 1.3rem;
+}
+
+/* ── Large pill scale (1–10) ──────────────────────────── */
+.scaleLg {
+  display: flex;
+  gap: 0.3rem;
+  margin-bottom: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.pill {
+  flex: 1;
+  min-width: 30px;
+  height: 42px;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #6b7280;
+  transition: border-color 0.13s ease, color 0.13s ease, transform 0.13s ease,
+    box-shadow 0.13s ease, background 0.13s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.pill:hover {
+  border-color: #1e6078;
+  color: #1e6078;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(30, 96, 120, 0.14);
+}
+
+.pillActive {
+  background: #1e6078;
+  border-color: #1e6078;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(30, 96, 120, 0.32);
+}
+
+.pillActive:hover {
+  background: #155063;
+  border-color: #155063;
+  color: #fff;
+}
+
+/* ── Small pill scale (dimensions, 1–10) ─────────────── */
+.scaleSm {
+  display: flex;
+  gap: 0.22rem;
+  flex: 1;
+}
+
+.pillSm {
+  flex: 1;
+  min-width: 20px;
+  height: 28px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 7px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #b0b8c1;
+  transition: border-color 0.12s ease, color 0.12s ease, background 0.12s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.pillSm:hover {
+  border-color: #1e6078;
+  color: #1e6078;
+}
+
+.pillSmActive {
+  background: #1e6078;
+  border-color: #1e6078;
+  color: #fff;
+}
+
+/* ── Scale edge labels ────────────────────────────────── */
+.scaleLabels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  color: #b0b8c1;
+  margin-bottom: 1.5rem;
+  padding: 0 2px;
+}
+
+/* ── Dimensions grid ──────────────────────────────────── */
+.dimGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.dimRow {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.dimLabel {
+  width: 110px;
+  font-size: 0.83rem;
+  font-weight: 600;
+  color: #374151;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+@media (max-width: 460px) {
+  .dimRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+  }
+
+  .dimLabel {
+    width: auto;
+  }
+}
+
+/* ── NPS zones ────────────────────────────────────────── */
+.npsZones {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  margin-bottom: 1.5rem;
+  padding: 0 2px;
+}
+
+.npsDetractor {
+  color: #ef4444;
+}
+
+.npsPassive {
+  color: #f97316;
+}
+
+.npsPromoter {
+  color: #22c55e;
+}
+
+/* ── Tag chips (step 4) ───────────────────────────────── */
+.tagGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-bottom: 1.5rem;
+}
+
+.tag {
+  padding: 0.42rem 0.9rem;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 20px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: #374151;
+  transition: border-color 0.13s ease, color 0.13s ease, background 0.13s ease,
+    transform 0.1s ease;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.tag:hover {
+  border-color: #1e6078;
+  color: #1e6078;
+  transform: translateY(-1px);
+}
+
+.tagActive {
+  background: rgba(30, 96, 120, 0.07);
+  border-color: #1e6078;
+  color: #1e6078;
+  font-weight: 600;
+}
+
+/* ── Textarea ─────────────────────────────────────────── */
+.textarea {
+  width: 100%;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  color: #374151;
+  resize: vertical;
+  min-height: 96px;
+  font-family: inherit;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  outline: none;
+  box-sizing: border-box;
+  background: #fafbfc;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.textarea::placeholder {
+  color: #c5ccd4;
+}
+
+.textarea:focus {
+  border-color: #1e6078;
+  box-shadow: 0 0 0 3px rgba(30, 96, 120, 0.09);
+  background: #fff;
+}
+
+/* ── Button row ───────────────────────────────────────── */
+.btnRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1.1rem;
+}
+
+.backBtn {
+  background: transparent;
+  border: none;
+  color: #9ca3af;
+  font-size: 0.87rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0.5rem 0;
+  transition: color 0.13s ease;
+}
+
+.backBtn:hover {
+  color: #374151;
+}
+
+.nextBtn {
+  background: #1e6078;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 0.7rem 1.4rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-left: auto;
+  transition: background 0.14s ease, transform 0.1s ease, opacity 0.14s ease,
+    box-shadow 0.14s ease;
+  letter-spacing: 0.01em;
+}
+
+.nextBtn:hover:not(:disabled) {
+  background: #155063;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(30, 96, 120, 0.22);
+}
+
+.nextBtn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.submitBtn {
+  background: #1e6078;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 0.72rem 1.6rem;
+  font-size: 0.93rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-left: auto;
+  transition: background 0.14s ease, transform 0.1s ease, opacity 0.14s ease,
+    box-shadow 0.14s ease;
+  letter-spacing: 0.01em;
+}
+
+.submitBtn:hover:not(:disabled) {
+  background: #155063;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(30, 96, 120, 0.22);
+}
+
+.submitBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.errorMsg {
+  font-size: 0.81rem;
+  color: #dc2626;
+  margin-top: 0.4rem;
+  text-align: center;
+}
+
+/* ── Success state ────────────────────────────────────── */
+.successCard {
+  text-align: center;
+  padding: 2.5rem 1rem;
+}
+
+.successIcon {
+  font-size: 3.5rem;
+  display: block;
+  margin-bottom: 0.8rem;
+}
+
+.successTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e6078;
+  margin: 0 0 0.5rem;
+}
+
+.successText {
+  font-size: 0.88rem;
+  color: #9ca3af;
+  margin: 0;
+}

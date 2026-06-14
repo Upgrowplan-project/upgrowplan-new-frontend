@@ -6,6 +6,7 @@ import { API_BASE } from "./../apiConfig";
 
 export interface JwtResponse {
   token: string;
+  refreshToken: string;
   email: string;
 }
 
@@ -26,8 +27,8 @@ export async function login(email: string, password: string): Promise<JwtRespons
     const res = await handleRequest<JwtResponse>(
       axios.post(`${API_BASE}/auth/login`, { email, password })
     );
-    console.log("Login response:", res);
     localStorage.setItem("token", res.token);
+    localStorage.setItem("refreshToken", res.refreshToken);
     return res;
   } catch (err: any) {
     console.error("Login error:", err.message || err);
@@ -35,21 +36,15 @@ export async function login(email: string, password: string): Promise<JwtRespons
   }
 }
 
-export async function registerByEmail(email: string, password: string): Promise<JwtResponse> {
+export async function registerByEmail(email: string, password: string): Promise<{ message: string }> {
   const payload = { email, password };
-  console.log("Register payload:", payload);
-  console.log("API_BASE:", API_BASE);
-
   try {
-    const response = await handleRequest<JwtResponse>(
+    const response = await handleRequest<{ message: string }>(
       axios.post(`${API_BASE}/auth/register`, payload)
     );
-    console.log("Register response:", response);
-
-    localStorage.setItem("token", response.token);
     return response;
   } catch (error: any) {
-    console.error("Register error:", error?.response?.data || error.message); 
+    console.error("Register error:", error?.response?.data || error.message);
     throw error;
   }
 }
@@ -154,19 +149,98 @@ export async function uploadAvatar(file: File): Promise<{ avatarUrl: string }> {
 
 export const logout = async () => {
   const token = localStorage.getItem("token");
-  if (!token) return;
+  const refreshToken = localStorage.getItem("refreshToken");
 
   try {
-    await axios.post(`${API_BASE}/auth/logout`, {}, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    localStorage.removeItem("token"); // удаляем токен
+    await axios.post(
+      `${API_BASE}/auth/logout`,
+      { refreshToken },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
   } catch (err) {
     console.error("Ошибка при выходе", err);
-    throw err;
+  } finally {
+    localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
   }
 };
 
+
+export interface OAuthResponse {
+  token: string;
+  refreshToken: string;
+  user: UserProfile;
+}
+
+export async function oauthLogin(
+  email: string,
+  fullname: string,
+  provider: string
+): Promise<OAuthResponse> {
+  return handleRequest(
+    axios.post(`${API_BASE}/auth/oauth`, null, {
+      params: { email, fullname, provider },
+    })
+  );
+}
+
+// ─── Projects ────────────────────────────────────────────────────────────────
+
+export type ProjectType = "BUSINESS_PLAN" | "MARKET_RESEARCH" | "DEEP_RESEARCH" | "FINANCIAL_MODEL";
+export type ProjectStatus = "PENDING" | "IN_PROGRESS" | "COMPLETED" | "FAILED";
+
+export interface Project {
+  id: number;
+  type: ProjectType;
+  title: string;
+  status: ProjectStatus;
+  summary?: string;
+  fileUrl?: string;
+  externalId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProjectStats {
+  total: number;
+  plans: number;
+  research: number;
+  deepResearch: number;
+}
+
+function authHeader() {
+  const token = localStorage.getItem("token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+export async function getProjects(): Promise<Project[]> {
+  return handleRequest(
+    axios.get(`${API_BASE}/projects`, { headers: authHeader() })
+  );
+}
+
+export async function getProjectStats(): Promise<ProjectStats> {
+  return handleRequest(
+    axios.get(`${API_BASE}/projects/stats`, { headers: authHeader() })
+  );
+}
+
+export async function createProject(
+  title: string,
+  type: ProjectType,
+  externalId?: string,
+  summary?: string
+): Promise<Project> {
+  return handleRequest(
+    axios.post(`${API_BASE}/projects`, { title, type, externalId, summary }, { headers: authHeader() })
+  );
+}
+
+export async function deleteProject(id: number): Promise<void> {
+  await axios.delete(`${API_BASE}/projects/${id}`, { headers: authHeader() });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 export const deleteAccount = async () => {
   const token = localStorage.getItem("token");

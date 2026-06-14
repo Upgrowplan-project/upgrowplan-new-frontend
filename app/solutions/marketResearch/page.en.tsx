@@ -12,6 +12,14 @@ import {
   FiRefreshCw,
 } from "react-icons/fi";
 
+// Countries where Google CSE coverage is limited — reports may have lower confidence.
+const LOW_COVERAGE_COUNTRIES = new Set([
+  "Vietnam", "China", "Bangladesh", "Pakistan", "Sri Lanka",
+  "Tanzania", "Nigeria", "Kenya", "Ethiopia",
+  "Myanmar", "Cambodia", "Laos",
+  "Nepal", "Mongolia",
+]);
+
 // Countries list: value=English (sent to API), label=English display
 // Sorted alphabetically by label
 const COUNTRIES = [
@@ -89,31 +97,25 @@ const COUNTRIES = [
 
 type BusinessType = "B2B" | "B2C" | "B2B2C" | "C2C" | "D2C";
 type ProductType =
-  // B2C категории
   | "retail_fmcg"
   | "fashion_apparel"
   | "electronics"
   | "food_beverage"
   | "digital_apps"
-  // B2B категории
   | "manufacturing"
   | "wholesale_trade"
   | "corporate_solutions"
   | "business_tech"
-  // Маркетплейсы и платформы
   | "marketplace"
   | "p2p_platform"
-  // SaaS и цифровые платформы
   | "saas_b2b"
   | "saas_b2c"
   | "cloud_platform"
-  // Промышленные рынки
   | "industrial_equipment"
   | "logistics"
   | "construction"
   | "energy"
   | "agriculture"
-  // Услуги
   | "consulting"
   | "healthcare"
   | "education"
@@ -121,7 +123,25 @@ type ProductType =
   | "financial_services"
   | "horeca"
   | "professional_services"
-  // Общее
+  | "wellness_fitness"
+  | "beauty_personal_care"
+  | "home_services"
+  | "legal_services"
+  | "pet_services"
+  | "pet_grooming"
+  | "childcare"
+  | "photography_studio"
+  | "car_dealership"
+  | "coworking"
+  | "entertainment_media"
+  | "real_estate"
+  | "transport_mobility"
+  | "auto_services"
+  | "electronics_repair"
+  | "clothing_repair"
+  | "event_services"
+  | "furniture_interior"
+  | "pharmacy_optics"
   | "other";
 type ResearchGoal =
   | "market_entry"
@@ -622,6 +642,28 @@ export default function MarketResearchPage() {
       label: "Профессиональные услуги",
       category: "Услуги",
     },
+    { value: "wellness_fitness" as ProductType, label: "Фитнес, йога, велнес, спа", category: "Услуги" },
+    { value: "beauty_personal_care" as ProductType, label: "Салоны красоты, барбершопы, маникюр", category: "Услуги" },
+    { value: "healthcare" as ProductType, label: "Медицинские клиники", category: "Услуги" },
+    { value: "pet_services" as ProductType, label: "Зоомагазины и ветеринария", category: "Услуги" },
+    { value: "pet_grooming" as ProductType, label: "Студия груминга (стрижка и уход за питомцами)", category: "Услуги" },
+    { value: "childcare" as ProductType, label: "Детские центры, развивающие клубы, частные сады", category: "Услуги" },
+    { value: "home_services" as ProductType, label: "Дом и быт (клининг, бытовые услуги)", category: "Услуги" },
+    { value: "legal_services" as ProductType, label: "Юридические услуги", category: "Услуги" },
+    { value: "event_services" as ProductType, label: "Организация мероприятий", category: "Услуги" },
+    { value: "photography_studio" as ProductType, label: "Фотостудии и видеопродакшн", category: "Услуги" },
+    { value: "coworking" as ProductType, label: "Коворкинги и аренда офисов", category: "Услуги" },
+    { value: "auto_services" as ProductType, label: "Автосервис, автомойка, шиномонтаж", category: "Ремонт и сервис" },
+    { value: "electronics_repair" as ProductType, label: "Ремонт техники (телефоны, ноутбуки)", category: "Ремонт и сервис" },
+    { value: "clothing_repair" as ProductType, label: "Ателье, ремонт одежды и обуви", category: "Ремонт и сервис" },
+    { value: "car_dealership" as ProductType, label: "Автосалоны и авторынки", category: "Розница" },
+    { value: "real_estate" as ProductType, label: "Недвижимость (агентства, PropTech)", category: "Недвижимость" },
+    { value: "construction" as ProductType, label: "Строительство и ремонт помещений", category: "Недвижимость" },
+    { value: "furniture_interior" as ProductType, label: "Мебель, интерьер и декор", category: "Розница" },
+    { value: "pharmacy_optics" as ProductType, label: "Аптека, оптика, медицинские товары", category: "Розница" },
+    { value: "entertainment_media" as ProductType, label: "Развлечения, медиа, стриминг", category: "Цифровые" },
+    { value: "transport_mobility" as ProductType, label: "Транспорт: такси, каршеринг", category: "B2B" },
+    { value: "financial_services" as ProductType, label: "Финансовые услуги и страхование", category: "B2B" },
 
     // Общее
     { value: "other" as ProductType, label: "Другое", category: "Другое" },
@@ -1428,6 +1470,20 @@ export default function MarketResearchPage() {
                         </option>
                       ))}
                     </select>
+                    {formData.country && LOW_COVERAGE_COUNTRIES.has(formData.country) && (
+                      <p style={{
+                        marginTop: "0.5rem",
+                        fontSize: "0.8rem",
+                        color: "#b45309",
+                        backgroundColor: "#fffbeb",
+                        border: "1px solid #fcd34d",
+                        borderRadius: "6px",
+                        padding: "0.5rem 0.75rem",
+                        lineHeight: 1.4,
+                      }}>
+                        ⚠️ Public data availability for this market may be limited — the report may have lower confidence.
+                      </p>
+                    )}
                   </div>
 
                   <div className={styles.formGroup}>
@@ -1636,13 +1692,11 @@ export default function MarketResearchPage() {
 
           const WAVE_LABELS: Record<number, string> = {
             1: "Data Collection",
-            2: "Financial Model",
-            3: "Validation",
+            2: "Validation",
           };
           const WAVE_AGENTS: Record<number, string[]> = {
             1: ["MarketSizingAgent", "CompetitorAnalysisAgent", "TargetAudienceAgent", "TrendsAnalysisAgent", "ConsumerInsightsAgent"],
-            2: ["FinancialModelingAgent"],
-            3: ["ValidationAgent"],
+            2: ["ValidationAgent"],
           };
           const AGENT_DISPLAY: Record<string, string> = {
             "MarketSizingAgent":       "Market Sizing",
@@ -1650,7 +1704,6 @@ export default function MarketResearchPage() {
             "TargetAudienceAgent":     "Target Audience",
             "TrendsAnalysisAgent":     "Trends",
             "ConsumerInsightsAgent":   "Consumer Insights",
-            "FinancialModelingAgent":  "Financial Model",
             "ValidationAgent":         "Validation",
           };
           const STATUS_ICON: Record<string, string> = {

@@ -91,11 +91,58 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({ service, onClick }) =>
 
         {service.additional_info && (
           <div className="mt-3 pt-3 border-top small">
+            {/* Redis memory progress bar */}
+            {service.additional_info.used_percent !== undefined && (
+              <div>
+                <div className="d-flex justify-content-between mb-1" style={{ fontSize: '0.75rem' }}>
+                  <span className="text-muted">
+                    <i className="bi bi-database me-1"></i>Memory
+                  </span>
+                  <span className="fw-bold">
+                    {service.additional_info.used_mb} MB / {service.additional_info.plan_limit_mb} MB
+                    {' '}
+                    <span className={
+                      service.additional_info.used_percent >= 80 ? 'text-danger' :
+                      service.additional_info.used_percent >= 70 ? 'text-warning' : 'text-success'
+                    }>
+                      ({service.additional_info.used_percent}%)
+                    </span>
+                  </span>
+                </div>
+                <div className="progress mb-2" style={{ height: '6px', borderRadius: '3px' }}>
+                  <div
+                    className={`progress-bar ${
+                      service.additional_info.used_percent >= 80 ? 'bg-danger' :
+                      service.additional_info.used_percent >= 70 ? 'bg-warning' : 'bg-success'
+                    }`}
+                    style={{ width: `${Math.min(service.additional_info.used_percent, 100)}%` }}
+                  />
+                </div>
+                {service.additional_info.cleanup_triggered && (
+                  <div className="text-warning" style={{ fontSize: '0.72rem' }}>
+                    <i className="bi bi-trash me-1"></i>
+                    Auto-cleanup: deleted {service.additional_info.keys_deleted} keys
+                    {service.additional_info.used_mb_after_cleanup !== null && (
+                      <span className="text-muted ms-1">
+                        → {service.additional_info.used_mb_after_cleanup} MB
+                      </span>
+                    )}
+                  </div>
+                )}
+                {service.additional_info.evicted_keys > 0 && (
+                  <div className="text-muted" style={{ fontSize: '0.72rem' }}>
+                    <i className="bi bi-exclamation-circle me-1"></i>
+                    Evicted by LRU: {service.additional_info.evicted_keys} keys
+                  </div>
+                )}
+              </div>
+            )}
+
             {service.additional_info.deployment_url && (
               <div className="mb-1 text-truncate">
-                🔗 <a 
-                  href={`https://${service.additional_info.deployment_url}`} 
-                  target="_blank" 
+                🔗 <a
+                  href={`https://${service.additional_info.deployment_url}`}
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="text-decoration-none"
                   onClick={(e) => e.stopPropagation()}
@@ -104,12 +151,12 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({ service, onClick }) =>
                 </a>
               </div>
             )}
-            
+
             {service.additional_info.web_url && (
               <div className="mb-1">
-                🔗 <a 
-                  href={service.additional_info.web_url} 
-                  target="_blank" 
+                🔗 <a
+                  href={service.additional_info.web_url}
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="text-decoration-none"
                   onClick={(e) => e.stopPropagation()}

@@ -4,7 +4,8 @@
     "tabs": {
         "health": "System Health",
         "ratings": "User Ratings",
-        "emails": "Mail Monitoring"
+        "emails": "Mail Monitoring",
+        "quality_lab": "Quality Lab"
     },
     "status": {
         "overall": "Overall System Status",

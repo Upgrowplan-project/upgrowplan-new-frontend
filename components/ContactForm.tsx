@@ -164,11 +164,11 @@ export default function ContactForm({
         />
         <label className="form-check-label" htmlFor={`policyCheck-${locale}`}>
           {t.policyTextBefore}{" "}
-          <a href="/privacy" target="_blank">
+          <a href={locale === "ru" ? "/ru/privacy" : "/privacy"} target="_blank">
             {t.policyLinkOne}
           </a>{" "}
           {t.policyTextBetween}{" "}
-          <a href="/privacy" target="_blank">
+          <a href={locale === "ru" ? "/ru/privacy" : "/privacy"} target="_blank">
             {t.policyLinkTwo}
           </a>
           {t.policyTextAfter}

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Header from "../../../components/Header";
+import Grade from "../../../components/Grade";
 import styles from "./marketResearch.module.css";
 import {
   FiBarChart2,
@@ -11,6 +12,15 @@ import {
   FiFile,
   FiRefreshCw,
 } from "react-icons/fi";
+
+// Countries where Google CSE coverage is limited — reports may have lower confidence.
+// Shown as a soft warning in the UI; backend still processes the request.
+const LOW_COVERAGE_COUNTRIES = new Set([
+  "Vietnam", "China", "Bangladesh", "Pakistan", "Sri Lanka",
+  "Tanzania", "Nigeria", "Kenya", "Ethiopia",
+  "Myanmar", "Cambodia", "Laos",
+  "Nepal", "Mongolia",
+]);
 
 // Predefined countries: value=English (sent to API/geocoding), label=Russian (shown to user)
 // Sorted by Russian label. English value ensures DRA queries don't need geocoding for country part.
@@ -98,12 +108,6 @@ type OfferingSubType =
   | "hourly"
   | "product_plus_service";
 type PriceSegment = "budget" | "mid" | "premium";
-type RevenueRange =
-  | "under_1m"
-  | "1m_10m"
-  | "10m_50m"
-  | "50m_500m"
-  | "over_500m";
 type ProductType =
   // B2C категории
   | "retail_fmcg"
@@ -142,6 +146,11 @@ type ProductType =
   | "home_services"
   | "legal_services"
   | "pet_services"
+  | "pet_grooming"
+  | "childcare"
+  | "photography_studio"
+  | "car_dealership"
+  | "coworking"
   // Медиа и развлечения
   | "entertainment_media"
   // Недвижимость
@@ -151,6 +160,7 @@ type ProductType =
   // Ремонт и сервис
   | "auto_services"
   | "electronics_repair"
+  | "clothing_repair"
   // Ивент
   | "event_services"
   // Мебель и интерьер
@@ -182,14 +192,29 @@ interface FormData {
   offeringSubType: OfferingSubType | "";
   // Ценовой сегмент
   priceSegment: PriceSegment | "";
-  // Стадия бизнеса
-  isExistingBusiness: boolean;
-  annualRevenueRange: RevenueRange | "";
-  yearsOperating: string;
   // Дополнительные поля
   targetAudience: string;
   competitors: string;
 }
+// Pre-flight validation contract (mirrors backend request_validator.ValidationResult)
+interface ValidationAction {
+  label: string;
+  type: "set_field" | "clear_field";
+  field: string;
+  value?: string;
+}
+interface ValidationIssue {
+  field: string;
+  code: string;
+  message: string;
+  actions?: ValidationAction[];
+}
+interface ValidationResult {
+  valid: boolean;
+  errors: ValidationIssue[];
+  warnings: ValidationIssue[];
+}
+
 interface PipelineAgent {
   name: string;
   status: "waiting" | "running" | "completed" | "timeout" | "failed";
@@ -435,9 +460,6 @@ export default function MarketResearchPage() {
     offeringType: "",
     offeringSubType: "",
     priceSegment: "",
-    isExistingBusiness: false,
-    annualRevenueRange: "",
-    yearsOperating: "",
     targetAudience: "",
     competitors: "",
   };
@@ -455,6 +477,8 @@ export default function MarketResearchPage() {
     useState<EnhancedResearchReport | null>(null);
   const [activeSection, setActiveSection] = useState<string>("executive");
   const [error, setError] = useState<string | null>(null);
+  const [validationErrors, setValidationErrors] = useState<ValidationIssue[]>([]);
+  const [validationWarnings, setValidationWarnings] = useState<ValidationIssue[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResearchPaused, setIsResearchPaused] = useState(false);
   const isCompletedView = Boolean(enhancedReport || researchReport);
@@ -497,6 +521,7 @@ export default function MarketResearchPage() {
 
   // Health status state
   const [healthStatus, setHealthStatus] = useState<any>(null);
+  const [healthExpanded, setHealthExpanded] = useState(false);
   const [isLoadingHealth, setIsLoadingHealth] = useState(true);
   const [isRefreshingHealth, setIsRefreshingHealth] = useState(false);
   const [downloadingFormat, setDownloadingFormat] = useState<"docx" | "pdf" | null>(null);
@@ -664,9 +689,15 @@ export default function MarketResearchPage() {
     transport_mobility: "Транспорт: такси, каршеринг, мобильность",
     auto_services: "Автосервис и уход за автомобилем",
     electronics_repair: "Ремонт техники и сервисные центры",
+    clothing_repair: "Ателье и ремонт одежды",
     event_services: "Организация мероприятий",
     furniture_interior: "Мебель, интерьер и декор",
     pharmacy_optics: "Аптека и оптика",
+    pet_grooming: "Студия груминга",
+    childcare: "Детские центры и сады",
+    photography_studio: "Фотостудии и видеопродакшн",
+    car_dealership: "Автосалоны и авторынки",
+    coworking: "Коворкинги и аренда офисов",
     other: "Другое",
   };
 
@@ -695,14 +726,6 @@ export default function MarketResearchPage() {
     { value: "budget" as PriceSegment, label: "Эконом", desc: "Масс-маркет, низкий ценовой сегмент" },
     { value: "mid" as PriceSegment, label: "Средний", desc: "Средний ценовой сегмент" },
     { value: "premium" as PriceSegment, label: "Премиум", desc: "Премиум и люкс" },
-  ];
-
-  const revenueRangeOptions = [
-    { value: "under_1m" as RevenueRange, label: "Менее $15K/год" },
-    { value: "1m_10m" as RevenueRange, label: "$15K – $150K/год" },
-    { value: "10m_50m" as RevenueRange, label: "$150K – $750K/год" },
-    { value: "50m_500m" as RevenueRange, label: "$750K – $7.5M/год" },
-    { value: "over_500m" as RevenueRange, label: "Свыше $7.5M/год" },
   ];
 
   const businessTypeOptions = [
@@ -737,6 +760,7 @@ export default function MarketResearchPage() {
     { value: "auto_services",       label: "Автосервис, автомойка, шиномонтаж",      category: "Ремонт и сервис" },
     { value: "electronics_repair",  label: "Ремонт техники (телефоны, ноутбуки, бытовая)", category: "Ремонт и сервис" },
     { value: "home_services",       label: "Дом и быт (клининг, бытовые услуги, курьеры)", category: "Ремонт и сервис" },
+    { value: "clothing_repair",     label: "Ателье, ремонт одежды и обуви",          category: "Ремонт и сервис" },
     // Розница и потребительские товары
     { value: "retail_fmcg",         label: "Розница и FMCG (магазины, супермаркеты)", category: "Розница" },
     { value: "fashion_apparel",     label: "Мода и одежда",                           category: "Розница" },
@@ -748,15 +772,20 @@ export default function MarketResearchPage() {
     { value: "beauty_personal_care",label: "Салоны красоты, барбершопы, маникюр",     category: "Здоровье и красота" },
     { value: "healthcare",          label: "Медицинские клиники и диагностика",        category: "Здоровье и красота" },
     { value: "pet_services",        label: "Зоомагазины и ветеринария",               category: "Здоровье и красота" },
+    { value: "pet_grooming",        label: "Студия груминга (стрижка и уход за питомцами)", category: "Здоровье и красота" },
     // Образование и профессиональные услуги
     { value: "education",           label: "Образование и онлайн-обучение",            category: "Образование и услуги" },
+    { value: "childcare",           label: "Детские центры, развивающие клубы, частные сады", category: "Образование и услуги" },
     { value: "consulting",          label: "Консалтинг (персональные услуги)",         category: "Образование и услуги" },
     { value: "professional_services",label: "Агентства и аутсорсинг (маркетинг, HR, бухгалтерия)", category: "Образование и услуги" },
     { value: "legal_services",      label: "Юридические услуги",                      category: "Образование и услуги" },
     { value: "event_services",      label: "Организация мероприятий и ивент-агентства", category: "Образование и услуги" },
+    { value: "photography_studio",  label: "Фотостудии и видеопродакшн",              category: "Образование и услуги" },
+    { value: "coworking",           label: "Коворкинги и аренда офисов",              category: "Образование и услуги" },
     // Недвижимость и строительство
     { value: "real_estate",         label: "Недвижимость (агентства, PropTech)",       category: "Недвижимость и строительство" },
     { value: "construction",        label: "Строительство и ремонт помещений",         category: "Недвижимость и строительство" },
+    { value: "car_dealership",      label: "Автосалоны и авторынки",                  category: "Недвижимость и строительство" },
     // Цифровые продукты и SaaS
     { value: "digital_apps",        label: "Мобильные и веб-приложения (B2C)",         category: "Цифровые продукты" },
     { value: "saas_b2b",            label: "B2B SaaS / Онлайн-сервисы для бизнеса",    category: "Цифровые продукты" },
@@ -855,9 +884,34 @@ export default function MarketResearchPage() {
     }));
   };
 
+  // Google long-name → frontend COUNTRIES value (only known divergences).
+  const normalizeCountryValue = (name: string): string => {
+    const aliases: Record<string, string> = {
+      "United States": "USA",
+      "United Kingdom": "UK",
+      "United Arab Emirates": "UAE",
+      Czechia: "Czech Republic",
+    };
+    const mapped = aliases[name] || name;
+    return COUNTRIES.some((c) => c.value === mapped) ? mapped : name;
+  };
+
+  // Apply a one-click validation fix to the form, then let the user resubmit.
+  const handleApplyValidationAction = (action: ValidationAction) => {
+    const key =
+      action.field === "country" ? "country" : action.field === "region" ? "region" : null;
+    if (!key) return;
+    let value = action.type === "clear_field" ? "" : action.value || "";
+    if (key === "country" && value) value = normalizeCountryValue(value);
+    setFormData((prev) => ({ ...prev, [key]: value }));
+    setValidationErrors([]);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setValidationErrors([]);
+    setValidationWarnings([]);
     setIsSubmitting(true);
     setIsResearchPaused(false);
     setElapsedSeconds(0);
@@ -926,51 +980,73 @@ export default function MarketResearchPage() {
       return;
     }
 
+    // Parse competitors string → array
+    const competitorsList = formData.competitors
+      ? formData.competitors.split(",").map((c) => c.trim()).filter(Boolean)
+      : undefined;
+
+    // Derive industry from selected product type (first selected)
+    const primaryProductType = formData.productTypes[0];
+    const industryStr = productTypeToIndustry[primaryProductType] ?? primaryProductType;
+
+    // Build ResearchRequest directly — no onboarding mapper indirection.
+    // Built once: used for both pre-flight validation and submission.
+    const requestData: Record<string, unknown> = {
+      product_name: formData.productName,
+      product_description: formData.productDescription,
+      country: formData.country,
+      ...(formData.region ? { region: formData.region } : {}),
+      // business_type: API expects single value; take first selected
+      business_type: formData.businessTypes[0],
+      // product_type: same — take first selected
+      product_type: primaryProductType,
+      localization: formData.localization,
+      industry: industryStr,
+      research_goals: formData.researchGoals,
+      // Offering & pricing (optional — omit if not set)
+      ...(formData.offeringType ? { offering_type: formData.offeringType } : {}),
+      ...(formData.offeringSubType ? { offering_sub_type: formData.offeringSubType } : {}),
+      ...(formData.priceSegment ? { price_segment: formData.priceSegment } : {}),
+      // Optional extras
+      ...(formData.targetAudience ? { target_audience_description: formData.targetAudience } : {}),
+      ...(competitorsList && competitorsList.length > 0 ? { competitors: competitorsList } : {}),
+    };
+
+    // PRE-FLIGHT VALIDATION — coherence + injection gate BEFORE launching the
+    // pipeline (no research started, no cost). Authoritative gate is also
+    // enforced in /research/direct; this is for instant UX. On network failure
+    // we proceed and let the backend gate decide.
+    try {
+      const validateResp = await fetch(`${healthApiBaseUrl}/api/v1/research/validate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestData),
+      });
+      if (validateResp.ok) {
+        const verdict: ValidationResult = await validateResp.json();
+        setValidationWarnings(verdict.warnings || []);
+        if (!verdict.valid) {
+          setValidationErrors(verdict.errors || []);
+          if (elapsedTimerRef.current) {
+            clearInterval(elapsedTimerRef.current);
+            elapsedTimerRef.current = null;
+          }
+          setIsSubmitting(false);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          return;
+        }
+      }
+    } catch (validationErr) {
+      console.warn("[Validation] pre-flight skipped (backend gate is authoritative):", validationErr);
+    }
+    setValidationErrors([]);
+
     try {
       try {
         localStorage.setItem(LAST_REQUEST_FORM_DATA_KEY, JSON.stringify(formData));
       } catch (e) {
         console.warn("Не удалось сохранить данные последнего запроса:", e);
       }
-
-      // Parse competitors string → array
-      const competitorsList = formData.competitors
-        ? formData.competitors.split(",").map((c) => c.trim()).filter(Boolean)
-        : undefined;
-
-      // Derive industry from selected product type (first selected)
-      const primaryProductType = formData.productTypes[0];
-      const industryStr = productTypeToIndustry[primaryProductType] ?? primaryProductType;
-
-      // Build ResearchRequest directly — no onboarding mapper indirection
-      const requestData: Record<string, unknown> = {
-        product_name: formData.productName,
-        product_description: formData.productDescription,
-        country: formData.country,
-        ...(formData.region ? { region: formData.region } : {}),
-        // business_type: API expects single value; take first selected
-        business_type: formData.businessTypes[0],
-        // product_type: same — take first selected
-        product_type: primaryProductType,
-        localization: formData.localization,
-        industry: industryStr,
-        research_goals: formData.researchGoals,
-        // Offering & pricing (optional — omit if not set)
-        ...(formData.offeringType ? { offering_type: formData.offeringType } : {}),
-        ...(formData.offeringSubType ? { offering_sub_type: formData.offeringSubType } : {}),
-        ...(formData.priceSegment ? { price_segment: formData.priceSegment } : {}),
-        // Business stage
-        is_existing_business: formData.isExistingBusiness,
-        ...(formData.isExistingBusiness && formData.annualRevenueRange
-          ? { annual_revenue_range: formData.annualRevenueRange }
-          : {}),
-        ...(formData.isExistingBusiness && formData.yearsOperating
-          ? { years_operating: parseInt(formData.yearsOperating, 10) }
-          : {}),
-        // Optional extras
-        ...(formData.targetAudience ? { target_audience_description: formData.targetAudience } : {}),
-        ...(competitorsList && competitorsList.length > 0 ? { competitors: competitorsList } : {}),
-      };
 
       console.log(
         "[Market Research] Sending request to market-research-service (direct)..."
@@ -993,6 +1069,19 @@ export default function MarketResearchPage() {
       console.log("[Market Research] Response status:", response.status);
 
       if (!response.ok) {
+        // 422 = authoritative validation gate rejected the request (e.g. direct
+        // API call or a race after pre-flight). Render structured field errors.
+        if (response.status === 422) {
+          const body = await response.json().catch(() => null);
+          const verdict: ValidationResult | undefined = body?.detail ?? body;
+          if (verdict?.errors?.length) {
+            setValidationErrors(verdict.errors);
+            setValidationWarnings(verdict.warnings || []);
+            setIsSubmitting(false);
+            window.scrollTo({ top: 0, behavior: "smooth" });
+            return;
+          }
+        }
         const errorText = await response.text().catch(() => "Unknown error");
         throw new Error(
           `Ошибка запуска исследования (${response.status}). ` +
@@ -1560,77 +1649,154 @@ export default function MarketResearchPage() {
           </div>
         )}
 
-        {/* Health Status Panel */}
-        {!isLoadingHealth && healthStatus && (
-          <div className={styles.healthSection}>
-            <div className={styles.healthCard}>
-              <h3 style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ fontSize: '1.2rem' }}>🏥</span>
-                Состояние Системы
-                <button
-                  type="button"
-                  className={styles.healthRefreshButton}
-                  onClick={() => fetchHealthStatus(true)}
-                  disabled={isRefreshingHealth}
-                  title="Обновить статусы сервисов"
-                >
-                  <FiRefreshCw className={isRefreshingHealth ? styles.spin : ""} />
-                  Обновить
-                </button>
-                <span style={{
-                  marginLeft: '0.5rem',
-                  fontSize: '0.9rem',
-                  padding: '0.25rem 0.75rem',
-                  borderRadius: '12px',
-                  backgroundColor: healthStatus.all_ready ? '#d4edda' : '#f8d7da',
-                  color: healthStatus.all_ready ? '#155724' : '#721c24',
-                  fontWeight: 500
-                }}>
-                  {healthStatus.all_ready ? '✓ Готово' : '✗ Не готово'}
-                </span>
-              </h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '0.75rem' }}>
-                {healthStatus.agents.map((agent: any, index: number) => (
-                  <div
-                    key={index}
-                    style={{
-                      padding: '0.75rem',
-                      border: '1px solid',
-                      borderColor: agent.ready ? '#c3e6cb' : agent.optional ? '#fff3cd' : '#f5c6cb',
-                      borderRadius: '8px',
-                      backgroundColor: agent.ready ? '#f7fdf9' : agent.optional ? '#fffef5' : '#fff5f6',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.5rem'
-                    }}
-                  >
-                    <span style={{ fontSize: '1.5rem' }}>
-                      {agent.ready ? '✅' : agent.optional ? '⚠️' : '❌'}
-                    </span>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: 500, fontSize: '0.9rem', marginBottom: '0.25rem' }}>
-                        {agent.name}
-                        {agent.port && <span style={{ color: '#6c757d', fontSize: '0.85rem' }}> :{ agent.port}</span>}
-                        {agent.optional && <span style={{ color: '#856404', fontSize: '0.75rem', marginLeft: '0.25rem' }}>(опц.)</span>}
-                      </div>
-                      <div style={{ fontSize: '0.8rem', color: agent.ready ? '#28a745' : agent.optional ? '#856404' : '#dc3545' }}>
-                        {agent.status}
-                      </div>
-                      {agent.error && (
-                        <div style={{ fontSize: '0.75rem', color: '#6c757d', marginTop: '0.25rem' }}>
-                          {agent.error}
+        {/* Pre-flight validation issues (errors block submit, warnings are advisory) */}
+        {(validationErrors.length > 0 || validationWarnings.length > 0) && (
+          <div className={styles.errorSection}>
+            {validationErrors.length > 0 && (
+              <div
+                style={{
+                  border: "1px solid #f3b1b1",
+                  background: "#fdecec",
+                  borderRadius: 12,
+                  padding: "1rem 1.25rem",
+                  marginBottom: validationWarnings.length > 0 ? "0.75rem" : 0,
+                }}
+              >
+                <h3 style={{ display: "flex", alignItems: "center", gap: 8, color: "#b42318", margin: "0 0 0.5rem" }}>
+                  <FiAlertCircle size={20} /> Проверьте данные запроса
+                </h3>
+                <ul style={{ margin: 0, paddingLeft: "1.1rem", display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+                  {validationErrors.map((issue, i) => (
+                    <li key={`${issue.code}-${i}`} style={{ color: "#742a2a" }}>
+                      <span>{issue.message}</span>
+                      {issue.actions && issue.actions.length > 0 && (
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 6 }}>
+                          {issue.actions.map((action, j) => (
+                            <button
+                              key={j}
+                              type="button"
+                              onClick={() => handleApplyValidationAction(action)}
+                              style={{
+                                border: "1px solid #b42318",
+                                background: "#fff",
+                                color: "#b42318",
+                                borderRadius: 8,
+                                padding: "4px 10px",
+                                cursor: "pointer",
+                                fontSize: "0.85rem",
+                              }}
+                            >
+                              {action.label}
+                            </button>
+                          ))}
                         </div>
                       )}
-                    </div>
-                  </div>
-                ))}
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <div style={{ marginTop: '0.75rem', fontSize: '0.75rem', color: '#6c757d', textAlign: 'right' }}>
-                Обновлено: {new Date(healthStatus.timestamp).toLocaleTimeString('ru-RU')}
+            )}
+            {validationWarnings.length > 0 && (
+              <div
+                style={{
+                  border: "1px solid #f0d28a",
+                  background: "#fdf6e3",
+                  borderRadius: 12,
+                  padding: "0.75rem 1.25rem",
+                }}
+              >
+                <strong style={{ color: "#8a6d1f" }}>Предупреждения (можно продолжить):</strong>
+                <ul style={{ margin: "0.4rem 0 0", paddingLeft: "1.1rem" }}>
+                  {validationWarnings.map((issue, i) => (
+                    <li key={`${issue.code}-${i}`} style={{ color: "#8a6d1f" }}>{issue.message}</li>
+                  ))}
+                </ul>
               </div>
-            </div>
+            )}
           </div>
         )}
+
+        {/* Health Status — компактная полоса готовности. Точки = по компоненту
+            (цвет несёт состояние даже свёрнутой). Детали авто-раскрываются при
+            сбое; по клику можно развернуть полный список. Для оператора. */}
+        {!isLoadingHealth && healthStatus && (() => {
+          const agents: any[] = healthStatus.agents || [];
+          const readyCount = agents.filter((a) => a.ready).length;
+          const showDetail = healthExpanded || !healthStatus.all_ready;
+          const detailAgents = healthExpanded ? agents : agents.filter((a) => !a.ready);
+          return (
+            <div className={styles.healthSection}>
+              <div
+                className={styles.healthCard}
+                onClick={() => setHealthExpanded((v) => !v)}
+                style={{ cursor: "pointer", padding: "0.6rem 1rem" }}
+                title="Показать/скрыть детали компонентов"
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", flexWrap: "wrap" }}>
+                  <div style={{ display: "flex", gap: 5 }}>
+                    {agents.map((a, i) => (
+                      <span
+                        key={i}
+                        title={`${a.name}: ${a.status}`}
+                        style={{
+                          width: 9, height: 9, borderRadius: "50%",
+                          background: a.ready ? "#22c55e" : a.optional ? "#f59e0b" : "#ef4444",
+                        }}
+                      />
+                    ))}
+                  </div>
+                  <span style={{ fontWeight: 600, fontSize: "0.9rem", color: healthStatus.all_ready ? "#166534" : "#b42318" }}>
+                    {healthStatus.all_ready ? "Система готова к работе" : "Система не готова"}
+                  </span>
+                  <span style={{ fontSize: "0.8rem", color: "#6c757d" }}>{readyCount}/{agents.length}</span>
+                  <span style={{ flex: 1 }} />
+                  <button
+                    type="button"
+                    className={styles.healthRefreshButton}
+                    onClick={(e) => { e.stopPropagation(); fetchHealthStatus(true); }}
+                    disabled={isRefreshingHealth}
+                    title="Обновить статусы сервисов"
+                  >
+                    <FiRefreshCw className={isRefreshingHealth ? styles.spin : ""} />
+                  </button>
+                  <span style={{ color: "#9aa", fontSize: "0.8rem", transform: healthExpanded ? "rotate(180deg)" : "none", transition: "transform .2s" }}>▾</span>
+                </div>
+
+                {showDetail && (
+                  <div
+                    style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "0.5rem", marginTop: "0.65rem" }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {detailAgents.map((agent: any, index: number) => (
+                      <div
+                        key={index}
+                        style={{
+                          padding: "0.5rem 0.65rem",
+                          border: "1px solid",
+                          borderColor: agent.ready ? "#c3e6cb" : agent.optional ? "#fff3cd" : "#f5c6cb",
+                          borderRadius: 8,
+                          backgroundColor: agent.ready ? "#f7fdf9" : agent.optional ? "#fffef5" : "#fff5f6",
+                          display: "flex", alignItems: "center", gap: "0.5rem",
+                        }}
+                      >
+                        <span style={{ fontSize: "1.1rem" }}>{agent.ready ? "✅" : agent.optional ? "⚠️" : "❌"}</span>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontWeight: 500, fontSize: "0.85rem" }}>
+                            {agent.name}
+                            {agent.port && <span style={{ color: "#6c757d", fontSize: "0.8rem" }}> :{agent.port}</span>}
+                            {agent.optional && <span style={{ color: "#856404", fontSize: "0.72rem", marginLeft: "0.25rem" }}>(опц.)</span>}
+                          </div>
+                          <div style={{ fontSize: "0.78rem", color: agent.ready ? "#28a745" : agent.optional ? "#856404" : "#dc3545" }}>{agent.status}</div>
+                          {agent.error && <div style={{ fontSize: "0.72rem", color: "#6c757d", marginTop: "0.2rem" }}>{agent.error}</div>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Warning when system is not ready */}
         {!isLoadingHealth && healthStatus && !healthStatus.all_ready && (
@@ -1661,13 +1827,110 @@ export default function MarketResearchPage() {
           <>
           <div className={styles.formSection}>
             <div className={styles.card}>
-            <h2>Данные для исследования</h2>
-            <p className={styles.formDescription}>
-              Внесите информацию о вашей идее или проекте. Чем больше информации
-              вы предоставите, тем точнее и актуальнее будет исследование рынка.
-              Поля, отмеченные звездочкой (*), обязательны для заполнения.
-            </p>
+            {(isSubmitting && !isResearchPaused) ? (() => {
+              // ── WAITING VIEW (исследование идёт): сводка запроса + динамическое
+              //    превью разделов (загорается по pipeline_status) + блок доверия.
+              const pipeline = researchStatus?.pipeline_status;
+              const agentMap: Record<string, PipelineAgent> = {};
+              (pipeline?.agents ?? []).forEach((a) => { agentMap[a.name] = a; });
+              const statusOf = (agent: string): string =>
+                researchStatus?.status === "completed"
+                  ? "completed"
+                  : agentMap[agent]?.status || "waiting";
+              const S_ICON: Record<string, string> = { waiting: "○", running: "▶", completed: "✓", timeout: "⚠", failed: "✗" };
+              const S_COLOR: Record<string, string> = { waiting: "#9aa7b4", running: "#0683f5", completed: "#16a34a", timeout: "#f97316", failed: "#ef4444" };
+              const sectionDefs = [
+                { label: "Объём рынка — TAM / SAM / SOM", agent: "MarketSizingAgent" },
+                { label: "Конкурентный анализ", agent: "CompetitorAnalysisAgent" },
+                { label: "Ценовой анализ конкурентов", agent: "CompetitorAnalysisAgent" },
+                { label: "Целевая аудитория и сегменты", agent: "TargetAudienceAgent" },
+                { label: "Тренды и драйверы рынка", agent: "TrendsAnalysisAgent" },
+                { label: "Потребительские инсайты", agent: "ConsumerInsightsAgent" },
+                { label: "Стратегические рекомендации", agent: "ValidationAgent" },
+              ];
+              const location = [formData.region, formData.country].filter(Boolean).join(", ");
+              const goals = formData.researchGoals
+                .map((g) => researchGoalOptions.find((o) => o.value === g)?.label || g)
+                .join(" · ");
+              const industry = productTypeToIndustry[formData.productTypes[0]] ?? formData.productTypes[0];
+              const summaryRows: [string, string][] = [
+                ["Продукт", formData.productName],
+                ["Локация", location || "—"],
+                ["Тип бизнеса", formData.businessTypes.join(", ")],
+                ["Отрасль", industry],
+                ["Цели", goals],
+              ];
+              if (formData.priceSegment) {
+                summaryRows.push(["Сегмент", priceSegmentOptions.find((o) => o.value === formData.priceSegment)?.label || formData.priceSegment]);
+              }
+              return (
+                <div>
+                  <h2 style={{ marginBottom: "0.35rem" }}>Исследуем ваш рынок</h2>
+                  <p className={styles.formDescription} style={{ marginBottom: "1.1rem" }}>
+                    Это занимает ~10–15 минут — 6 агентов собирают данные из реальных источников.
+                    Вкладку можно оставить открытой; прогресс и логи — ниже.
+                  </p>
+
+                  {/* Сводка запроса — подтверждение «что исследуем» */}
+                  <div style={{ border: "1px solid #e3e8ef", background: "#f8fafc", borderRadius: 12, padding: "0.9rem 1.1rem", marginBottom: "1rem" }}>
+                    <div style={{ fontWeight: 600, fontSize: "0.95rem", marginBottom: "0.6rem", color: "#0b1a21" }}>Что исследуем</div>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "0.5rem 1.25rem" }}>
+                      {summaryRows.filter(([, v]) => v && v.trim()).map(([k, v]) => (
+                        <div key={k} style={{ display: "flex", gap: "0.5rem", fontSize: "0.88rem" }}>
+                          <span style={{ color: "#64748b", minWidth: 96 }}>{k}</span>
+                          <span style={{ color: "#0b1a21", fontWeight: 500 }}>{v}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Превью разделов отчёта — загорается по мере готовности агентов */}
+                  <div style={{ border: "1px solid #e3e8ef", borderRadius: 12, padding: "0.9rem 1.1rem", marginBottom: "1rem" }}>
+                    <div style={{ fontWeight: 600, fontSize: "0.95rem", marginBottom: "0.6rem", color: "#0b1a21" }}>Что будет в отчёте</div>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "0.4rem 1.25rem" }}>
+                      {sectionDefs.map((s, i) => {
+                        const st = statusOf(s.agent);
+                        return (
+                          <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.55rem", fontSize: "0.88rem" }}>
+                            <span style={{ color: S_COLOR[st] || "#9aa7b4", width: 16, textAlign: "center", fontWeight: 700 }}>
+                              {S_ICON[st] || "○"}
+                            </span>
+                            <span style={{ color: st === "completed" ? "#0b1a21" : "#475569", fontWeight: st === "running" ? 600 : 400 }}>
+                              {s.label}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Блок доверия / методология */}
+                  <div style={{ border: "1px solid #dbeafe", background: "#f0f7ff", borderRadius: 12, padding: "0.9rem 1.1rem", marginBottom: "0.5rem" }}>
+                    <div style={{ fontWeight: 600, fontSize: "0.95rem", marginBottom: "0.5rem", color: "#0b1a21" }}>Пока идёт анализ</div>
+                    <ul style={{ margin: 0, paddingLeft: "1.1rem", color: "#334155", fontSize: "0.86rem", display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+                      <li>Данные из реальных источников — Google Places, Statista, отраслевые отчёты. Мы не выдумываем цифры.</li>
+                      <li>Каждая метрика привязана к источнику; модельные оценки честно помечаются как индикативные.</li>
+                      <li>Результат универсален: рынок, конкуренты, аудитория, тренды, инсайты, цены и стратегия.</li>
+                    </ul>
+                    <div style={{ marginTop: "0.55rem", fontSize: "0.8rem", color: "#64748b" }}>
+                      Можно остановить в любой момент — сессия сохраняется до 1 часа.
+                    </div>
+                  </div>
+                </div>
+              );
+            })() : (
+              <>
+                <h2>Данные для исследования</h2>
+                <p className={styles.formDescription}>
+                  Внесите информацию о вашей идее или проекте. Чем больше информации
+                  вы предоставите, тем точнее и актуальнее будет исследование рынка.
+                  Поля, отмеченные звездочкой (*), обязательны для заполнения.
+                </p>
+              </>
+            )}
             <form onSubmit={handleSubmit} className={styles.form}>
+              {/* Поля формы скрываются во время исследования — показываются снова при паузе */}
+              {(!isSubmitting || isResearchPaused) && (<>
               <div className={styles.section}>
                 <h3>Базовая информация</h3>
                 <div className={styles.formGroup}>
@@ -1716,6 +1979,20 @@ export default function MarketResearchPage() {
                         </option>
                       ))}
                     </select>
+                    {formData.country && LOW_COVERAGE_COUNTRIES.has(formData.country) && (
+                      <p style={{
+                        marginTop: "0.5rem",
+                        fontSize: "0.8rem",
+                        color: "#b45309",
+                        backgroundColor: "#fffbeb",
+                        border: "1px solid #fcd34d",
+                        borderRadius: "6px",
+                        padding: "0.5rem 0.75rem",
+                        lineHeight: 1.4,
+                      }}>
+                        ⚠️ Для этого рынка публичных данных может быть меньше — отчёт возможно будет иметь низкую достоверность.
+                      </p>
+                    )}
                   </div>
 
                   <div className={styles.formGroup}>
@@ -1855,69 +2132,11 @@ export default function MarketResearchPage() {
                 </div>
               </div>
 
-              {/* === СТАДИЯ БИЗНЕСА === */}
-              <div className={styles.section}>
-                <h3>Стадия бизнеса *</h3>
-                <div className={styles.buttonGroup}>
-                  <button
-                    type="button"
-                    className={!formData.isExistingBusiness ? styles.buttonActive : styles.button}
-                    onClick={() => setFormData((prev) => ({ ...prev, isExistingBusiness: false, annualRevenueRange: "", yearsOperating: "" }))}
-                  >
-                    {!formData.isExistingBusiness && <FiCheck style={{ marginRight: "0.5rem" }} />}
-                    Новый бизнес / стартап
-                  </button>
-                  <button
-                    type="button"
-                    className={formData.isExistingBusiness ? styles.buttonActive : styles.button}
-                    onClick={() => setFormData((prev) => ({ ...prev, isExistingBusiness: true }))}
-                  >
-                    {formData.isExistingBusiness && <FiCheck style={{ marginRight: "0.5rem" }} />}
-                    Действующий бизнес
-                  </button>
-                </div>
-
-                {formData.isExistingBusiness && (
-                  <div style={{ marginTop: "1rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
-                    <div className={styles.formGroup}>
-                      <label className={styles.label}>Годовая выручка (опционально)</label>
-                      <div className={styles.buttonGroup}>
-                        {revenueRangeOptions.map((opt) => (
-                          <button
-                            key={opt.value}
-                            type="button"
-                            className={formData.annualRevenueRange === opt.value ? styles.buttonActive : styles.button}
-                            onClick={() => handleButtonSelect("annualRevenueRange", opt.value)}
-                          >
-                            {formData.annualRevenueRange === opt.value && <FiCheck style={{ marginRight: "0.5rem" }} />}
-                            {opt.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    <div className={styles.formGroup}>
-                      <label className={styles.label}>Лет на рынке (опционально)</label>
-                      <input
-                        type="number"
-                        name="yearsOperating"
-                        value={formData.yearsOperating}
-                        onChange={handleInputChange}
-                        className={styles.input}
-                        placeholder="Например: 3"
-                        min={0}
-                        max={100}
-                        style={{ maxWidth: "180px" }}
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-
               {/* === ТИП ПРЕДЛОЖЕНИЯ === */}
               <div className={styles.section}>
                 <h3>Тип предложения (опционально)</h3>
                 <p className={styles.formDescription} style={{ marginBottom: "0.75rem" }}>
-                  Помогает точнее построить финансовую модель
+                  Помогает точнее определить аудиторию и конкурентное поле
                 </p>
                 <div className={styles.buttonGroup}>
                   {offeringTypeOptions.map((opt) => (
@@ -2021,6 +2240,7 @@ export default function MarketResearchPage() {
                   />
                 </div>
               </div>
+              </>)} {/* /(!isSubmitting || isResearchPaused) */}
 
               {!isResearchPaused ? (
                 <div className={styles.submitActionsRow}>
@@ -2059,20 +2279,35 @@ export default function MarketResearchPage() {
                 </div>
               ) : (
                 <div className={styles.pausedActionsRow}>
-                  <button
-                    type="button"
-                    className={styles.resumeButton}
-                    onClick={handleResumeResearch}
-                  >
-                    Продолжить исследование
-                  </button>
-                  <button
-                    type="button"
-                    className={styles.restartButton}
-                    onClick={handleRestartResearch}
-                  >
-                    Начать заново
-                  </button>
+                  {/* Сообщение о паузе */}
+                  <div className={styles.pauseInfoBanner}>
+                    <span style={{ fontSize: "1.15rem" }}>⏸</span>
+                    <div>
+                      <strong>Исследование приостановлено</strong>
+                      <p>
+                        Бэкенд продолжает работу — данные не теряются.
+                        Сессия сохраняется <strong>до 1 часа</strong>. Нажмите «Продолжить»,
+                        чтобы вернуться к результатам, или «Обновить запрос», чтобы
+                        изменить параметры и запустить новое исследование.
+                      </p>
+                    </div>
+                  </div>
+                  <div className={styles.pausedButtons}>
+                    <button
+                      type="button"
+                      className={styles.resumeButton}
+                      onClick={handleResumeResearch}
+                    >
+                      ▶ Продолжить исследование
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.restartButton}
+                      onClick={handleRestartResearch}
+                    >
+                      ✎ Обновить запрос
+                    </button>
+                  </div>
                 </div>
               )}
             </form>
@@ -2088,37 +2323,34 @@ export default function MarketResearchPage() {
             : null;
 
           const WAVE_LABELS: Record<number, string> = {
-            1: "Сбор данных",
-            2: "Финансовая модель",
-            3: "Валидация",
+            1: "Сбор данных (5 агентов)",
+            2: "Проверка и валидация",
           };
           const WAVE_AGENTS: Record<number, string[]> = {
             1: ["MarketSizingAgent", "CompetitorAnalysisAgent", "TargetAudienceAgent", "TrendsAnalysisAgent", "ConsumerInsightsAgent"],
-            2: ["FinancialModelingAgent"],
-            3: ["ValidationAgent"],
+            2: ["ValidationAgent"],
           };
           const AGENT_DISPLAY: Record<string, string> = {
-            "MarketSizingAgent":       "Анализ рынка",
-            "CompetitorAnalysisAgent": "Конкуренты",
+            "MarketSizingAgent":       "Анализ рынка (TAM/SAM/SOM)",
+            "CompetitorAnalysisAgent": "Конкурентный анализ",
             "TargetAudienceAgent":     "Целевая аудитория",
-            "TrendsAnalysisAgent":     "Тренды",
-            "ConsumerInsightsAgent":   "Потребители",
-            "FinancialModelingAgent":  "Финансовая модель",
-            "ValidationAgent":         "Валидация",
+            "TrendsAnalysisAgent":     "Тренды и драйверы",
+            "ConsumerInsightsAgent":   "Потребительские инсайты",
+            "ValidationAgent":         "Валидация данных",
           };
           const STATUS_ICON: Record<string, string> = {
             waiting:   "○",
-            running:   "⏳",
-            completed: "✓",
+            running:   "▶",
+            completed: "✅",
             timeout:   "⚠",
             failed:    "✗",
           };
           const STATUS_COLOR: Record<string, string> = {
-            waiting:   "#94a3b8",
-            running:   "#3b82f6",
-            completed: "#22c55e",
-            timeout:   "#f97316",
-            failed:    "#ef4444",
+            waiting:   "#4b7ab0",
+            running:   "#60a5fa",
+            completed: "#4ade80",
+            timeout:   "#fb923c",
+            failed:    "#f87171",
           };
 
           const agentMap: Record<string, PipelineAgent> = {};
@@ -2174,54 +2406,78 @@ export default function MarketResearchPage() {
                 </div>
 
                 {/* ── PROGRESS BAR ── */}
-                <div style={{ padding: "0.6rem 1.1rem 0", background: "rgba(11,26,33,0.6)" }}>
+                <div style={{ padding: "0.75rem 1.25rem 0", background: "rgba(11,26,33,0.6)" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                    <div style={{ flex: 1, height: 3, background: "rgba(1,52,110,0.35)", borderRadius: 2 }}>
+                    <div style={{ flex: 1, height: 5, background: "rgba(1,52,110,0.35)", borderRadius: 3 }}>
                       <div style={{
                         height: "100%", width: `${progressPct}%`,
                         background: `linear-gradient(90deg, #0683f5, ${T.accent})`,
-                        borderRadius: 2, transition: "width 0.5s ease",
+                        borderRadius: 3, transition: "width 0.6s ease",
+                        boxShadow: `0 0 8px ${T.accent}55`,
                       }} />
                     </div>
-                    <span style={{ color: T.accent, fontSize: "0.75rem", fontWeight: 700, fontFamily: T.mono, minWidth: "2.5rem" }}>
+                    <span style={{ color: T.accent, fontSize: "0.9rem", fontWeight: 700, fontFamily: T.mono, minWidth: "2.8rem" }}>
                       {progressPct}%
                     </span>
                   </div>
-                  <div style={{ color: T.textMuted, fontSize: "0.74rem", marginTop: "0.35rem", fontFamily: T.mono }}>
+                  <div style={{ color: T.textMuted, fontSize: "0.82rem", marginTop: "0.4rem", fontFamily: T.mono }}>
                     {researchStatus.current_stage}
                     {etaMin !== null && etaMin > 0 && ` — ~${etaMin} мин`}
                   </div>
                 </div>
 
                 {/* ── BODY ── */}
-                <div style={{ padding: "0.7rem 1.1rem 0.9rem", fontFamily: T.mono }}>
+                <div style={{ padding: "0.9rem 1.25rem 1.1rem", fontFamily: T.mono }}>
 
                   {/* Waves + agents */}
                   {pipeline ? (
                     <div>
-                      {[1, 2, 3].map(wave => {
+                      {[1, 2].map(wave => {
                         const waveAgentNames = WAVE_AGENTS[wave] ?? [];
                         const hasAnyActivity = waveAgentNames.some(n => agentMap[n]);
                         if (!hasAnyActivity && wave > (pipeline.wave_current ?? 1)) return null;
                         return (
-                          <div key={wave} style={{ marginBottom: "0.55rem" }}>
-                            <div style={{ fontSize: "0.68rem", color: T.textDim, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "0.25rem" }}>
+                          <div key={wave} style={{ marginBottom: "0.75rem" }}>
+                            <div style={{
+                              fontSize: "0.72rem", color: T.textDim, fontWeight: 700,
+                              textTransform: "uppercase", letterSpacing: "0.12em",
+                              marginBottom: "0.4rem", borderBottom: `1px solid rgba(1,52,110,0.3)`,
+                              paddingBottom: "0.2rem",
+                            }}>
                               ── Этап {wave}: {WAVE_LABELS[wave]}
                             </div>
                             {waveAgentNames.map(agentName => {
                               const agent = agentMap[agentName];
                               const status = agent?.status ?? "waiting";
-                              const icon = { waiting: "○", running: "▶", completed: "✓", timeout: "⚠", failed: "✗" }[status] ?? "○";
-                              const color = { waiting: T.textDim, running: "#3b82f6", completed: T.green, timeout: T.orange, failed: T.red }[status] ?? T.textDim;
+                              const icon = STATUS_ICON[status] ?? "○";
+                              const color = STATUS_COLOR[status] ?? T.textDim;
                               const elapsed = agent?.elapsed_s;
+                              const isRunning = status === "running";
                               return (
-                                <div key={agentName} style={{ display: "flex", alignItems: "center", gap: "0.45rem", padding: "0.12rem 0", fontSize: "0.80rem" }}>
-                                  <span style={{ color, fontWeight: 700, minWidth: "0.9rem", textAlign: "center" }}>{icon}</span>
-                                  <span style={{ color: status === "waiting" ? T.textDim : T.textMain }}>
+                                <div key={agentName} style={{
+                                  display: "flex", alignItems: "center", gap: "0.6rem",
+                                  padding: "0.22rem 0.35rem",
+                                  borderRadius: 5,
+                                  marginBottom: "0.1rem",
+                                  background: isRunning ? "rgba(96,165,250,0.07)" : "transparent",
+                                  fontSize: "0.95rem",
+                                }}>
+                                  <span style={{ color, fontWeight: 700, minWidth: "1.1rem", fontSize: status === "completed" ? "1.0rem" : "0.85rem", textAlign: "center" }}>
+                                    {icon}
+                                  </span>
+                                  <span style={{
+                                    color: status === "waiting" ? T.textDim : T.textMain,
+                                    fontWeight: status === "completed" ? 600 : 400,
+                                  }}>
                                     {AGENT_DISPLAY[agentName] ?? agentName}
                                   </span>
+                                  {isRunning && (
+                                    <span style={{ marginLeft: "0.4rem", color: "#60a5fa", fontSize: "0.78rem", animation: "none" }}>
+                                      ● работает...
+                                    </span>
+                                  )}
                                   {elapsed != null && elapsed > 0 && (
-                                    <span style={{ marginLeft: "auto", color: T.textDim, fontSize: "0.72rem" }}>
+                                    <span style={{ marginLeft: "auto", color: status === "completed" ? T.green : T.textDim, fontSize: "0.78rem" }}>
                                       {elapsed < 60 ? `${Math.round(elapsed)}с` : `${(elapsed / 60).toFixed(1)}м`}
                                     </span>
                                   )}
@@ -2233,43 +2489,53 @@ export default function MarketResearchPage() {
                       })}
                     </div>
                   ) : (
-                    /* Fallback: простой список этапов */
+                    /* Fallback: простой список 6 этапов */
                     <div>
                       {([
-                        [10, "Анализ рынка"], [30, "Конкуренты"], [50, "Целевая аудитория"],
-                        [60, "Тренды"], [70, "Потребители"], [80, "Финансовая модель"], [95, "Валидация"],
-                      ] as [number, string][]).map(([threshold, label], idx) => (
-                        <div key={idx} style={{ display: "flex", alignItems: "center", gap: "0.45rem", padding: "0.12rem 0", fontSize: "0.80rem" }}>
-                          <span style={{ color: progressPct >= threshold ? T.green : T.textDim, fontWeight: 700 }}>
-                            {progressPct >= threshold ? "✓" : "○"}
-                          </span>
-                          <span style={{ color: progressPct >= threshold ? T.textMain : T.textDim }}>
-                            {label}
-                          </span>
-                        </div>
-                      ))}
+                        [10, "Анализ рынка (TAM/SAM/SOM)"],
+                        [30, "Конкурентный анализ"],
+                        [50, "Целевая аудитория"],
+                        [70, "Тренды и драйверы"],
+                        [85, "Потребительские инсайты"],
+                        [95, "Валидация данных"],
+                      ] as [number, string][]).map(([threshold, label], idx) => {
+                        const done = progressPct >= threshold;
+                        return (
+                          <div key={idx} style={{
+                            display: "flex", alignItems: "center", gap: "0.6rem",
+                            padding: "0.22rem 0.35rem", borderRadius: 5, fontSize: "0.95rem",
+                            marginBottom: "0.1rem",
+                          }}>
+                            <span style={{ color: done ? T.green : T.textDim, fontWeight: 700, fontSize: done ? "1.0rem" : "0.85rem", minWidth: "1.1rem", textAlign: "center" }}>
+                              {done ? "✅" : "○"}
+                            </span>
+                            <span style={{ color: done ? T.textMain : T.textDim, fontWeight: done ? 600 : 400 }}>
+                              {label}
+                            </span>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
 
                   {/* Live event feed */}
                   {pipeline && pipeline.events && pipeline.events.length > 0 && (
-                    <div style={{ marginTop: "0.7rem", borderTop: `1px solid rgba(1,52,110,0.4)`, paddingTop: "0.55rem" }}>
-                      <div style={{ fontSize: "0.68rem", color: T.textDim, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "0.35rem" }}>
+                    <div style={{ marginTop: "0.8rem", borderTop: `1px solid rgba(1,52,110,0.4)`, paddingTop: "0.6rem" }}>
+                      <div style={{ fontSize: "0.72rem", color: T.textDim, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: "0.4rem" }}>
                         ── События
                       </div>
-                      {pipeline.events.slice(-7).map((ev, i) => (
-                        <div key={i} style={{ fontSize: "0.75rem", color: ev.level === "warn" ? T.orange : T.textMuted, padding: "0.07rem 0", display: "flex", gap: "0.5rem" }}>
-                          <span style={{ color: T.textDim, minWidth: "3.2rem", flexShrink: 0 }}>{ev.time}</span>
+                      {pipeline.events.slice(-5).map((ev, i) => (
+                        <div key={i} style={{ fontSize: "0.82rem", color: ev.level === "warn" ? T.orange : T.textMuted, padding: "0.1rem 0", display: "flex", gap: "0.6rem" }}>
+                          <span style={{ color: T.textDim, minWidth: "3.5rem", flexShrink: 0 }}>{ev.time}</span>
                           <span>{ev.text}</span>
                         </div>
                       ))}
-                      {/* Blinking cursor */}
-                      <div style={{ color: T.accent, fontSize: "0.80rem", marginTop: "0.25rem" }}>▮</div>
+                      <div style={{ color: T.accent, fontSize: "0.9rem", marginTop: "0.3rem" }}>▮</div>
                     </div>
                   )}
 
                   {/* Research ID */}
-                  <div style={{ marginTop: "0.6rem", fontSize: "0.70rem", color: T.textDim }}>
+                  <div style={{ marginTop: "0.7rem", fontSize: "0.76rem", color: T.textDim, letterSpacing: "0.04em" }}>
                     ID: {researchId}
                   </div>
                 </div>
@@ -2403,6 +2669,10 @@ export default function MarketResearchPage() {
               </div>
             </div>
           </div>
+        )}
+
+        {isCompletedView && researchId && (
+          <Grade sessionId={researchId} />
         )}
 
         {!isCompletedView && (

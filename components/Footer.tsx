@@ -49,7 +49,8 @@ export default function Footer() {
     if (locale === 'en') {
       return path;
     }
-    return `/ru${path}`;
+    // Root "/" must map to "/ru" not "/ru/" to avoid trailing-slash redirect
+    return path === '/' ? '/ru' : `/ru${path}`;
   };
 
   return (

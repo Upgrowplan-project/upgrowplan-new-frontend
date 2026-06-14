@@ -249,3 +249,102 @@
     gap: 0.5rem;
 }
 
+/* OAuth кнопки */
+.googleBtn {
+    background: #fff;
+    border-color: #DB4437;
+    color: #DB4437;
+}
+.githubBtn {
+    background: #fff;
+    border-color: #333;
+    color: #333;
+}
+.appleBtn {
+    background: #fff;
+    border-color: #000;
+    color: #000;
+}
+.microsoftBtn {
+    background: #fff;
+    border-color: #00a4ef;
+    color: #00a4ef;
+}
+.githubBtn:disabled,
+.appleBtn:disabled,
+.microsoftBtn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* Бейдж "скоро" */
+.comingSoon {
+    font-size: 0.65rem;
+    font-weight: 600;
+    background: #eee;
+    color: #888;
+    border-radius: 4px;
+    padding: 1px 5px;
+    margin-left: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Разделитель "или" */
+.divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    max-width: 300px;
+    color: #999;
+    font-size: 0.85rem;
+    margin: 4px 0;
+}
+.divider::before,
+.divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: #ddd;
+}
+
+/* Экран "проверьте email" */
+.verifyScreen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    text-align: center;
+    max-width: 340px;
+    padding: 1.5rem;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.verifyIcon {
+    font-size: 3rem;
+    line-height: 1;
+}
+.verifyTitle {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #1e3a5f;
+}
+.verifyText {
+    font-size: 0.9rem;
+    color: #666;
+    line-height: 1.5;
+}
+
+/* Метод выбора регистрации */
+.methodList {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    width: 100%;
+}
+

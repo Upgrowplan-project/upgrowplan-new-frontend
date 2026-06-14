@@ -30,7 +30,7 @@ export default function AdvancedSettings({
     dateStr ? new Date(dateStr).toLocaleString("ru-RU") : "—";
 
   const fields = [
-    { label: "Баланс (₽)", value: user.balance?.toString(), key: "balance" },
+    { label: "Баланс ($)", value: user.balance?.toString(), key: "balance" },
     { label: "Токены", value: user.tokens?.toString(), key: "tokens" },
     { label: "Активен", value: user.isActive ? "Да" : "Нет", key: "isActive" },
     {
