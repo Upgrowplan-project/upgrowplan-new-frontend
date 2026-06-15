@@ -12,6 +12,11 @@ import {
   FiRefreshCw,
 } from "react-icons/fi";
 
+// Backend base URL. On Vercel set NEXT_PUBLIC_MARKET_RESEARCH_API_URL to the deployed
+// Heroku app. NEXT_PUBLIC_ vars are inlined at BUILD time — set it before deploying.
+const API_BASE =
+  process.env.NEXT_PUBLIC_MARKET_RESEARCH_API_URL || "http://localhost:8005";
+
 // Countries where Google CSE coverage is limited — reports may have lower confidence.
 const LOW_COVERAGE_COUNTRIES = new Set([
   "Vietnam", "China", "Bangladesh", "Pakistan", "Sri Lanka",
@@ -460,7 +465,7 @@ export default function MarketResearchPage() {
     const fetchHealthStatus = async () => {
       try {
         // HARDCODED FOR NOW - env var not working
-        const healthApiBaseUrl = "http://localhost:8005";
+        const healthApiBaseUrl = API_BASE;
         const response = await fetch(`${healthApiBaseUrl}/api/v1/agents/health`);
 
         if (response.ok) {
@@ -760,7 +765,7 @@ export default function MarketResearchPage() {
     // CRITICAL: Health check BEFORE starting research
     console.log("[HEALTH CHECK] Checking all system components before starting research...");
     // HARDCODED FOR NOW - env var not working
-    const healthApiBaseUrl = "http://localhost:8005";
+    const healthApiBaseUrl = API_BASE;
 
     try {
       const healthResponse = await fetch(`${healthApiBaseUrl}/api/v1/agents/health`);
@@ -847,7 +852,7 @@ export default function MarketResearchPage() {
 
       // Get API base URL from environment or use default
       const apiBaseUrl =
-        "http://localhost:8005";
+        API_BASE;
 
       const response = await fetch(
         `${apiBaseUrl}/api/v1/research/from-onboarding`,
@@ -918,7 +923,7 @@ export default function MarketResearchPage() {
 
     // Get API base URL from environment or use default
     const apiBaseUrl =
-      "http://localhost:8005";
+      API_BASE;
 
     const interval = setInterval(async () => {
       try {
@@ -1037,7 +1042,7 @@ export default function MarketResearchPage() {
 
     // Get API base URL from environment or use default
     const apiBaseUrl =
-      "http://localhost:8005";
+      API_BASE;
 
     try {
       // Fetch enhanced report (new format)
@@ -1194,7 +1199,7 @@ export default function MarketResearchPage() {
     try {
       // Get API base URL from environment or use default
       const apiBaseUrl =
-        "http://localhost:8005";
+        API_BASE;
 
       const response = await fetch(
         `${apiBaseUrl}/api/v1/research/${researchId}/report/${format}`,
@@ -1276,7 +1281,7 @@ export default function MarketResearchPage() {
   const handleRestartResearch = async () => {
     try {
       if (researchId) {
-        const apiBaseUrl = "http://localhost:8005";
+        const apiBaseUrl = API_BASE;
         await fetch(`${apiBaseUrl}/api/v1/research/${researchId}`, {
           method: "DELETE",
         });

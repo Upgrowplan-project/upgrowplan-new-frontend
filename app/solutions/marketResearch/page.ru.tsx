@@ -22,6 +22,12 @@ const LOW_COVERAGE_COUNTRIES = new Set([
   "Nepal", "Mongolia",
 ]);
 
+// Backend base URL. On Vercel set NEXT_PUBLIC_MARKET_RESEARCH_API_URL to the deployed
+// Heroku app (e.g. https://your-mrs.herokuapp.com). Falls back to localhost for dev.
+// NEXT_PUBLIC_ vars are inlined at build time — must be set in the Vercel project.
+const API_BASE =
+  process.env.NEXT_PUBLIC_MARKET_RESEARCH_API_URL || "http://localhost:8005";
+
 // Predefined countries: value=English (sent to API/geocoding), label=Russian (shown to user)
 // Sorted by Russian label. English value ensures DRA queries don't need geocoding for country part.
 const COUNTRIES = [
@@ -572,7 +578,7 @@ export default function MarketResearchPage() {
         setIsRefreshingHealth(true);
       }
       // HARDCODED FOR NOW - env var not working
-      const healthApiBaseUrl = "http://localhost:8005";
+      const healthApiBaseUrl = API_BASE;
       console.log("[Health Check] Fetching from:", `${healthApiBaseUrl}/api/v1/agents/health`);
       const response = await fetch(`${healthApiBaseUrl}/api/v1/agents/health`);
 
@@ -613,7 +619,7 @@ export default function MarketResearchPage() {
     if (!researchId || enhancedReport || researchReport || isResearchPaused) return;
     if (!isSubmitting && researchStatus?.status !== "in_progress" && researchStatus?.status !== "pending") return;
 
-    const apiBaseUrl = "http://localhost:8005";
+    const apiBaseUrl = API_BASE;
     const watchdog = setInterval(async () => {
       try {
         const response = await fetch(`${apiBaseUrl}/api/v1/research/${researchId}`, {
@@ -939,7 +945,7 @@ export default function MarketResearchPage() {
     // CRITICAL: Health check BEFORE starting research
     console.log("[HEALTH CHECK] Проверка всех компонентов системы перед запуском исследования...");
     // HARDCODED FOR NOW - env var not working
-    const healthApiBaseUrl = "http://localhost:8005";
+    const healthApiBaseUrl = API_BASE;
 
     try {
       const healthResponse = await fetch(`${healthApiBaseUrl}/api/v1/agents/health`);
@@ -1055,7 +1061,7 @@ export default function MarketResearchPage() {
 
       // Get API base URL from environment or use default
       // HARDCODED FOR NOW - env var not working
-      const apiBaseUrl = "http://localhost:8005";
+      const apiBaseUrl = API_BASE;
 
       const response = await fetch(
         `${apiBaseUrl}/api/v1/research/direct`,
@@ -1177,7 +1183,7 @@ export default function MarketResearchPage() {
 
     // Get API base URL from environment or use default
     const apiBaseUrl =
-      "http://localhost:8005";
+      API_BASE;
 
     const stopPolling = () => {
       if (pollingIntervalRef.current) {
@@ -1339,7 +1345,7 @@ export default function MarketResearchPage() {
 
     // Get API base URL from environment or use default
     const apiBaseUrl =
-      "http://localhost:8005";
+      API_BASE;
 
     try {
       // Fetch enhanced report (new format)
@@ -1519,7 +1525,7 @@ export default function MarketResearchPage() {
   const handleRestartResearch = async () => {
     try {
       if (researchId) {
-        const apiBaseUrl = "http://localhost:8005";
+        const apiBaseUrl = API_BASE;
         await fetch(`${apiBaseUrl}/api/v1/research/${researchId}`, {
           method: "DELETE",
         });
@@ -1537,7 +1543,7 @@ export default function MarketResearchPage() {
 
     setDownloadingFormat(format);
     try {
-      const apiBaseUrl = "http://localhost:8005";
+      const apiBaseUrl = API_BASE;
 
       const response = await fetch(
         `${apiBaseUrl}/api/v1/research/${researchId}/report/${format}`,
