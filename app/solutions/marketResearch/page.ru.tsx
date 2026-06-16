@@ -1627,12 +1627,13 @@ export default function MarketResearchPage() {
               <FiBarChart2
                 style={{ marginRight: "1rem", verticalAlign: "middle" }}
               />
-              Маркетинговое Исследование
+              MarketSense — ИИ-инструмент исследования рынка
             </h1>
             <p className={styles.heroDescription}>
-              Полноценное маркетинговое исследование рынка с актуальными
-              текущими данными, анализом конкурентов, сегментацией целевой
-              аудитории, а также разработкой ценовой стратегии.
+              Живые веб-данные, анализ конкурентов и оценка рынка. MarketSense
+              помогает фаундерам и аналитикам собирать актуальные данные,
+              валидировать источники, картировать конкурентов, сегментировать
+              целевую аудиторию и оценивать объём рынка за минуты, а не недели.
             </p>
           </div>
         </div>
@@ -1719,6 +1720,42 @@ export default function MarketResearchPage() {
                 </ul>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Health Status — строка-плейсхолдер ВО ВРЕМЯ первой проверки, чтобы
+            блок присутствовал сразу при загрузке страницы (не «выпрыгивал» позже).
+            Пока идёт проверка — «Проверка…»; при сбое — ошибка + ретрай. */}
+        {(isLoadingHealth || !healthStatus) && (
+          <div className={styles.healthSection}>
+            <div className={styles.healthCard} style={{ padding: "0.6rem 1rem" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+                {isLoadingHealth ? (
+                  <>
+                    <FiRefreshCw className={styles.spin} />
+                    <span style={{ fontWeight: 600, fontSize: "0.9rem", color: "#64748b" }}>
+                      Проверка состояния системы…
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <FiAlertCircle color="#b42318" />
+                    <span style={{ fontWeight: 600, fontSize: "0.9rem", color: "#b42318" }}>
+                      Не удалось получить статус системы
+                    </span>
+                    <button
+                      type="button"
+                      className={styles.healthRefreshButton}
+                      onClick={() => fetchHealthStatus(true)}
+                      disabled={isRefreshingHealth}
+                      title="Повторить проверку"
+                    >
+                      <FiRefreshCw className={isRefreshingHealth ? styles.spin : ""} />
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
           </div>
         )}
 

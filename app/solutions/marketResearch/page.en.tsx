@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Header from "../../../components/Header";
+import Grade from "../../../components/Grade";
 import styles from "./marketResearch.module.css";
 import {
   FiBarChart2,
@@ -12,12 +13,8 @@ import {
   FiRefreshCw,
 } from "react-icons/fi";
 
-// Backend base URL. On Vercel set NEXT_PUBLIC_MARKET_RESEARCH_API_URL to the deployed
-// Heroku app. NEXT_PUBLIC_ vars are inlined at BUILD time — set it before deploying.
-const API_BASE =
-  process.env.NEXT_PUBLIC_MARKET_RESEARCH_API_URL || "http://localhost:8005";
-
 // Countries where Google CSE coverage is limited — reports may have lower confidence.
+// Shown as a soft warning in the UI; backend still processes the request.
 const LOW_COVERAGE_COUNTRIES = new Set([
   "Vietnam", "China", "Bangladesh", "Pakistan", "Sri Lanka",
   "Tanzania", "Nigeria", "Kenya", "Ethiopia",
@@ -25,8 +22,14 @@ const LOW_COVERAGE_COUNTRIES = new Set([
   "Nepal", "Mongolia",
 ]);
 
-// Countries list: value=English (sent to API), label=English display
-// Sorted alphabetically by label
+// Backend base URL. On Vercel set NEXT_PUBLIC_MARKET_RESEARCH_API_URL to the deployed
+// Heroku app (e.g. https://your-mrs.herokuapp.com). Falls back to localhost for dev.
+// NEXT_PUBLIC_ vars are inlined at build time — must be set in the Vercel project.
+const API_BASE =
+  process.env.NEXT_PUBLIC_MARKET_RESEARCH_API_URL || "http://localhost:8005";
+
+// Predefined countries: value=English (sent to API/geocoding), label=English (shown to user)
+// Sorted alphabetically by label. English value ensures DRA queries don't need geocoding for country part.
 const COUNTRIES = [
   { value: "Argentina", label: "Argentina" },
   { value: "Armenia", label: "Armenia" },
@@ -60,7 +63,6 @@ const COUNTRIES = [
   { value: "Italy", label: "Italy" },
   { value: "Japan", label: "Japan" },
   { value: "Kazakhstan", label: "Kazakhstan" },
-  { value: "South Korea", label: "Korea (South)" },
   { value: "Kyrgyzstan", label: "Kyrgyzstan" },
   { value: "Latvia", label: "Latvia" },
   { value: "Lithuania", label: "Lithuania" },
@@ -70,7 +72,6 @@ const COUNTRIES = [
   { value: "Morocco", label: "Morocco" },
   { value: "Netherlands", label: "Netherlands" },
   { value: "New Zealand", label: "New Zealand" },
-  { value: "Nigeria", label: "Nigeria" },
   { value: "Norway", label: "Norway" },
   { value: "Pakistan", label: "Pakistan" },
   { value: "Peru", label: "Peru" },
@@ -84,43 +85,61 @@ const COUNTRIES = [
   { value: "Singapore", label: "Singapore" },
   { value: "Slovakia", label: "Slovakia" },
   { value: "South Africa", label: "South Africa" },
+  { value: "South Korea", label: "South Korea" },
   { value: "Spain", label: "Spain" },
   { value: "Sri Lanka", label: "Sri Lanka" },
   { value: "Sweden", label: "Sweden" },
   { value: "Switzerland", label: "Switzerland" },
   { value: "Taiwan", label: "Taiwan" },
   { value: "Tajikistan", label: "Tajikistan" },
+  { value: "Tanzania", label: "Tanzania" },
   { value: "Thailand", label: "Thailand" },
+  { value: "Tunisia", label: "Tunisia" },
   { value: "Turkey", label: "Turkey" },
-  { value: "UAE", label: "UAE" },
+  { value: "Ukraine", label: "Ukraine" },
+  { value: "UAE", label: "United Arab Emirates" },
   { value: "UK", label: "United Kingdom" },
   { value: "USA", label: "United States" },
-  { value: "Ukraine", label: "Ukraine" },
   { value: "Uzbekistan", label: "Uzbekistan" },
   { value: "Vietnam", label: "Vietnam" },
 ] as const;
 
 type BusinessType = "B2B" | "B2C" | "B2B2C" | "C2C" | "D2C";
+type OfferingType = "product" | "service" | "hybrid";
+type OfferingSubType =
+  | "physical"
+  | "digital"
+  | "one_time"
+  | "subscription"
+  | "hourly"
+  | "product_plus_service";
+type PriceSegment = "budget" | "mid" | "premium";
 type ProductType =
+  // B2C категории
   | "retail_fmcg"
   | "fashion_apparel"
   | "electronics"
   | "food_beverage"
   | "digital_apps"
+  // B2B категории
   | "manufacturing"
   | "wholesale_trade"
   | "corporate_solutions"
   | "business_tech"
+  // Маркетплейсы и платформы
   | "marketplace"
   | "p2p_platform"
+  // SaaS и цифровые платформы
   | "saas_b2b"
   | "saas_b2c"
   | "cloud_platform"
+  // Промышленные рынки
   | "industrial_equipment"
   | "logistics"
   | "construction"
   | "energy"
   | "agriculture"
+  // Услуги
   | "consulting"
   | "healthcare"
   | "education"
@@ -138,15 +157,23 @@ type ProductType =
   | "photography_studio"
   | "car_dealership"
   | "coworking"
+  // Медиа и развлечения
   | "entertainment_media"
+  // Недвижимость
   | "real_estate"
+  // Транспорт
   | "transport_mobility"
+  // Ремонт и сервис
   | "auto_services"
   | "electronics_repair"
   | "clothing_repair"
+  // Ивент
   | "event_services"
+  // Мебель и интерьер
   | "furniture_interior"
+  // Аптека и оптика
   | "pharmacy_optics"
+  // Общее
   | "other";
 type ResearchGoal =
   | "market_entry"
@@ -166,9 +193,34 @@ interface FormData {
   productTypes: ProductType[];
   localization: Localization | "";
   researchGoals: ResearchGoal[];
+  // Тип предложения
+  offeringType: OfferingType | "";
+  offeringSubType: OfferingSubType | "";
+  // Ценовой сегмент
+  priceSegment: PriceSegment | "";
+  // Дополнительные поля
   targetAudience: string;
   competitors: string;
 }
+// Pre-flight validation contract (mirrors backend request_validator.ValidationResult)
+interface ValidationAction {
+  label: string;
+  type: "set_field" | "clear_field";
+  field: string;
+  value?: string;
+}
+interface ValidationIssue {
+  field: string;
+  code: string;
+  message: string;
+  actions?: ValidationAction[];
+}
+interface ValidationResult {
+  valid: boolean;
+  errors: ValidationIssue[];
+  warnings: ValidationIssue[];
+}
+
 interface PipelineAgent {
   name: string;
   status: "waiting" | "running" | "completed" | "timeout" | "failed";
@@ -400,8 +452,9 @@ const cleanMarkdown = (text: string): string => {
 
 export default function MarketResearchPage() {
   const productNameInputRef = useRef<HTMLInputElement>(null);
+  const LAST_REQUEST_FORM_DATA_KEY = "marketResearch:lastRequestFormData:en";
 
-  const [formData, setFormData] = useState<FormData>({
+  const defaultFormData: FormData = {
     productName: "",
     productDescription: "",
     country: "",
@@ -410,9 +463,14 @@ export default function MarketResearchPage() {
     productTypes: [],
     localization: "",
     researchGoals: [],
+    offeringType: "",
+    offeringSubType: "",
+    priceSegment: "",
     targetAudience: "",
     competitors: "",
-  });
+  };
+
+  const [formData, setFormData] = useState<FormData>(defaultFormData);
 
   const [researchId, setResearchId] = useState<string | null>(null);
   const [researchStatus, setResearchStatus] = useState<ResearchStatus | null>(
@@ -425,8 +483,36 @@ export default function MarketResearchPage() {
     useState<EnhancedResearchReport | null>(null);
   const [activeSection, setActiveSection] = useState<string>("executive");
   const [error, setError] = useState<string | null>(null);
+  const [validationErrors, setValidationErrors] = useState<ValidationIssue[]>([]);
+  const [validationWarnings, setValidationWarnings] = useState<ValidationIssue[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResearchPaused, setIsResearchPaused] = useState(false);
+  const isCompletedView = Boolean(enhancedReport || researchReport);
+
+  const buildCompletionSubtitle = () => {
+    const productName =
+      enhancedReport?.product_name || formData.productName || "Market research report";
+    const industry = (enhancedReport?.industry || "").trim();
+    const location =
+      enhancedReport?.location ||
+      [formData.region, formData.country].filter(Boolean).join(", ");
+    // Короткий subtitle: только название • отрасль • локация
+    return [productName, industry, location].filter(Boolean).join(" • ");
+  };
+
+  // 2–3 строки из executive summary для отображения на странице результатов
+  const buildExecutiveSummaryPreview = (): string[] => {
+    const es = enhancedReport?.executive_summary;
+    if (!es) return [];
+    const lines: string[] = [];
+    if (es.market_opportunity_summary) {
+      lines.push(es.market_opportunity_summary);
+    }
+    if (es.key_findings?.length) {
+      lines.push(...es.key_findings.slice(0, 2));
+    }
+    return lines.slice(0, 3);
+  };
 
   // Таймер и метрики исследования
   const [researchStartTime, setResearchStartTime] = useState<number | null>(
@@ -436,11 +522,19 @@ export default function MarketResearchPage() {
     minutes: number;
     seconds: number;
   } | null>(null);
+  const [elapsedSeconds, setElapsedSeconds] = useState<number>(0);
+  const elapsedTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Health status state
   const [healthStatus, setHealthStatus] = useState<any>(null);
+  const [healthExpanded, setHealthExpanded] = useState(false);
   const [isLoadingHealth, setIsLoadingHealth] = useState(true);
+  const [isRefreshingHealth, setIsRefreshingHealth] = useState(false);
+  const [downloadingFormat, setDownloadingFormat] = useState<"docx" | "pdf" | null>(null);
+
+  // Ref для хранения polling interval
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const pollingTokenRef = useRef<string | null>(null);
   const isResearchPausedRef = useRef<boolean>(false);
 
   // Автофокус на первое поле формы и предотвращение автоскролла
@@ -452,252 +546,310 @@ export default function MarketResearchPage() {
     if (productNameInputRef.current) {
       productNameInputRef.current.focus();
     }
+
+    // Cleanup: очистка polling interval при unmount
     return () => {
       if (pollingIntervalRef.current) {
-        clearInterval(pollingIntervalRef.current);
+        console.log("[Market Research] Cleaning up polling interval on unmount");
+        clearTimeout(pollingIntervalRef.current);
         pollingIntervalRef.current = null;
       }
+      pollingTokenRef.current = null;
     };
   }, []);
 
+  useEffect(() => {
+    try {
+      const savedRaw = localStorage.getItem(LAST_REQUEST_FORM_DATA_KEY);
+      if (!savedRaw) return;
+
+      const saved = JSON.parse(savedRaw) as FormData;
+      if (saved && typeof saved === "object") {
+        setFormData((prev) => ({ ...prev, ...saved }));
+      }
+    } catch (e) {
+      console.warn("Не удалось восстановить данные последнего запроса:", e);
+    }
+  }, []);
+
+  const fetchHealthStatus = async (manualRefresh = false) => {
+    try {
+      if (manualRefresh) {
+        setIsRefreshingHealth(true);
+      }
+      // HARDCODED FOR NOW - env var not working
+      const healthApiBaseUrl = API_BASE;
+      console.log("[Health Check] Fetching from:", `${healthApiBaseUrl}/api/v1/agents/health`);
+      const response = await fetch(`${healthApiBaseUrl}/api/v1/agents/health`);
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("[Health Check] ✅ Data received:", data);
+        setHealthStatus(data);
+        console.log("[Health Check] State updated, isLoading will be set to false");
+      } else {
+        console.error("[Health Check] Failed to fetch health status:", response.status);
+      }
+    } catch (error) {
+      console.error("[Health Check] Error fetching health status:", error);
+    } finally {
+      setIsLoadingHealth(false);
+      if (manualRefresh) {
+        setIsRefreshingHealth(false);
+      }
+      console.log("[Health Check] isLoadingHealth set to false");
+    }
+  };
+
   // Load health status on mount and refresh every 30 seconds
   useEffect(() => {
-    const fetchHealthStatus = async () => {
-      try {
-        // HARDCODED FOR NOW - env var not working
-        const healthApiBaseUrl = API_BASE;
-        const response = await fetch(`${healthApiBaseUrl}/api/v1/agents/health`);
-
-        if (response.ok) {
-          const data = await response.json();
-          setHealthStatus(data);
-        } else {
-          console.error("[Health Check] Failed to fetch health status:", response.status);
-        }
-      } catch (error) {
-        console.error("[Health Check] Error fetching health status:", error);
-      } finally {
-        setIsLoadingHealth(false);
-      }
-    };
 
     // Fetch immediately
-    fetchHealthStatus();
+    console.log("[Health Check] Component mounted, starting fetch...");
+    fetchHealthStatus(false);
 
     // Refresh every 30 seconds
-    const interval = setInterval(fetchHealthStatus, 30000);
+    const interval = setInterval(() => fetchHealthStatus(false), 30000);
 
     return () => clearInterval(interval);
   }, []);
 
+  // Watchdog: if polling missed transition to completed, force-sync by research_id.
+  useEffect(() => {
+    if (!researchId || enhancedReport || researchReport || isResearchPaused) return;
+    if (!isSubmitting && researchStatus?.status !== "in_progress" && researchStatus?.status !== "pending") return;
+
+    const apiBaseUrl = API_BASE;
+    const watchdog = setInterval(async () => {
+      try {
+        const response = await fetch(`${apiBaseUrl}/api/v1/research/${researchId}`, {
+          cache: "no-store",
+          headers: {
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            Pragma: "no-cache",
+          },
+        });
+        if (!response.ok) return;
+        const status: ResearchStatus = await response.json();
+        setResearchStatus(status);
+
+        if (status.status === "completed") {
+          if (pollingIntervalRef.current) {
+            clearTimeout(pollingIntervalRef.current);
+            pollingIntervalRef.current = null;
+          }
+          pollingTokenRef.current = null;
+          setIsSubmitting(false);
+          await fetchResearchReport(researchId);
+        } else if (status.status === "failed") {
+          setIsSubmitting(false);
+          setIsResearchPaused(false);
+          setError(
+            `Research failed: ${
+              status.error || status.current_stage || "Unknown error"
+            }`
+          );
+        }
+      } catch {
+        // ignore watchdog errors; main polling handles retries/logging
+      }
+    }, 10000);
+
+    return () => clearInterval(watchdog);
+  }, [researchId, enhancedReport, researchReport, isSubmitting, isResearchPaused, researchStatus?.status]);
+
+  const productTypeToIndustry: Record<ProductType, string> = {
+    retail_fmcg: "Retail & FMCG",
+    fashion_apparel: "Fashion & Apparel",
+    electronics: "Electronics & Gadget Stores",
+    food_beverage: "Food & Beverage",
+    digital_apps: "Digital Apps",
+    manufacturing: "Manufacturing",
+    wholesale_trade: "Wholesale Trade",
+    corporate_solutions: "Corporate Solutions",
+    business_tech: "Business Technology",
+    marketplace: "Marketplace / Platform",
+    p2p_platform: "P2P Platform",
+    saas_b2b: "B2B SaaS / Online Service for Business",
+    saas_b2c: "B2C SaaS / Online Service for Individuals",
+    cloud_platform: "Cloud Platform",
+    industrial_equipment: "Industrial Equipment",
+    logistics: "Logistics",
+    construction: "Construction & Contractors",
+    energy: "Energy",
+    agriculture: "Agriculture",
+    consulting: "Consulting",
+    healthcare: "Healthcare & Clinics",
+    education: "Education",
+    tourism_hospitality: "Tourism & Hospitality",
+    financial_services: "Financial Services",
+    horeca: "HoReCa",
+    professional_services: "Professional Services",
+    wellness_fitness: "Fitness & Wellness",
+    beauty_personal_care: "Beauty & Personal Care",
+    home_services: "Home Services: cleaning, repairs, household",
+    legal_services: "Legal Services",
+    pet_services: "Pet Supplies & Veterinary",
+    entertainment_media: "Entertainment & Media (online)",
+    real_estate: "Real Estate",
+    transport_mobility: "Transport: taxi, carsharing, mobility",
+    auto_services: "Auto Service & Car Care",
+    electronics_repair: "Electronics Repair & Service Centers",
+    clothing_repair: "Tailoring & Clothing Repair",
+    event_services: "Event Management",
+    furniture_interior: "Furniture, Interior & Decor",
+    pharmacy_optics: "Pharmacy & Optics",
+    pet_grooming: "Pet Grooming Studio",
+    childcare: "Childcare Centers & Kindergartens",
+    photography_studio: "Photo & Video Studios",
+    car_dealership: "Car Dealerships & Auto Markets",
+    coworking: "Coworking & Office Rental",
+    other: "Other",
+  };
+
+  const offeringTypeOptions = [
+    { value: "product" as OfferingType, label: "Product", desc: "Physical or digital good" },
+    { value: "service" as OfferingType, label: "Service", desc: "Hourly, one-time or subscription" },
+    { value: "hybrid" as OfferingType, label: "Hybrid", desc: "Product + service (café, clinic)" },
+  ];
+
+  const offeringSubTypeOptions: Record<OfferingType, { value: OfferingSubType; label: string }[]> = {
+    product: [
+      { value: "physical", label: "Physical product" },
+      { value: "digital", label: "Digital product" },
+    ],
+    service: [
+      { value: "one_time", label: "One-time service" },
+      { value: "subscription", label: "Subscription / membership" },
+      { value: "hourly", label: "Hourly rate" },
+    ],
+    hybrid: [
+      { value: "product_plus_service", label: "Product + support" },
+    ],
+  };
+
+  const priceSegmentOptions = [
+    { value: "budget" as PriceSegment, label: "Budget", desc: "Mass-market, low price segment" },
+    { value: "mid" as PriceSegment, label: "Mid", desc: "Mid price segment" },
+    { value: "premium" as PriceSegment, label: "Premium", desc: "Premium & luxury" },
+  ];
+
   const businessTypeOptions = [
     {
       value: "B2C" as BusinessType,
-      label: "B2C - Бизнес для потребителей (розница, FMCG, мода)",
+      label: "B2C — Business to consumers (retail, FMCG, fashion)",
     },
     {
       value: "B2B" as BusinessType,
-      label: "B2B - Бизнес для бизнеса (производство, корпоративные решения)",
+      label: "B2B — Business to business (manufacturing, corporate solutions)",
     },
     {
       value: "B2B2C" as BusinessType,
-      label: "B2B2C - Через бизнес потребителям",
+      label: "B2B2C — Through business to consumers",
     },
     {
       value: "C2C" as BusinessType,
-      label: "C2C - Потребитель-потребителю (платформы, маркетплейсы)",
+      label: "C2C — Consumer to consumer (platforms, marketplaces)",
     },
     {
       value: "D2C" as BusinessType,
-      label: "D2C - Прямые продажи потребителям (бренды напрямую)",
+      label: "D2C — Direct to consumer (brands directly)",
     },
   ];
 
-  const productTypeOptions = [
-    // B2C категории
-    {
-      value: "retail_fmcg" as ProductType,
-      label: "Розница и FMCG",
-      category: "B2C",
-    },
-    {
-      value: "fashion_apparel" as ProductType,
-      label: "Мода и одежда",
-      category: "B2C",
-    },
-    {
-      value: "electronics" as ProductType,
-      label: "Техника и электроника",
-      category: "B2C",
-    },
-    {
-      value: "food_beverage" as ProductType,
-      label: "Продукты питания и напитки",
-      category: "B2C",
-    },
-    {
-      value: "digital_apps" as ProductType,
-      label: "Цифровые приложения для потребителей",
-      category: "B2C",
-    },
-
-    // B2B категории
-    {
-      value: "manufacturing" as ProductType,
-      label: "Производство",
-      category: "B2B",
-    },
-    {
-      value: "wholesale_trade" as ProductType,
-      label: "Оптовая торговля",
-      category: "B2B",
-    },
-    {
-      value: "corporate_solutions" as ProductType,
-      label: "Корпоративные решения",
-      category: "B2B",
-    },
-    {
-      value: "business_tech" as ProductType,
-      label: "Технологии для бизнеса",
-      category: "B2B",
-    },
-
-    // Маркетплейсы и платформы
-    {
-      value: "marketplace" as ProductType,
-      label: "Маркетплейс/Платформа",
-      category: "Платформы",
-    },
-    {
-      value: "p2p_platform" as ProductType,
-      label: "P2P платформа",
-      category: "Платформы",
-    },
-
-    // SaaS и цифровые платформы
-    { value: "saas_b2b" as ProductType, label: "B2B SaaS", category: "SaaS" },
-    { value: "saas_b2c" as ProductType, label: "B2C SaaS", category: "SaaS" },
-    {
-      value: "cloud_platform" as ProductType,
-      label: "Облачная платформа",
-      category: "SaaS",
-    },
-
-    // Промышленные рынки
-    {
-      value: "industrial_equipment" as ProductType,
-      label: "Промышленное оборудование",
-      category: "Промышленность",
-    },
-    {
-      value: "logistics" as ProductType,
-      label: "Логистика",
-      category: "Промышленность",
-    },
-    {
-      value: "construction" as ProductType,
-      label: "Строительство",
-      category: "Промышленность",
-    },
-    {
-      value: "energy" as ProductType,
-      label: "Энергетика",
-      category: "Промышленность",
-    },
-    {
-      value: "agriculture" as ProductType,
-      label: "Сельское хозяйство",
-      category: "Промышленность",
-    },
-
-    // Услуги
-    {
-      value: "consulting" as ProductType,
-      label: "Консалтинг",
-      category: "Услуги",
-    },
-    {
-      value: "healthcare" as ProductType,
-      label: "Медицина",
-      category: "Услуги",
-    },
-    {
-      value: "education" as ProductType,
-      label: "Образование",
-      category: "Услуги",
-    },
-    {
-      value: "tourism_hospitality" as ProductType,
-      label: "Туризм и гостиничный бизнес",
-      category: "Услуги",
-    },
-    {
-      value: "financial_services" as ProductType,
-      label: "Финансовые услуги",
-      category: "Услуги",
-    },
-    {
-      value: "horeca" as ProductType,
-      label: "HoReCa (отели, рестораны, кафе)",
-      category: "Услуги",
-    },
-    {
-      value: "professional_services" as ProductType,
-      label: "Профессиональные услуги",
-      category: "Услуги",
-    },
-    { value: "wellness_fitness" as ProductType, label: "Фитнес, йога, велнес, спа", category: "Услуги" },
-    { value: "beauty_personal_care" as ProductType, label: "Салоны красоты, барбершопы, маникюр", category: "Услуги" },
-    { value: "healthcare" as ProductType, label: "Медицинские клиники", category: "Услуги" },
-    { value: "pet_services" as ProductType, label: "Зоомагазины и ветеринария", category: "Услуги" },
-    { value: "pet_grooming" as ProductType, label: "Студия груминга (стрижка и уход за питомцами)", category: "Услуги" },
-    { value: "childcare" as ProductType, label: "Детские центры, развивающие клубы, частные сады", category: "Услуги" },
-    { value: "home_services" as ProductType, label: "Дом и быт (клининг, бытовые услуги)", category: "Услуги" },
-    { value: "legal_services" as ProductType, label: "Юридические услуги", category: "Услуги" },
-    { value: "event_services" as ProductType, label: "Организация мероприятий", category: "Услуги" },
-    { value: "photography_studio" as ProductType, label: "Фотостудии и видеопродакшн", category: "Услуги" },
-    { value: "coworking" as ProductType, label: "Коворкинги и аренда офисов", category: "Услуги" },
-    { value: "auto_services" as ProductType, label: "Автосервис, автомойка, шиномонтаж", category: "Ремонт и сервис" },
-    { value: "electronics_repair" as ProductType, label: "Ремонт техники (телефоны, ноутбуки)", category: "Ремонт и сервис" },
-    { value: "clothing_repair" as ProductType, label: "Ателье, ремонт одежды и обуви", category: "Ремонт и сервис" },
-    { value: "car_dealership" as ProductType, label: "Автосалоны и авторынки", category: "Розница" },
-    { value: "real_estate" as ProductType, label: "Недвижимость (агентства, PropTech)", category: "Недвижимость" },
-    { value: "construction" as ProductType, label: "Строительство и ремонт помещений", category: "Недвижимость" },
-    { value: "furniture_interior" as ProductType, label: "Мебель, интерьер и декор", category: "Розница" },
-    { value: "pharmacy_optics" as ProductType, label: "Аптека, оптика, медицинские товары", category: "Розница" },
-    { value: "entertainment_media" as ProductType, label: "Развлечения, медиа, стриминг", category: "Цифровые" },
-    { value: "transport_mobility" as ProductType, label: "Транспорт: такси, каршеринг", category: "B2B" },
-    { value: "financial_services" as ProductType, label: "Финансовые услуги и страхование", category: "B2B" },
-
-    // Общее
-    { value: "other" as ProductType, label: "Другое", category: "Другое" },
+  const productTypeOptions: { value: ProductType; label: string; category: string }[] = [
+    // HoReCa & Food
+    { value: "horeca",              label: "HoReCa (cafés, restaurants, bars, hotels)", category: "HoReCa & Food" },
+    { value: "tourism_hospitality", label: "Tourism & hospitality",                  category: "HoReCa & Food" },
+    { value: "food_beverage",       label: "Food & beverages (production/sales)",     category: "HoReCa & Food" },
+    // Repair & Service
+    { value: "auto_services",       label: "Auto service, car wash, tire service",    category: "Repair & Service" },
+    { value: "electronics_repair",  label: "Electronics repair (phones, laptops, appliances)", category: "Repair & Service" },
+    { value: "home_services",       label: "Home & household (cleaning, household services, couriers)", category: "Repair & Service" },
+    { value: "clothing_repair",     label: "Tailoring, clothing & shoe repair",       category: "Repair & Service" },
+    // Retail & consumer goods
+    { value: "retail_fmcg",         label: "Retail & FMCG (stores, supermarkets)",    category: "Retail" },
+    { value: "fashion_apparel",     label: "Fashion & apparel",                       category: "Retail" },
+    { value: "electronics",         label: "Electronics & gadget stores",             category: "Retail" },
+    { value: "furniture_interior",  label: "Furniture, interior & decor",             category: "Retail" },
+    { value: "pharmacy_optics",     label: "Pharmacy, optics, medical goods",         category: "Retail" },
+    // Health & Beauty
+    { value: "wellness_fitness",    label: "Fitness, yoga, wellness, spa",            category: "Health & Beauty" },
+    { value: "beauty_personal_care",label: "Beauty salons, barbershops, nails",       category: "Health & Beauty" },
+    { value: "healthcare",          label: "Medical clinics & diagnostics",           category: "Health & Beauty" },
+    { value: "pet_services",        label: "Pet shops & veterinary",                  category: "Health & Beauty" },
+    { value: "pet_grooming",        label: "Pet grooming studio (grooming & pet care)", category: "Health & Beauty" },
+    // Education & professional services
+    { value: "education",           label: "Education & online learning",             category: "Education & Services" },
+    { value: "childcare",           label: "Childcare centers, development clubs, private kindergartens", category: "Education & Services" },
+    { value: "consulting",          label: "Consulting (personal services)",          category: "Education & Services" },
+    { value: "professional_services",label: "Agencies & outsourcing (marketing, HR, accounting)", category: "Education & Services" },
+    { value: "legal_services",      label: "Legal services",                          category: "Education & Services" },
+    { value: "event_services",      label: "Event management & agencies",             category: "Education & Services" },
+    { value: "photography_studio",  label: "Photo & video studios",                   category: "Education & Services" },
+    { value: "coworking",           label: "Coworking & office rental",               category: "Education & Services" },
+    // Real estate & construction
+    { value: "real_estate",         label: "Real estate (agencies, PropTech)",        category: "Real Estate & Construction" },
+    { value: "construction",        label: "Construction & renovation",               category: "Real Estate & Construction" },
+    { value: "car_dealership",      label: "Car dealerships & auto markets",          category: "Real Estate & Construction" },
+    // Digital products & SaaS
+    { value: "digital_apps",        label: "Mobile & web apps (B2C)",                 category: "Digital Products" },
+    { value: "saas_b2b",            label: "B2B SaaS / online services for business", category: "Digital Products" },
+    { value: "saas_b2c",            label: "B2C SaaS / online services for individuals", category: "Digital Products" },
+    { value: "cloud_platform",      label: "Cloud platform / infrastructure",         category: "Digital Products" },
+    { value: "marketplace",         label: "Marketplace / aggregator",                category: "Digital Products" },
+    { value: "p2p_platform",        label: "P2P platform",                            category: "Digital Products" },
+    { value: "entertainment_media", label: "Entertainment, media, streaming (online)", category: "Digital Products" },
+    // B2B & industry
+    { value: "manufacturing",       label: "Manufacturing",                           category: "B2B & Industry" },
+    { value: "wholesale_trade",     label: "Wholesale trade",                         category: "B2B & Industry" },
+    { value: "corporate_solutions", label: "Corporate solutions",                     category: "B2B & Industry" },
+    { value: "business_tech",       label: "Business technology",                     category: "B2B & Industry" },
+    { value: "industrial_equipment",label: "Industrial equipment",                    category: "B2B & Industry" },
+    { value: "logistics",           label: "Logistics & delivery",                    category: "B2B & Industry" },
+    { value: "transport_mobility",  label: "Transport: taxi, carsharing, mobility",   category: "B2B & Industry" },
+    { value: "energy",              label: "Energy",                                  category: "B2B & Industry" },
+    { value: "agriculture",         label: "Agriculture",                             category: "B2B & Industry" },
+    // Finance
+    { value: "financial_services",  label: "Financial services & insurance",          category: "Finance" },
+    // General
+    { value: "other",               label: "Other",                                   category: "Other" },
   ];
+
+  // Grouped structure for the multi-select panel
+  const productTypesByCategory = productTypeOptions.reduce<Record<string, typeof productTypeOptions>>(
+    (acc, opt) => {
+      if (!acc[opt.category]) acc[opt.category] = [];
+      acc[opt.category].push(opt);
+      return acc;
+    },
+    {}
+  );
 
   const localizationOptions = [
-    { value: "local" as Localization, label: "Местный рынок" },
-    { value: "global" as Localization, label: "Глобальный рынок" },
+    { value: "local" as Localization, label: "Local market" },
+    { value: "global" as Localization, label: "Global market" },
   ];
 
   const researchGoalOptions = [
-    { value: "market_entry" as ResearchGoal, label: "Выход на рынок" },
+    { value: "market_entry" as ResearchGoal, label: "Market entry" },
     {
       value: "product_testing" as ResearchGoal,
-      label: "Тестирование продукта",
+      label: "Product testing",
     },
     {
       value: "competitive_analysis" as ResearchGoal,
-      label: "Конкурентный анализ",
+      label: "Competitive analysis",
     },
     {
       value: "target_audience" as ResearchGoal,
-      label: "Анализ целевой аудитории",
+      label: "Target audience analysis",
     },
     {
       value: "pricing_research" as ResearchGoal,
-      label: "Ценовое исследование",
+      label: "Pricing research",
     },
-    { value: "brand_awareness" as ResearchGoal, label: "Узнаваемость бренда" },
+    { value: "brand_awareness" as ResearchGoal, label: "Brand awareness" },
   ];
 
   const handleInputChange = (
@@ -738,13 +890,41 @@ export default function MarketResearchPage() {
     }));
   };
 
+  // Google long-name → frontend COUNTRIES value (only known divergences).
+  const normalizeCountryValue = (name: string): string => {
+    const aliases: Record<string, string> = {
+      "United States": "USA",
+      "United Kingdom": "UK",
+      "United Arab Emirates": "UAE",
+      Czechia: "Czech Republic",
+    };
+    const mapped = aliases[name] || name;
+    return COUNTRIES.some((c) => c.value === mapped) ? mapped : name;
+  };
+
+  // Apply a one-click validation fix to the form, then let the user resubmit.
+  const handleApplyValidationAction = (action: ValidationAction) => {
+    const key =
+      action.field === "country" ? "country" : action.field === "region" ? "region" : null;
+    if (!key) return;
+    let value = action.type === "clear_field" ? "" : action.value || "";
+    if (key === "country" && value) value = normalizeCountryValue(value);
+    setFormData((prev) => ({ ...prev, [key]: value }));
+    setValidationErrors([]);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setValidationErrors([]);
+    setValidationWarnings([]);
     setIsSubmitting(true);
     setIsResearchPaused(false);
+    setElapsedSeconds(0);
     setResearchStartTime(Date.now()); // Запуск таймера
     setResearchDuration(null); // Сброс предыдущей длительности
+    if (elapsedTimerRef.current) clearInterval(elapsedTimerRef.current);
+    elapsedTimerRef.current = setInterval(() => setElapsedSeconds(s => s + 1), 1000);
     console.log("[Market Research] Starting research submission...");
     console.log("[Market Research] Form data:", formData);
 
@@ -763,7 +943,7 @@ export default function MarketResearchPage() {
     }
 
     // CRITICAL: Health check BEFORE starting research
-    console.log("[HEALTH CHECK] Checking all system components before starting research...");
+    console.log("[HEALTH CHECK] Проверка всех компонентов системы перед запуском исследования...");
     // HARDCODED FOR NOW - env var not working
     const healthApiBaseUrl = API_BASE;
 
@@ -771,91 +951,120 @@ export default function MarketResearchPage() {
       const healthResponse = await fetch(`${healthApiBaseUrl}/api/v1/agents/health`);
 
       if (!healthResponse.ok) {
-        throw new Error(`Health check failed: HTTP ${healthResponse.status}`);
+        throw new Error(`System health check failed: HTTP ${healthResponse.status}`);
       }
 
       const healthData = await healthResponse.json();
-      console.log("[HEALTH CHECK] Response:", healthData);
+      console.log("[HEALTH CHECK] Ответ:", healthData);
 
       if (!healthData.all_ready) {
-        // Find which components failed
+        // Найти компоненты, которые не работают
         const failedComponents = healthData.agents
           .filter((agent: any) => !agent.ready && !agent.optional)
           .map((agent: any) => `${agent.name}: ${agent.error || 'offline'}`)
           .join('\n');
 
         setError(
-          `❌ System is not ready to start research!\n\n` +
+          `❌ The system is not ready to start research!\n\n` +
           `The following components are unavailable:\n${failedComponents}\n\n` +
-          `Please ensure all services are running and try again.`
+          `Please make sure all services are running and try again.`
         );
         setIsSubmitting(false);
         console.error("[HEALTH CHECK] System not ready:", failedComponents);
         return;
       }
 
-      console.log("[HEALTH CHECK] ✓ All critical components are ready!");
+      console.log("[HEALTH CHECK] ✓ Все критические компоненты готовы!");
 
     } catch (healthError) {
       console.error("[HEALTH CHECK] Error:", healthError);
       setError(
         `❌ Failed to check system readiness: ${healthError instanceof Error ? healthError.message : String(healthError)}\n\n` +
-        `Make sure Market Research Service is running on port 8005.`
+        `Make sure the Market Research Service is running on port 8005.`
       );
       setIsSubmitting(false);
       return;
     }
 
+    // Parse competitors string → array
+    const competitorsList = formData.competitors
+      ? formData.competitors.split(",").map((c) => c.trim()).filter(Boolean)
+      : undefined;
+
+    // Derive industry from selected product type (first selected)
+    const primaryProductType = formData.productTypes[0];
+    const industryStr = productTypeToIndustry[primaryProductType] ?? primaryProductType;
+
+    // Build ResearchRequest directly — no onboarding mapper indirection.
+    // Built once: used for both pre-flight validation and submission.
+    const requestData: Record<string, unknown> = {
+      product_name: formData.productName,
+      product_description: formData.productDescription,
+      country: formData.country,
+      ...(formData.region ? { region: formData.region } : {}),
+      // business_type: API expects single value; take first selected
+      business_type: formData.businessTypes[0],
+      // product_type: same — take first selected
+      product_type: primaryProductType,
+      localization: formData.localization,
+      industry: industryStr,
+      research_goals: formData.researchGoals,
+      // Offering & pricing (optional — omit if not set)
+      ...(formData.offeringType ? { offering_type: formData.offeringType } : {}),
+      ...(formData.offeringSubType ? { offering_sub_type: formData.offeringSubType } : {}),
+      ...(formData.priceSegment ? { price_segment: formData.priceSegment } : {}),
+      // Optional extras
+      ...(formData.targetAudience ? { target_audience_description: formData.targetAudience } : {}),
+      ...(competitorsList && competitorsList.length > 0 ? { competitors: competitorsList } : {}),
+    };
+
+    // PRE-FLIGHT VALIDATION — coherence + injection gate BEFORE launching the
+    // pipeline (no research started, no cost). Authoritative gate is also
+    // enforced in /research/direct; this is for instant UX. On network failure
+    // we proceed and let the backend gate decide.
     try {
-      const requestData = {
-        session_id: `session_${Date.now()}`,
-        answers: {
-          product_or_service: {
-            answer: formData.productDescription,
-            timestamp: new Date().toISOString(),
-            files: [],
-          },
-          target_audience_type: {
-            answer: formData.businessTypes,
-            timestamp: new Date().toISOString(),
-            files: [],
-          },
-          location: {
-            answer: formData.region
-              ? `${formData.country}, ${formData.region}`
-              : formData.country,
-            timestamp: new Date().toISOString(),
-            files: [],
-          },
-          business_stage: {
-            answer: "Развитие",
-            timestamp: new Date().toISOString(),
-            files: [],
-          },
-          competitors: {
-            answer: formData.competitors || "Неизвестно",
-            timestamp: new Date().toISOString(),
-            files: [],
-          },
-          investment_needed: {
-            answer: "$50000",
-            timestamp: new Date().toISOString(),
-            files: [],
-          },
-        },
-      };
+      const validateResp = await fetch(`${healthApiBaseUrl}/api/v1/research/validate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestData),
+      });
+      if (validateResp.ok) {
+        const verdict: ValidationResult = await validateResp.json();
+        setValidationWarnings(verdict.warnings || []);
+        if (!verdict.valid) {
+          setValidationErrors(verdict.errors || []);
+          if (elapsedTimerRef.current) {
+            clearInterval(elapsedTimerRef.current);
+            elapsedTimerRef.current = null;
+          }
+          setIsSubmitting(false);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          return;
+        }
+      }
+    } catch (validationErr) {
+      console.warn("[Validation] pre-flight skipped (backend gate is authoritative):", validationErr);
+    }
+    setValidationErrors([]);
+
+    try {
+      try {
+        localStorage.setItem(LAST_REQUEST_FORM_DATA_KEY, JSON.stringify(formData));
+      } catch (e) {
+        console.warn("Не удалось сохранить данные последнего запроса:", e);
+      }
 
       console.log(
-        "[Market Research] Sending request to market-research-service..."
+        "[Market Research] Sending request to market-research-service (direct)..."
       );
       console.log("[Market Research] Request data:", requestData);
 
       // Get API base URL from environment or use default
-      const apiBaseUrl =
-        API_BASE;
+      // HARDCODED FOR NOW - env var not working
+      const apiBaseUrl = API_BASE;
 
       const response = await fetch(
-        `${apiBaseUrl}/api/v1/research/from-onboarding`,
+        `${apiBaseUrl}/api/v1/research/direct`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -866,11 +1075,24 @@ export default function MarketResearchPage() {
       console.log("[Market Research] Response status:", response.status);
 
       if (!response.ok) {
+        // 422 = authoritative validation gate rejected the request (e.g. direct
+        // API call or a race after pre-flight). Render structured field errors.
+        if (response.status === 422) {
+          const body = await response.json().catch(() => null);
+          const verdict: ValidationResult | undefined = body?.detail ?? body;
+          if (verdict?.errors?.length) {
+            setValidationErrors(verdict.errors);
+            setValidationWarnings(verdict.warnings || []);
+            setIsSubmitting(false);
+            window.scrollTo({ top: 0, behavior: "smooth" });
+            return;
+          }
+        }
         const errorText = await response.text().catch(() => "Unknown error");
         throw new Error(
-          `Ошибка запуска исследования (${response.status}). ` +
-            `Проверьте, что бэкенд сервис запущен на ${apiBaseUrl}. ` +
-            `Ошибка: ${errorText.substring(0, 200)}`
+          `Failed to start research (${response.status}). ` +
+            `Make sure the backend service is running at ${apiBaseUrl}. ` +
+            `Error: ${errorText.substring(0, 200)}`
         );
       }
 
@@ -880,6 +1102,32 @@ export default function MarketResearchPage() {
         result.research_id
       );
       console.log("[Market Research] Initial status:", result);
+
+      // ===== LOG AGENTS STATUS =====
+      if (result.agents_status) {
+        console.log("=" .repeat(80));
+        console.log("🔍 AGENT HEALTH CHECK RESULTS:");
+        console.log("=" .repeat(80));
+
+        result.agents_status.agents.forEach((agent: any) => {
+          const statusEmoji = agent.ready ? "✅" : "❌";
+          console.log(
+            `${statusEmoji} ${agent.name} (port ${agent.port}): ${agent.status}`
+          );
+          if (agent.error) {
+            console.log(`   Error: ${agent.error}`);
+          }
+        });
+
+        console.log(`Overall Ready: ${result.agents_status.all_ready}`);
+        console.log("=" .repeat(80));
+
+        // If agents are not ready, show error
+        if (!result.agents_status.all_ready) {
+          console.error("❌ Cannot start research: Critical agents are not ready!");
+        }
+      }
+
       setResearchId(result.research_id);
       setResearchStatus(result);
       pollResearchStatus(result.research_id);
@@ -893,15 +1141,15 @@ export default function MarketResearchPage() {
         err.message?.includes("Failed to fetch")
       ) {
         setError(
-          `Не удалось подключиться к бэкенд сервису. ` +
-            `Убедитесь, что сервис маркетингового исследования запущен на ${
+          `Failed to connect to the backend service. ` +
+            `Make sure the market research service is running at ${
               process.env.NEXT_PUBLIC_SOLUTIONS_API_URL ||
               "http://localhost:8002"
             }. ` +
-            `Ошибка: ${err.message || "Соединение отклонено"}`
+            `Error: ${err.message || "Connection refused"}`
         );
       } else {
-        setError(err.message || "Ошибка при запуске исследования");
+        setError(err.message || "Error starting research");
       }
       setIsSubmitting(false);
     }
@@ -910,22 +1158,68 @@ export default function MarketResearchPage() {
   const pollResearchStatus = async (id: string) => {
     if (isResearchPausedRef.current) return;
 
-    console.log("[Market Research] Starting status polling for ID:", id);
+    console.log("=".repeat(80));
+    console.log("🔄 [POLLING] Starting status polling for ID:", id);
+    console.log("=".repeat(80));
+
+    // Clear any existing timer first
     if (pollingIntervalRef.current) {
-      clearInterval(pollingIntervalRef.current);
+      console.log("⚠️ [POLLING] Clearing existing interval before starting new one");
+      clearTimeout(pollingIntervalRef.current);
       pollingIntervalRef.current = null;
     }
+    const pollingToken = `${id}:${Date.now()}`;
+    pollingTokenRef.current = pollingToken;
 
-    let retries = 0;
-    const maxRetries = 3;
-    let pollInterval = 3000; // Start with 3 seconds
-    const maxPollInterval = 15000; // Max 15 seconds
+    const pollInterval = 2500;
+    const maxHardFailures = 15;
+    const maxTransientFailures = 360; // ~15 min with 2.5s interval
+    const maxPollingDurationMs = 90 * 60 * 1000; // 90 min
+    const startedAt = Date.now();
+
+    let pollCount = 0;
+    let hardFailures = 0;
+    let transientFailures = 0;
 
     // Get API base URL from environment or use default
     const apiBaseUrl =
       API_BASE;
 
-    const interval = setInterval(async () => {
+    const stopPolling = () => {
+      if (pollingIntervalRef.current) {
+        clearTimeout(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
+      }
+      if (pollingTokenRef.current === pollingToken) {
+        pollingTokenRef.current = null;
+      }
+      if (elapsedTimerRef.current) {
+        clearInterval(elapsedTimerRef.current);
+        elapsedTimerRef.current = null;
+      }
+    };
+
+    const scheduleNext = () => {
+      if (pollingTokenRef.current !== pollingToken) return;
+      pollingIntervalRef.current = setTimeout(runPoll, pollInterval);
+    };
+
+    const runPoll = async () => {
+      if (pollingTokenRef.current !== pollingToken || isResearchPausedRef.current) return;
+
+      const elapsed = Date.now() - startedAt;
+      if (elapsed >= maxPollingDurationMs) {
+        stopPolling();
+        setIsSubmitting(false);
+        setIsResearchPaused(false);
+        setError(
+          "Research is taking too long. Sync the status or start it again."
+        );
+        return;
+      }
+
+      pollCount++;
+
       try {
         const response = await fetch(`${apiBaseUrl}/api/v1/research/${id}`, {
           cache: "no-store",
@@ -936,13 +1230,34 @@ export default function MarketResearchPage() {
         });
 
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          if ([429, 502, 503, 504].includes(response.status)) {
+            transientFailures++;
+            if (transientFailures >= maxTransientFailures) {
+              stopPolling();
+              setIsSubmitting(false);
+              setIsResearchPaused(false);
+              setError("Temporary network/API errors. Try refreshing the status or restarting the research.");
+              return;
+            }
+            scheduleNext();
+            return;
+          }
+          hardFailures++;
+          if (hardFailures >= maxHardFailures) {
+            stopPolling();
+            setIsSubmitting(false);
+            setIsResearchPaused(false);
+            setError(`Unable to fetch research status (HTTP ${response.status}).`);
+            return;
+          }
+          scheduleNext();
+          return;
         }
 
         const status: ResearchStatus = await response.json();
+        hardFailures = 0;
+        transientFailures = 0;
 
-        // Сброс счетчика ошибок при успешном запросе
-        retries = 0;
         setResearchStatus(status);
 
         if (status.status === "completed") {
@@ -950,9 +1265,10 @@ export default function MarketResearchPage() {
           console.log("✅ ✅ ✅ RESEARCH COMPLETED! ✅ ✅ ✅");
           console.log("=".repeat(80));
           console.log("[Market Research] Fetching report...");
-          clearInterval(interval);
-          pollingIntervalRef.current = null;
+
+          stopPolling();
           setIsSubmitting(false);
+          setIsResearchPaused(false);
 
           // Вычисляем длительность исследования
           if (researchStartTime) {
@@ -967,74 +1283,61 @@ export default function MarketResearchPage() {
             );
           }
 
-          fetchResearchReport(id);
+          await fetchResearchReport(id);
+          return;
         } else if (status.status === "failed") {
-          clearInterval(interval);
-          pollingIntervalRef.current = null;
+          stopPolling();
           setIsSubmitting(false);
           setIsResearchPaused(false);
           setError(
-            `Исследование не удалось выполнить: ${
-              status.error || status.current_stage || "Неизвестная ошибка"
+            `Research failed: ${
+              status.error || status.current_stage || "Unknown error"
             }`
           );
-        } else if (status.status === "in_progress" && status.progress >= 65) {
-          // Увеличиваем интервал опроса для долгих операций
-          pollInterval = Math.min(pollInterval * 1.5, maxPollInterval);
-          clearInterval(interval);
-          setTimeout(() => pollResearchStatus(id), pollInterval);
+          return;
         }
-      } catch (err: any) {
-        console.error("Ошибка получения статуса:", err);
-        retries++;
 
-        if (retries >= maxRetries) {
-          clearInterval(interval);
-          pollingIntervalRef.current = null;
-          setIsSubmitting(false);
-          setIsResearchPaused(false);
-          // Network error or other fetch error
-          if (
-            err.message?.includes("fetch") ||
-            err.message?.includes("network") ||
-            err.code === "ECONNREFUSED" ||
-            err.message?.includes("Failed to fetch")
-          ) {
+        scheduleNext();
+      } catch (err: any) {
+        console.error(`❌ [POLLING #${pollCount}] Error:`, err);
+        const isTransient =
+          err?.message?.includes("fetch") ||
+          err?.message?.includes("network") ||
+          err?.message?.includes("Failed to fetch") ||
+          err?.name === "AbortError";
+
+        if (isTransient) {
+          transientFailures++;
+          if (transientFailures >= maxTransientFailures) {
+            stopPolling();
+            setIsSubmitting(false);
+            setIsResearchPaused(false);
             setError(
-              `Не удается получить статус исследования. ` +
-                `Проверьте, что бэкенд сервис запущен на ${apiBaseUrl}. ` +
-                `Ошибка: ${err.message || "Соединение отклонено"}`
+              `Unable to fetch research status. Check the service at ${apiBaseUrl}.`
             );
-          } else {
-            setError(
-              `Не удается получить статус исследования. ` +
-                `Пожалуйста, проверьте соединение. Ошибка: ${
-                  err.message || "Неизвестная ошибка"
-                }`
-            );
+            return;
           }
         } else {
-          // Экспоненциальное увеличение интервала при ошибках
-          pollInterval = Math.min(pollInterval * 2, maxPollInterval);
+          hardFailures++;
+          if (hardFailures >= maxHardFailures) {
+            stopPolling();
+            setIsSubmitting(false);
+            setIsResearchPaused(false);
+            setError(
+              `Unable to fetch research status. Error: ${
+                err.message || "Unknown error"
+              }`
+            );
+            return;
+          }
         }
-      }
-    }, pollInterval);
-    pollingIntervalRef.current = interval;
 
-    // Безопасный таймаут
-    setTimeout(() => {
-      clearInterval(interval);
-      if (pollingIntervalRef.current === interval) {
-        pollingIntervalRef.current = null;
+        scheduleNext();
       }
-      if (researchStatus?.status === "in_progress") {
-        setIsSubmitting(false);
-        setIsResearchPaused(false);
-        setError(
-          "Исследование занимает больше времени, чем ожидалось. Попробуйте обновить страницу позже."
-        );
-      }
-    }, 600000); // Увеличено до 10 минут
+    };
+
+    console.log("✅ [POLLING] Timer mode enabled. Polling every", pollInterval, "ms");
+    await runPoll();
   };
 
   const fetchResearchReport = async (id: string) => {
@@ -1154,7 +1457,7 @@ export default function MarketResearchPage() {
             fallbackErr
           );
           setError(
-            `Не удалось получить отчет. Статус: ${enhancedResponse.status}. Проверьте, что бэкенд сервис запущен на ${apiBaseUrl}`
+            `Failed to fetch the report. Status: ${enhancedResponse.status}. Make sure the backend service is running at ${apiBaseUrl}`
           );
         }
       } else {
@@ -1167,9 +1470,9 @@ export default function MarketResearchPage() {
           errorText
         );
         setError(
-          `Ошибка сервера при получении отчета (${enhancedResponse.status}). ` +
-            `Проверьте, что бэкенд сервис маркетингового исследования запущен на ${apiBaseUrl}. ` +
-            `Ошибка: ${errorText.substring(0, 200)}`
+          `Server error while fetching the report (${enhancedResponse.status}). ` +
+            `Make sure the market research backend service is running at ${apiBaseUrl}. ` +
+            `Error: ${errorText.substring(0, 200)}`
         );
       }
     } catch (err: any) {
@@ -1181,25 +1484,66 @@ export default function MarketResearchPage() {
         err.code === "ECONNREFUSED"
       ) {
         setError(
-          `Не удалось подключиться к бэкенд сервису на ${apiBaseUrl}. ` +
-            `Убедитесь, что сервис маркетингового исследования запущен. ` +
-            `Ошибка: ${err.message || "Соединение отклонено"}`
+          `Failed to connect to the backend service at ${apiBaseUrl}. ` +
+            `Make sure the market research service is running. ` +
+            `Error: ${err.message || "Connection refused"}`
         );
       } else {
         setError(
-          `Ошибка при получении отчета: ${err.message || "Неизвестная ошибка"}`
+          `Error fetching the report: ${err.message || "Unknown error"}`
         );
       }
     }
   };
 
+  const handlePauseResearch = () => {
+    isResearchPausedRef.current = true;
+    if (pollingIntervalRef.current) {
+      clearTimeout(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+    if (elapsedTimerRef.current) {
+      clearInterval(elapsedTimerRef.current);
+      elapsedTimerRef.current = null;
+    }
+    pollingTokenRef.current = null;
+    setIsSubmitting(false);
+    setIsResearchPaused(true);
+  };
+
+  const handleResumeResearch = () => {
+    if (!researchId) return;
+    isResearchPausedRef.current = false; // синхронно до вызова pollResearchStatus
+    setError(null);
+    setIsResearchPaused(false);
+    setIsSubmitting(true);
+    if (elapsedTimerRef.current) clearInterval(elapsedTimerRef.current);
+    elapsedTimerRef.current = setInterval(() => setElapsedSeconds(s => s + 1), 1000);
+    pollResearchStatus(researchId);
+  };
+
+  const handleRestartResearch = async () => {
+    try {
+      if (researchId) {
+        const apiBaseUrl = API_BASE;
+        await fetch(`${apiBaseUrl}/api/v1/research/${researchId}`, {
+          method: "DELETE",
+        });
+      }
+    } catch (e) {
+      console.warn("Не удалось отменить текущее исследование на сервере:", e);
+    } finally {
+      handleReset({ preserveFormData: true, useSavedFormData: true });
+    }
+  };
+
   const handleDownload = async (format: "docx" | "pdf") => {
     if ((!enhancedReport && !researchReport) || !researchId) return;
+    if (downloadingFormat) return;
 
+    setDownloadingFormat(format);
     try {
-      // Get API base URL from environment or use default
-      const apiBaseUrl =
-        API_BASE;
+      const apiBaseUrl = API_BASE;
 
       const response = await fetch(
         `${apiBaseUrl}/api/v1/research/${researchId}/report/${format}`,
@@ -1213,7 +1557,7 @@ export default function MarketResearchPage() {
       );
 
       if (!response.ok) {
-        throw new Error(`Ошибка загрузки ${format.toUpperCase()} файла`);
+        throw new Error(`Error downloading the ${format.toUpperCase()} file`);
       }
 
       const blob = await response.blob();
@@ -1227,28 +1571,42 @@ export default function MarketResearchPage() {
       a.remove();
     } catch (err: any) {
       setError(
-        err.message || `Ошибка при скачивании ${format.toUpperCase()} файла`
+        err.message || `Error downloading the ${format.toUpperCase()} file`
       );
+    } finally {
+      setDownloadingFormat(null);
     }
   };
 
-  const handleReset = () => {
+  const handleReset = (options?: {
+    preserveFormData?: boolean;
+    useSavedFormData?: boolean;
+  }) => {
+    const preserveFormData = options?.preserveFormData ?? false;
+    const useSavedFormData = options?.useSavedFormData ?? false;
+
     if (pollingIntervalRef.current) {
-      clearInterval(pollingIntervalRef.current);
+      clearTimeout(pollingIntervalRef.current);
       pollingIntervalRef.current = null;
     }
-    setFormData({
-      productName: "",
-      productDescription: "",
-      country: "",
-      region: "",
-      businessTypes: [],
-      productTypes: [],
-      localization: "",
-      researchGoals: [],
-      targetAudience: "",
-      competitors: "",
-    });
+    pollingTokenRef.current = null;
+
+    if (!preserveFormData) {
+      setFormData(defaultFormData);
+    } else if (useSavedFormData) {
+      try {
+        const savedRaw = localStorage.getItem(LAST_REQUEST_FORM_DATA_KEY);
+        if (savedRaw) {
+          const saved = JSON.parse(savedRaw) as FormData;
+          if (saved && typeof saved === "object") {
+            setFormData((prev) => ({ ...prev, ...saved }));
+          }
+        }
+      } catch (e) {
+        console.warn("Не удалось восстановить сохранённые поля:", e);
+      }
+    }
+
     setResearchId(null);
     setResearchStatus(null);
     setResearchReport(null);
@@ -1257,40 +1615,6 @@ export default function MarketResearchPage() {
     setError(null);
     setIsSubmitting(false);
     setIsResearchPaused(false);
-  };
-
-  const handlePauseResearch = () => {
-    isResearchPausedRef.current = true;
-    if (pollingIntervalRef.current) {
-      clearInterval(pollingIntervalRef.current);
-      pollingIntervalRef.current = null;
-    }
-    setIsSubmitting(false);
-    setIsResearchPaused(true);
-  };
-
-  const handleResumeResearch = () => {
-    if (!researchId) return;
-    isResearchPausedRef.current = false; // синхронно до вызова pollResearchStatus
-    setError(null);
-    setIsResearchPaused(false);
-    setIsSubmitting(true);
-    pollResearchStatus(researchId);
-  };
-
-  const handleRestartResearch = async () => {
-    try {
-      if (researchId) {
-        const apiBaseUrl = API_BASE;
-        await fetch(`${apiBaseUrl}/api/v1/research/${researchId}`, {
-          method: "DELETE",
-        });
-      }
-    } catch (e) {
-      console.warn("Could not cancel current research on backend:", e);
-    } finally {
-      handleReset();
-    }
   };
 
   return (
@@ -1303,12 +1627,13 @@ export default function MarketResearchPage() {
               <FiBarChart2
                 style={{ marginRight: "1rem", verticalAlign: "middle" }}
               />
-              Маркетинговое Исследование
+              MarketSense — AI Market Research Tool
             </h1>
             <p className={styles.heroDescription}>
-              Полноценное маркетинговое исследование рынка с актуальными
-              текущими данными, анализом конкурентов, сегментацией целевой
-              аудитории, а также разработкой ценовой стратегии.
+              Live web research, competitor analysis, and market sizing.
+              MarketSense helps founders and analysts collect live web data,
+              validate sources, map competitors, segment the target audience,
+              and estimate market size in minutes, not weeks.
             </p>
           </div>
         </div>
@@ -1318,80 +1643,203 @@ export default function MarketResearchPage() {
             <div className={styles.errorAlert}>
               <FiAlertCircle className={styles.errorIcon} size={24} />
               <div className={styles.errorContent}>
-                <h3 className={styles.errorTitle}>Ошибка</h3>
+                <h3 className={styles.errorTitle}>Error</h3>
                 <p className={styles.errorMessage}>{error}</p>
                 <button
                   className={styles.retryButton}
                   onClick={() => setError(null)}
                 >
-                  Закрыть
+                  Close
                 </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* Health Status Panel */}
-        {!isLoadingHealth && healthStatus && (
-          <div className={styles.healthSection}>
-            <div className={styles.healthCard}>
-              <h3 style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ fontSize: '1.2rem' }}>🏥</span>
-                System Health
-                <span style={{
-                  marginLeft: 'auto',
-                  fontSize: '0.9rem',
-                  padding: '0.25rem 0.75rem',
-                  borderRadius: '12px',
-                  backgroundColor: healthStatus.all_ready ? '#d4edda' : '#f8d7da',
-                  color: healthStatus.all_ready ? '#155724' : '#721c24',
-                  fontWeight: 500
-                }}>
-                  {healthStatus.all_ready ? '✓ Ready' : '✗ Not Ready'}
-                </span>
-              </h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '0.75rem' }}>
-                {healthStatus.agents.map((agent: any, index: number) => (
-                  <div
-                    key={index}
-                    style={{
-                      padding: '0.75rem',
-                      border: '1px solid',
-                      borderColor: agent.ready ? '#c3e6cb' : agent.optional ? '#fff3cd' : '#f5c6cb',
-                      borderRadius: '8px',
-                      backgroundColor: agent.ready ? '#f7fdf9' : agent.optional ? '#fffef5' : '#fff5f6',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.5rem'
-                    }}
-                  >
-                    <span style={{ fontSize: '1.5rem' }}>
-                      {agent.ready ? '✅' : agent.optional ? '⚠️' : '❌'}
-                    </span>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: 500, fontSize: '0.9rem', marginBottom: '0.25rem' }}>
-                        {agent.name}
-                        {agent.port && <span style={{ color: '#6c757d', fontSize: '0.85rem' }}> :{agent.port}</span>}
-                        {agent.optional && <span style={{ color: '#856404', fontSize: '0.75rem', marginLeft: '0.25rem' }}>(opt.)</span>}
-                      </div>
-                      <div style={{ fontSize: '0.8rem', color: agent.ready ? '#28a745' : agent.optional ? '#856404' : '#dc3545' }}>
-                        {agent.status}
-                      </div>
-                      {agent.error && (
-                        <div style={{ fontSize: '0.75rem', color: '#6c757d', marginTop: '0.25rem' }}>
-                          {agent.error}
+        {/* Pre-flight validation issues (errors block submit, warnings are advisory) */}
+        {(validationErrors.length > 0 || validationWarnings.length > 0) && (
+          <div className={styles.errorSection}>
+            {validationErrors.length > 0 && (
+              <div
+                style={{
+                  border: "1px solid #f3b1b1",
+                  background: "#fdecec",
+                  borderRadius: 12,
+                  padding: "1rem 1.25rem",
+                  marginBottom: validationWarnings.length > 0 ? "0.75rem" : 0,
+                }}
+              >
+                <h3 style={{ display: "flex", alignItems: "center", gap: 8, color: "#b42318", margin: "0 0 0.5rem" }}>
+                  <FiAlertCircle size={20} /> Please review your request
+                </h3>
+                <ul style={{ margin: 0, paddingLeft: "1.1rem", display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+                  {validationErrors.map((issue, i) => (
+                    <li key={`${issue.code}-${i}`} style={{ color: "#742a2a" }}>
+                      <span>{issue.message}</span>
+                      {issue.actions && issue.actions.length > 0 && (
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 6 }}>
+                          {issue.actions.map((action, j) => (
+                            <button
+                              key={j}
+                              type="button"
+                              onClick={() => handleApplyValidationAction(action)}
+                              style={{
+                                border: "1px solid #b42318",
+                                background: "#fff",
+                                color: "#b42318",
+                                borderRadius: 8,
+                                padding: "4px 10px",
+                                cursor: "pointer",
+                                fontSize: "0.85rem",
+                              }}
+                            >
+                              {action.label}
+                            </button>
+                          ))}
                         </div>
                       )}
-                    </div>
-                  </div>
-                ))}
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <div style={{ marginTop: '0.75rem', fontSize: '0.75rem', color: '#6c757d', textAlign: 'right' }}>
-                Updated: {new Date(healthStatus.timestamp).toLocaleTimeString('en-US')}
+            )}
+            {validationWarnings.length > 0 && (
+              <div
+                style={{
+                  border: "1px solid #f0d28a",
+                  background: "#fdf6e3",
+                  borderRadius: 12,
+                  padding: "0.75rem 1.25rem",
+                }}
+              >
+                <strong style={{ color: "#8a6d1f" }}>Warnings (you can proceed):</strong>
+                <ul style={{ margin: "0.4rem 0 0", paddingLeft: "1.1rem" }}>
+                  {validationWarnings.map((issue, i) => (
+                    <li key={`${issue.code}-${i}`} style={{ color: "#8a6d1f" }}>{issue.message}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Health Status — строка-плейсхолдер ВО ВРЕМЯ первой проверки, чтобы
+            блок присутствовал сразу при загрузке страницы (не «выпрыгивал» позже).
+            Пока идёт проверка — «Проверка…»; при сбое — ошибка + ретрай. */}
+        {(isLoadingHealth || !healthStatus) && (
+          <div className={styles.healthSection}>
+            <div className={styles.healthCard} style={{ padding: "0.6rem 1rem" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+                {isLoadingHealth ? (
+                  <>
+                    <FiRefreshCw className={styles.spin} />
+                    <span style={{ fontWeight: 600, fontSize: "0.9rem", color: "#64748b" }}>
+                      Checking system status…
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <FiAlertCircle color="#b42318" />
+                    <span style={{ fontWeight: 600, fontSize: "0.9rem", color: "#b42318" }}>
+                      Could not get system status
+                    </span>
+                    <button
+                      type="button"
+                      className={styles.healthRefreshButton}
+                      onClick={() => fetchHealthStatus(true)}
+                      disabled={isRefreshingHealth}
+                      title="Retry check"
+                    >
+                      <FiRefreshCw className={isRefreshingHealth ? styles.spin : ""} />
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>
         )}
+
+        {/* Health Status — компактная полоса готовности. Точки = по компоненту
+            (цвет несёт состояние даже свёрнутой). Детали авто-раскрываются при
+            сбое; по клику можно развернуть полный список. Для оператора. */}
+        {!isLoadingHealth && healthStatus && (() => {
+          const agents: any[] = healthStatus.agents || [];
+          const readyCount = agents.filter((a) => a.ready).length;
+          const showDetail = healthExpanded || !healthStatus.all_ready;
+          const detailAgents = healthExpanded ? agents : agents.filter((a) => !a.ready);
+          return (
+            <div className={styles.healthSection}>
+              <div
+                className={styles.healthCard}
+                onClick={() => setHealthExpanded((v) => !v)}
+                style={{ cursor: "pointer", padding: "0.6rem 1rem" }}
+                title="Show/hide component details"
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", flexWrap: "wrap" }}>
+                  <div style={{ display: "flex", gap: 5 }}>
+                    {agents.map((a, i) => (
+                      <span
+                        key={i}
+                        title={`${a.name}: ${a.status}`}
+                        style={{
+                          width: 9, height: 9, borderRadius: "50%",
+                          background: a.ready ? "#22c55e" : a.optional ? "#f59e0b" : "#ef4444",
+                        }}
+                      />
+                    ))}
+                  </div>
+                  <span style={{ fontWeight: 600, fontSize: "0.9rem", color: healthStatus.all_ready ? "#166534" : "#b42318" }}>
+                    {healthStatus.all_ready ? "System is ready" : "System not ready"}
+                  </span>
+                  <span style={{ fontSize: "0.8rem", color: "#6c757d" }}>{readyCount}/{agents.length}</span>
+                  <span style={{ flex: 1 }} />
+                  <button
+                    type="button"
+                    className={styles.healthRefreshButton}
+                    onClick={(e) => { e.stopPropagation(); fetchHealthStatus(true); }}
+                    disabled={isRefreshingHealth}
+                    title="Refresh service statuses"
+                  >
+                    <FiRefreshCw className={isRefreshingHealth ? styles.spin : ""} />
+                  </button>
+                  <span style={{ color: "#9aa", fontSize: "0.8rem", transform: healthExpanded ? "rotate(180deg)" : "none", transition: "transform .2s" }}>▾</span>
+                </div>
+
+                {showDetail && (
+                  <div
+                    style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "0.5rem", marginTop: "0.65rem" }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {detailAgents.map((agent: any, index: number) => (
+                      <div
+                        key={index}
+                        style={{
+                          padding: "0.5rem 0.65rem",
+                          border: "1px solid",
+                          borderColor: agent.ready ? "#c3e6cb" : agent.optional ? "#fff3cd" : "#f5c6cb",
+                          borderRadius: 8,
+                          backgroundColor: agent.ready ? "#f7fdf9" : agent.optional ? "#fffef5" : "#fff5f6",
+                          display: "flex", alignItems: "center", gap: "0.5rem",
+                        }}
+                      >
+                        <span style={{ fontSize: "1.1rem" }}>{agent.ready ? "✅" : agent.optional ? "⚠️" : "❌"}</span>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontWeight: 500, fontSize: "0.85rem" }}>
+                            {agent.name}
+                            {agent.port && <span style={{ color: "#6c757d", fontSize: "0.8rem" }}> :{agent.port}</span>}
+                            {agent.optional && <span style={{ color: "#856404", fontSize: "0.72rem", marginLeft: "0.25rem" }}>(opt.)</span>}
+                          </div>
+                          <div style={{ fontSize: "0.78rem", color: agent.ready ? "#28a745" : agent.optional ? "#856404" : "#dc3545" }}>{agent.status}</div>
+                          {agent.error && <div style={{ fontSize: "0.72rem", color: "#6c757d", marginTop: "0.2rem" }}>{agent.error}</div>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Warning when system is not ready */}
         {!isLoadingHealth && healthStatus && !healthStatus.all_ready && (
@@ -1409,29 +1857,128 @@ export default function MarketResearchPage() {
             }}>
               <FiAlertCircle size={24} color="#856404" />
               <div>
-                <strong style={{ color: '#856404', fontSize: '0.95rem' }}>System Not Ready</strong>
+                <strong style={{ color: '#856404', fontSize: '0.95rem' }}>System not ready</strong>
                 <p style={{ margin: '0.25rem 0 0', color: '#856404', fontSize: '0.9rem' }}>
-                  Some system components are unavailable. Research will only be available when all required components are ready.
+                  Some system components are unavailable. Research will be available only once all required components are ready.
                 </p>
               </div>
             </div>
           </div>
         )}
 
-        <div className={styles.formSection}>
-          <div className={styles.card}>
-            <h2>Данные для исследования</h2>
-            <p className={styles.formDescription}>
-              Внесите информацию о вашей идее или проекте. Чем больше информации
-              вы предоставите, тем точнее и актуальнее будет исследование рынка.
-              Поля, отмеченные звездочкой (*), обязательны для заполнения.
-            </p>
+        {!isCompletedView && (
+          <>
+          <div className={styles.formSection}>
+            <div className={styles.card}>
+            {(isSubmitting && !isResearchPaused) ? (() => {
+              // ── WAITING VIEW (исследование идёт): сводка запроса + динамическое
+              //    превью разделов (загорается по pipeline_status) + блок доверия.
+              const pipeline = researchStatus?.pipeline_status;
+              const agentMap: Record<string, PipelineAgent> = {};
+              (pipeline?.agents ?? []).forEach((a) => { agentMap[a.name] = a; });
+              const statusOf = (agent: string): string =>
+                researchStatus?.status === "completed"
+                  ? "completed"
+                  : agentMap[agent]?.status || "waiting";
+              const S_ICON: Record<string, string> = { waiting: "○", running: "▶", completed: "✓", timeout: "⚠", failed: "✗" };
+              const S_COLOR: Record<string, string> = { waiting: "#9aa7b4", running: "#0683f5", completed: "#16a34a", timeout: "#f97316", failed: "#ef4444" };
+              const sectionDefs = [
+                { label: "Market size — TAM / SAM / SOM", agent: "MarketSizingAgent" },
+                { label: "Competitive analysis", agent: "CompetitorAnalysisAgent" },
+                { label: "Competitor pricing analysis", agent: "CompetitorAnalysisAgent" },
+                { label: "Target audience & segments", agent: "TargetAudienceAgent" },
+                { label: "Market trends & drivers", agent: "TrendsAnalysisAgent" },
+                { label: "Consumer insights", agent: "ConsumerInsightsAgent" },
+                { label: "Strategic recommendations", agent: "ValidationAgent" },
+              ];
+              const location = [formData.region, formData.country].filter(Boolean).join(", ");
+              const goals = formData.researchGoals
+                .map((g) => researchGoalOptions.find((o) => o.value === g)?.label || g)
+                .join(" · ");
+              const industry = productTypeToIndustry[formData.productTypes[0]] ?? formData.productTypes[0];
+              const summaryRows: [string, string][] = [
+                ["Product", formData.productName],
+                ["Location", location || "—"],
+                ["Business type", formData.businessTypes.join(", ")],
+                ["Industry", industry],
+                ["Goals", goals],
+              ];
+              if (formData.priceSegment) {
+                summaryRows.push(["Segment", priceSegmentOptions.find((o) => o.value === formData.priceSegment)?.label || formData.priceSegment]);
+              }
+              return (
+                <div>
+                  <h2 style={{ marginBottom: "0.35rem" }}>Researching your market</h2>
+                  <p className={styles.formDescription} style={{ marginBottom: "1.1rem" }}>
+                    This takes ~10–15 minutes — 6 agents gather data from real sources.
+                    You can keep the tab open; progress and logs are below.
+                  </p>
+
+                  {/* Сводка запроса — подтверждение «что исследуем» */}
+                  <div style={{ border: "1px solid #e3e8ef", background: "#f8fafc", borderRadius: 12, padding: "0.9rem 1.1rem", marginBottom: "1rem" }}>
+                    <div style={{ fontWeight: 600, fontSize: "0.95rem", marginBottom: "0.6rem", color: "#0b1a21" }}>What we're researching</div>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "0.5rem 1.25rem" }}>
+                      {summaryRows.filter(([, v]) => v && v.trim()).map(([k, v]) => (
+                        <div key={k} style={{ display: "flex", gap: "0.5rem", fontSize: "0.88rem" }}>
+                          <span style={{ color: "#64748b", minWidth: 96 }}>{k}</span>
+                          <span style={{ color: "#0b1a21", fontWeight: 500 }}>{v}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Превью разделов отчёта — загорается по мере готовности агентов */}
+                  <div style={{ border: "1px solid #e3e8ef", borderRadius: 12, padding: "0.9rem 1.1rem", marginBottom: "1rem" }}>
+                    <div style={{ fontWeight: 600, fontSize: "0.95rem", marginBottom: "0.6rem", color: "#0b1a21" }}>What's in the report</div>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "0.4rem 1.25rem" }}>
+                      {sectionDefs.map((s, i) => {
+                        const st = statusOf(s.agent);
+                        return (
+                          <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.55rem", fontSize: "0.88rem" }}>
+                            <span style={{ color: S_COLOR[st] || "#9aa7b4", width: 16, textAlign: "center", fontWeight: 700 }}>
+                              {S_ICON[st] || "○"}
+                            </span>
+                            <span style={{ color: st === "completed" ? "#0b1a21" : "#475569", fontWeight: st === "running" ? 600 : 400 }}>
+                              {s.label}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Блок доверия / методология */}
+                  <div style={{ border: "1px solid #dbeafe", background: "#f0f7ff", borderRadius: 12, padding: "0.9rem 1.1rem", marginBottom: "0.5rem" }}>
+                    <div style={{ fontWeight: 600, fontSize: "0.95rem", marginBottom: "0.5rem", color: "#0b1a21" }}>While the analysis runs</div>
+                    <ul style={{ margin: 0, paddingLeft: "1.1rem", color: "#334155", fontSize: "0.86rem", display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+                      <li>Data from real sources — Google Places, Statista, industry reports. We don't invent numbers.</li>
+                      <li>Every metric is tied to a source; modeled estimates are honestly flagged as indicative.</li>
+                      <li>The result is comprehensive: market, competitors, audience, trends, insights, pricing and strategy.</li>
+                    </ul>
+                    <div style={{ marginTop: "0.55rem", fontSize: "0.8rem", color: "#64748b" }}>
+                      You can stop at any time — the session is kept for up to 1 hour.
+                    </div>
+                  </div>
+                </div>
+              );
+            })() : (
+              <>
+                <h2>Research data</h2>
+                <p className={styles.formDescription}>
+                  Tell us about your idea or project. The more detail you
+                  provide, the more accurate and relevant the market research
+                  will be. Fields marked with an asterisk (*) are required.
+                </p>
+              </>
+            )}
             <form onSubmit={handleSubmit} className={styles.form}>
+              {/* Поля формы скрываются во время исследования — показываются снова при паузе */}
+              {(!isSubmitting || isResearchPaused) && (<>
               <div className={styles.section}>
-                <h3>Базовая информация</h3>
+                <h3>Basic information</h3>
                 <div className={styles.formGroup}>
                   <label className={styles.label}>
-                    Название продукта или услуги *
+                    Product or service name *
                   </label>
                   <input
                     ref={productNameInputRef}
@@ -1440,19 +1987,19 @@ export default function MarketResearchPage() {
                     value={formData.productName}
                     onChange={handleInputChange}
                     className={styles.input}
-                    placeholder="Например: Специализированная кофейня"
+                    placeholder="e.g., Specialty coffee shop"
                     required
                   />
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label className={styles.label}>Описание *</label>
+                  <label className={styles.label}>Description *</label>
                   <textarea
                     name="productDescription"
                     value={formData.productDescription}
                     onChange={handleInputChange}
                     className={styles.textarea}
-                    placeholder="Дайте описание продукта или услуги так, как видите его вы ..."
+                    placeholder="Describe your product or service as you see it ..."
                     rows={4}
                     required
                   />
@@ -1468,7 +2015,7 @@ export default function MarketResearchPage() {
                       className={styles.input}
                       required
                     >
-                      <option value="">— Select country —</option>
+                      <option value="">— Select a country —</option>
                       {COUNTRIES.map((c) => (
                         <option key={c.value} value={c.value}>
                           {c.label}
@@ -1486,27 +2033,27 @@ export default function MarketResearchPage() {
                         padding: "0.5rem 0.75rem",
                         lineHeight: 1.4,
                       }}>
-                        ⚠️ Public data availability for this market may be limited — the report may have lower confidence.
+                        ⚠️ Public data for this market may be limited — the report may have lower confidence.
                       </p>
                     )}
                   </div>
 
                   <div className={styles.formGroup}>
-                    <label className={styles.label}>Регион (опционально)</label>
+                    <label className={styles.label}>Region (optional)</label>
                     <input
                       type="text"
                       name="region"
                       value={formData.region}
                       onChange={handleInputChange}
                       className={styles.input}
-                      placeholder="Например: Калининград"
+                      placeholder="e.g., San Diego"
                     />
                   </div>
                 </div>
               </div>
 
               <div className={styles.section}>
-                <h3>Тип бизнеса * (можно выбрать несколько)</h3>
+                <h3>Business type * (multiple choice)</h3>
                 <div className={styles.buttonGroup}>
                   {businessTypeOptions.map((option) => (
                     <button
@@ -1529,30 +2076,59 @@ export default function MarketResearchPage() {
               </div>
 
               <div className={styles.section}>
-                <h3>Тип продукта или услуги * (можно выбрать несколько)</h3>
-                <div className={styles.buttonGroup}>
-                  {productTypeOptions.map((option) => (
-                    <button
-                      key={option.value}
-                      type="button"
-                      className={
-                        formData.productTypes.includes(option.value)
-                          ? styles.buttonActive
-                          : styles.button
-                      }
-                      onClick={() => handleProductTypeToggle(option.value)}
-                    >
-                      {formData.productTypes.includes(option.value) && (
-                        <FiCheck style={{ marginRight: "0.5rem" }} />
-                      )}
-                      {option.label}
-                    </button>
-                  ))}
+                <h3>Product or service type * (multiple choice)</h3>
+                <div className={styles.productTypeSelectWrapper}>
+                  {/* Selected tags */}
+                  {formData.productTypes.length > 0 && (
+                    <div className={styles.selectedTagsRow}>
+                      {formData.productTypes.map((t) => {
+                        const opt = productTypeOptions.find((o) => o.value === t);
+                        return (
+                          <span key={t} className={styles.selectedTag}>
+                            {opt?.label ?? t}
+                            <button
+                              type="button"
+                              className={styles.selectedTagRemove}
+                              onClick={() => handleProductTypeToggle(t)}
+                              aria-label={`Remove ${opt?.label}`}
+                            >
+                              ×
+                            </button>
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
+                  {/* Grouped checkbox panel */}
+                  <div className={styles.productTypePanel}>
+                    {Object.entries(productTypesByCategory).map(([category, opts]) => (
+                      <div key={category} className={styles.productTypeCategoryBlock}>
+                        <div className={styles.productTypeCategoryHeader}>{category}</div>
+                        {opts.map((opt) => {
+                          const checked = formData.productTypes.includes(opt.value);
+                          return (
+                            <label
+                              key={opt.value}
+                              className={`${styles.productTypeCheckLabel}${checked ? " " + styles.checkedItem : ""}`}
+                            >
+                              <input
+                                type="checkbox"
+                                className={styles.productTypeCheckbox}
+                                checked={checked}
+                                onChange={() => handleProductTypeToggle(opt.value)}
+                              />
+                              {opt.label}
+                            </label>
+                          );
+                        })}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
 
               <div className={styles.section}>
-                <h3>Локализация рынка *</h3>
+                <h3>Market localization *</h3>
                 <div className={styles.buttonGroup}>
                   {localizationOptions.map((option) => (
                     <button
@@ -1577,7 +2153,7 @@ export default function MarketResearchPage() {
               </div>
 
               <div className={styles.section}>
-                <h3>Цели исследования * (можно выбрать несколько)</h3>
+                <h3>Research goals * (multiple choice)</h3>
                 <div className={styles.buttonGroup}>
                   {researchGoalOptions.map((option) => (
                     <button
@@ -1599,25 +2175,103 @@ export default function MarketResearchPage() {
                 </div>
               </div>
 
+              {/* === ТИП ПРЕДЛОЖЕНИЯ === */}
               <div className={styles.section}>
-                <h3>Дополнительная информация</h3>
+                <h3>Offering type (optional)</h3>
+                <p className={styles.formDescription} style={{ marginBottom: "0.75rem" }}>
+                  Helps pinpoint the audience and competitive field
+                </p>
+                <div className={styles.buttonGroup}>
+                  {offeringTypeOptions.map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      className={formData.offeringType === opt.value ? styles.buttonActive : styles.button}
+                      onClick={() =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          offeringType: prev.offeringType === opt.value ? "" : opt.value,
+                          offeringSubType: "",
+                        }))
+                      }
+                    >
+                      {formData.offeringType === opt.value && <FiCheck style={{ marginRight: "0.5rem" }} />}
+                      <span>
+                        <strong>{opt.label}</strong>
+                        <span style={{ fontWeight: 400, marginLeft: "0.4rem", opacity: 0.75 }}>— {opt.desc}</span>
+                      </span>
+                    </button>
+                  ))}
+                </div>
+
+                {formData.offeringType && offeringSubTypeOptions[formData.offeringType].length > 0 && (
+                  <div style={{ marginTop: "0.75rem" }}>
+                    <label className={styles.label} style={{ marginBottom: "0.5rem" }}>Specify the type</label>
+                    <div className={styles.buttonGroup}>
+                      {offeringSubTypeOptions[formData.offeringType].map((sub) => (
+                        <button
+                          key={sub.value}
+                          type="button"
+                          className={formData.offeringSubType === sub.value ? styles.buttonActive : styles.button}
+                          onClick={() => handleButtonSelect("offeringSubType", formData.offeringSubType === sub.value ? "" : sub.value)}
+                        >
+                          {formData.offeringSubType === sub.value && <FiCheck style={{ marginRight: "0.5rem" }} />}
+                          {sub.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* === ЦЕНОВОЙ СЕГМЕНТ === */}
+              <div className={styles.section}>
+                <h3>Price segment (optional)</h3>
+                <p className={styles.formDescription} style={{ marginBottom: "0.75rem" }}>
+                  Affects competitor and target-audience analysis
+                </p>
+                <div className={styles.buttonGroup}>
+                  {priceSegmentOptions.map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      className={formData.priceSegment === opt.value ? styles.buttonActive : styles.button}
+                      onClick={() =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          priceSegment: prev.priceSegment === opt.value ? "" : opt.value,
+                        }))
+                      }
+                    >
+                      {formData.priceSegment === opt.value && <FiCheck style={{ marginRight: "0.5rem" }} />}
+                      <span>
+                        <strong>{opt.label}</strong>
+                        <span style={{ fontWeight: 400, marginLeft: "0.4rem", opacity: 0.75 }}>— {opt.desc}</span>
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className={styles.section}>
+                <h3>Additional information</h3>
                 <div className={styles.formGroup}>
                   <label className={styles.label}>
-                    Целевая аудитория (опционально)
+                    Target audience (optional)
                   </label>
                   <textarea
                     name="targetAudience"
                     value={formData.targetAudience}
                     onChange={handleInputChange}
                     className={styles.textarea}
-                    placeholder="Опишите, как вы представляете вашу целевую аудиторию..."
+                    placeholder="Describe how you picture your target audience..."
                     rows={3}
                   />
                 </div>
 
                 <div className={styles.formGroup}>
                   <label className={styles.label}>
-                    Известные конкуренты (опционально)
+                    Known competitors (optional)
                   </label>
                   <input
                     type="text"
@@ -1625,10 +2279,11 @@ export default function MarketResearchPage() {
                     value={formData.competitors}
                     onChange={handleInputChange}
                     className={styles.input}
-                    placeholder="Например: Starbucks, Местная кофейня"
+                    placeholder="e.g., Starbucks, local coffee shop"
                   />
                 </div>
               </div>
+              </>)} {/* /(!isSubmitting || isResearchPaused) */}
 
               {!isResearchPaused ? (
                 <div className={styles.submitActionsRow}>
@@ -1640,20 +2295,21 @@ export default function MarketResearchPage() {
                     {isSubmitting ? (
                       <>
                         <div className={styles.spinner} />
-                        Gathering and analyzing data...
+                        Collecting and analyzing data ...
                       </>
                     ) : !healthStatus?.all_ready ? (
                       <>
                         <FiAlertCircle />
-                        System Not Ready
+                        System not ready
                       </>
                     ) : (
                       <>
                         <FiBarChart2 />
-                        Start Research
+                        Start research
                       </>
                     )}
                   </button>
+
                   {isSubmitting && (
                     <button
                       type="button"
@@ -1666,20 +2322,35 @@ export default function MarketResearchPage() {
                 </div>
               ) : (
                 <div className={styles.pausedActionsRow}>
-                  <button
-                    type="button"
-                    className={styles.resumeButton}
-                    onClick={handleResumeResearch}
-                  >
-                    Resume Research
-                  </button>
-                  <button
-                    type="button"
-                    className={styles.restartButton}
-                    onClick={handleRestartResearch}
-                  >
-                    Start Over
-                  </button>
+                  {/* Сообщение о паузе */}
+                  <div className={styles.pauseInfoBanner}>
+                    <span style={{ fontSize: "1.15rem" }}>⏸</span>
+                    <div>
+                      <strong>Research paused</strong>
+                      <p>
+                        The backend keeps running — no data is lost.
+                        The session is kept <strong>for up to 1 hour</strong>. Click “Resume”
+                        to return to the results, or “Edit request” to
+                        change the parameters and start a new research.
+                      </p>
+                    </div>
+                  </div>
+                  <div className={styles.pausedButtons}>
+                    <button
+                      type="button"
+                      className={styles.resumeButton}
+                      onClick={handleResumeResearch}
+                    >
+                      ▶ Resume research
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.restartButton}
+                      onClick={handleRestartResearch}
+                    >
+                      ✎ Edit request
+                    </button>
+                  </div>
                 </div>
               )}
             </form>
@@ -1689,968 +2360,313 @@ export default function MarketResearchPage() {
         {researchStatus && researchStatus.status !== "completed" && (() => {
           const pipeline = researchStatus.pipeline_status;
           const progressPct = pipeline?.progress ?? researchStatus.progress ?? 0;
-          const _elapsedSec = researchStartTime ? Math.floor((Date.now() - researchStartTime) / 1000) : 0;
-          const elapsedMin = Math.floor(_elapsedSec / 60);
+          const elapsedMin = Math.floor(elapsedSeconds / 60);
           const etaMin = progressPct > 5
             ? Math.ceil(elapsedMin / progressPct * (100 - progressPct))
             : null;
 
           const WAVE_LABELS: Record<number, string> = {
-            1: "Data Collection",
-            2: "Validation",
+            1: "Data collection (5 agents)",
+            2: "Review & validation",
           };
           const WAVE_AGENTS: Record<number, string[]> = {
             1: ["MarketSizingAgent", "CompetitorAnalysisAgent", "TargetAudienceAgent", "TrendsAnalysisAgent", "ConsumerInsightsAgent"],
             2: ["ValidationAgent"],
           };
           const AGENT_DISPLAY: Record<string, string> = {
-            "MarketSizingAgent":       "Market Sizing",
-            "CompetitorAnalysisAgent": "Competitors",
-            "TargetAudienceAgent":     "Target Audience",
-            "TrendsAnalysisAgent":     "Trends",
-            "ConsumerInsightsAgent":   "Consumer Insights",
-            "ValidationAgent":         "Validation",
+            "MarketSizingAgent":       "Market analysis (TAM/SAM/SOM)",
+            "CompetitorAnalysisAgent": "Competitive analysis",
+            "TargetAudienceAgent":     "Target audience",
+            "TrendsAnalysisAgent":     "Trends & drivers",
+            "ConsumerInsightsAgent":   "Consumer insights",
+            "ValidationAgent":         "Data validation",
           };
           const STATUS_ICON: Record<string, string> = {
             waiting:   "○",
-            running:   "⏳",
-            completed: "✓",
+            running:   "▶",
+            completed: "✅",
             timeout:   "⚠",
             failed:    "✗",
           };
           const STATUS_COLOR: Record<string, string> = {
-            waiting:   "#94a3b8",
-            running:   "#3b82f6",
-            completed: "#22c55e",
-            timeout:   "#f97316",
-            failed:    "#ef4444",
+            waiting:   "#4b7ab0",
+            running:   "#60a5fa",
+            completed: "#4ade80",
+            timeout:   "#fb923c",
+            failed:    "#f87171",
           };
 
           const agentMap: Record<string, PipelineAgent> = {};
           (pipeline?.agents ?? []).forEach(a => { agentMap[a.name] = a; });
 
+          // ── Палитра терминала (как в descriptionPage HERO) ──────────────
+          const T = {
+            bg:        "#0f1f2a",
+            headerBg:  "#0b1a21",
+            border:    "#01346e",
+            textMain:  "rgba(236,246,255,0.90)",
+            textDim:   "#4b7ab0",
+            textMuted: "rgba(236,246,255,0.55)",
+            accent:    "#8bc4ff",
+            green:     "#7dd36e",
+            orange:    "#f97316",
+            red:       "#ef4444",
+            mono:      '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace',
+          } as const;
+
           return (
             <div className={styles.progressSection}>
-              <div className={styles.progressCard}>
-                <h2>🔬 Research in Progress...</h2>
+              {/* ── TERMINAL CARD ───────────────────────────────────────────── */}
+              <div style={{
+                background: T.bg,
+                borderRadius: 14,
+                border: `1px solid ${T.border}`,
+                boxShadow: "0 12px 32px rgba(1,52,110,0.22)",
+                overflow: "hidden",
+              }}>
 
-                <div className={styles.progressBarWrapper}>
-                  <div className={styles.progressBarContainer}>
-                    <div
-                      className={styles.progressBar}
-                      style={{ width: `${progressPct}%` }}
-                    />
+                {/* ── TITLE BAR ── */}
+                <div style={{
+                  background: T.headerBg,
+                  padding: "0.65rem 1.1rem",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  borderBottom: `1px solid rgba(1,52,110,0.5)`,
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                    {/* Traffic-light dots */}
+                    <span style={{ width: 9, height: 9, borderRadius: "50%", background: T.red,    display: "inline-block" }} />
+                    <span style={{ width: 9, height: 9, borderRadius: "50%", background: "#f59e0b", display: "inline-block" }} />
+                    <span style={{ width: 9, height: 9, borderRadius: "50%", background: T.green,  display: "inline-block" }} />
+                    <span style={{ color: T.accent, fontSize: "0.82rem", fontWeight: 600, marginLeft: "0.5rem", fontFamily: T.mono }}>
+                      AI Research Log
+                    </span>
                   </div>
-                  <span className={styles.elapsedTimer}>
-                    {String(Math.floor(_elapsedSec / 60)).padStart(2, "0")}:{String(_elapsedSec % 60).padStart(2, "0")}
+                  <span style={{ color: T.textDim, fontSize: "0.78rem", fontFamily: T.mono, fontVariantNumeric: "tabular-nums" }}>
+                    {String(Math.floor(elapsedSeconds / 60)).padStart(2, "0")}:{String(elapsedSeconds % 60).padStart(2, "0")}
                   </span>
                 </div>
 
-                <div className={styles.statusRow}>
-                  <span className={styles.progressBadge}>{progressPct}%</span>
-                  <span className={styles.statusText}>
-                    {researchStatus.current_stage}
-                    {etaMin !== null && etaMin > 0 && (
-                      <span style={{ marginLeft: 8, color: "#94a3b8", fontSize: "0.85em" }}>
-                        ~{etaMin} min left
-                      </span>
-                    )}
-                  </span>
-                </div>
-
-                {pipeline ? (
-                  <div style={{ marginTop: "1rem" }}>
-                    {[1, 2, 3].map(wave => {
-                      const waveAgentNames = WAVE_AGENTS[wave] ?? [];
-                      const hasAnyActivity = waveAgentNames.some(n => agentMap[n]);
-                      if (!hasAnyActivity && wave > (pipeline.wave_current ?? 1)) return null;
-                      return (
-                        <div key={wave} style={{ marginBottom: "0.75rem" }}>
-                          <div style={{
-                            fontSize: "0.72rem",
-                            fontWeight: 600,
-                            color: "#64748b",
-                            textTransform: "uppercase",
-                            letterSpacing: "0.05em",
-                            marginBottom: "0.3rem",
-                          }}>
-                            Phase {wave}: {WAVE_LABELS[wave]}
-                          </div>
-                          {waveAgentNames.map(agentName => {
-                            const agent = agentMap[agentName];
-                            const status = agent?.status ?? "waiting";
-                            const icon = STATUS_ICON[status] ?? "○";
-                            const color = STATUS_COLOR[status] ?? "#94a3b8";
-                            const elapsed = agent?.elapsed_s;
-                            return (
-                              <div key={agentName} style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "0.5rem",
-                                padding: "0.2rem 0",
-                                fontSize: "0.88rem",
-                              }}>
-                                <span style={{ color, fontWeight: 700, minWidth: "1.1rem", textAlign: "center" }}>{icon}</span>
-                                <span style={{ color: status === "waiting" ? "#94a3b8" : "#e2e8f0" }}>
-                                  {AGENT_DISPLAY[agentName] ?? agentName}
-                                </span>
-                                {elapsed != null && elapsed > 0 && (
-                                  <span style={{ marginLeft: "auto", color: "#64748b", fontSize: "0.78rem" }}>
-                                    {elapsed < 60 ? `${Math.round(elapsed)}s` : `${(elapsed / 60).toFixed(1)}m`}
-                                  </span>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <p className={styles.progressInfoText}>
-                    AI agents are analyzing the market. This may take 3–15 minutes.
-                  </p>
-                )}
-
-                {pipeline && pipeline.events && pipeline.events.length > 0 && (
-                  <div style={{
-                    marginTop: "0.75rem",
-                    borderTop: "1px solid rgba(255,255,255,0.06)",
-                    paddingTop: "0.6rem",
-                  }}>
-                    <div style={{ fontSize: "0.72rem", color: "#64748b", marginBottom: "0.3rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                      Live Events
+                {/* ── PROGRESS BAR ── */}
+                <div style={{ padding: "0.75rem 1.25rem 0", background: "rgba(11,26,33,0.6)" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                    <div style={{ flex: 1, height: 5, background: "rgba(1,52,110,0.35)", borderRadius: 3 }}>
+                      <div style={{
+                        height: "100%", width: `${progressPct}%`,
+                        background: `linear-gradient(90deg, #0683f5, ${T.accent})`,
+                        borderRadius: 3, transition: "width 0.6s ease",
+                        boxShadow: `0 0 8px ${T.accent}55`,
+                      }} />
                     </div>
-                    {pipeline.events.map((ev, i) => (
-                      <div key={i} style={{
-                        fontSize: "0.78rem",
-                        color: ev.level === "warn" ? "#f97316" : "#94a3b8",
-                        padding: "0.1rem 0",
-                        display: "flex",
-                        gap: "0.5rem",
-                      }}>
-                        <span style={{ color: "#475569", minWidth: "3rem" }}>{ev.time}</span>
-                        <span>{ev.text}</span>
-                      </div>
-                    ))}
+                    <span style={{ color: T.accent, fontSize: "0.9rem", fontWeight: 700, fontFamily: T.mono, minWidth: "2.8rem" }}>
+                      {progressPct}%
+                    </span>
                   </div>
-                )}
+                  <div style={{ color: T.textMuted, fontSize: "0.82rem", marginTop: "0.4rem", fontFamily: T.mono }}>
+                    {researchStatus.current_stage}
+                    {etaMin !== null && etaMin > 0 && ` — ~${etaMin} min`}
+                  </div>
+                </div>
 
-                <p className={styles.progressSubtext} style={{ marginTop: "0.75rem" }}>
-                  ID: {researchId}
-                </p>
+                {/* ── BODY ── */}
+                <div style={{ padding: "0.9rem 1.25rem 1.1rem", fontFamily: T.mono }}>
+
+                  {/* Waves + agents */}
+                  {pipeline ? (
+                    <div>
+                      {[1, 2].map(wave => {
+                        const waveAgentNames = WAVE_AGENTS[wave] ?? [];
+                        const hasAnyActivity = waveAgentNames.some(n => agentMap[n]);
+                        if (!hasAnyActivity && wave > (pipeline.wave_current ?? 1)) return null;
+                        return (
+                          <div key={wave} style={{ marginBottom: "0.75rem" }}>
+                            <div style={{
+                              fontSize: "0.72rem", color: T.textDim, fontWeight: 700,
+                              textTransform: "uppercase", letterSpacing: "0.12em",
+                              marginBottom: "0.4rem", borderBottom: `1px solid rgba(1,52,110,0.3)`,
+                              paddingBottom: "0.2rem",
+                            }}>
+                              ── Stage {wave}: {WAVE_LABELS[wave]}
+                            </div>
+                            {waveAgentNames.map(agentName => {
+                              const agent = agentMap[agentName];
+                              const status = agent?.status ?? "waiting";
+                              const icon = STATUS_ICON[status] ?? "○";
+                              const color = STATUS_COLOR[status] ?? T.textDim;
+                              const elapsed = agent?.elapsed_s;
+                              const isRunning = status === "running";
+                              return (
+                                <div key={agentName} style={{
+                                  display: "flex", alignItems: "center", gap: "0.6rem",
+                                  padding: "0.22rem 0.35rem",
+                                  borderRadius: 5,
+                                  marginBottom: "0.1rem",
+                                  background: isRunning ? "rgba(96,165,250,0.07)" : "transparent",
+                                  fontSize: "0.95rem",
+                                }}>
+                                  <span style={{ color, fontWeight: 700, minWidth: "1.1rem", fontSize: status === "completed" ? "1.0rem" : "0.85rem", textAlign: "center" }}>
+                                    {icon}
+                                  </span>
+                                  <span style={{
+                                    color: status === "waiting" ? T.textDim : T.textMain,
+                                    fontWeight: status === "completed" ? 600 : 400,
+                                  }}>
+                                    {AGENT_DISPLAY[agentName] ?? agentName}
+                                  </span>
+                                  {isRunning && (
+                                    <span style={{ marginLeft: "0.4rem", color: "#60a5fa", fontSize: "0.78rem", animation: "none" }}>
+                                      ● running...
+                                    </span>
+                                  )}
+                                  {elapsed != null && elapsed > 0 && (
+                                    <span style={{ marginLeft: "auto", color: status === "completed" ? T.green : T.textDim, fontSize: "0.78rem" }}>
+                                      {elapsed < 60 ? `${Math.round(elapsed)}s` : `${(elapsed / 60).toFixed(1)}m`}
+                                    </span>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    /* Fallback: простой список 6 этапов */
+                    <div>
+                      {([
+                        [10, "Market analysis (TAM/SAM/SOM)"],
+                        [30, "Competitive analysis"],
+                        [50, "Target audience"],
+                        [70, "Trends & drivers"],
+                        [85, "Consumer insights"],
+                        [95, "Data validation"],
+                      ] as [number, string][]).map(([threshold, label], idx) => {
+                        const done = progressPct >= threshold;
+                        return (
+                          <div key={idx} style={{
+                            display: "flex", alignItems: "center", gap: "0.6rem",
+                            padding: "0.22rem 0.35rem", borderRadius: 5, fontSize: "0.95rem",
+                            marginBottom: "0.1rem",
+                          }}>
+                            <span style={{ color: done ? T.green : T.textDim, fontWeight: 700, fontSize: done ? "1.0rem" : "0.85rem", minWidth: "1.1rem", textAlign: "center" }}>
+                              {done ? "✅" : "○"}
+                            </span>
+                            <span style={{ color: done ? T.textMain : T.textDim, fontWeight: done ? 600 : 400 }}>
+                              {label}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Live event feed */}
+                  {pipeline && pipeline.events && pipeline.events.length > 0 && (
+                    <div style={{ marginTop: "0.8rem", borderTop: `1px solid rgba(1,52,110,0.4)`, paddingTop: "0.6rem" }}>
+                      <div style={{ fontSize: "0.72rem", color: T.textDim, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: "0.4rem" }}>
+                        ── Events
+                      </div>
+                      {pipeline.events.slice(-5).map((ev, i) => (
+                        <div key={i} style={{ fontSize: "0.82rem", color: ev.level === "warn" ? T.orange : T.textMuted, padding: "0.1rem 0", display: "flex", gap: "0.6rem" }}>
+                          <span style={{ color: T.textDim, minWidth: "3.5rem", flexShrink: 0 }}>{ev.time}</span>
+                          <span>{ev.text}</span>
+                        </div>
+                      ))}
+                      <div style={{ color: T.accent, fontSize: "0.9rem", marginTop: "0.3rem" }}>▮</div>
+                    </div>
+                  )}
+
+                  {/* Research ID */}
+                  <div style={{ marginTop: "0.7rem", fontSize: "0.76rem", color: T.textDim, letterSpacing: "0.04em" }}>
+                    ID: {researchId}
+                  </div>
+                </div>
               </div>
             </div>
           );
         })()}
+          </>
+        )}
 
         {enhancedReport && (
           <div className={styles.resultsSection}>
             <div className={styles.resultsCard}>
               <div className={styles.resultsHeader}>
-                <div>
-                  <h2>Маркетинговый отчет</h2>
-                  <p className={styles.reportSubtitle}>
-                    {enhancedReport.product_name} • {enhancedReport.industry} •{" "}
-                    {enhancedReport.location}
-                  </p>
-                </div>
+                <h2>Market research report</h2>
+                <p className={styles.reportSubtitle}>{buildCompletionSubtitle()}</p>
               </div>
-
               <div className={styles.resultsBody}>
-                {/* MESSAGE: REPORT READY */}
-                <div className={styles.section}>
-                  <p style={{ fontSize: '1.2rem', textAlign: 'center', padding: '3rem', color: '#1e6078', fontWeight: 500 }}>
-                    ✅ Your market research report has been successfully generated!<br /><br />
-                    Download the full report in DOCX or PDF format below.
+                <div className={styles.section} style={{ textAlign: "center", padding: "1.5rem 1rem 0.5rem" }}>
+                  <p style={{ fontSize: "1.2rem", color: "#1e6078", fontWeight: 600, marginBottom: "1rem" }}>
+                    ✅ Your market research report is ready!
                   </p>
-                </div>
-
-                {/* ALL REPORT SECTIONS HIDDEN - AVAILABLE FOR DOWNLOAD ONLY */}
-                <div style={{ display: 'none' }}>
-                {/* Executive Summary Section */}
-                <div className={styles.section}>
-                  <h3>Резюме исследования</h3>
-
-                  {/* Метрики исследования */}
-                  {researchDuration && (
-                    <div className={styles.subsection}>
-                      <div className={styles.researchMetrics}>
-                        <div className={styles.metricItem}>
-                          <strong>Длительность исследования:</strong>{" "}
-                          {researchDuration.minutes} мин{" "}
-                          {researchDuration.seconds} сек
-                        </div>
-                        {enhancedReport.raw_research_data && (
-                          <>
-                            {Object.keys(enhancedReport.raw_research_data)
-                              .length > 0 && (
-                              <div className={styles.metricItem}>
-                                <strong>Обработано источников:</strong>{" "}
-                                {Object.values(
-                                  enhancedReport.raw_research_data
-                                ).reduce((acc: number, section: any) => {
-                                  const results = section?.results || [];
-                                  return (
-                                    acc +
-                                    results.reduce(
-                                      (sum: number, r: any) =>
-                                        sum + (r?.sources?.length || 0),
-                                      0
-                                    )
-                                  );
-                                }, 0)}
-                              </div>
-                            )}
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className={styles.subsection}>
-                    <h4>Заданные цели исследования</h4>
-                    <ul className={styles.bulletList}>
-                      {enhancedReport.executive_summary.research_objectives.map(
-                        (obj, idx) => (
-                          <li key={idx}>{obj}</li>
-                        )
-                      )}
+                  {/* Краткий preview из executive summary */}
+                  {buildExecutiveSummaryPreview().length > 0 && (
+                    <ul style={{ listStyle: "none", padding: 0, margin: "0 auto", maxWidth: 600, textAlign: "left" }}>
+                      {buildExecutiveSummaryPreview().map((line, i) => (
+                        <li key={i} style={{ fontSize: "0.95rem", color: "#374151", padding: "0.3rem 0", borderLeft: "3px solid #D04A02", paddingLeft: "0.75rem", marginBottom: "0.4rem" }}>
+                          {line}
+                        </li>
+                      ))}
                     </ul>
-                  </div>
-
-                  <div className={styles.subsection}>
-                    <h4>Ключевые находки</h4>
-                    <div className={styles.keyFindingsGrid}>
-                      {enhancedReport.executive_summary.key_findings.map(
-                        (finding, idx) => (
-                          <div key={idx} className={styles.findingCard}>
-                            <span className={styles.findingNumber}>
-                              {idx + 1}
-                            </span>
-                            <p>{finding}</p>
-                          </div>
-                        )
-                      )}
-                    </div>
-                  </div>
-
-                  <div className={styles.subsection}>
-                    <h4>Стратегические рекомендации</h4>
-                    <ul className={styles.bulletList}>
-                      {enhancedReport.executive_summary.strategic_recommendations.map(
-                        (rec, idx) => (
-                          <li key={idx}>{rec}</li>
-                        )
-                      )}
-                    </ul>
-                  </div>
-
-                  <div className={styles.subsection}>
-                    <h4>Обзор рыночных возможностей</h4>
-                    <p className={styles.summaryText}>
-                      {
-                        enhancedReport.executive_summary
-                          .market_opportunity_summary
-                      }
-                    </p>
-                  </div>
-                </div>
-
-                {/* Market Analysis Section */}
-                <div className={styles.section}>
-                  <h3>Анализ рынка</h3>
-
-                  <div className={styles.subsection}>
-                    <h4>Размер рынка</h4>
-                    <div className={styles.marketSizeGrid}>
-                      {enhancedReport.market_analysis.market_size.tam_value && (
-                        <div className={styles.metricCard}>
-                          <h5>Общий доступный рынок (TAM)</h5>
-                          <p className={styles.metricValue}>
-                            {
-                              enhancedReport.market_analysis.market_size
-                                .tam_value
-                            }
-                          </p>
-                          <p className={styles.metricDescription}>
-                            {
-                              enhancedReport.market_analysis.market_size
-                                .tam_description
-                            }
-                          </p>
-                        </div>
-                      )}
-                      {enhancedReport.market_analysis.market_size.sam_value && (
-                        <div className={styles.metricCard}>
-                          <h5>Обслуживаемый доступный рынок (SAM)</h5>
-                          <p className={styles.metricValue}>
-                            {
-                              enhancedReport.market_analysis.market_size
-                                .sam_value
-                            }
-                          </p>
-                          <p className={styles.metricDescription}>
-                            {
-                              enhancedReport.market_analysis.market_size
-                                .sam_description
-                            }
-                          </p>
-                        </div>
-                      )}
-                      {enhancedReport.market_analysis.market_size.som_value && (
-                        <div className={styles.metricCard}>
-                          <h5>Достижимая доля рынка (SOM)</h5>
-                          <p className={styles.metricValue}>
-                            {
-                              enhancedReport.market_analysis.market_size
-                                .som_value
-                            }
-                          </p>
-                          <p className={styles.metricDescription}>
-                            {
-                              enhancedReport.market_analysis.market_size
-                                .som_description
-                            }
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                    {enhancedReport.market_analysis.market_size.growth_rate && (
-                      <p className={styles.growthRate}>
-                        <strong>Темп роста:</strong>{" "}
-                        {enhancedReport.market_analysis.market_size.growth_rate}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className={styles.subsection}>
-                    <h4>Рыночные тренды</h4>
-                    <div className={styles.trendsGrid}>
-                      <div className={styles.trendCard}>
-                        <h5>Текущие тренды</h5>
-                        <ul>
-                          {enhancedReport.market_analysis.market_trends.current_trends?.map(
-                            (trend, idx) => <li key={idx}>{trend}</li>
-                          ) || <li>Нет данных</li>}
-                        </ul>
-                      </div>
-                      <div className={styles.trendCard}>
-                        <h5>Драйверы роста</h5>
-                        <ul>
-                          {enhancedReport.market_analysis.market_trends.growth_drivers?.map(
-                            (driver, idx) => <li key={idx}>{driver}</li>
-                          ) || <li>Нет данных</li>}
-                        </ul>
-                      </div>
-                      <div className={styles.trendCard}>
-                        <h5>Барьеры рынка</h5>
-                        <ul>
-                          {enhancedReport.market_analysis.market_trends.market_barriers?.map(
-                            (barrier, idx) => <li key={idx}>{barrier}</li>
-                          ) || <li>Нет данных</li>}
-                        </ul>
-                      </div>
-                      <div className={styles.trendCard}>
-                        <h5>Прогноз развития</h5>
-                        <p>
-                          {enhancedReport.market_analysis.market_trends
-                            .future_outlook || "Нет данных"}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {enhancedReport.market_analysis.market_maturity && (
-                    <div className={styles.subsection}>
-                      <h4>Зрелость рынка</h4>
-                      <p className={styles.summaryText}>
-                        {enhancedReport.market_analysis.market_maturity}
-                      </p>
-                    </div>
-                  )}
-
-                  {enhancedReport.market_analysis.regulatory_environment && (
-                    <div className={styles.subsection}>
-                      <h4>Регуляторная среда</h4>
-                      <p className={styles.summaryText}>
-                        {enhancedReport.market_analysis.regulatory_environment}
-                      </p>
-                    </div>
                   )}
                 </div>
 
-                {/* Target Audience Section */}
-                <div className={styles.section}>
-                  <h3>Анализ целевой аудитории</h3>
-
-                  <div className={styles.subsection}>
-                    <h4>Сегменты целевой аудитории</h4>
-                    <div className={styles.segmentsGrid}>
-                      {enhancedReport.target_audience.segments.map(
-                        (segment, idx) => (
-                          <div key={idx} className={styles.segmentCard}>
-                            <div className={styles.segmentHeader}>
-                              <h5>{segment.segment_name}</h5>
-                              {segment.priority && (
-                                <span
-                                  className={`${styles.priorityBadge} ${
-                                    styles[`priority${segment.priority}`]
-                                  }`}
-                                >
-                                  Приоритет: {segment.priority}
-                                </span>
-                              )}
-                            </div>
-                            {segment.segment_size && (
-                              <p className={styles.segmentSize}>
-                                <strong>Размер:</strong> {segment.segment_size}
-                              </p>
-                            )}
-
-                            <div className={styles.segmentDetails}>
-                              {segment.demographics.length > 0 && (
-                                <div>
-                                  <h6>Демография</h6>
-                                  <ul>
-                                    {segment.demographics.map((demo, i) => (
-                                      <li key={i}>{demo}</li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              )}
-                              {segment.psychographics.length > 0 && (
-                                <div>
-                                  <h6>Психография</h6>
-                                  <ul>
-                                    {segment.psychographics.map((psycho, i) => (
-                                      <li key={i}>{psycho}</li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              )}
-                              {segment.behaviors.length > 0 && (
-                                <div>
-                                  <h6>Поведение</h6>
-                                  <ul>
-                                    {segment.behaviors.map((behavior, i) => (
-                                      <li key={i}>{behavior}</li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              )}
-                              {segment.pain_points.length > 0 && (
-                                <div>
-                                  <h6>Болевые точки</h6>
-                                  <ul>
-                                    {segment.pain_points.map((pain, i) => (
-                                      <li key={i}>{pain}</li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              )}
-                              {segment.needs.length > 0 && (
-                                <div>
-                                  <h6>Потребности</h6>
-                                  <ul>
-                                    {segment.needs.map((need, i) => (
-                                      <li key={i}>{need}</li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              )}
-                              {segment.buying_motivations.length > 0 && (
-                                <div>
-                                  <h6>Мотивация к покупке</h6>
-                                  <ul>
-                                    {segment.buying_motivations.map(
-                                      (mot, i) => (
-                                        <li key={i}>{mot}</li>
-                                      )
-                                    )}
-                                  </ul>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        )
-                      )}
-                    </div>
-                  </div>
-
-                  {enhancedReport.target_audience.customer_journey && (
-                    <div className={styles.subsection}>
-                      <h4>Путь клиента (Customer Journey)</h4>
-                      <p className={styles.summaryText}>
-                        {enhancedReport.target_audience.customer_journey}
-                      </p>
-                    </div>
-                  )}
-
-                  {enhancedReport.target_audience.decision_making_process && (
-                    <div className={styles.subsection}>
-                      <h4>Процесс принятия решения</h4>
-                      <p className={styles.summaryText}>
-                        {enhancedReport.target_audience.decision_making_process}
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Competitive Analysis Section */}
-                <div className={styles.section}>
-                  <h3>Конкурентный анализ</h3>
-
-                  <div className={styles.subsection}>
-                    <h4>Обзор конкурентного ландшафта</h4>
-                    <p className={styles.summaryText}>
-                      {
-                        enhancedReport.competitive_analysis
-                          .competitive_landscape_overview
-                      }
-                    </p>
-                  </div>
-
-                  <div className={styles.subsection}>
-                    <h4>Прямые конкуренты</h4>
-                    <div className={styles.competitorsGrid}>
-                      {enhancedReport.competitive_analysis.direct_competitors.map(
-                        (comp: CompetitorProfile, idx: number) => (
-                          <div key={idx} className={styles.competitorCard}>
-                            <div className={styles.competitorHeader}>
-                              <h5>{comp.name}</h5>
-                              <span
-                                className={`${styles.competitorTypeBadge} ${
-                                  styles[comp.competitor_type]
-                                }`}
-                              >
-                                {comp.competitor_type}
-                              </span>
-                            </div>
-
-                            {comp.market_position && (
-                              <p className={styles.marketPosition}>
-                                <strong>Позиция:</strong> {comp.market_position}
-                              </p>
-                            )}
-                            {comp.market_share && (
-                              <p className={styles.marketShare}>
-                                <strong>Доля рынка:</strong> {comp.market_share}
-                              </p>
-                            )}
-
-                            <div className={styles.competitorDetails}>
-                              {comp.strengths.length > 0 && (
-                                <div>
-                                  <h6>Сильные стороны</h6>
-                                  <ul>
-                                    {comp.strengths.map(
-                                      (str: string, i: number) => (
-                                        <li key={i}>{str}</li>
-                                      )
-                                    )}
-                                  </ul>
-                                </div>
-                              )}
-                              {comp.weaknesses.length > 0 && (
-                                <div>
-                                  <h6>Слабые стороны</h6>
-                                  <ul>
-                                    {comp.weaknesses.map(
-                                      (weak: string, i: number) => (
-                                        <li key={i}>{weak}</li>
-                                      )
-                                    )}
-                                  </ul>
-                                </div>
-                              )}
-                              {comp.products_services.length > 0 && (
-                                <div>
-                                  <h6>Продукты/услуги</h6>
-                                  <ul>
-                                    {comp.products_services.map(
-                                      (prod: string, i: number) => (
-                                        <li key={i}>{prod}</li>
-                                      )
-                                    )}
-                                  </ul>
-                                </div>
-                              )}
-                              {comp.pricing && (
-                                <p>
-                                  <strong>Ценообразование:</strong>{" "}
-                                  {comp.pricing}
-                                </p>
-                              )}
-                              {comp.unique_value_proposition && (
-                                <p>
-                                  <strong>
-                                    Уникальное ценностное предложение:
-                                  </strong>{" "}
-                                  {comp.unique_value_proposition}
-                                </p>
-                              )}
-                              {(comp.website ||
-                                (comp.social_links &&
-                                  comp.social_links.length > 0)) && (
-                                <div
-                                  style={{
-                                    marginTop: "1rem",
-                                    paddingTop: "1rem",
-                                    borderTop: "1px solid #e2e8f0",
-                                  }}
-                                >
-                                  <h6 style={{ marginBottom: "0.5rem" }}>
-                                    Ссылки
-                                  </h6>
-                                  {comp.website && (
-                                    <p style={{ margin: "0.25rem 0" }}>
-                                      <strong>Сайт:</strong>{" "}
-                                      <a
-                                        href={comp.website}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        style={{ color: "#1e6078" }}
-                                      >
-                                        {comp.website}
-                                      </a>
-                                    </p>
-                                  )}
-                                  {comp.social_links &&
-                                    comp.social_links.length > 0 && (
-                                      <div style={{ margin: "0.5rem 0" }}>
-                                        <strong>Соцсети:</strong>
-                                        <ul
-                                          style={{
-                                            margin: "0.25rem 0",
-                                            paddingLeft: "1.5rem",
-                                          }}
-                                        >
-                                          {comp.social_links.map(
-                                            (link: string, i: number) => (
-                                              <li key={i}>
-                                                <a
-                                                  href={link}
-                                                  target="_blank"
-                                                  rel="noopener noreferrer"
-                                                  style={{ color: "#1e6078" }}
-                                                >
-                                                  {link}
-                                                </a>
-                                              </li>
-                                            )
-                                          )}
-                                        </ul>
-                                      </div>
-                                    )}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        )
-                      )}
-                    </div>
-                  </div>
-
-                  {enhancedReport.competitive_analysis.indirect_competitors
-                    .length > 0 && (
-                    <div className={styles.subsection}>
-                      <h4>Косвенные конкуренты</h4>
-                      <div className={styles.competitorsGrid}>
-                        {enhancedReport.competitive_analysis.indirect_competitors.map(
-                          (comp: CompetitorProfile, idx: number) => (
-                            <div key={idx} className={styles.competitorCard}>
-                              <div className={styles.competitorHeader}>
-                                <h5>{comp.name}</h5>
-                                <span
-                                  className={`${styles.competitorTypeBadge} ${
-                                    styles[comp.competitor_type]
-                                  }`}
-                                >
-                                  {comp.competitor_type}
-                                </span>
-                              </div>
-                              {comp.market_position && (
-                                <p className={styles.marketPosition}>
-                                  <strong>Позиция:</strong>{" "}
-                                  {comp.market_position}
-                                </p>
-                              )}
-                            </div>
-                          )
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {enhancedReport.competitive_analysis.swot && (
-                    <div className={styles.subsection}>
-                      <h4>SWOT Анализ</h4>
-                      <div className={styles.swotGrid}>
-                        <div className={styles.swotCard}>
-                          <h5>Сильные стороны</h5>
-                          <ul>
-                            {enhancedReport.competitive_analysis.swot.strengths.map(
-                              (str: string, idx: number) => (
-                                <li key={idx}>{str}</li>
-                              )
-                            )}
-                          </ul>
-                        </div>
-                        <div className={styles.swotCard}>
-                          <h5>Слабые стороны</h5>
-                          <ul>
-                            {enhancedReport.competitive_analysis.swot.weaknesses.map(
-                              (weak: string, idx: number) => (
-                                <li key={idx}>{weak}</li>
-                              )
-                            )}
-                          </ul>
-                        </div>
-                        <div className={styles.swotCard}>
-                          <h5>Возможности</h5>
-                          <ul>
-                            {enhancedReport.competitive_analysis.swot.opportunities.map(
-                              (opp: string, idx: number) => (
-                                <li key={idx}>{opp}</li>
-                              )
-                            )}
-                          </ul>
-                        </div>
-                        <div className={styles.swotCard}>
-                          <h5>Угрозы</h5>
-                          <ul>
-                            {enhancedReport.competitive_analysis.swot.threats.map(
-                              (threat: string, idx: number) => (
-                                <li key={idx}>{threat}</li>
-                              )
-                            )}
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className={styles.twoColumnGrid}>
-                    <div className={styles.subsection}>
-                      <h4>Конкурентные преимущества</h4>
-                      <ul className={styles.bulletList}>
-                        {enhancedReport.competitive_analysis.competitive_advantages.map(
-                          (adv: string, idx: number) => (
-                            <li key={idx}>{adv}</li>
-                          )
-                        )}
-                      </ul>
-                    </div>
-                    <div className={styles.subsection}>
-                      <h4>Рыночные ниши</h4>
-                      <ul className={styles.bulletList}>
-                        {enhancedReport.competitive_analysis.market_gaps.map(
-                          (gap: string, idx: number) => (
-                            <li key={idx}>{gap}</li>
-                          )
-                        )}
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Pricing Analysis Section */}
-                <div className={styles.section}>
-                  <h3>Ценовой анализ</h3>
-
-                  {enhancedReport.pricing_analysis.market_price_range && (
-                    <div className={styles.subsection}>
-                      <h4>Диапазон цен на рынке</h4>
-                      <p className={styles.summaryText}>
-                        {enhancedReport.pricing_analysis.market_price_range}
-                      </p>
-                    </div>
-                  )}
-
-                  <div className={styles.subsection}>
-                    <h4>Цены конкурентов</h4>
-                    <div className={styles.pricingTable}>
-                      <table>
-                        <thead>
-                          <tr>
-                            <th>Конкурент</th>
-                            <th>Диапазон цен</th>
-                            <th>Модель ценообразования</th>
-                            <th>Ценностное предложение</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {enhancedReport.pricing_analysis.competitive_pricing.map(
-                            (price, idx) => (
-                              <tr key={idx}>
-                                <td>{price.competitor_name}</td>
-                                <td>{price.price_range}</td>
-                                <td>{price.pricing_model}</td>
-                                <td>{price.value_proposition}</td>
-                              </tr>
-                            )
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-
-                  <div className={styles.subsection}>
-                    <h4>Стратегии ценообразования</h4>
-                    <ul className={styles.bulletList}>
-                      {enhancedReport.pricing_analysis.pricing_strategies.map(
-                        (strategy, idx) => (
-                          <li key={idx}>{strategy}</li>
-                        )
-                      )}
-                    </ul>
-                  </div>
-
-                  {enhancedReport.pricing_analysis.recommended_pricing && (
-                    <div className={styles.subsection}>
-                      <h4>Рекомендуемая цена</h4>
-                      <p className={styles.summaryText}>
-                        {enhancedReport.pricing_analysis.recommended_pricing}
-                      </p>
-                    </div>
-                  )}
-
-                  {enhancedReport.pricing_analysis
-                    .price_sensitivity_analysis && (
-                    <div className={styles.subsection}>
-                      <h4>Анализ чувствительности к цене</h4>
-                      <p className={styles.summaryText}>
-                        {
-                          enhancedReport.pricing_analysis
-                            .price_sensitivity_analysis
-                        }
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Strategic Recommendations Section */}
-                <div className={styles.section}>
-                  <h3>Стратегические рекомендации</h3>
-
-                  <div className={styles.subsection}>
-                    <h4>Позиционирование</h4>
-                    <p className={styles.summaryText}>
-                      {
-                        enhancedReport.strategic_recommendations
-                          .positioning_statement
-                      }
-                    </p>
-                  </div>
-
-                  <div className={styles.subsection}>
-                    <h4>Стратегия выхода на рынок</h4>
-                    <p className={styles.summaryText}>
-                      {
-                        enhancedReport.strategic_recommendations
-                          .go_to_market_strategy
-                      }
-                    </p>
-                  </div>
-
-                  <div className={styles.subsection}>
-                    <h4>Маркетинговые каналы</h4>
-                    <ul className={styles.bulletList}>
-                      {enhancedReport.strategic_recommendations.marketing_channels?.map(
-                        (channel, idx) => <li key={idx}>{channel}</li>
-                      ) || <li>Нет данных</li>}
-                    </ul>
-                  </div>
-
-                  <div className={styles.subsection}>
-                    <h4>Метрики успеха (KPI)</h4>
-                    <ul className={styles.bulletList}>
-                      {enhancedReport.strategic_recommendations.success_metrics?.map(
-                        (metric, idx) => <li key={idx}>{metric}</li>
-                      ) || <li>Нет данных</li>}
-                    </ul>
-                  </div>
-
-                  <div className={styles.subsection}>
-                    <h4>План действий</h4>
-                    <div className={styles.actionPlanGrid}>
-                      {enhancedReport.strategic_recommendations.action_plan.map(
-                        (action, idx) => (
-                          <div key={idx} className={styles.actionCard}>
-                            <div className={styles.actionHeader}>
-                              <span
-                                className={`${styles.priorityBadge} ${
-                                  styles[`priority${action.priority}`]
-                                }`}
-                              >
-                                Приоритет: {action.priority}
-                              </span>
-                              <span className={styles.timeline}>
-                                {action.timeline}
-                              </span>
-                            </div>
-                            <p className={styles.actionText}>{action.action}</p>
-                            {action.responsible && (
-                              <p className={styles.responsible}>
-                                <strong>Ответственный:</strong>{" "}
-                                {action.responsible}
-                              </p>
-                            )}
-                            {action.expected_outcome && (
-                              <p className={styles.outcome}>
-                                <strong>Ожидаемый результат:</strong>{" "}
-                                {action.expected_outcome}
-                              </p>
-                            )}
-                          </div>
-                        )
-                      )}
-                    </div>
-                  </div>
-                </div>
-                </div> {/* End of hidden block */}
-
-                {/* DOWNLOAD BUTTONS */}
                 <div className={styles.section}>
                   <div className={styles.downloadButtons}>
                     <button
                       className={styles.downloadButton}
                       onClick={() => handleDownload("docx")}
+                      disabled={!!downloadingFormat}
+                      style={downloadingFormat === "docx" ? { opacity: 0.7, cursor: "wait" } : undefined}
                     >
-                      <FiFile /> Скачать в DOCX
+                      {downloadingFormat === "docx" ? (
+                        <><FiDownload className={styles.spinIcon} /> Downloading report...</>
+                      ) : (
+                        <><FiFile /> Download DOCX</>
+                      )}
                     </button>
                     <button
                       className={styles.downloadButton}
                       onClick={() => handleDownload("pdf")}
-                      style={{ backgroundColor: "#dc2626" }}
+                      disabled={!!downloadingFormat}
+                      style={{ backgroundColor: "#dc2626", ...(downloadingFormat === "pdf" ? { opacity: 0.7, cursor: "wait" } : {}) }}
                     >
-                      <FiDownload /> Скачать в PDF
+                      {downloadingFormat === "pdf" ? (
+                        <><FiDownload className={styles.spinIcon} /> Downloading report...</>
+                      ) : (
+                        <><FiDownload /> Download PDF</>
+                      )}
                     </button>
                   </div>
                 </div>
                 <div className={styles.resetSection}>
-                  <button className={styles.resetButton} onClick={handleReset}>
-                    <FiRefreshCw /> Исследовать еще раз
+                  <button
+                    className={styles.resetButton}
+                    onClick={() =>
+                      handleReset({ preserveFormData: true, useSavedFormData: true })
+                    }
+                  >
+                    <FiRefreshCw /> Run another research
                   </button>
                 </div>
               </div>
             </div>
           </div>
         )}
-
         {researchReport && !enhancedReport && (
           <div className={styles.resultsSection}>
             <div className={styles.resultsCard}>
               <div className={styles.resultsHeader}>
-                <h2>Market Research Report</h2>
+                <h2>Market research report</h2>
+                <p className={styles.reportSubtitle}>{buildCompletionSubtitle()}</p>
               </div>
               <div className={styles.resultsBody}>
                 {/* СООБЩЕНИЕ: ОТЧЕТ ГОТОВ */}
                 <div className={styles.section}>
-                  <p style={{ fontSize: '1.2rem', textAlign: 'center', padding: '3rem', color: '#1e6078', fontWeight: 500 }}>
-                    ✅ Your market research report has been successfully generated!<br /><br />
-                    Download the full report in DOCX or PDF format below.
+                  <p style={{ fontSize: '1.2rem', textAlign: 'center', padding: '2rem 1rem', color: '#1e6078', fontWeight: 600 }}>
+                    ✅ Your market research report is ready!
                   </p>
                 </div>
 
@@ -2660,21 +2676,37 @@ export default function MarketResearchPage() {
                     <button
                       className={styles.downloadButton}
                       onClick={() => handleDownload("docx")}
+                      disabled={!!downloadingFormat}
+                      style={downloadingFormat === "docx" ? { opacity: 0.7, cursor: "wait" } : undefined}
                     >
-                      <FiFile /> Download DOCX
+                      {downloadingFormat === "docx" ? (
+                        <><FiDownload className={styles.spinIcon} /> Downloading report...</>
+                      ) : (
+                        <><FiFile /> Download DOCX</>
+                      )}
                     </button>
                     <button
                       className={styles.downloadButton}
                       onClick={() => handleDownload("pdf")}
-                      style={{ backgroundColor: "#dc2626" }}
+                      disabled={!!downloadingFormat}
+                      style={{ backgroundColor: "#dc2626", ...(downloadingFormat === "pdf" ? { opacity: 0.7, cursor: "wait" } : {}) }}
                     >
-                      <FiDownload /> Download PDF
+                      {downloadingFormat === "pdf" ? (
+                        <><FiDownload className={styles.spinIcon} /> Downloading report...</>
+                      ) : (
+                        <><FiDownload /> Download PDF</>
+                      )}
                     </button>
                   </div>
                 </div>
                 <div className={styles.resetSection}>
-                  <button className={styles.resetButton} onClick={handleReset}>
-                    <FiRefreshCw /> Research Again
+                  <button
+                    className={styles.resetButton}
+                    onClick={() =>
+                      handleReset({ preserveFormData: true, useSavedFormData: true })
+                    }
+                  >
+                    <FiRefreshCw /> Run another research
                   </button>
                 </div>
               </div>
@@ -2682,14 +2714,22 @@ export default function MarketResearchPage() {
           </div>
         )}
 
-        <div className={styles.disclaimer}>
-          <p>
-            <strong>Важно:</strong> Это тестовая версия сервиса. Результаты
-            могут быть неполными. Сервис использует AI-агенты, живой поиск для
-            сбора и проверки данных.
-          </p>
-        </div>
+        {isCompletedView && researchId && (
+          <Grade sessionId={researchId} />
+        )}
+
+        {!isCompletedView && (
+          <div className={styles.disclaimer}>
+            <p>
+              <strong>Important:</strong> This is a beta version of the service.
+              Results may be incomplete. The service uses AI agents and live web
+              search to gather and verify data.
+            </p>
+          </div>
+        )}
       </main>
     </div>
   );
 }
+
+

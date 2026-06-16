@@ -34,7 +34,7 @@ export default function SolutionsPage() {
         "An AI agent for discovery, analysis and full marketing research. Verifies sources and adapts results to your daily tasks.",
       icon: <FiCpu className="me-2 text-primary" />,
       release: "Spring 2026",
-      link: "/solutions/marketResearch",
+      link: "/solutions/marketResearch/descriptionPage",
       elementId: "market-research-description-card",
       ctaLabel: "Learn more",
     },
