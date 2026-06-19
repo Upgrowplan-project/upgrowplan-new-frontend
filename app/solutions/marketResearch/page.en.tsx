@@ -1009,6 +1009,8 @@ export default function MarketResearchPage() {
       localization: formData.localization,
       industry: industryStr,
       research_goals: formData.researchGoals,
+      // Report language — this is the EN page → English report
+      report_language: "en",
       // Offering & pricing (optional — omit if not set)
       ...(formData.offeringType ? { offering_type: formData.offeringType } : {}),
       ...(formData.offeringSubType ? { offering_sub_type: formData.offeringSubType } : {}),

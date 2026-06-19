@@ -138,6 +138,42 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({ service, onClick }) =>
               </div>
             )}
 
+            {/* Apify monthly spend / balance */}
+            {service.additional_info.monthly_usage_usd !== undefined && (
+              <div className="mb-2">
+                <div className="d-flex justify-content-between mb-1" style={{ fontSize: '0.75rem' }}>
+                  <span className="text-muted">
+                    <i className="bi bi-cash-coin me-1"></i>Расход/мес
+                  </span>
+                  <span className="fw-bold">
+                    ${service.additional_info.monthly_usage_usd ?? '—'}
+                    {service.additional_info.monthly_limit_usd
+                      ? ` / $${service.additional_info.monthly_limit_usd}`
+                      : ''}
+                    {service.additional_info.usage_percent != null && (
+                      <span className={
+                        service.additional_info.usage_percent >= 80 ? 'text-danger ms-1' :
+                        service.additional_info.usage_percent >= 60 ? 'text-warning ms-1' : 'text-success ms-1'
+                      }>
+                        ({service.additional_info.usage_percent}%)
+                      </span>
+                    )}
+                  </span>
+                </div>
+                {service.additional_info.usage_percent != null && (
+                  <div className="progress" style={{ height: '6px', borderRadius: '3px' }}>
+                    <div
+                      className={`progress-bar ${
+                        service.additional_info.usage_percent >= 80 ? 'bg-danger' :
+                        service.additional_info.usage_percent >= 60 ? 'bg-warning' : 'bg-success'
+                      }`}
+                      style={{ width: `${Math.min(service.additional_info.usage_percent, 100)}%` }}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
             {service.additional_info.deployment_url && (
               <div className="mb-1 text-truncate">
                 🔗 <a

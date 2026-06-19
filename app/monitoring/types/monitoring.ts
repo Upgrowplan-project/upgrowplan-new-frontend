@@ -1,7 +1,7 @@
 // Типы для системы мониторинга
 
 export type ServiceStatus = 'healthy' | 'degraded' | 'down' | 'unknown';
-export type ServiceType = 'vercel' | 'heroku' | 'api_key' | 'database';
+export type ServiceType = 'vercel' | 'heroku' | 'api_key' | 'database' | 'redis' | 'service';
 export type AlertSeverity = 'info' | 'warning' | 'critical';
 
 export interface Service {

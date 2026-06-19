@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import Script from "next/script";
 import MobileNavWrapper from "@/components/MobileNavLayout";
 import AOSWrapper from "./AOSWrapper";
+import AnalyticsBeacon from "@/components/AnalyticsBeacon";
 
 // CSS here covers ALL pages including English routes (non-prefixed /solutions/... etc.)
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -73,6 +74,7 @@ export default async function RootLayout({
         suppressHydrationWarning
       >
         <AOSWrapper />
+        <AnalyticsBeacon />
         <MobileNavWrapper>
           <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
             {children}
