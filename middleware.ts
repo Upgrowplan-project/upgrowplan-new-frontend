@@ -13,28 +13,6 @@ export function middleware(request: NextRequest) {
     );
   }
 
-  // --- Защита дашборда мониторинга (пароль-гейт) ---
-  // Включается только если на сервере задан MONITORING_PASSWORD (в dev без него — открыто).
-  // Cookie mon_auth ставит /api/monitoring-auth после ввода пароля; пароль в бандл не попадает.
-  const monPwd = process.env.MONITORING_PASSWORD;
-  if (monPwd) {
-    const isMon =
-      /^\/(?:ru|en)\/monitoring(?:\/|$)/.test(pathname) ||
-      /^\/monitoring(?:\/|$)/.test(pathname);
-    const isMonLogin = pathname.includes('/monitoring/login');
-    if (isMon && !isMonLogin) {
-      const expected = process.env.MONITORING_SESSION_TOKEN || monPwd;
-      const cookie = request.cookies.get('mon_auth')?.value;
-      if (cookie !== expected) {
-        const isRu = pathname.startsWith('/ru');
-        const loginPath = isRu ? '/ru/monitoring/login' : '/monitoring/login';
-        const loginUrl = new URL(loginPath, request.url);
-        loginUrl.searchParams.set('next', pathname);
-        return NextResponse.redirect(loginUrl, { status: 307 });
-      }
-    }
-  }
-
   // /en or /en/* → redirect to canonical path without /en prefix
   // (keeps URLs clean: /blog not /en/blog)
   if (pathname === '/en' || pathname.startsWith('/en/')) {

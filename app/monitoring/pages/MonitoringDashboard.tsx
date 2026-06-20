@@ -462,21 +462,14 @@ export const MonitoringDashboard: React.FC = () => {
                   variant="outline-secondary"
                   size="sm"
                   className="w-100"
-                  onClick={async () => {
-                    try {
-                      await fetch("/api/monitoring-auth", { method: "DELETE" });
-                    } catch {
-                      /* ignore */
-                    }
-                    const isRu =
-                      typeof window !== "undefined" &&
-                      window.location.pathname.startsWith("/ru");
-                    window.location.href = isRu
-                      ? "/ru/monitoring/login"
-                      : "/monitoring/login";
-                  }}
+                  href={
+                    typeof window !== "undefined" &&
+                    window.location.pathname.startsWith("/ru")
+                      ? "/ru/account"
+                      : "/account"
+                  }
                 >
-                  🚪 Выйти
+                  👤 Аккаунт
                 </Button>
               </Card.Footer>
             </Card>

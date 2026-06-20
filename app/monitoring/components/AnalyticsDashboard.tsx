@@ -16,6 +16,7 @@ import {
 } from "chart.js";
 import { Line, Doughnut } from "react-chartjs-2";
 import { useAnalytics, AnalyticsTopItem } from "../hooks/useAnalytics";
+import { monitoringFetch } from "../lib/api";
 
 ChartJS.register(
   CategoryScale,
@@ -74,9 +75,6 @@ const TopList: React.FC<{ title: string; items: AnalyticsTopItem[]; emptyLabel?:
   </Card>
 );
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_MONITORING_API_URL || "http://localhost:8000";
-
 export const AnalyticsDashboard: React.FC = () => {
   const [days, setDays] = useState(30);
   const { data, loading, error, refresh } = useAnalytics(days);
@@ -90,7 +88,7 @@ export const AnalyticsDashboard: React.FC = () => {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/monitoring/user-stats`);
+        const res = await monitoringFetch(`/api/monitoring/user-stats`);
         const body = await res.json();
         if (cancelled) return;
         if (!body.configured) {

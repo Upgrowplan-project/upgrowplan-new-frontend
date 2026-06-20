@@ -1,9 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_MONITORING_API_URL || "http://localhost:8000";
+import { monitoringFetch } from "../lib/api";
 
 export interface AnalyticsTopItem {
   key: string | null;
@@ -40,8 +38,8 @@ export const useAnalytics = (days: number = 30) => {
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await fetch(
-        `${API_BASE_URL}/api/monitoring/analytics?days=${days}`
+      const res = await monitoringFetch(
+        `/api/monitoring/analytics?days=${days}`
       );
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setData(await res.json());

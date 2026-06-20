@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { RatingStats, RatingTimeline, ServicesRatings } from '../types/monitoring';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_MONITORING_API_URL || 'http://localhost:8000';
+import { monitoringFetch } from '../lib/api';
 
 export const useRatingsStats = (serviceName?: string, days: number = 30) => {
     const [stats, setStats] = useState<RatingStats | null>(null);
@@ -14,12 +13,12 @@ export const useRatingsStats = (serviceName?: string, days: number = 30) => {
         const fetchStats = async () => {
             try {
                 setLoading(true);
-                let url = `${API_BASE_URL}/api/ratings/stats?days=${days}`;
+                let url = `/api/ratings/stats?days=${days}`;
                 if (serviceName) {
                     url += `&service_name=${encodeURIComponent(serviceName)}`;
                 }
 
-                const response = await fetch(url);
+                const response = await monitoringFetch(url);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
@@ -50,12 +49,12 @@ export const useRatingsTimeline = (serviceName?: string, days: number = 30) => {
         const fetchTimeline = async () => {
             try {
                 setLoading(true);
-                let url = `${API_BASE_URL}/api/ratings/timeline?days=${days}`;
+                let url = `/api/ratings/timeline?days=${days}`;
                 if (serviceName) {
                     url += `&service_name=${encodeURIComponent(serviceName)}`;
                 }
 
-                const response = await fetch(url);
+                const response = await monitoringFetch(url);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
@@ -86,9 +85,9 @@ export const useServicesRatings = (days: number = 30) => {
         const fetchServicesRatings = async () => {
             try {
                 setLoading(true);
-                const url = `${API_BASE_URL}/api/ratings/services?days=${days}`;
+                const url = `/api/ratings/services?days=${days}`;
 
-                const response = await fetch(url);
+                const response = await monitoringFetch(url);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }

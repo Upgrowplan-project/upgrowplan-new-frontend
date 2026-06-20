@@ -17,6 +17,7 @@ const translations = {
     login: "Log In",
     logout: "Logout",
     account: "Account",
+    monitoring: "Monitoring",
     menu: "Menu",
   },
   ru: {
@@ -28,6 +29,7 @@ const translations = {
     login: "Вход",
     logout: "Выход",
     account: "Кабинет",
+    monitoring: "Мониторинг",
     menu: "Меню",
   },
 };
@@ -35,6 +37,7 @@ const translations = {
 function HeaderContent() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false);
 
   const router = useRouter();
@@ -55,6 +58,38 @@ function HeaderContent() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     setIsLoggedIn(!!token);
+    if (!token) {
+      setIsAdmin(false);
+      try {
+        sessionStorage.removeItem("up_is_admin");
+      } catch {
+        /* ignore */
+      }
+      return;
+    }
+    // Кэш в сессии: не дёргаем /users/me на каждой навигации.
+    try {
+      const cached = sessionStorage.getItem("up_is_admin");
+      if (cached !== null) {
+        setIsAdmin(cached === "1");
+        return;
+      }
+    } catch {
+      /* ignore */
+    }
+    // Определяем админа один раз за сессию (для кнопки «Мониторинг»).
+    import("../app/auth/authService")
+      .then((m) => m.getUserProfile())
+      .then((p) => {
+        const admin = p?.role === "ADMIN";
+        setIsAdmin(admin);
+        try {
+          sessionStorage.setItem("up_is_admin", admin ? "1" : "0");
+        } catch {
+          /* ignore */
+        }
+      })
+      .catch(() => setIsAdmin(false));
   }, []);
 
   // Close dropdown when clicking outside
@@ -255,6 +290,17 @@ function HeaderContent() {
                 {t.contact}
               </Link>
             </li>
+            {isAdmin && (
+              <li className="nav-item">
+                <Link
+                  href={locale === "en" ? "/monitoring" : "/ru/monitoring"}
+                  className="nav-link"
+                  style={{ color: "#0785f6" }}
+                >
+                  🩺 {t.monitoring}
+                </Link>
+              </li>
+            )}
             <li className="nav-item">
               <Link
                 href={

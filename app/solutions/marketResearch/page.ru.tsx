@@ -487,6 +487,8 @@ export default function MarketResearchPage() {
   const [validationWarnings, setValidationWarnings] = useState<ValidationIssue[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResearchPaused, setIsResearchPaused] = useState(false);
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
+  const [submitAttempted, setSubmitAttempted] = useState(false);
   const isCompletedView = Boolean(enhancedReport || researchReport);
 
   const buildCompletionSubtitle = () => {
@@ -913,8 +915,47 @@ export default function MarketResearchPage() {
     setValidationErrors([]);
   };
 
+  // --- Required-field validation helpers (clear per-field feedback) ---
+  const getMissingRequiredFields = (): { key: string; label: string }[] => {
+    const missing: { key: string; label: string }[] = [];
+    if (!formData.productName.trim()) missing.push({ key: "productName", label: "Название продукта или услуги" });
+    if (!formData.productDescription.trim()) missing.push({ key: "productDescription", label: "Описание" });
+    if (!formData.country) missing.push({ key: "country", label: "Страна" });
+    if (formData.businessTypes.length === 0) missing.push({ key: "businessTypes", label: "Тип бизнеса" });
+    if (formData.productTypes.length === 0) missing.push({ key: "productTypes", label: "Тип продукта или услуги" });
+    if (!formData.localization) missing.push({ key: "localization", label: "Локализация рынка" });
+    if (formData.researchGoals.length === 0) missing.push({ key: "researchGoals", label: "Цели исследования" });
+    return missing;
+  };
+  // Red outline shown only after a submit attempt, auto-clears once the field is filled.
+  const requiredFieldStyle = (isEmpty: boolean): React.CSSProperties | undefined =>
+    submitAttempted && isEmpty
+      ? { outline: "2px solid #ef4444", outlineOffset: "2px", borderRadius: "8px" }
+      : undefined;
+  const fieldErrorTextStyle: React.CSSProperties = {
+    display: "block",
+    marginTop: "0.35rem",
+    fontSize: "0.8rem",
+    color: "#ef4444",
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitAttempted(true);
+
+    // Required-field validation BEFORE submitting — name exactly which fields are missing.
+    const missingFields = getMissingRequiredFields();
+    if (missingFields.length > 0) {
+      setError(
+        `Заполните обязательные поля: ${missingFields.map((f) => f.label).join(", ")}.`,
+      );
+      productNameInputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+    if (!privacyAccepted) {
+      setError("Пожалуйста, подтвердите согласие с условиями использования сервиса.");
+      return;
+    }
     setError(null);
     setValidationErrors([]);
     setValidationWarnings([]);
@@ -927,20 +968,6 @@ export default function MarketResearchPage() {
     elapsedTimerRef.current = setInterval(() => setElapsedSeconds(s => s + 1), 1000);
     console.log("[Market Research] Starting research submission...");
     console.log("[Market Research] Form data:", formData);
-
-    if (
-      !formData.productName ||
-      !formData.productDescription ||
-      !formData.country ||
-      formData.businessTypes.length === 0 ||
-      formData.productTypes.length === 0 ||
-      !formData.localization ||
-      formData.researchGoals.length === 0
-    ) {
-      setError("Пожалуйста, заполните все обязательные поля");
-      setIsSubmitting(false);
-      return;
-    }
 
     // CRITICAL: Health check BEFORE starting research
     console.log("[HEALTH CHECK] Проверка всех компонентов системы перед запуском исследования...");
@@ -1990,8 +2017,11 @@ export default function MarketResearchPage() {
                     onChange={handleInputChange}
                     className={styles.input}
                     placeholder="Например: Специализированная кофейня"
-                    required
+                    style={requiredFieldStyle(!formData.productName.trim())}
                   />
+                  {submitAttempted && !formData.productName.trim() && (
+                    <span style={fieldErrorTextStyle}>Обязательное поле</span>
+                  )}
                 </div>
 
                 <div className={styles.formGroup}>
@@ -2003,8 +2033,11 @@ export default function MarketResearchPage() {
                     className={styles.textarea}
                     placeholder="Дайте описание продукта или услуги так, как видите его вы ..."
                     rows={4}
-                    required
+                    style={requiredFieldStyle(!formData.productDescription.trim())}
                   />
+                  {submitAttempted && !formData.productDescription.trim() && (
+                    <span style={fieldErrorTextStyle}>Обязательное поле</span>
+                  )}
                 </div>
 
                 <div className={styles.formGroupRow}>
@@ -2015,7 +2048,7 @@ export default function MarketResearchPage() {
                       value={formData.country}
                       onChange={handleInputChange}
                       className={styles.input}
-                      required
+                      style={requiredFieldStyle(!formData.country)}
                     >
                       <option value="">— Выберите страну —</option>
                       {COUNTRIES.map((c) => (
@@ -2024,6 +2057,9 @@ export default function MarketResearchPage() {
                         </option>
                       ))}
                     </select>
+                    {submitAttempted && !formData.country && (
+                      <span style={fieldErrorTextStyle}>Обязательное поле</span>
+                    )}
                     {formData.country && LOW_COVERAGE_COUNTRIES.has(formData.country) && (
                       <p style={{
                         marginTop: "0.5rem",
@@ -2056,7 +2092,7 @@ export default function MarketResearchPage() {
 
               <div className={styles.section}>
                 <h3>Тип бизнеса * (можно выбрать несколько)</h3>
-                <div className={styles.buttonGroup}>
+                <div className={styles.buttonGroup} style={requiredFieldStyle(formData.businessTypes.length === 0)}>
                   {businessTypeOptions.map((option) => (
                     <button
                       key={option.value}
@@ -2075,11 +2111,14 @@ export default function MarketResearchPage() {
                     </button>
                   ))}
                 </div>
+                {submitAttempted && formData.businessTypes.length === 0 && (
+                  <span style={fieldErrorTextStyle}>Выберите хотя бы один вариант</span>
+                )}
               </div>
 
               <div className={styles.section}>
                 <h3>Тип продукта или услуги * (можно выбрать несколько)</h3>
-                <div className={styles.productTypeSelectWrapper}>
+                <div className={styles.productTypeSelectWrapper} style={requiredFieldStyle(formData.productTypes.length === 0)}>
                   {/* Selected tags */}
                   {formData.productTypes.length > 0 && (
                     <div className={styles.selectedTagsRow}>
@@ -2127,11 +2166,14 @@ export default function MarketResearchPage() {
                     ))}
                   </div>
                 </div>
+                {submitAttempted && formData.productTypes.length === 0 && (
+                  <span style={fieldErrorTextStyle}>Выберите хотя бы один вариант</span>
+                )}
               </div>
 
               <div className={styles.section}>
                 <h3>Локализация рынка *</h3>
-                <div className={styles.buttonGroup}>
+                <div className={styles.buttonGroup} style={requiredFieldStyle(!formData.localization)}>
                   {localizationOptions.map((option) => (
                     <button
                       key={option.value}
@@ -2152,11 +2194,14 @@ export default function MarketResearchPage() {
                     </button>
                   ))}
                 </div>
+                {submitAttempted && !formData.localization && (
+                  <span style={fieldErrorTextStyle}>Выберите вариант</span>
+                )}
               </div>
 
               <div className={styles.section}>
                 <h3>Цели исследования * (можно выбрать несколько)</h3>
-                <div className={styles.buttonGroup}>
+                <div className={styles.buttonGroup} style={requiredFieldStyle(formData.researchGoals.length === 0)}>
                   {researchGoalOptions.map((option) => (
                     <button
                       key={option.value}
@@ -2175,6 +2220,9 @@ export default function MarketResearchPage() {
                     </button>
                   ))}
                 </div>
+                {submitAttempted && formData.researchGoals.length === 0 && (
+                  <span style={fieldErrorTextStyle}>Выберите хотя бы один вариант</span>
+                )}
               </div>
 
               {/* === ТИП ПРЕДЛОЖЕНИЯ === */}
@@ -2286,6 +2334,48 @@ export default function MarketResearchPage() {
                 </div>
               </div>
               </>)} {/* /(!isSubmitting || isResearchPaused) */}
+
+              {/* Privacy Policy consent */}
+              {!isSubmitting && !isResearchPaused && (
+                <div className={styles.section}>
+                  <label
+                    style={{
+                      display: "flex",
+                      alignItems: "flex-start",
+                      gap: "8px",
+                      cursor: "pointer",
+                      fontSize: "0.9rem",
+                      lineHeight: 1.4,
+                      ...(submitAttempted && !privacyAccepted
+                        ? { outline: "2px solid #ef4444", outlineOffset: "4px", borderRadius: "6px" }
+                        : {}),
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={privacyAccepted}
+                      onChange={(e) => setPrivacyAccepted(e.target.checked)}
+                      style={{ marginTop: "3px", flexShrink: 0 }}
+                    />
+                    <span>
+                      Я прочитал и согласен с{" "}
+                      <a
+                        href="/ru/privacy"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: "#0785f6", textDecoration: "underline" }}
+                      >
+                        условиями использования сервиса
+                      </a>
+                    </span>
+                  </label>
+                  {submitAttempted && !privacyAccepted && (
+                    <span style={fieldErrorTextStyle}>
+                      Необходимо согласие для запуска исследования
+                    </span>
+                  )}
+                </div>
+              )}
 
               {!isResearchPaused ? (
                 <div className={styles.submitActionsRow}>

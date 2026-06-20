@@ -1,9 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_MONITORING_API_URL || "http://localhost:8000";
+import { monitoringFetch } from "../lib/api";
 
 export interface ResearchReportSummary {
   research_id: string;
@@ -53,8 +51,8 @@ export const useResearchReports = (
       setLoading(true);
       const params = new URLSearchParams({ limit: String(limit) });
       if (serviceName) params.set("service_name", serviceName);
-      const res = await fetch(
-        `${API_BASE_URL}/api/monitoring/reports?${params.toString()}`,
+      const res = await monitoringFetch(
+        `/api/monitoring/reports?${params.toString()}`,
       );
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
@@ -89,8 +87,8 @@ export const useResearchReport = (researchId: string | null) => {
     (async () => {
       try {
         setLoading(true);
-        const res = await fetch(
-          `${API_BASE_URL}/api/monitoring/reports/${encodeURIComponent(researchId)}`,
+        const res = await monitoringFetch(
+          `/api/monitoring/reports/${encodeURIComponent(researchId)}`,
         );
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();

@@ -3,17 +3,18 @@
 import { useState, useEffect, useCallback } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 import { MonitoringData, ServiceHistory, MonitoringStats } from '../types/monitoring';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_MONITORING_API_URL || 'http://localhost:8000';
-const WS_URL = process.env.NEXT_PUBLIC_MONITORING_WS_URL || 'ws://localhost:8000';
+import { monitoringFetch, MONITORING_WS, getToken } from '../lib/api';
 
 export const useMonitoring = () => {
   const [data, setData] = useState<MonitoringData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // WebSocket для real-time обновлений
-  const { lastMessage, readyState } = useWebSocket(`${WS_URL}/ws/monitoring`, {
+  // WebSocket для real-time обновлений (admin-токен в query)
+  const wsToken = typeof window !== "undefined" ? getToken() : null;
+  const { lastMessage, readyState } = useWebSocket(
+    `${MONITORING_WS}/ws/monitoring${wsToken ? `?token=${encodeURIComponent(wsToken)}` : ""}`,
+    {
     shouldReconnect: () => true,
     reconnectAttempts: 10,
     reconnectInterval: 3000,
@@ -23,7 +24,7 @@ export const useMonitoring = () => {
   const fetchMonitoringData = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/api/monitoring/overview`);
+      const response = await monitoringFetch(`/api/monitoring/overview`);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -60,7 +61,7 @@ export const useMonitoring = () => {
   // Триггер немедленной проверки
   const triggerHealthCheck = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/monitoring/check-now`, {
+      const response = await monitoringFetch(`/api/monitoring/check-now`, {
         method: 'POST',
       });
 
@@ -78,8 +79,8 @@ export const useMonitoring = () => {
   // Resolve alert
   const resolveAlert = async (alertId: number, resolvedBy: string = 'admin') => {
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/api/monitoring/alerts/${alertId}/resolve`,
+      const response = await monitoringFetch(
+        `/api/monitoring/alerts/${alertId}/resolve`,
         {
           method: 'POST',
           headers: {
@@ -124,8 +125,8 @@ export const useServiceHistory = (serviceName: string, hours: number = 24) => {
     const fetchHistory = async () => {
       try {
         setLoading(true);
-        const response = await fetch(
-          `${API_BASE_URL}/api/monitoring/service/${encodeURIComponent(serviceName)}/history?hours=${hours}`
+        const response = await monitoringFetch(
+          `/api/monitoring/service/${encodeURIComponent(serviceName)}/history?hours=${hours}`
         );
 
         if (!response.ok) {
@@ -160,7 +161,7 @@ export const useMonitoringStats = () => {
     const fetchStats = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${API_BASE_URL}/api/monitoring/stats`);
+        const response = await monitoringFetch(`/api/monitoring/stats`);
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
