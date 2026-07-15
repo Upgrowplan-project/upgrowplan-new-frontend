@@ -39,7 +39,7 @@ export default function SolutionsPage() {
       description:
         "ИИ-агент поиска, анализа и выполнения полноценного маркетингового исследования. Верификация ресурсов и данных, адаптация под ваши ежедневные задачи.",
       icon: <FiCpu className="me-2 text-primary" />,
-      release: "весна 2026",
+      beta: true,
       link: "/solutions/marketResearch/descriptionPage",
       elementId: "market-research-description-card",
       ctaLabel: "Подробнее",
@@ -49,7 +49,7 @@ export default function SolutionsPage() {
       description:
         "Ваш ежедневный цифровой отдел для анализа целевой аудитории, мониторинга конкурентов, проверки налогов и разрешений вашего бизнеса. Легкий старт ИИ для вашего предприятия. Получите отчет на почту каждый понедельник",
       icon: <FiMonitor className="me-2 text-primary" />,
-      release: "весна 2026",
+      release: "осень 2026",
       link: "/solutions/businessPulse",
       elementId: "business-pulse-workspace-card",
       ctaLabel: "Подробнее",
@@ -59,7 +59,7 @@ export default function SolutionsPage() {
       description:
         "Генерация экспертного бизнес-плана на основе современной методологии, живого поиска и верифицированных данных. Нулевая толерантность к ИИ-галлюцинациям. Удобный чат запроса. Документ готов к презентации инвесторам.",
       icon: <FiFileText className="me-2 text-danger" />,
-      release: "весна 2026",
+      release: "осень 2026",
       link: "/ai-business-plan-generator",
       elementId: "planmaster-description-card",
       ctaLabel: "Подробнее",
@@ -77,7 +77,7 @@ export default function SolutionsPage() {
       description:
         "Проверьте бизнес-идею на виртуальных покупателях за 15 минут. Синтетические респонденты заменяют дорогие фокус-группы — без рекрутинга, без ожидания. Точность 85–92% по сравнению с реальными участниками.",
       icon: <FiUsers className="me-2 text-warning" />,
-      release: "весна 2026",
+      release: "осень 2026",
       link: "/solutions/synthetic-customer-research",
       elementId: "synth-focus-lab-description-card",
       ctaLabel: "Подробнее",
@@ -136,11 +136,15 @@ export default function SolutionsPage() {
                   </div>
                   <div className="mt-3 d-flex align-items-center justify-content-between gap-2">
                     <div className="text-muted small d-flex flex-column gap-1" style={{ flex: 1 }}>
-                      {solution.release && (
+                      {solution.beta ? (
+                        <span className="d-flex align-items-center gap-1">
+                          <FaHourglassHalf /> Доступен в бета-версии
+                        </span>
+                      ) : solution.release ? (
                         <span className="d-flex align-items-center gap-1">
                           <FaHourglassHalf /> Релиз {solution.release}
                         </span>
-                      )}
+                      ) : null}
                       {solution.hasCountrySelector && (
                         <div>
                           <label

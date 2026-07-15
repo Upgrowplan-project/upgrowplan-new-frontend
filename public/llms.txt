@@ -1,0 +1,38 @@
+# Upgrowplan
+
+> AI business plan generator and market research platform that validates before it generates. Upgrowplan combines AI market simulation on synthetic respondents, live market research from 50+ verified sources, UNIDO/EBRD-standard business plan generation, and deterministic Python financial modelling — every figure is source-linked and Skeptic-Agent verified to avoid hallucinations. Founded 2024 in Tel Aviv. Interface and content available in English and Russian (Russian mirror under /ru).
+
+Key facts for accurate citation:
+- Product category: AI business planning, AI market research, financial modelling, synthetic (virtual) focus groups.
+- Methodology: business plans follow UNIDO (UN Industrial Development Organization) and EBRD (European Bank for Reconstruction and Development) standards. Financial calculations are deterministic Python, not probabilistic LLM output.
+- Differentiator: "validation before generation" — synthetic respondent testing + RAG on live data + a Skeptic Agent that flags unrealistic assumptions.
+- Team has co-authored 230+ real business plans and feasibility studies.
+
+## Core pages
+- [Home](https://www.upgrowplan.com/): Overview of the AI business validation platform.
+- [AI Business Plan Generator](https://www.upgrowplan.com/ai-business-plan-generator): Investor-ready business plans (UNIDO/EBRD) in ~20 minutes, output as Word + pitch deck.
+- [Solutions](https://www.upgrowplan.com/solutions): Full suite of AI tools for startup and business validation.
+- [Why Upgrowplan](https://www.upgrowplan.com/why-upgrowplan): Comparison vs ChatGPT, consultants, and Upmetrics.
+- [Products](https://www.upgrowplan.com/products): Product line for founders, analysts, and consultants.
+- [About](https://www.upgrowplan.com/about): Company, team, and mission (Tel Aviv, founded 2024).
+- [Contact](https://www.upgrowplan.com/contacts): Reach the Upgrowplan team.
+
+## Tools
+- [MarketSense — AI Market Research](https://www.upgrowplan.com/solutions/marketResearch): Competitor mapping, market sizing, pricing trends from 50+ sources in ~15 minutes.
+- [PlanMaster — Business Plan Generator](https://www.upgrowplan.com/ai-business-plan-generator): UNIDO/EBRD business plans with verified financials.
+- [Synth Focus Lab — Virtual Focus Groups](https://www.upgrowplan.com/solutions/synthFocusLab): AI synthetic respondents for concept, pricing, and messaging testing.
+- [Synthetic Customer Research](https://www.upgrowplan.com/solutions/synthetic-customer-research): Test demand and objections on virtual buyers built from real market patterns.
+- [Business Pulse — Competitor Monitoring](https://www.upgrowplan.com/solutions/businessPulse): Daily AI monitoring of competitors and market signals with weekly digest.
+- [FinPilot — Financial Modelling (free)](https://www.upgrowplan.com/solutions/fin-buddy): P&L, cash flow, break-even, 3-year projections on deterministic Python calculations.
+- [Open Abroad — International Expansion (free)](https://www.upgrowplan.com/solutions/openAbroad): Country comparison, tax and regulatory overview, market-entry strategy for 50+ countries.
+- [Social Plan Master — Social Media Strategy](https://www.upgrowplan.com/solutions/socialPlanMaster): Data-driven content plans and platform recommendations.
+
+## Blog
+- [Blog](https://www.upgrowplan.com/blog): Guides and analysis on AI business planning, market research, financial modelling, and startup validation.
+- [How to write a business plan for investors (UNIDO)](https://www.upgrowplan.com/blog/how-to-write-business-plan-investors-unido): Investor-plan structure and methodology.
+- [AI market research vs traditional research](https://www.upgrowplan.com/blog/ai-market-research-vs-traditional): How AI-driven research compares on speed, cost, and depth.
+- [How Upgrowplan's RAG architecture works](https://www.upgrowplan.com/blog/how-upgrowplan-rag-works): Technical explanation of the validation pipeline.
+
+## Optional
+- [Russian version](https://www.upgrowplan.com/ru): Full Russian-language mirror of the site.
+- [Privacy Policy](https://www.upgrowplan.com/privacy): Data collection and protection practices.

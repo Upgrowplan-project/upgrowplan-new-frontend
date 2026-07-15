@@ -110,7 +110,9 @@ export default function PlanPage() {
   }, [chatMessages, isTyping, surveyComplete]);
 
   const initWebSocket = () => {
-    ws.current = new WebSocket("ws://localhost:8888/ws/survey");
+    ws.current = new WebSocket(
+      process.env.NEXT_PUBLIC_ONBOARDING_WS_URL || "ws://localhost:8000/ws/survey"
+    );
 
     ws.current.onopen = () => {
       console.log("✅ WebSocket connected");
@@ -557,8 +559,11 @@ export default function PlanPage() {
       console.log("   Execution ID:", sessionId);
       console.log("   Request data:", requestData);
 
-      // СНАЧАЛА запускаем генерацию через POST /api/generate
-      const result = await triggerGeneration(requestData);
+      // Запускаем генерацию в planmaster-service: сырой онбординг-brief → провенанс-мост
+      const result = await triggerGeneration({
+        answers: answersRef.current,
+        system_locale: "en",
+      });
 
       console.log("✅ Generation started:", result);
       console.log("   Backend execution ID:", result.execution_id);
@@ -593,7 +598,7 @@ export default function PlanPage() {
       if (format === "docx") {
         // Download DOCX file from backend
         const response = await fetch(
-          `http://localhost:8000/api/download/${generationResult.execution_id}`
+          `${process.env.NEXT_PUBLIC_DOC_GEN_API_URL || "http://localhost:8004"}/planMaster/${generationResult.execution_id}/download`
         );
 
         if (!response.ok) {
@@ -650,8 +655,9 @@ export default function PlanPage() {
         const text = await file.text();
         const jsonData = JSON.parse(text);
 
-        // Load data into answersRef
-        answersRef.current = jsonData;
+        // Load data into answersRef. Onboarding export is { answers: {...}, ... },
+        // but generation expects the answers dict itself. Unwrap if it's a full export.
+        answersRef.current = jsonData.answers || jsonData;
         setProgressPercent(100);
         setSurveyComplete(true);
 
@@ -868,8 +874,8 @@ export default function PlanPage() {
                         style={{
                           padding: "0.6rem 1rem",
                           borderRadius: "16px",
-                          backgroundColor: "#ffffff",
-                          color: "#171717",
+                          backgroundColor: "#0785f6",
+                          color: "#ffffff",
                           wordBreak: "break-word",
                           boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
                         }}
@@ -899,7 +905,7 @@ export default function PlanPage() {
                         style={{
                           padding: "0.6rem 1rem",
                           borderRadius: "16px",
-                          backgroundColor: "#ffffff",
+                          backgroundColor: "#eef1f4",
                           color: "#171717",
                           wordBreak: "break-word",
                           boxShadow: "0 2px 8px rgba(0,0,0,0.08)",

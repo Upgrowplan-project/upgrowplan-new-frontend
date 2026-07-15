@@ -37,6 +37,107 @@ const mirroredLocalePairs: Array<{ enId: number; ruId: number }> = [
 ];
 
 const manualLocaleOverrides: Record<number, Partial<BilingualPost>> = {
+  1018: {
+    titleEn: "TAM, SAM, SOM: How to Catch Fish You Can't Reach",
+    descriptionEn:
+      "TAM, SAM and SOM explained through a fishing metaphor. Why top-down sizing ('we'll just take 1% of the market') kills your pitch, while a bottom-up estimate earns the trust of investors and banks.",
+    messageEn: `TAMs, SAMs, and SOMs. How to catch fish you can't reach
+
+When sizing a market, we keep running into these terms: TAM, SAM, SOM.
+What do they actually mean for an entrepreneur and an investor?
+
+Let's skip the textbook translation and picture the market as an ocean — and you're the fisherman.
+TAM — the entire ocean.
+SAM — the waters your boat can actually reach.
+SOM — how much fish you can realistically catch, given your time, gear, the weather, and all the other fishermen 🎣
+
+Okay. How do you estimate it?
+There are two main approaches: top-down and bottom-up.
+
+1️⃣ Top-down:
+Scene: Tel Aviv, evening, getting chilly, a cozy café, a beer with a friend.
+➡️ An AI business idea drops out of nowhere! BAM! Then Google/ChatGPT tells you: "The global AI solutions market will reach $1.8 trillion by 2030."
+➡️ What do we think? "If our startup grabs even a tiny 0.1%, our revenue is $1.8 billion..." That's it, champagne for everyone! 🍾
+➡️ Write that in a business plan or say it in a pitch, and it's an epic fail.
+
+At that exact moment, the bank analyst or angel investor has mentally closed your deck. Bye!!!!
+
+"We'll just take 1% of a huge market" is the classic top-down sizing trap. But why?
+
+This approach has three fundamental flaws:
+1. The macro numbers aren't yours. That pie is already sliced up and eaten by corporate giants with billion-dollar budgets (marketing and lobbying).
+2. Localization and regulation. The global market may be growing, but if your software needs GDPR compliance in Europe, or has to plug into a specific payment system in Israel, or even support עברית as a language — your real market shrinks by hundreds or thousands of times.
+3. No distribution in the formula. The top-down method assumes customers materialize out of thin air (just because the product exists 😂) and ignores the throughput of your sales channels (even the ones you're only planning).
+
+2️⃣ Bottom-up: Back down to earth
+
+Instead of slicing an abstract global pie, we start building our own — from a single invoice and a single customer. Say it's an AI service that automates audits for local coffee shops and bakeries.
+
+Scene two:
+Tel Aviv, hot morning, 7 cups of coffee, a smoking-hot laptop.
+
+➡️ Our sales team is 2 managers and one cat. A manager can physically make, let's say, 20 quality cold calls a day.
+➡️ Per month (22 working days), two managers can reach: 2 × 20 × 22 = 880 contacts. Average conversion 2%. So we can win 17 new clients a month. Over a year — around 200 coffee shops.
+➡️ At a $500/year subscription, our real first-year SOM is $100,000.
+
+Oops. Top-down painted $1.8B in revenue. Bottom-up showed just $100K.
+
+Catch me a big one…
+
+Wrapping up. You'll only earn the understanding of an investor or a banker with a bottom-up market estimate. And most importantly — don't let yourself be lulled by the numbers of global markets.
+
+#methodology`,
+  },
+  1017: {
+    titleEn: "Humans vs. Vibe-Coded Agents: An Obituary for Classic Consulting",
+    descriptionEn:
+      "What issuing loans and business plans might look like in 2027–2030, when the entrepreneur's AI agent and the bank's AI agent talk to each other directly via API — and why humans are still in the picture at all.",
+    messageEn: `Humans vs. vibe-coded agents
+or, a fun little obituary for classic consulting
+
+More and more people are using AI — and so are the people who hand out loans and finance projects.
+
+So let's try to peek into 2030 2027.
+It feels like the familiar PDF business plan, or a market research deck with smiling target customers, will become an anachronism — like a Soviet savings passbook.
+
+Right now that document is a ritual offering to the bank or the investor. The entrepreneur (or, more often, the economist they hired — that's literally me, 14 honest years of this grind 🧐) doesn't sleep for a week, torturing Google and inventing fairy tales about market domination, while the bank's credit officer spends a week pretending to read it (also me, back in my 10 years at Sberbank).
+
+So what's coming?
+
+Some AI service (say, my PlanMaster, or a new skill from Anthropic) gets a voice message from the businessman — and then the service doesn't write prose. It packs the data into a JSON file containing:
+- competitors' receipts from fiscal data;
+- foot traffic near the hypothetical café;
+- and a mathematical model of whether the business survives 20% inflation and the next war with Iran.
+
+The agent knocks on the bank's API, where an equally vibe-coded agent receives the package, runs it through 100,000 simulations in nanoseconds, and pushes the credit department head a QR code to issue the entrepreneur their loan.
+That's if it's a yes.
+If it's a no, it sends the package back with a TODO list of what to fix 😂😂
+
+So why do we even need humans? 🫤
+
+Well, first, you need at least one lunatic with an economics degree on each side. Someone has to write those agents, after all.
+
+Second, someone absolutely has to knock back a whiskey to celebrate the bank's beautiful numbers — a bank now staffed by a director, a prompt engineer, and… a cleaning lady.
+
+You probably also need a person to verify the collateral pledged to the bank. Though, remembering how I froze in cold-storage rooms inspecting 40 tons of frozen herring held as collateral, that job is better handed to a drone.
+
+Everyone else — economists, marketers, inspectors, and assorted clerk-walkers — sip instant coffee and read news on Telegram about the automation of credit and other operations.
+
+Crank the cynicism up to max, and the picture looks like this:
+a) The entrepreneur buys a subscription to a web service (I'm building it as hard as I can 😵‍💫) that packs even the most hopeless case into JSON so it looks like the next Google.
+b) The bank fires its army of inspectors, and the one remaining programmer plus Claude write an Inquisitor Agent, trained to catch the micro-embellishments in application data.
+c) Then two servers fiercely argue with each other and swap terabytes of data at the speed of light.
+d) Meanwhile the entrepreneur and the banker sit in a bar planning a fishing trip over a beer. Nothing depends on them anymore anyway. Just renew the subscription..
+
+Yes, obviously there are legal nuances — you'd have to rewrite the bank's charter. Again, with the help of Claude or Codex))
+The big deals will remain, where the cost of an error is too high and no one will hand responsibility to an algorithm. But what percentage of deals is that?
+
+I'm genuinely curious when some N-bank will be the first to admit that its entire credit committee is just a Python script.
+
+The main takeaway: do your consulting with the neural network's later processing in mind, too.
+
+#upgrowplan #ArtificialIntelligence #DataQuality`,
+  },
   201: {
     titleRu: "Бизнесу больше 5 000 лет",
     descriptionRu:

@@ -1,11 +1,14 @@
 /**
- * API Client для Document Generation Service
+ * API Client для PlanMaster Service (генератор бизнес-плана)
  *
- * Интеграция с Document Generation Service (localhost:8001)
- * для генерации бизнес-планов
+ * Контракт planmaster-service (localhost:8004):
+ *   POST /planMaster/from-brief   { answers, system_locale } -> { plan_id, status, progress }
+ *   GET  /planMaster/{plan_id}                               -> { status, progress, current_stage }
+ *   GET  /planMaster/{plan_id}/download                      -> DOCX
+ * Экспортируемые сигнатуры сохранены (execution_id == plan_id) — страница чата не меняется.
  */
 
-const DOC_GEN_API_BASE_URL = process.env.NEXT_PUBLIC_DOC_GEN_API_URL || 'http://localhost:8001';
+const DOC_GEN_API_BASE_URL = process.env.NEXT_PUBLIC_DOC_GEN_API_URL || 'http://localhost:8004';
 
 export interface GenerationStatus {
   execution_id: string;
@@ -66,39 +69,28 @@ export async function checkHealth(): Promise<HealthStatus> {
  * @param requestData - Полные данные для генерации бизнес-плана
  */
 export async function triggerGeneration(
-  requestData: any
+  payload: any
 ): Promise<GenerationResult> {
-  console.log('🔍 Sending request to API:', JSON.stringify(requestData, null, 2));
-
-  const response = await fetch(`${DOC_GEN_API_BASE_URL}/api/generate`, {
+  // payload ожидается как { answers, system_locale } — сырой онбординг-brief
+  const response = await fetch(`${DOC_GEN_API_BASE_URL}/planMaster/from-brief`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(requestData),
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
   });
 
   if (!response.ok) {
-    try {
-      const error = await response.json();
-      console.error('❌ API Error Response:', error);
-      // FastAPI возвращает валидационные ошибки в формате {detail: [{loc, msg, type}]}
-      if (error.detail && Array.isArray(error.detail)) {
-        const messages = error.detail.map((e: any) =>
-          `${e.loc.join('.')}: ${e.msg}`
-        ).join('; ');
-        throw new Error(`Validation error: ${messages}`);
-      }
-      throw new Error(error.detail || error.message || `Generation failed: ${response.status}`);
-    } catch (parseError) {
-      if (parseError instanceof Error && parseError.message.includes('Validation error')) {
-        throw parseError;
-      }
-      throw new Error(`Generation failed: ${response.status} ${response.statusText}`);
-    }
+    throw new Error(`Generation failed: ${response.status} ${response.statusText}`);
   }
 
-  return response.json();
+  const j = await response.json();
+  // Маппинг plan_id -> execution_id, чтобы страница/polling работали без изменений
+  return {
+    status: j.status,
+    execution_id: j.plan_id,
+    document_id: j.plan_id,
+    files: { markdown: '', docx: '' },
+    metadata: undefined as any,
+  } as GenerationResult;
 }
 
 /**
@@ -110,7 +102,7 @@ export async function getGenerationStatus(
   executionId: string
 ): Promise<GenerationStatus> {
   const response = await fetch(
-    `${DOC_GEN_API_BASE_URL}/api/status/${executionId}`
+    `${DOC_GEN_API_BASE_URL}/planMaster/${executionId}`
   );
 
   if (!response.ok) {
@@ -120,7 +112,18 @@ export async function getGenerationStatus(
     throw new Error(`Status check failed: ${response.status}`);
   }
 
-  return response.json();
+  const j = await response.json();
+  const statusMap: Record<string, GenerationStatus['status']> = {
+    pending: 'queued', in_progress: 'in_progress',
+    completed: 'completed', failed: 'failed',
+  };
+  return {
+    execution_id: executionId,
+    status: statusMap[j.status] || j.status,
+    progress_percent: j.progress,
+    current_step: j.current_stage,
+    error: j.error,
+  };
 }
 
 /**
@@ -185,6 +188,31 @@ export async function downloadDocument(
   link.click();
 
   URL.revokeObjectURL(url);
+}
+
+/**
+ * Драйверы плана для верификации пользователем (масштаб, клиентов/день, чек, аренда, ФОТ…)
+ */
+export async function getPlanDrivers(planId: string): Promise<any> {
+  const r = await fetch(`${DOC_GEN_API_BASE_URL}/planMaster/${planId}/drivers`);
+  if (!r.ok) throw new Error(`Drivers fetch failed: ${r.status}`);
+  return r.json(); // { plan_id, drivers: [...], currency, computable }
+}
+
+/**
+ * Отправить подтверждённые/скорректированные драйверы → пересчёт + перегенерация документа
+ */
+export async function verifyPlanDrivers(
+  planId: string,
+  overrides: Record<string, number>
+): Promise<any> {
+  const r = await fetch(`${DOC_GEN_API_BASE_URL}/planMaster/${planId}/verify-drivers`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ overrides }),
+  });
+  if (!r.ok) throw new Error(`Verify failed: ${r.status}`);
+  return r.json(); // PlanMasterResponse { plan_id, status, financials, docx_path }
 }
 
 /**

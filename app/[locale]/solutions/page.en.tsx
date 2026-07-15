@@ -33,7 +33,7 @@ export default function SolutionsPage() {
       description:
         "An AI agent for discovery, analysis and full marketing research. Verifies sources and adapts results to your daily tasks.",
       icon: <FiCpu className="me-2 text-primary" />,
-      release: "Spring 2026",
+      beta: true,
       link: "/solutions/marketResearch/descriptionPage",
       elementId: "market-research-description-card",
       ctaLabel: "Learn more",
@@ -43,7 +43,7 @@ export default function SolutionsPage() {
       description:
         "Your daily digital department for market monitoring and business protection. A light AI start for your company.",
       icon: <FiMonitor className="me-2 text-primary" />,
-      release: "Spring 2026",
+      release: "Autumn 2026",
       link: "/solutions/businessPulse",
       elementId: "business-pulse-workspace-card",
       ctaLabel: "Learn more",
@@ -53,7 +53,7 @@ export default function SolutionsPage() {
       description:
         "Generates an expert business plan based on modern methodology, live search and verified data. Clear handling of hallucinations. User-friendly request chat and investor-ready documents.",
       icon: <FiFileText className="me-2 text-danger" />,
-      release: "Spring 2026",
+      release: "Autumn 2026",
       link: "/ai-business-plan-generator",
       elementId: "planmaster-description-card",
       ctaLabel: "Learn more",
@@ -71,7 +71,7 @@ export default function SolutionsPage() {
       description:
         "Test your business idea on virtual buyers in 15 minutes. AI synthetic respondents replace expensive focus groups — no recruiting, no waiting. 85–92% accuracy compared to real participants.",
       icon: <FiUsers className="me-2 text-warning" />,
-      release: "Spring 2026",
+      release: "Autumn 2026",
       link: "/solutions/synthetic-customer-research",
       elementId: "synth-focus-lab-description-card",
       ctaLabel: "Learn more",
@@ -130,11 +130,15 @@ export default function SolutionsPage() {
                   </div>
                   <div className="mt-3 d-flex align-items-center justify-content-between gap-2">
                     <div className="text-muted small d-flex flex-column gap-1" style={{ flex: 1 }}>
-                      {solution.release && (
+                      {solution.beta ? (
+                        <span className="d-flex align-items-center gap-1">
+                          <FaHourglassHalf /> Available in beta
+                        </span>
+                      ) : solution.release ? (
                         <span className="d-flex align-items-center gap-1">
                           <FaHourglassHalf /> Release {solution.release}
                         </span>
-                      )}
+                      ) : null}
                       {solution.hasCountrySelector && (
                         <div>
                           <label htmlFor="country-select" className="form-label small text-muted mb-1">

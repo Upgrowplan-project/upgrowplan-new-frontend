@@ -28,7 +28,7 @@ const translations = {
     contact: "Контакты",
     login: "Вход",
     logout: "Выход",
-    account: "Кабинет",
+    account: "Аккаунт",
     monitoring: "Мониторинг",
     menu: "Меню",
   },
@@ -77,7 +77,7 @@ function HeaderContent() {
     } catch {
       /* ignore */
     }
-    // Определяем админа один раз за сессию (для кнопки «Мониторинг»).
+    // Пункт «Мониторинг» показываем только админу (роль из профиля).
     import("../app/auth/authService")
       .then((m) => m.getUserProfile())
       .then((p) => {
@@ -297,7 +297,7 @@ function HeaderContent() {
                   className="nav-link"
                   style={{ color: "#0785f6" }}
                 >
-                  🩺 {t.monitoring}
+                  {t.monitoring}
                 </Link>
               </li>
             )}

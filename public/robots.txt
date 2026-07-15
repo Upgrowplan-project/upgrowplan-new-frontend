@@ -10,5 +10,39 @@ Disallow: /ru/monitoring
 Disallow: /fin-model/
 Disallow: /ru/fin-model/
 
+# AI / LLM crawlers — explicitly welcomed for Generative Engine Optimization (GEO).
+# Goal: let ChatGPT, Perplexity, Claude and Google AI read and cite our content.
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Perplexity-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+# Structured guide for AI crawlers (llmstxt.org): https://www.upgrowplan.com/llms.txt
+
 Sitemap: https://www.upgrowplan.com/sitemap.xml
 Sitemap: https://www.upgrowplan.com/blog-sitemap.xml
