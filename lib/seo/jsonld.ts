@@ -34,8 +34,13 @@ export function organizationSchema() {
       availableLanguage: ["English", "Russian"],
     },
     sameAs: [
+      // Verified brand profiles — help LLMs associate these entities as one brand (GEO "Labrador").
+      "https://www.linkedin.com/company/upgrowplan",
       "https://t.me/upgrowplan",
       "https://vk.com/upgrowplan",
+      // Add each URL below ONLY after the profile actually exists (a 404 in sameAs hurts trust):
+      // "https://www.crunchbase.com/organization/upgrowplan",
+      // "https://www.producthunt.com/products/upgrowplan",
     ],
     knowsAbout: [
       "AI business plan generation",
