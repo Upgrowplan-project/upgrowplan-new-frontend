@@ -29,11 +29,11 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: {
     default:
-      "Upgrowplan — AI Business Plan Generator with Market Validation, Synthetic Respondents & Financial Model",
+      "Upgrowplan — AI Business Plan Generator & Market Research",
     template: "%s | Upgrowplan",
   },
   description:
-    "AI business plan generator that validates before it generates: synthetic respondent testing, live market research from 50+ sources, UNIDO/EBRD investor-ready plan, Python financial model — Skeptic Agent verified, no hallucinations.",
+    "AI business plan generator that validates before it generates: synthetic-respondent testing, live market research, Python financial model — UNIDO/EBRD, verified.",
   metadataBase: new URL("https://www.upgrowplan.com"),
   icons: {
     icon: "/favicon.ico",

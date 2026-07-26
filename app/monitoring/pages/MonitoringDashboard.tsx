@@ -22,6 +22,7 @@ import { ServiceHistoryChart } from "../components/ServiceHistoryChart";
 import { RatingsDashboard } from "../components/RatingsDashboard";
 import { ResearchReportsDashboard } from "../components/ResearchReportsDashboard";
 import { AnalyticsDashboard } from "../components/AnalyticsDashboard";
+import { VisibilityDashboard } from "../components/VisibilityDashboard";
 import dynamic from "next/dynamic";
 import { Service, MonitoringData } from "../types/monitoring";
 
@@ -37,6 +38,7 @@ const BRAND = "#1e6078";
 type SectionKey =
   | "health"
   | "analytics"
+  | "visibility"
   | "reports"
   | "ratings"
   | "emails"
@@ -126,6 +128,7 @@ export const MonitoringDashboard: React.FC = () => {
   const sections: { key: SectionKey; label: string; icon: string }[] = [
     { key: "health", label: "Здоровье системы", icon: "🏥" },
     { key: "analytics", label: "Analytics", icon: "📈" },
+    { key: "visibility", label: "Visibility (GEO)", icon: "🔎" },
     { key: "reports", label: "Reports", icon: "📄" },
     { key: "ratings", label: "Оценки пользователей", icon: "⭐" },
     { key: "emails", label: "Мониторинг почты", icon: "✉️" },
@@ -342,6 +345,8 @@ export const MonitoringDashboard: React.FC = () => {
     switch (activeSection) {
       case "analytics":
         return <AnalyticsDashboard />;
+      case "visibility":
+        return <VisibilityDashboard />;
       case "reports":
         return <ResearchReportsDashboard />;
       case "ratings":
