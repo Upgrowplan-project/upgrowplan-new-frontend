@@ -1,4 +1,5 @@
 // Static blog posts data — fallback when Blob storage is unavailable
+import { milanCoffeePost } from "./articles/milan-coffee-2026";
 
 export interface Post {
     id: number;
@@ -1814,4 +1815,5 @@ export const allStaticPosts: BilingualPost[] = [
         };
     }),
     ...staticPostsRuBilingual,
+    milanCoffeePost,
 ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());

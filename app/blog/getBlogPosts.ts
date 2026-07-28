@@ -497,7 +497,14 @@ function enrichPosts(basePosts: BilingualPost[]): BilingualPost[] {
   );
 }
 
-export async function getBlogPosts(): Promise<BilingualPost[]> {
+// Кэш результата: билд зовёт getBlogPosts десятки раз (generateStaticParams +
+// generateMetadata + page на каждый пост) — без кэша это десятки Blob `list()`
+// (advanced operations), что выжигало лимит Hobby-плана (6.2k/2k). TTL держит
+// ≤1 обращения к Blob за окно; staleness рантайма ≤ TTL (блог почти статичен).
+let _postsCache: { at: number; data: BilingualPost[] } | null = null;
+const POSTS_CACHE_TTL_MS = 60_000;
+
+async function _loadBlogPosts(): Promise<BilingualPost[]> {
   if (!HAS_BLOB) return enrichPosts(allStaticPosts);
 
   try {
@@ -512,6 +519,15 @@ export async function getBlogPosts(): Promise<BilingualPost[]> {
   } catch {}
 
   return enrichPosts(allStaticPosts);
+}
+
+export async function getBlogPosts(): Promise<BilingualPost[]> {
+  if (_postsCache && Date.now() - _postsCache.at < POSTS_CACHE_TTL_MS) {
+    return _postsCache.data;
+  }
+  const data = await _loadBlogPosts();
+  _postsCache = { at: Date.now(), data };
+  return data;
 }
 
 export async function getCanonicalBlogPosts(): Promise<BilingualPost[]> {

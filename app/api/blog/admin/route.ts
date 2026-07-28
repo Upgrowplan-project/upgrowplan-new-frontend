@@ -70,7 +70,15 @@ export async function POST(req: NextRequest) {
     id: Date.now(),
     createdAt: post.createdAt || new Date().toISOString(),
   };
-  await savePosts([newPost, ...posts]);
+  try {
+    await savePosts([newPost, ...posts]);
+  } catch (e) {
+    // Раньше падало пустым 500 (put в Blob не был обёрнут). Теперь возвращаем причину.
+    return NextResponse.json(
+      { error: "Failed to persist post (Vercel Blob write)", detail: String(e) },
+      { status: 500 }
+    );
+  }
   return NextResponse.json(newPost);
 }
 
