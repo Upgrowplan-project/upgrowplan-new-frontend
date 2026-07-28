@@ -22,6 +22,16 @@ export interface BilingualPost {
     createdAt: string;
     mediaUrl?: string;
     forwardAuthor?: string;
+
+    // Long-form (data-research) статьи: тело в HTML, SEO-meta и готовый JSON-LD.
+    // Если bodyEn/bodyRu заданы — страница рендерит их вместо короткого message.
+    bodyEn?: string;
+    bodyRu?: string;
+    metaTitleEn?: string;
+    metaTitleRu?: string;
+    metaDescriptionEn?: string;
+    metaDescriptionRu?: string;
+    jsonld?: string; // строка JSON-LD (@graph: Article/Dataset/FAQPage)
 }
 
 export const staticPostsRu: Post[] = [

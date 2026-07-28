@@ -8,6 +8,23 @@ import { applyInternalLinks } from "@/lib/blog/internalLinks";
 
 const SITE_URL = "https://www.upgrowplan.com";
 
+// Стили для long-form HTML-тела (data-research статьи).
+const ARTICLE_BODY_CSS = `
+.article-body { color:#0f172a; font-size:1.05rem; line-height:1.75; }
+.article-body h2 { color:#1e6078; font-weight:800; margin:2rem 0 .75rem; font-size:1.5rem; }
+.article-body h3 { color:#1e6078; font-weight:700; margin:1.5rem 0 .5rem; font-size:1.2rem; }
+.article-body p { margin:0 0 1rem; }
+.article-body ul, .article-body ol { margin:0 0 1rem 1.25rem; }
+.article-body li { margin:.35rem 0; }
+.article-body a { color:#0683f5; text-decoration:underline; }
+.article-body blockquote { border-left:4px solid #0683f5; background:#f0f7ff; margin:1.25rem 0; padding:.75rem 1rem; border-radius:0 8px 8px 0; color:#334155; }
+.article-body table { width:100%; border-collapse:collapse; margin:1.25rem 0; font-size:.95rem; display:block; overflow-x:auto; }
+.article-body th, .article-body td { border:1px solid #e2e8f0; padding:.5rem .6rem; text-align:left; }
+.article-body th { background:#f1f5f9; color:#1e6078; }
+.article-body code { background:#f1f5f9; padding:.1rem .35rem; border-radius:4px; font-size:.9em; }
+.article-body hr { border:none; border-top:1px solid #e2e8f0; margin:2rem 0; }
+`;
+
 type Props = { params: { slug: string } };
 
 export async function generateStaticParams() {
@@ -26,11 +43,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const post = await getBlogPostBySlug(params.slug);
   if (!post) return {};
   const title = post.titleEn || post.titleRu || "Blog";
-  const description = post.descriptionEn || post.descriptionRu || "";
+  const description = post.metaDescriptionEn || post.descriptionEn || post.descriptionRu || "";
+  const metaTitle = post.metaTitleEn || `${title} | Upgrowplan Blog`;
   const url = `${SITE_URL}/blog/${params.slug}`;
   const ruUrl = `${SITE_URL}/ru/blog/${params.slug}`;
   return {
-    title: `${title} | Upgrowplan Blog`,
+    title: metaTitle,
     description,
     alternates: {
       canonical: url,
@@ -52,6 +70,8 @@ export default async function BlogPostPage({ params }: Props) {
   const post = await getBlogPostBySlug(params.slug);
   if (!post) notFound();
 
+  const bodyHtml = post.bodyEn || post.bodyRu || "";
+  const hasBody = !!bodyHtml;
   const message = applyInternalLinks(post.messageEn || post.messageRu, "en");
   const title = post.titleEn || post.titleRu || "";
   const description = post.descriptionEn || post.descriptionRu || "";
@@ -78,9 +98,20 @@ export default async function BlogPostPage({ params }: Props) {
     dateModified: datePublished,
   };
 
+  // Long-form статьи несут собственный JSON-LD (@graph: Article/Dataset/FAQPage).
+  let customJsonLd: unknown = null;
+  if (post.jsonld) {
+    try {
+      customJsonLd = typeof post.jsonld === "string" ? JSON.parse(post.jsonld) : post.jsonld;
+    } catch {
+      customJsonLd = null;
+    }
+  }
+
   return (
     <>
-      <JsonLd data={articleSchema} />
+      <JsonLd data={(customJsonLd as object) || articleSchema} />
+      {hasBody && <style dangerouslySetInnerHTML={{ __html: ARTICLE_BODY_CSS }} />}
       <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
         <Header />
         <main className="container py-5" style={{ flex: 1, maxWidth: "800px" }}>
@@ -125,7 +156,11 @@ export default async function BlogPostPage({ params }: Props) {
             </span>
           </div>
 
-          <FormattedPostContent message={message} />
+          {hasBody ? (
+            <div className="article-body" dangerouslySetInnerHTML={{ __html: bodyHtml }} />
+          ) : (
+            <FormattedPostContent message={message} />
+          )}
         </main>
       </div>
     </>
