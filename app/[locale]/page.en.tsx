@@ -231,6 +231,28 @@ export default function Home() {
     null,
   ]);
   const [showContactModal, setShowContactModal] = useState(false);
+  const [heroEmail, setHeroEmail] = useState("");
+  const [heroSubmitted, setHeroSubmitted] = useState(false);
+  const [heroLoading, setHeroLoading] = useState(false);
+
+  const handleHeroBeta = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!heroEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(heroEmail.trim())) return;
+    setHeroLoading(true);
+    try {
+      const API_BASE = process.env.NEXT_PUBLIC_MONITORING_API_URL || "http://localhost:8000";
+      await fetch(`${API_BASE}/api/monitoring/contact`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: "", email: heroEmail, message: "Hero beta request — MarketSense AI (EN)" }),
+      });
+    } catch {
+      // silent — still show success
+    } finally {
+      setHeroSubmitted(true);
+      setHeroLoading(false);
+    }
+  };
 
   const deepLogSource = useMemo(
     () => [
@@ -669,6 +691,47 @@ export default function Home() {
                   Talk to an expert
                 </button>
               </div>
+              <div style={{ margin: "0 0 1.75rem", textAlign: "center" }}>
+                <p style={{ fontSize: "0.8rem", color: "#64748b", marginBottom: "0.5rem", fontWeight: 500 }}>
+                  Or join the MarketSense AI beta:
+                </p>
+                {heroSubmitted ? (
+                  <p style={{ color: "#0683f5", fontWeight: 600, fontSize: "0.95rem" }}>
+                    ✓ Done! We&apos;ll reach out soon.
+                  </p>
+                ) : (
+                  <form
+                    onSubmit={handleHeroBeta}
+                    style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", justifyContent: "center", maxWidth: 480, margin: "0 auto" }}
+                  >
+                    <input
+                      type="email"
+                      value={heroEmail}
+                      onChange={(e) => setHeroEmail(e.target.value)}
+                      placeholder="your@email.com"
+                      required
+                      autoComplete="email"
+                      className="btn btn-outline-primary btn-lg"
+                      style={{ flex: 1, minWidth: 200, textAlign: "left", fontWeight: 400, cursor: "text", background: "#fff" }}
+                    />
+                    <button
+                      type="submit"
+                      disabled={heroLoading}
+                      className="btn btn-primary btn-lg"
+                      style={{ whiteSpace: "nowrap", opacity: heroLoading ? 0.7 : 1 }}
+                    >
+                      {heroLoading ? "..." : "Get early access →"}
+                    </button>
+                  </form>
+                )}
+                {!heroSubmitted && (
+                  <p style={{ fontSize: "0.72rem", color: "#94a3b8", marginTop: "0.4rem" }}>
+                    By signing up you agree to our{" "}
+                    <a href="/privacy" style={{ color: "#94a3b8" }}>Privacy Policy</a>
+                  </p>
+                )}
+              </div>
+
               <div className="hero-proof">
                 <div>
                   <span className="proof-number">260+</span>

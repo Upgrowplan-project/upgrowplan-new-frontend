@@ -13,10 +13,8 @@ export default function BlogPageEn({ initialPosts = [] }: { initialPosts?: Bilin
       post.slug &&
       post.titleEn?.trim() &&
       post.descriptionEn?.trim() &&
-      post.messageEn?.trim() &&
-      post.titleRu?.trim() &&
-      post.descriptionRu?.trim() &&
-      post.messageRu?.trim()
+      // Long-form research posts use bodyEn instead of messageEn.
+      (post.messageEn?.trim() || post.bodyEn?.trim())
   );
 
   return (

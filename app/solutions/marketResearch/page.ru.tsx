@@ -491,6 +491,27 @@ export default function MarketResearchPage() {
   const [submitAttempted, setSubmitAttempted] = useState(false);
   const isCompletedView = Boolean(enhancedReport || researchReport);
 
+  // Ref на карточку результата — чтобы после завершения исследования гарантированно
+  // прокрутить экран к сообщению "отчёт успешно сформирован" на ЛЮБОМ вьюпорте
+  // (во время ожидания пользователь мог быть проскроллен вниз к пайплайну).
+  const resultsRef = useRef<HTMLDivElement>(null);
+
+  // Как только появляется завершённый отчёт — плавно скроллим к карточке результата.
+  // requestAnimationFrame гарантирует, что DOM карточки уже смонтирован до скролла.
+  useEffect(() => {
+    if (!isCompletedView) return;
+    const raf = requestAnimationFrame(() => {
+      const node = resultsRef.current;
+      if (node) {
+        node.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else {
+        // Fallback: карточка рендерится у верха страницы (форма/пайплайн скрыты).
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [isCompletedView]);
+
   const buildCompletionSubtitle = () => {
     const productName =
       enhancedReport?.product_name || formData.productName || "Маркетинговый отчет";
@@ -2682,7 +2703,7 @@ export default function MarketResearchPage() {
         )}
 
         {enhancedReport && (
-          <div className={styles.resultsSection}>
+          <div className={styles.resultsSection} ref={resultsRef}>
             <div className={styles.resultsCard}>
               <div className={styles.resultsHeader}>
                 <h2>Маркетинговый отчет</h2>
@@ -2748,7 +2769,7 @@ export default function MarketResearchPage() {
           </div>
         )}
         {researchReport && !enhancedReport && (
-          <div className={styles.resultsSection}>
+          <div className={styles.resultsSection} ref={resultsRef}>
             <div className={styles.resultsCard}>
               <div className={styles.resultsHeader}>
                 <h2>Маркетинговый отчет</h2>

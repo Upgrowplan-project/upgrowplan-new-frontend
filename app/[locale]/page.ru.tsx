@@ -361,6 +361,28 @@ export default function Home() {
     null,
   ]);
   const [showContactModal, setShowContactModal] = useState(false);
+  const [heroEmail, setHeroEmail] = useState("");
+  const [heroSubmitted, setHeroSubmitted] = useState(false);
+  const [heroLoading, setHeroLoading] = useState(false);
+
+  const handleHeroBeta = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!heroEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(heroEmail.trim())) return;
+    setHeroLoading(true);
+    try {
+      const API_BASE = process.env.NEXT_PUBLIC_MONITORING_API_URL || "http://localhost:8000";
+      await fetch(`${API_BASE}/api/monitoring/contact`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: "", email: heroEmail, message: "Hero beta request — MarketSense AI (RU)" }),
+      });
+    } catch {
+      // silent — всё равно показываем успех
+    } finally {
+      setHeroSubmitted(true);
+      setHeroLoading(false);
+    }
+  };
 
   const deepLogSource = useMemo(
     () => [
@@ -799,6 +821,47 @@ export default function Home() {
                   Написать эксперту
                 </button>
               </div>
+              <div style={{ margin: "0 0 1.75rem", textAlign: "center" }}>
+                <p style={{ fontSize: "0.8rem", color: "#64748b", marginBottom: "0.5rem", fontWeight: 500 }}>
+                  Или запросите ранний доступ к MarketSense AI:
+                </p>
+                {heroSubmitted ? (
+                  <p style={{ color: "#0683f5", fontWeight: 600, fontSize: "0.95rem" }}>
+                    ✓ Готово! Мы скоро свяжемся с вами.
+                  </p>
+                ) : (
+                  <form
+                    onSubmit={handleHeroBeta}
+                    style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", justifyContent: "center", maxWidth: 480, margin: "0 auto" }}
+                  >
+                    <input
+                      type="email"
+                      value={heroEmail}
+                      onChange={(e) => setHeroEmail(e.target.value)}
+                      placeholder="ваш@email.com"
+                      required
+                      autoComplete="email"
+                      className="btn btn-outline-primary btn-lg"
+                      style={{ flex: 1, minWidth: 200, textAlign: "left", fontWeight: 400, cursor: "text", background: "#fff" }}
+                    />
+                    <button
+                      type="submit"
+                      disabled={heroLoading}
+                      className="btn btn-primary btn-lg"
+                      style={{ whiteSpace: "nowrap", opacity: heroLoading ? 0.7 : 1 }}
+                    >
+                      {heroLoading ? "..." : "Получить доступ →"}
+                    </button>
+                  </form>
+                )}
+                {!heroSubmitted && (
+                  <p style={{ fontSize: "0.72rem", color: "#94a3b8", marginTop: "0.4rem" }}>
+                    Отправляя форму, вы соглашаетесь с{" "}
+                    <a href="/privacy" style={{ color: "#94a3b8" }}>Политикой конфиденциальности</a>
+                  </p>
+                )}
+              </div>
+
               <div className="hero-proof">
                 <div>
                   <span className="proof-number">260+</span>

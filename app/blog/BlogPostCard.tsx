@@ -11,6 +11,16 @@ interface BlogPostCardProps {
   locale: "ru" | "en";
 }
 
+const categoryEN: Record<string, string> = {
+  "Методичка": "How-To",
+  "ИИ": "AI",
+  "Маркетинг": "Marketing",
+  "Кейсы": "Case Studies",
+  "Brandsories": "Brand Stories",
+  "Upgrowplan": "Upgrowplan",
+  "research": "Research",
+};
+
 function getExcerpt(text: string, maxLen = 200): string {
   const clean = text.replace(/[#\n]/g, " ").replace(/\s+/g, " ").trim();
   if (clean.length <= maxLen) return clean;
@@ -27,6 +37,9 @@ export default function BlogPostCard({
 
   const displayAuthor = forwardAuthor || author;
   const excerpt = description || getExcerpt(message);
+  const displayCategory = locale === "en" && category
+    ? (categoryEN[category] ?? category)
+    : category;
 
   return (
     <div className="col-12">
@@ -51,13 +64,13 @@ export default function BlogPostCard({
             </div>
           )}
           <div className="card-body flex-grow-1 p-4">
-            {category && (
+            {displayCategory && (
               <span style={{
                 display: "inline-block", background: "#eff6ff", color: "#1d4ed8",
                 borderRadius: "1rem", padding: "0.15rem 0.65rem", fontSize: "0.75rem",
                 fontWeight: 600, marginBottom: "0.6rem",
               }}>
-                {category}
+                {displayCategory}
               </span>
             )}
 

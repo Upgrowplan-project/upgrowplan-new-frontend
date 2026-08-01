@@ -11,12 +11,9 @@ export default function BlogPageRu({ initialPosts = [] }: { initialPosts?: Bilin
   const visiblePosts = posts.filter(
     (post) =>
       post.slug &&
-      post.titleEn?.trim() &&
-      post.descriptionEn?.trim() &&
-      post.messageEn?.trim() &&
       post.titleRu?.trim() &&
       post.descriptionRu?.trim() &&
-      post.messageRu?.trim()
+      (post.messageRu?.trim() || post.bodyRu?.trim())
   );
 
   return (
