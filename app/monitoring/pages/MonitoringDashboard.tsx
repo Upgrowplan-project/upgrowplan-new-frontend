@@ -164,7 +164,7 @@ export const MonitoringDashboard: React.FC = () => {
                 <Badge bg={e.status === "new" ? "danger" : "secondary"} className="me-2">
                   {e.status}
                 </Badge>
-                <Button size="sm" variant="outline-primary" href={`/ru/monitoring/emails/${e.id}`}>
+                <Button size="sm" variant="outline-primary" href={`/monitoring/emails/${e.id}`}>
                   Open
                 </Button>
               </div>
