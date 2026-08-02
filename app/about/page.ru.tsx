@@ -217,22 +217,13 @@ export default function AboutPage() {
         <div className="row">
           <Card>
             <h2 className="text-center" style={{ color: "#1e6078" }}>
-              Куда мы движемся:
+              Что делаем следующим:
             </h2>
             <ul>
-              <li>
-                Конструктор бизнес-планов — с гибкой структурой и актуальными
-                данными
-              </li>
-              <li>
-                Финансовая модель нового поколения — с визуализацией, ИИ и
-                API-интеграцией
-              </li>
-              <li>
-                Интеллектуальная поддержка — LLM с динамическими параметрами,
-                дополнением контекста через живой поиск
-              </li>
-              <li>Централизованный доступ к дашбордам и инструментам</li>
+              <li>Business Pulse Workspace — ИИ-отдел для мониторинга рынка и конкурентов</li>
+              <li>Synth Focus Lab — виртуальные фокус-группы вместо реальных респондентов</li>
+              <li>GEO Visibility — отслеживание присутствия бренда в ответах ИИ-систем</li>
+              <li>Единый дашборд — централизованный доступ ко всем инструментам и отчётам</li>
             </ul>
           </Card>
 
@@ -241,15 +232,13 @@ export default function AboutPage() {
               Стэк технологий
             </h2>
             <ul>
-              <li>интеграции LLM API</li>
-              <li>Генерация документов с дополненным поиском (RAG)</li>
-              <li>тонкую настройку промптов и параметров</li>
-              <li>обогащение моделей собственными датасетами</li>
+              <li>Python / FastAPI — бэкенд-сервисы и ИИ-пайплайны</li>
+              <li>Next.js / TypeScript / React — веб-приложение</li>
+              <li>PostgreSQL — основное хранилище данных</li>
+              <li>RAG (Retrieval-Augmented Generation) — живой поиск контекста для LLM</li>
+              <li>Интеграции LLM API (OpenAI, Anthropic, Google)</li>
+              <li>Vercel + Heroku — деплой и хостинг</li>
               <li>CI/CD пайплайны</li>
-              <li>
-                Стек: Java, Spring Boot, Node.js, SQL, MongoDB, RabbitMQ, Power
-                BI, LLM tools (OpenAI, LangChain и др.)
-              </li>
             </ul>
           </Card>
         </div>

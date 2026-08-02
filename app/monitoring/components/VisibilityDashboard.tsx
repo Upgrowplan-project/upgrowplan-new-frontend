@@ -84,7 +84,7 @@ export const VisibilityDashboard: React.FC = () => {
     <div>
       <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
         <h4 className="mb-0" style={{ color: BRAND }}>
-          🔎 Visibility — поисковая выдача (V1)
+          🔎 GEO Visibility — видимость бренда
         </h4>
         <div className="d-flex gap-2">
           <Button variant="outline-secondary" size="sm" onClick={load} disabled={loading}>
@@ -102,9 +102,8 @@ export const VisibilityDashboard: React.FC = () => {
       </div>
 
       <p className="text-muted small mb-3">
-        Реальные показы/клики из Google Search Console и Bing Webmaster. Данные Google
-        отстают на ~2–3 дня. Автоскан ~6×/день. Цитируемость в ответах ИИ (V2) —
-        отдельный блок позже.
+        Реальные показы и клики из Google Search Console и Bing Webmaster Tools.
+        Данные Google с задержкой ~2–3 дня. Автосканирование 6×/день.
       </p>
 
       {error && (

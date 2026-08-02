@@ -10,6 +10,7 @@ import {
   FiFileText,
   FiMapPin,
   FiMonitor,
+  FiAward,
 } from "react-icons/fi";
 import { useClickAnalytics } from "../../../hooks/useClickAnalytics";
 import { FaHourglassHalf } from "react-icons/fa";
@@ -75,6 +76,15 @@ export default function SolutionsPage() {
       link: "/solutions/synthetic-customer-research",
       elementId: "synth-focus-lab-description-card",
       ctaLabel: "Learn more",
+    },
+    {
+      title: "Expert Products",
+      description:
+        "Personalised solutions from our expert team: business plans, market research, and financial models tailored to your business. Built on 15+ years of practice and 230+ completed projects.",
+      icon: <FiAward className="me-2 text-success" />,
+      link: "/products",
+      elementId: "expert-products-card",
+      ctaLabel: "Explore",
     },
   ];
 

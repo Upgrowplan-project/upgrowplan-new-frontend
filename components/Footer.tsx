@@ -67,14 +67,6 @@ export default function Footer() {
           </li>
           <li className="list-inline-item">
             <Link
-              href={getLocalePath("/products")}
-              style={{ textDecoration: "none", color: "#0785f6" }}
-            >
-              {t.products}
-            </Link>
-          </li>
-          <li className="list-inline-item">
-            <Link
               href={getLocalePath("/solutions")}
               style={{ textDecoration: "none", color: "#0785f6" }}
             >

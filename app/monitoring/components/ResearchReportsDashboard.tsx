@@ -19,7 +19,12 @@ import {
   ResearchReportSummary,
 } from "../hooks/useResearchReports";
 
-const SERVICE_NAME = "market-research-service";
+const KNOWN_SERVICES = [
+  { value: "", label: "Все сервисы" },
+  { value: "market-research-service", label: "Market Research" },
+  { value: "planmaster-service", label: "PlanMaster" },
+  { value: "social-plan-master", label: "Social Plan" },
+];
 
 function fmtDate(iso?: string | null): string {
   if (!iso) return "—";
@@ -170,8 +175,9 @@ const ReportDetailModal: React.FC<{
 };
 
 export const ResearchReportsDashboard: React.FC = () => {
+  const [serviceFilter, setServiceFilter] = useState<string>("");
   const { reports, total, loading, error, refresh } =
-    useResearchReports(SERVICE_NAME, 100);
+    useResearchReports(serviceFilter, 100);
   const [selected, setSelected] = useState<string | null>(null);
 
   if (loading) {
@@ -198,11 +204,23 @@ export const ResearchReportsDashboard: React.FC = () => {
 
   return (
     <div>
-      <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-        <h4 className="mb-0 text-brand">📄 Отчёты Market Research ({total})</h4>
-        <Button variant="outline-secondary" size="sm" onClick={refresh}>
-          Обновить
-        </Button>
+      <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
+        <h4 className="mb-0 text-brand">📄 Отчёты сервисов ({total})</h4>
+        <div className="d-flex gap-2 align-items-center">
+          <select
+            className="form-select form-select-sm"
+            style={{ width: "auto" }}
+            value={serviceFilter}
+            onChange={(e) => setServiceFilter(e.target.value)}
+          >
+            {KNOWN_SERVICES.map((s) => (
+              <option key={s.value} value={s.value}>{s.label}</option>
+            ))}
+          </select>
+          <Button variant="outline-secondary" size="sm" onClick={refresh}>
+            Обновить
+          </Button>
+        </div>
       </div>
 
       <Card className="shadow-sm border-0">
@@ -211,6 +229,7 @@ export const ResearchReportsDashboard: React.FC = () => {
             <thead className="table-light">
               <tr>
                 <th>Продукт</th>
+                <th>Сервис</th>
                 <th>Локация</th>
                 <th>Тип</th>
                 <th>Завершён</th>
@@ -225,6 +244,11 @@ export const ResearchReportsDashboard: React.FC = () => {
                   <td>
                     <div className="fw-semibold">{r.product_name || "—"}</div>
                     <code className="small text-muted">{r.research_id}</code>
+                  </td>
+                  <td>
+                    <Badge bg="light" text="dark" className="small border">
+                      {r.service_name?.replace("-service", "") || "—"}
+                    </Badge>
                   </td>
                   <td>{[r.region, r.country].filter(Boolean).join(", ") || "—"}</td>
                   <td className="small text-muted">
@@ -246,7 +270,7 @@ export const ResearchReportsDashboard: React.FC = () => {
               ))}
               {reports.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="text-center text-muted py-5">
+                  <td colSpan={8} className="text-center text-muted py-5">
                     Пока нет сохранённых отчётов. Они появятся после первого
                     завершённого исследования.
                   </td>

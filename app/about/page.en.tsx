@@ -248,22 +248,13 @@ export default function AboutPage() {
         <div className="row">
           <Card>
             <h2 className="text-center" style={{ color: "#1e6078" }}>
-              Where we're heading
+              Coming next
             </h2>
             <ul>
-              <li>
-                A business-plan builder — flexible structure with up-to-date
-                data
-              </li>
-              <li>
-                Next-gen financial model — with visualization, AI and API
-                integration
-              </li>
-              <li>
-                Intelligent support — LLMs with dynamic parameters and
-                live-search context
-              </li>
-              <li>Centralized access to dashboards and tools</li>
+              <li>Business Pulse Workspace — AI department for market and competitor monitoring</li>
+              <li>Synth Focus Lab — virtual focus groups replacing real respondents</li>
+              <li>GEO Visibility — tracking brand presence in AI-generated answers</li>
+              <li>Unified dashboard — centralized access to all tools and reports</li>
             </ul>
           </Card>
 
@@ -272,15 +263,13 @@ export default function AboutPage() {
               Technology stack
             </h2>
             <ul>
-              <li>LLM API integrations</li>
-              <li>Document generation with augmented search (RAG)</li>
-              <li>Fine-tuning prompts and parameters</li>
-              <li>Enriching models with custom datasets</li>
+              <li>Python / FastAPI — backend services and AI pipelines</li>
+              <li>Next.js / TypeScript / React — web application</li>
+              <li>PostgreSQL — primary data store</li>
+              <li>RAG (Retrieval-Augmented Generation) — live search context for LLMs</li>
+              <li>LLM API integrations (OpenAI, Anthropic, Google)</li>
+              <li>Vercel + Heroku — deployment and hosting</li>
               <li>CI/CD pipelines</li>
-              <li>
-                Stack: Java, Spring Boot, Node.js, SQL, MongoDB, RabbitMQ, Power
-                BI, LLM tools (OpenAI, LangChain, etc.)
-              </li>
             </ul>
           </Card>
         </div>

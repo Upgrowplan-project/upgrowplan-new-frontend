@@ -52,6 +52,16 @@ const nextConfig = {
         permanent: true,
       },
       {
+        source: "/ru/monitoring",
+        destination: "/monitoring",
+        permanent: false,
+      },
+      {
+        source: "/ru/monitoring/:path*",
+        destination: "/monitoring/:path*",
+        permanent: false,
+      },
+      {
         source: "/solutions/",
         destination: "/solutions",
         permanent: true,

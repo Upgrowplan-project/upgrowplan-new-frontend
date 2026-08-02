@@ -247,15 +247,6 @@ function HeaderContent() {
           <ul className="navbar-nav ms-auto mb-2 mb-md-0">
             <li className="nav-item">
               <Link
-                href={locale === "en" ? "/products" : "/ru/products"}
-                className="nav-link"
-                style={{ color: "#0785f6" }}
-              >
-                {t.products}
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link
                 href={locale === "en" ? "/solutions" : "/ru/solutions"}
                 className="nav-link"
                 style={{ color: "#0785f6" }}
