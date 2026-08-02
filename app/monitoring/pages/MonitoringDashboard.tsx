@@ -78,6 +78,106 @@ const serviceMetric = (s: Service): string => {
   return s.response_time != null ? `${(s.response_time * 1000).toFixed(0)} ms` : "—";
 };
 
+const EmailsSection: React.FC = () => {
+  const t = useTranslations("monitoring");
+  const { emails, loading: emailsLoading, error: emailsError, refresh: refreshEmails } = useEmails(100);
+  const [folder, setFolder] = useState<"inbox" | "sent">("inbox");
+
+  const inbox = emails.filter((e) => e.direction === "inbound" || e.source === "contact_form");
+  const sent = emails.filter((e) => e.direction === "outbound" && e.source !== "contact_form");
+  const visible = folder === "inbox" ? inbox : sent;
+
+  return (
+    <div>
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h4 className="mb-0 text-brand">✉️ {t("tabs.emails")}</h4>
+        <Button variant="outline-secondary" size="sm" onClick={refreshEmails}>
+          {t("buttons.refresh")}
+        </Button>
+      </div>
+
+      <div className="d-flex gap-2 mb-3">
+        {(["inbox", "sent"] as const).map((f) => {
+          const count = f === "inbox" ? inbox.length : sent.length;
+          const newCount = f === "inbox" ? inbox.filter((e) => e.status === "new").length : 0;
+          return (
+            <Button
+              key={f}
+              size="sm"
+              variant={folder === f ? "primary" : "outline-secondary"}
+              onClick={() => setFolder(f)}
+              style={folder === f ? { backgroundColor: BRAND, borderColor: BRAND } : {}}
+            >
+              {f === "inbox" ? "📥 Входящие" : "📤 Отправленные"}
+              {count > 0 && (
+                <Badge bg={newCount > 0 && f === "inbox" ? "danger" : "light"} text="dark" className="ms-1">
+                  {newCount > 0 && f === "inbox" ? newCount : count}
+                </Badge>
+              )}
+            </Button>
+          );
+        })}
+      </div>
+
+      {emailsLoading && <Spinner animation="border" />}
+      {emailsError && <Alert variant="danger">{emailsError}</Alert>}
+
+      <Card className="border-0 shadow-sm">
+        <Table hover responsive className="mb-0 align-middle">
+          <thead className="table-light">
+            <tr>
+              <th style={{ width: 16 }}></th>
+              <th>Тема</th>
+              <th>{folder === "inbox" ? "От" : "Кому"}</th>
+              <th>Дата</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {visible.map((e) => (
+              <tr key={e.id} style={{ fontWeight: e.status === "new" ? 700 : 400 }}>
+                <td>
+                  {e.status === "new" && (
+                    <span
+                      style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: "var(--bs-danger)", display: "inline-block" }}
+                      title="Новое"
+                    />
+                  )}
+                </td>
+                <td style={{ maxWidth: 280 }}>
+                  <div className="text-truncate">{e.subject || "(без темы)"}</div>
+                </td>
+                <td className="text-muted small text-truncate" style={{ maxWidth: 180 }}>
+                  {folder === "inbox" ? e.from : e.to}
+                </td>
+                <td className="text-muted small text-nowrap">
+                  {e.received_at
+                    ? new Date(e.received_at).toLocaleString()
+                    : e.created_at
+                      ? new Date(e.created_at).toLocaleString()
+                      : ""}
+                </td>
+                <td>
+                  <Button size="sm" variant="outline-primary" href={`/monitoring/emails/${e.id}`}>
+                    Открыть
+                  </Button>
+                </td>
+              </tr>
+            ))}
+            {visible.length === 0 && !emailsLoading && (
+              <tr>
+                <td colSpan={5} className="text-center text-muted py-4">
+                  {folder === "inbox" ? "Входящих писем пока нет." : "Отправленных писем пока нет."}
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </Table>
+      </Card>
+    </div>
+  );
+};
+
 export const MonitoringDashboard: React.FC = () => {
   const t = useTranslations("monitoring");
   const {
@@ -135,107 +235,6 @@ export const MonitoringDashboard: React.FC = () => {
     { key: "emails", label: "Мониторинг почты", icon: "✉️" },
     { key: "quality-lab", label: "Quality Lab", icon: "🧪" },
   ];
-
-  const EmailsSection: React.FC = () => {
-    const { emails, loading: emailsLoading, error: emailsError, refresh: refreshEmails } =
-      useEmails(100);
-    const [folder, setFolder] = useState<"inbox" | "sent">("inbox");
-
-    const inbox = emails.filter((e) => e.direction !== "outbound");
-    const sent = emails.filter((e) => e.direction === "outbound");
-    const visible = folder === "inbox" ? inbox : sent;
-
-    return (
-      <div>
-        <div className="d-flex justify-content-between align-items-center mb-3">
-          <h4 className="mb-0 text-brand">✉️ {t("tabs.emails")}</h4>
-          <Button variant="outline-secondary" size="sm" onClick={refreshEmails}>
-            {t("buttons.refresh")}
-          </Button>
-        </div>
-
-        {/* Папки */}
-        <div className="d-flex gap-2 mb-3">
-          {(["inbox", "sent"] as const).map((f) => {
-            const count = f === "inbox" ? inbox.length : sent.length;
-            const newCount = f === "inbox" ? inbox.filter((e) => e.status === "new").length : 0;
-            return (
-              <Button
-                key={f}
-                size="sm"
-                variant={folder === f ? "primary" : "outline-secondary"}
-                onClick={() => setFolder(f)}
-                style={folder === f ? { backgroundColor: BRAND, borderColor: BRAND } : {}}
-              >
-                {f === "inbox" ? "📥 Входящие" : "📤 Отправленные"}
-                {count > 0 && (
-                  <Badge bg={newCount > 0 && f === "inbox" ? "danger" : "light"} text="dark" className="ms-1">
-                    {newCount > 0 && f === "inbox" ? newCount : count}
-                  </Badge>
-                )}
-              </Button>
-            );
-          })}
-        </div>
-
-        {emailsLoading && <Spinner animation="border" />}
-        {emailsError && <Alert variant="danger">{emailsError}</Alert>}
-
-        <Card className="border-0 shadow-sm">
-          <Table hover responsive className="mb-0 align-middle">
-            <thead className="table-light">
-              <tr>
-                <th style={{ width: 16 }}></th>
-                <th>Тема</th>
-                <th>{folder === "inbox" ? "От" : "Кому"}</th>
-                <th>Дата</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {visible.map((e) => (
-                <tr key={e.id} style={{ fontWeight: e.status === "new" ? 700 : 400 }}>
-                  <td>
-                    {e.status === "new" && (
-                      <span
-                        style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: "var(--bs-danger)", display: "inline-block" }}
-                        title="Новое"
-                      />
-                    )}
-                  </td>
-                  <td style={{ maxWidth: 280 }}>
-                    <div className="text-truncate">{e.subject || "(без темы)"}</div>
-                  </td>
-                  <td className="text-muted small text-truncate" style={{ maxWidth: 180 }}>
-                    {folder === "inbox" ? e.from : e.to}
-                  </td>
-                  <td className="text-muted small text-nowrap">
-                    {e.received_at
-                      ? new Date(e.received_at).toLocaleString()
-                      : e.created_at
-                        ? new Date(e.created_at).toLocaleString()
-                        : ""}
-                  </td>
-                  <td>
-                    <Button size="sm" variant="outline-primary" href={`/monitoring/emails/${e.id}`}>
-                      Открыть
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-              {visible.length === 0 && !emailsLoading && (
-                <tr>
-                  <td colSpan={5} className="text-center text-muted py-4">
-                    {folder === "inbox" ? "Входящих писем пока нет." : "Отправленных писем пока нет."}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </Table>
-        </Card>
-      </div>
-    );
-  };
 
   const HealthSection: React.FC = () => (
     <div>
