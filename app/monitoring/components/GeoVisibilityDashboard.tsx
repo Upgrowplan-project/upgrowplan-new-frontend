@@ -45,6 +45,7 @@ export const GeoVisibilityDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [scanning, setScanning] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [scanResult, setScanResult] = useState<{ status: string; saved?: number; mentions?: number; errors?: string[]; reason?: string } | null>(null);
   const [showManual, setShowManual] = useState(false);
   const [selected, setSelected] = useState<GeoItem | null>(null);
 
@@ -75,8 +76,11 @@ export const GeoVisibilityDashboard: React.FC = () => {
 
   const scanNow = async () => {
     setScanning(true);
+    setScanResult(null);
     try {
-      await monitoringFetch("/api/monitoring/geo/scan", { method: "POST" });
+      const res = await monitoringFetch("/api/monitoring/geo/scan", { method: "POST" });
+      const data = await res.json();
+      setScanResult(data.result ?? data);
       await load();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : String(e));
@@ -116,8 +120,8 @@ export const GeoVisibilityDashboard: React.FC = () => {
         <div>
           <h4 className="mb-0" style={{ color: BRAND }}>🤖 GEO Visibility — видимость в нейросетях</h4>
           <p className="text-muted small mb-0 mt-1">
-            Проверяем: упоминают ли ChatGPT, Gemini, Perplexity сайт upgrowplan.com в ответах на бизнес-запросы.
-            Gemini — авто раз в 2 дня. Остальные — вставь ответ вручную.
+            Автоматически проверяем: упоминает ли Gemini upgrowplan в ответах на бизнес-запросы.
+            Авто-скан раз в день (ротация из 15 запросов). Другие нейросети — вставь ответ вручную.
           </p>
         </div>
         <div className="d-flex gap-2">
@@ -135,6 +139,28 @@ export const GeoVisibilityDashboard: React.FC = () => {
       </div>
 
       {error && <Alert variant="danger" className="py-2 small">{error}</Alert>}
+
+      {/* Scan result banner */}
+      {scanResult && (
+        <Alert
+          variant={scanResult.status === "skipped" ? "warning" : scanResult.errors?.length ? "warning" : "success"}
+          className="py-2 small mb-3"
+          dismissible
+          onClose={() => setScanResult(null)}
+        >
+          {scanResult.status === "skipped" ? (
+            <>⚠️ <strong>GEMINI_API_KEY не настроен.</strong> Добавьте его в переменные среды Heroku monitoring-service.</>
+          ) : (
+            <>
+              ✅ Скан завершён: отправлено {scanResult.saved ?? 0} запросов,
+              упоминаний: {scanResult.mentions ?? 0}.
+              {(scanResult.errors ?? []).length > 0 && (
+                <> Ошибки: {scanResult.errors!.join(" | ")}</>
+              )}
+            </>
+          )}
+        </Alert>
+      )}
 
       {/* LLM Summary cards */}
       {knownLlms.length === 0 && !loading ? (

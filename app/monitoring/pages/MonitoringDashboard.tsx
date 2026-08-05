@@ -21,8 +21,7 @@ import { AlertsList } from "../components/AlertsList";
 import { ServiceHistoryChart } from "../components/ServiceHistoryChart";
 import { RatingsDashboard } from "../components/RatingsDashboard";
 import { ResearchReportsDashboard } from "../components/ResearchReportsDashboard";
-import { AnalyticsDashboard } from "../components/AnalyticsDashboard";
-import { VisibilityDashboard } from "../components/VisibilityDashboard";
+import { SeoAnalyticsDashboard } from "../components/SeoAnalyticsDashboard";
 import { GeoVisibilityDashboard } from "../components/GeoVisibilityDashboard";
 import dynamic from "next/dynamic";
 import { Service, MonitoringData } from "../types/monitoring";
@@ -38,9 +37,8 @@ const BRAND = "#1e6078";
 
 type SectionKey =
   | "health"
-  | "analytics"
+  | "seo-analytics"
   | "geo"
-  | "search-console"
   | "reports"
   | "ratings"
   | "emails"
@@ -230,9 +228,8 @@ export const MonitoringDashboard: React.FC = () => {
 
   const sections: { key: SectionKey; label: string; icon: string }[] = [
     { key: "health", label: "Здоровье системы", icon: "🏥" },
-    { key: "analytics", label: "Analytics", icon: "📈" },
+    { key: "seo-analytics", label: "SEO Analytics", icon: "📈" },
     { key: "geo", label: "GEO Visibility", icon: "🤖" },
-    { key: "search-console", label: "Search Console", icon: "🔎" },
     { key: "reports", label: "Reports", icon: "📄" },
     { key: "ratings", label: "Оценки пользователей", icon: "⭐" },
     { key: "emails", label: "Мониторинг почты", icon: "✉️" },
@@ -415,12 +412,10 @@ export const MonitoringDashboard: React.FC = () => {
 
   const renderSection = () => {
     switch (activeSection) {
-      case "analytics":
-        return <AnalyticsDashboard />;
+      case "seo-analytics":
+        return <SeoAnalyticsDashboard />;
       case "geo":
         return <GeoVisibilityDashboard />;
-      case "search-console":
-        return <VisibilityDashboard />;
       case "reports":
         return <ResearchReportsDashboard />;
       case "ratings":
