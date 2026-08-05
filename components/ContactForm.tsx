@@ -26,9 +26,13 @@ const copy = {
     policyLinkOne: "Политикой конфиденциальности",
     policyLinkTwo: "Политикой обработки персональных данных",
     submitLabel: "Отправить сообщение",
+    sending: "Отправка...",
     invalidEmail: "Введите корректный Email",
-    successAlert: "Сообщение отправлено! Мы свяжемся с вами в ближайшее время.",
-    errorAlert: "Не удалось отправить сообщение. Попробуйте позднее.",
+    successTitle: "Сообщение отправлено!",
+    successText: "Мы свяжемся с вами в ближайшее время.",
+    errorTitle: "Не удалось отправить сообщение.",
+    errorText: "Попробуйте позднее или напишите нам напрямую.",
+    sendAnother: "Отправить ещё",
   },
   en: {
     nameLabel: "Name",
@@ -43,9 +47,13 @@ const copy = {
     policyLinkOne: "Privacy Policy",
     policyLinkTwo: "Personal Data Processing Policy",
     submitLabel: "Send message",
+    sending: "Sending...",
     invalidEmail: "Please enter a valid email",
-    successAlert: "Message sent! We will get back to you soon.",
-    errorAlert: "Failed to send message. Please try again later.",
+    successTitle: "Message sent!",
+    successText: "We will get back to you soon.",
+    errorTitle: "Failed to send message.",
+    errorText: "Please try again later or contact us directly.",
+    sendAnother: "Send another",
   },
 } as const;
 
@@ -60,7 +68,8 @@ export default function ContactForm({
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [message, setMessage] = useState(initialMessage || "");
-  const [error, setError] = useState("");
+  const [fieldError, setFieldError] = useState("");
+  const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
 
   const t = copy[locale];
 
@@ -74,10 +83,11 @@ export default function ContactForm({
     e.preventDefault();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      setError(t.invalidEmail);
+      setFieldError(t.invalidEmail);
       return;
     }
-    setError("");
+    setFieldError("");
+    setStatus("sending");
 
     try {
       const API_BASE =
@@ -97,13 +107,34 @@ export default function ContactForm({
       setEmail("");
       setMessage("");
       setIsChecked(false);
-      alert(t.successAlert);
+      setStatus("success");
       onSuccess?.();
     } catch (err) {
       console.error("Error sending contact message:", err);
-      alert(t.errorAlert);
+      setStatus("error");
     }
   };
+
+  if (status === "success") {
+    return (
+      <div
+        className={className}
+        style={{ ...style, textAlign: "center", padding: "2rem 1rem" }}
+      >
+        <div style={{ fontSize: 48, marginBottom: "0.75rem" }}>✅</div>
+        <p style={{ fontSize: "1.1rem", fontWeight: 700, color: "#16a34a", marginBottom: "0.25rem" }}>
+          {t.successTitle}
+        </p>
+        <p style={{ color: "#4b5563", marginBottom: "1.25rem" }}>{t.successText}</p>
+        <button
+          className="btn btn-outline-primary btn-sm"
+          onClick={() => setStatus("idle")}
+        >
+          {t.sendAnother}
+        </button>
+      </div>
+    );
+  }
 
   return (
     <form
@@ -111,6 +142,15 @@ export default function ContactForm({
       style={style}
       onSubmit={handleSubmit}
     >
+      {status === "error" && (
+        <div
+          className="alert alert-danger py-2 mb-3 small d-flex align-items-center gap-2"
+          role="alert"
+        >
+          <span>⚠️</span>
+          <span><strong>{t.errorTitle}</strong> {t.errorText}</span>
+        </div>
+      )}
       <div className="mb-3">
         <label htmlFor={`name-${locale}`} className="form-label">
           {t.nameLabel}
@@ -132,13 +172,13 @@ export default function ContactForm({
         <input
           type="email"
           id={`email-${locale}`}
-          className={`form-control ${error ? "is-invalid" : ""}`}
+          className={`form-control ${fieldError ? "is-invalid" : ""}`}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder={t.emailPlaceholder}
           required
         />
-        {error && <div className="invalid-feedback">{error}</div>}
+        {fieldError && <div className="invalid-feedback">{fieldError}</div>}
       </div>
       <div className="mb-3">
         <label htmlFor={`message-${locale}`} className="form-label">
@@ -177,9 +217,9 @@ export default function ContactForm({
       <button
         type="submit"
         className="btn btn-primary w-100"
-        disabled={!isChecked}
+        disabled={!isChecked || status === "sending"}
       >
-        {t.submitLabel}
+        {status === "sending" ? t.sending : t.submitLabel}
       </button>
     </form>
   );
