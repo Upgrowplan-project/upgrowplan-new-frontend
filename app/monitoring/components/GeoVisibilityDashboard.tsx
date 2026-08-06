@@ -81,8 +81,9 @@ export const GeoVisibilityDashboard: React.FC = () => {
   const [summary, setSummary] = useState<Summary>({});
   const [loading, setLoading] = useState(true);
   const [scanning, setScanning] = useState(false);
+  const [scanCountdown, setScanCountdown] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [scanResult, setScanResult] = useState<{ status: string; saved?: number; mentions?: number; errors?: string[]; reason?: string } | null>(null);
+  const [scanResult, setScanResult] = useState<{ status: string; saved?: number; mentions?: number; errors?: string[]; reason?: string; message?: string } | null>(null);
   const [showManual, setShowManual] = useState(false);
   const [selected, setSelected] = useState<GeoItem | null>(null);
 
@@ -114,11 +115,26 @@ export const GeoVisibilityDashboard: React.FC = () => {
   const scanNow = async () => {
     setScanning(true);
     setScanResult(null);
+    setScanCountdown(null);
     try {
       const res = await monitoringFetch("/api/monitoring/geo/scan", { method: "POST" });
       const data = await res.json();
-      setScanResult(data.result ?? data);
-      await load();
+      setScanResult(data);
+      // Scan runs in background ~60-90s — countdown then auto-reload
+      if (data.status === "started") {
+        let secs = 90;
+        setScanCountdown(secs);
+        const timer = setInterval(() => {
+          secs -= 1;
+          setScanCountdown(secs);
+          if (secs <= 0) {
+            clearInterval(timer);
+            setScanCountdown(null);
+            setScanResult(null);
+            load();
+          }
+        }, 1000);
+      }
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -185,13 +201,18 @@ export const GeoVisibilityDashboard: React.FC = () => {
       {/* Scan result banner */}
       {scanResult && (
         <Alert
-          variant={scanResult.status === "skipped" ? "warning" : scanResult.errors?.length ? "warning" : "success"}
+          variant={scanResult.status === "skipped" ? "warning" : scanResult.status === "started" ? "info" : scanResult.errors?.length ? "warning" : "success"}
           className="py-2 small mb-3"
-          dismissible
-          onClose={() => setScanResult(null)}
+          dismissible={scanResult.status !== "started"}
+          onClose={() => { setScanResult(null); setScanCountdown(null); }}
         >
           {scanResult.status === "skipped" ? (
             <>⚠️ <strong>GEMINI_API_KEY не настроен.</strong> Добавьте его в переменные среды Heroku monitoring-service.</>
+          ) : scanResult.status === "started" ? (
+            <>
+              🔄 <strong>Скан запущен в фоне.</strong> Gemini обрабатывает 6 запросов (~60–90 сек).
+              {scanCountdown !== null && <> Обновление через <strong>{scanCountdown}с</strong>…</>}
+            </>
           ) : (
             <>
               ✅ Скан завершён: отправлено {scanResult.saved ?? 0} запросов,
