@@ -711,8 +711,7 @@ export default function Home() {
                       placeholder="your@email.com"
                       required
                       autoComplete="email"
-                      className="btn btn-outline-primary btn-lg"
-                      style={{ flex: 1, minWidth: 200, textAlign: "left", fontWeight: 400, cursor: "text", background: "#fff" }}
+                      style={{ flex: 1, minWidth: 200, textAlign: "left", fontWeight: 400, cursor: "text", background: "#fff", color: "#1e293b", border: "2px solid #0d6efd", borderRadius: "0.5rem", padding: "0.5rem 1rem", fontSize: "1rem" }}
                     />
                     <button
                       type="submit"

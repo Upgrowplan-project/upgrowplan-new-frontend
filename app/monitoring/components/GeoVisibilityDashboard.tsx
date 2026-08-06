@@ -9,13 +9,50 @@ import { monitoringFetch } from "../lib/api";
 
 const BRAND = "#1e6078";
 const LLM_LABELS: Record<string, string> = {
-  gemini: "Gemini",
+  gemini: "Gemini (авто)",
   chatgpt: "ChatGPT",
+  bing: "Bing Copilot",
   perplexity: "Perplexity",
   claude: "Claude",
-  manual: "Ручной",
+  manual: "Другая",
 };
-const LLM_OPTIONS = ["chatgpt", "perplexity", "claude", "gemini", "manual"];
+const LLM_OPTIONS = ["chatgpt", "bing", "perplexity", "claude", "gemini", "manual"];
+
+const LLM_HINTS: Record<string, string> = {
+  chatgpt: "chat.openai.com",
+  bing: "bing.com/chat или copilot.microsoft.com",
+  perplexity: "perplexity.ai",
+  claude: "claude.ai",
+  gemini: "gemini.google.com",
+  manual: "",
+};
+
+function downloadGeoCsv(items: GeoItem[]) {
+  const esc = (v: string | number | boolean | null | undefined) => {
+    const s = v == null ? "" : String(v);
+    return s.includes(",") || s.includes('"') || s.includes("\n") ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const headers = ["Date", "LLM", "Query", "Mentioned", "Position", "Auto", "Excerpt"];
+  const rows = items.map((it) => [
+    it.created_at ? new Date(it.created_at).toISOString().slice(0, 10) : "",
+    LLM_LABELS[it.llm] || it.llm,
+    it.query,
+    it.mentioned ? "Yes" : "No",
+    it.position || "",
+    it.auto ? "auto" : "manual",
+    (it.excerpt || "").replace(/\n/g, " "),
+  ]);
+  const csv = [[...headers], ...rows].map((r) => r.map(esc).join(",")).join("\n");
+  const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `geo-visibility-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
 
 type GeoItem = {
   id: number;
@@ -124,8 +161,13 @@ export const GeoVisibilityDashboard: React.FC = () => {
             Авто-скан раз в день (ротация из 15 запросов). Другие нейросети — вставь ответ вручную.
           </p>
         </div>
-        <div className="d-flex gap-2">
+        <div className="d-flex gap-2 flex-wrap">
           <Button variant="outline-secondary" size="sm" onClick={load} disabled={loading}>Обновить</Button>
+          {items.length > 0 && (
+            <Button variant="outline-secondary" size="sm" onClick={() => downloadGeoCsv(items)} title="Скачать данные в CSV">
+              ⬇ CSV
+            </Button>
+          )}
           <Button variant="outline-primary" size="sm" onClick={() => setShowManual(true)}>+ Ручная проверка</Button>
           <Button
             size="sm"
@@ -250,7 +292,7 @@ export const GeoVisibilityDashboard: React.FC = () => {
         </Modal.Header>
         <Modal.Body>
           <p className="text-muted small">
-            Задай вопрос в ChatGPT / Perplexity / Claude, скопируй ответ сюда — система определит, упомянут ли upgrowplan.
+            Выбери нейросеть, задай ей вопрос про бизнес-инструменты, скопируй ответ сюда — система проверит, упоминается ли upgrowplan.
           </p>
           {manResult && (
             <Alert variant={manResult.mentioned ? "success" : "warning"} className="py-2 small">
@@ -265,6 +307,11 @@ export const GeoVisibilityDashboard: React.FC = () => {
               <Form.Select value={manLlm} onChange={(e) => setManLlm(e.target.value)}>
                 {LLM_OPTIONS.map((l) => <option key={l} value={l}>{LLM_LABELS[l] || l}</option>)}
               </Form.Select>
+              {LLM_HINTS[manLlm] && (
+                <Form.Text className="text-muted">
+                  Открыть: <strong>{LLM_HINTS[manLlm]}</strong>
+                </Form.Text>
+              )}
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Запрос который ты задавал</Form.Label>
