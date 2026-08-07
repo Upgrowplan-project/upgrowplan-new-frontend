@@ -287,9 +287,11 @@ export const GeoVisibilityDashboard: React.FC = () => {
                       <div className="text-truncate">{item.query}</div>
                     </td>
                     <td>
-                      {item.mentioned
-                        ? <Badge bg="success">✅ Да</Badge>
-                        : <Badge bg="danger">❌ Нет</Badge>}
+                      {item.excerpt?.startsWith("[ERROR:")
+                        ? <Badge bg="warning" text="dark">⚠️ API ошибка</Badge>
+                        : item.mentioned
+                          ? <Badge bg="success">✅ Да</Badge>
+                          : <Badge bg="danger">❌ Нет</Badge>}
                     </td>
                     <td>{positionBadge(item.position)}</td>
                     <td className="text-muted small text-nowrap">{fmtDate(item.created_at)}</td>
