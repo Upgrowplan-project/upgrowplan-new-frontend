@@ -201,13 +201,15 @@ export const GeoVisibilityDashboard: React.FC = () => {
       {/* Scan result banner */}
       {scanResult && (
         <Alert
-          variant={scanResult.status === "skipped" ? "warning" : scanResult.status === "started" ? "info" : scanResult.errors?.length ? "warning" : "success"}
+          variant={scanResult.status === "skipped" ? "warning" : scanResult.status === "quota_exceeded" ? "danger" : scanResult.status === "started" ? "info" : scanResult.errors?.length ? "warning" : "success"}
           className="py-2 small mb-3"
           dismissible={scanResult.status !== "started"}
           onClose={() => { setScanResult(null); setScanCountdown(null); }}
         >
           {scanResult.status === "skipped" ? (
-            <>⚠️ <strong>GEMINI_API_KEY не настроен.</strong> Добавьте его в переменные среды Heroku monitoring-service.</>
+            <>⚠️ <strong>{scanResult.reason?.includes("progress") ? "Скан уже выполняется." : "GEMINI_API_KEY не настроен."}</strong> {scanResult.reason}</>
+          ) : scanResult.status === "quota_exceeded" ? (
+            <>🚫 <strong>Дневная квота Gemini исчерпана.</strong> Бесплатный тариф — 1500 запросов/день. Скан будет доступен завтра.</>
           ) : scanResult.status === "started" ? (
             <>
               🔄 <strong>Скан запущен в фоне.</strong> Gemini обрабатывает 6 запросов (~60–90 сек).
