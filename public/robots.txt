@@ -14,39 +14,135 @@ Disallow: /ru/fin-model/
 # Goal: let ChatGPT, Perplexity, Claude and Google AI read and cite our content.
 User-agent: GPTBot
 Allow: /
+Disallow: /account
+Disallow: /ru/account
+Disallow: /auth
+Disallow: /ru/auth
+Disallow: /api/
+Disallow: /monitoring
+Disallow: /fin-model/
+Disallow: /ru/fin-model/
 
 User-agent: OAI-SearchBot
 Allow: /
+Disallow: /account
+Disallow: /ru/account
+Disallow: /auth
+Disallow: /ru/auth
+Disallow: /api/
+Disallow: /monitoring
+Disallow: /fin-model/
+Disallow: /ru/fin-model/
 
 User-agent: ChatGPT-User
 Allow: /
+Disallow: /account
+Disallow: /ru/account
+Disallow: /auth
+Disallow: /ru/auth
+Disallow: /api/
+Disallow: /monitoring
+Disallow: /fin-model/
+Disallow: /ru/fin-model/
 
 User-agent: PerplexityBot
 Allow: /
+Disallow: /account
+Disallow: /ru/account
+Disallow: /auth
+Disallow: /ru/auth
+Disallow: /api/
+Disallow: /monitoring
+Disallow: /fin-model/
+Disallow: /ru/fin-model/
 
 User-agent: Perplexity-User
 Allow: /
+Disallow: /account
+Disallow: /ru/account
+Disallow: /auth
+Disallow: /ru/auth
+Disallow: /api/
+Disallow: /monitoring
+Disallow: /fin-model/
+Disallow: /ru/fin-model/
 
 User-agent: ClaudeBot
 Allow: /
+Disallow: /account
+Disallow: /ru/account
+Disallow: /auth
+Disallow: /ru/auth
+Disallow: /api/
+Disallow: /monitoring
+Disallow: /fin-model/
+Disallow: /ru/fin-model/
 
 User-agent: Claude-User
 Allow: /
+Disallow: /account
+Disallow: /ru/account
+Disallow: /auth
+Disallow: /ru/auth
+Disallow: /api/
+Disallow: /monitoring
+Disallow: /fin-model/
+Disallow: /ru/fin-model/
 
 User-agent: Claude-SearchBot
 Allow: /
+Disallow: /account
+Disallow: /ru/account
+Disallow: /auth
+Disallow: /ru/auth
+Disallow: /api/
+Disallow: /monitoring
+Disallow: /fin-model/
+Disallow: /ru/fin-model/
 
 User-agent: anthropic-ai
 Allow: /
+Disallow: /account
+Disallow: /ru/account
+Disallow: /auth
+Disallow: /ru/auth
+Disallow: /api/
+Disallow: /monitoring
+Disallow: /fin-model/
+Disallow: /ru/fin-model/
 
 User-agent: Google-Extended
 Allow: /
+Disallow: /account
+Disallow: /ru/account
+Disallow: /auth
+Disallow: /ru/auth
+Disallow: /api/
+Disallow: /monitoring
+Disallow: /fin-model/
+Disallow: /ru/fin-model/
 
 User-agent: Applebot-Extended
 Allow: /
+Disallow: /account
+Disallow: /ru/account
+Disallow: /auth
+Disallow: /ru/auth
+Disallow: /api/
+Disallow: /monitoring
+Disallow: /fin-model/
+Disallow: /ru/fin-model/
 
 User-agent: CCBot
 Allow: /
+Disallow: /account
+Disallow: /ru/account
+Disallow: /auth
+Disallow: /ru/auth
+Disallow: /api/
+Disallow: /monitoring
+Disallow: /fin-model/
+Disallow: /ru/fin-model/
 
 # Structured guide for AI crawlers (llmstxt.org): https://www.upgrowplan.com/llms.txt
 
