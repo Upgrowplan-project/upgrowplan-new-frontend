@@ -19,6 +19,7 @@ const translations = {
     account: "Account",
     monitoring: "Monitoring",
     menu: "Menu",
+    allSolutions: "All Solutions →",
   },
   ru: {
     products: "Продукты",
@@ -31,7 +32,25 @@ const translations = {
     account: "Аккаунт",
     monitoring: "Мониторинг",
     menu: "Меню",
+    allSolutions: "Все решения →",
   },
+};
+
+const SOLUTIONS_ITEMS = {
+  en: [
+    { label: "🗂 Business Plan", href: "/solutions/plan" },
+    { label: "📊 Market Research", href: "/solutions/marketResearch" },
+    { label: "📈 Business Pulse", href: "/solutions/businessPulse" },
+    { label: "🔬 Focus Lab", href: "/solutions/synthFocusLab" },
+    { label: "✈️ Relocation", href: "/solutions/openAbroad" },
+  ],
+  ru: [
+    { label: "🗂 Бизнес-план", href: "/solutions/plan" },
+    { label: "📊 Анализ рынка", href: "/solutions/marketResearch" },
+    { label: "📈 Business Pulse", href: "/solutions/businessPulse" },
+    { label: "🔬 Focus Lab", href: "/solutions/synthFocusLab" },
+    { label: "✈️ Релокация", href: "/solutions/openAbroad" },
+  ],
 };
 
 function HeaderContent() {
@@ -39,6 +58,7 @@ function HeaderContent() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false);
+  const [solutionsOpen, setSolutionsOpen] = useState(false);
 
   const router = useRouter();
   const pathname = usePathname() || "/";
@@ -92,22 +112,20 @@ function HeaderContent() {
       .catch(() => setIsAdmin(false));
   }, []);
 
-  // Close dropdown when clicking outside
+  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
       if (!target.closest(".language-dropdown-container")) {
         setLanguageDropdownOpen(false);
       }
+      if (!target.closest(".solutions-dropdown-container")) {
+        setSolutionsOpen(false);
+      }
     };
-
-    if (languageDropdownOpen) {
-      document.addEventListener("click", handleClickOutside);
-      return () => {
-        document.removeEventListener("click", handleClickOutside);
-      };
-    }
-  }, [languageDropdownOpen]);
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
 
   // Extract the path without locale for building hrefs
   const pathWithoutLocale = pathname.replace(/^\/(en|ru)/, "") || "/";
@@ -245,14 +263,102 @@ function HeaderContent() {
           id="navbarNav"
         >
           <ul className="navbar-nav ms-auto mb-2 mb-md-0">
-            <li className="nav-item">
-              <Link
-                href={locale === "en" ? "/solutions" : "/ru/solutions"}
-                className="nav-link"
-                style={{ color: "#0785f6" }}
+            {/* Solutions with dropdown */}
+            <li
+              className="nav-item solutions-dropdown-container"
+              style={{ position: "relative" }}
+              onMouseEnter={() => setSolutionsOpen(true)}
+              onMouseLeave={() => setSolutionsOpen(false)}
+            >
+              <button
+                type="button"
+                onClick={() => setSolutionsOpen((v) => !v)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "#0785f6",
+                  fontSize: "1rem",
+                  cursor: "pointer",
+                  padding: "0.5rem 0.75rem",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.25rem",
+                  fontWeight: 400,
+                }}
               >
                 {t.solutions}
-              </Link>
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 12 12"
+                  fill="currentColor"
+                  style={{
+                    transition: "transform 0.2s",
+                    transform: solutionsOpen ? "rotate(180deg)" : "rotate(0deg)",
+                    marginTop: "1px",
+                  }}
+                >
+                  <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+                </svg>
+              </button>
+
+              {solutionsOpen && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "100%",
+                    left: 0,
+                    backgroundColor: "#ffffff",
+                    border: "1px solid #d0d0d0",
+                    borderRadius: "10px",
+                    boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+                    zIndex: 5002,
+                    minWidth: "210px",
+                    paddingTop: "6px",
+                    paddingBottom: "6px",
+                  }}
+                >
+                  {SOLUTIONS_ITEMS[locale].map((item) => (
+                    <Link
+                      key={item.href}
+                      href={locale === "en" ? item.href : `/ru${item.href}`}
+                      onClick={() => { setSolutionsOpen(false); setMenuOpen(false); }}
+                      style={{
+                        display: "block",
+                        padding: "0.55rem 1rem",
+                        color: "#1e293b",
+                        textDecoration: "none",
+                        fontSize: "0.92rem",
+                        transition: "background-color 0.15s",
+                        whiteSpace: "nowrap",
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f0f7ff")}
+                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                  <div style={{ borderTop: "1px solid #eee", margin: "6px 0" }} />
+                  <Link
+                    href={locale === "en" ? "/solutions" : "/ru/solutions"}
+                    onClick={() => { setSolutionsOpen(false); setMenuOpen(false); }}
+                    style={{
+                      display: "block",
+                      padding: "0.55rem 1rem",
+                      color: "#0785f6",
+                      textDecoration: "none",
+                      fontSize: "0.92rem",
+                      fontWeight: 600,
+                      transition: "background-color 0.15s",
+                      whiteSpace: "nowrap",
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f0f7ff")}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                  >
+                    {t.allSolutions}
+                  </Link>
+                </div>
+              )}
             </li>
             <li className="nav-item">
               <Link
