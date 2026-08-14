@@ -946,6 +946,12 @@ export default function MarketResearchPage() {
     if (formData.productTypes.length === 0) missing.push({ key: "productTypes", label: "Тип продукта или услуги" });
     if (!formData.localization) missing.push({ key: "localization", label: "Локализация рынка" });
     if (formData.researchGoals.length === 0) missing.push({ key: "researchGoals", label: "Цели исследования" });
+    // Offering type + sub-type are REQUIRED — they carry the price-unit signal (subscription / one-off /
+    // hourly) that routes pricing acquisition (and the planmaster financial model) from real user input,
+    // not inference. Sub-type is required whenever a type is chosen (all types expose sub-types).
+    if (!formData.offeringType) missing.push({ key: "offeringType", label: "Тип предложения" });
+    if (formData.offeringType && !formData.offeringSubType)
+      missing.push({ key: "offeringSubType", label: "Уточнение типа предложения" });
     return missing;
   };
   // Red outline shown only after a submit attempt, auto-clears once the field is filled.
@@ -2248,11 +2254,14 @@ export default function MarketResearchPage() {
 
               {/* === ТИП ПРЕДЛОЖЕНИЯ === */}
               <div className={styles.section}>
-                <h3>Тип предложения (опционально)</h3>
+                <h3>Тип предложения *</h3>
                 <p className={styles.formDescription} style={{ marginBottom: "0.75rem" }}>
-                  Помогает точнее определить аудиторию и конкурентное поле
+                  Определяет модель ценообразования (подписка / разовая / почасовая) — влияет на анализ цен конкурентов и аудиторию
                 </p>
-                <div className={styles.buttonGroup}>
+                <div
+                  className={styles.buttonGroup}
+                  style={requiredFieldStyle(!formData.offeringType)}
+                >
                   {offeringTypeOptions.map((opt) => (
                     <button
                       key={opt.value}
@@ -2274,11 +2283,17 @@ export default function MarketResearchPage() {
                     </button>
                   ))}
                 </div>
+                {submitAttempted && !formData.offeringType && (
+                  <span style={fieldErrorTextStyle}>Выберите тип предложения</span>
+                )}
 
                 {formData.offeringType && offeringSubTypeOptions[formData.offeringType].length > 0 && (
                   <div style={{ marginTop: "0.75rem" }}>
-                    <label className={styles.label} style={{ marginBottom: "0.5rem" }}>Уточните тип</label>
-                    <div className={styles.buttonGroup}>
+                    <label className={styles.label} style={{ marginBottom: "0.5rem" }}>Уточните тип *</label>
+                    <div
+                      className={styles.buttonGroup}
+                      style={requiredFieldStyle(!formData.offeringSubType)}
+                    >
                       {offeringSubTypeOptions[formData.offeringType].map((sub) => (
                         <button
                           key={sub.value}
@@ -2291,6 +2306,9 @@ export default function MarketResearchPage() {
                         </button>
                       ))}
                     </div>
+                    {submitAttempted && !formData.offeringSubType && (
+                      <span style={fieldErrorTextStyle}>Уточните тип предложения</span>
+                    )}
                   </div>
                 )}
               </div>

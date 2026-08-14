@@ -925,6 +925,11 @@ export default function MarketResearchPage() {
     if (formData.productTypes.length === 0) missing.push({ key: "productTypes", label: "Product or service type" });
     if (!formData.localization) missing.push({ key: "localization", label: "Market localization" });
     if (formData.researchGoals.length === 0) missing.push({ key: "researchGoals", label: "Research goals" });
+    // Offering type + sub-type are REQUIRED — they carry the price-unit signal (subscription / one-off /
+    // hourly) that routes pricing acquisition (and the planmaster financial model) from real user input.
+    if (!formData.offeringType) missing.push({ key: "offeringType", label: "Offering type" });
+    if (formData.offeringType && !formData.offeringSubType)
+      missing.push({ key: "offeringSubType", label: "Offering sub-type" });
     return missing;
   };
   // Red outline shown only after a submit attempt, auto-clears once the field is filled.
@@ -2227,11 +2232,14 @@ export default function MarketResearchPage() {
 
               {/* === ТИП ПРЕДЛОЖЕНИЯ === */}
               <div className={styles.section}>
-                <h3>Offering type (optional)</h3>
+                <h3>Offering type *</h3>
                 <p className={styles.formDescription} style={{ marginBottom: "0.75rem" }}>
-                  Helps pinpoint the audience and competitive field
+                  Sets the pricing model (subscription / one-off / hourly) — drives competitor price analysis and audience
                 </p>
-                <div className={styles.buttonGroup}>
+                <div
+                  className={styles.buttonGroup}
+                  style={requiredFieldStyle(!formData.offeringType)}
+                >
                   {offeringTypeOptions.map((opt) => (
                     <button
                       key={opt.value}
@@ -2253,11 +2261,17 @@ export default function MarketResearchPage() {
                     </button>
                   ))}
                 </div>
+                {submitAttempted && !formData.offeringType && (
+                  <span style={fieldErrorTextStyle}>Select an offering type</span>
+                )}
 
                 {formData.offeringType && offeringSubTypeOptions[formData.offeringType].length > 0 && (
                   <div style={{ marginTop: "0.75rem" }}>
-                    <label className={styles.label} style={{ marginBottom: "0.5rem" }}>Specify the type</label>
-                    <div className={styles.buttonGroup}>
+                    <label className={styles.label} style={{ marginBottom: "0.5rem" }}>Specify the type *</label>
+                    <div
+                      className={styles.buttonGroup}
+                      style={requiredFieldStyle(!formData.offeringSubType)}
+                    >
                       {offeringSubTypeOptions[formData.offeringType].map((sub) => (
                         <button
                           key={sub.value}
@@ -2270,6 +2284,9 @@ export default function MarketResearchPage() {
                         </button>
                       ))}
                     </div>
+                    {submitAttempted && !formData.offeringSubType && (
+                      <span style={fieldErrorTextStyle}>Specify the offering sub-type</span>
+                    )}
                   </div>
                 )}
               </div>
