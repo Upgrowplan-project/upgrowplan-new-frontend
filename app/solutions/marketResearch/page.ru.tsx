@@ -12,6 +12,12 @@ import {
   FiFile,
   FiRefreshCw,
 } from "react-icons/fi";
+import { FaGoogleDrive } from "react-icons/fa";
+
+// Google OAuth client for the "Add to Google Drive" action (browser-side upload via Drive API).
+// Set NEXT_PUBLIC_GOOGLE_CLIENT_ID in Vercel (OAuth 2.0 Client ID, type "Web application", Drive API
+// enabled, this site added to Authorized JavaScript origins). Empty → the Drive button self-disables.
+const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
 
 // Countries where Google CSE coverage is limited — reports may have lower confidence.
 // Shown as a soft warning in the UI; backend still processes the request.
@@ -554,6 +560,10 @@ export default function MarketResearchPage() {
   const [isLoadingHealth, setIsLoadingHealth] = useState(true);
   const [isRefreshingHealth, setIsRefreshingHealth] = useState(false);
   const [downloadingFormat, setDownloadingFormat] = useState<"docx" | "pdf" | null>(null);
+  // Google Drive upload state (browser-side, via Google Identity Services + Drive API).
+  const [driveState, setDriveState] = useState<"idle" | "uploading" | "done" | "error">("idle");
+  const [driveFileUrl, setDriveFileUrl] = useState<string | null>(null);
+  const gisReadyRef = useRef<boolean>(false);
 
   // Ref для хранения polling interval
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -1613,14 +1623,37 @@ export default function MarketResearchPage() {
       );
 
       if (!response.ok) {
+        // PDF may be unavailable server-side (no LibreOffice on the dyno) → honest message, DOCX still works.
+        if (format === "pdf" && (response.status === 500 || response.status === 501)) {
+          throw new Error(
+            "PDF временно недоступен на сервере. Скачайте DOCX — он всегда доступен."
+          );
+        }
         throw new Error(`Ошибка загрузки ${format.toUpperCase()} файла`);
       }
 
       const blob = await response.blob();
+      // Derive the extension from what the server ACTUALLY returned, never force `.${format}` — the
+      // backend may fall back to DOCX; forcing `.pdf` on DOCX bytes produced a corrupt "PDF" that no
+      // viewer opens (prod res_7fe9b8710f23). Prefer Content-Disposition filename, else map MIME → ext.
+      const disposition = response.headers.get("Content-Disposition") || "";
+      const ctype = (response.headers.get("Content-Type") || "").toLowerCase();
+      let filename = `market-research-${researchId}.${format}`;
+      const m = /filename\*?=(?:UTF-8''|")?([^";]+)/i.exec(disposition);
+      if (m && m[1]) {
+        filename = decodeURIComponent(m[1].trim().replace(/"/g, ""));
+      } else {
+        const ext = ctype.includes("pdf")
+          ? "pdf"
+          : ctype.includes("wordprocessingml") || ctype.includes("msword")
+          ? "docx"
+          : format;
+        filename = `market-research-${researchId}.${ext}`;
+      }
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `market-research-${researchId}.${format}`;
+      a.download = filename;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -1632,6 +1665,98 @@ export default function MarketResearchPage() {
     } finally {
       setDownloadingFormat(null);
     }
+  };
+
+  // Load Google Identity Services once (only when a client id is configured).
+  useEffect(() => {
+    if (!GOOGLE_CLIENT_ID || gisReadyRef.current) return;
+    if (document.getElementById("gis-script")) {
+      gisReadyRef.current = true;
+      return;
+    }
+    const s = document.createElement("script");
+    s.src = "https://accounts.google.com/gsi/client";
+    s.async = true;
+    s.defer = true;
+    s.id = "gis-script";
+    s.onload = () => {
+      gisReadyRef.current = true;
+    };
+    document.body.appendChild(s);
+  }, []);
+
+  // Upload the report DOCX to the user's Google Drive (browser-side OAuth, no server credentials).
+  // Uses the drive.file scope (least privilege — the app can only touch files it creates here).
+  const handleAddToGoogleDrive = async () => {
+    if ((!enhancedReport && !researchReport) || !researchId) return;
+    if (!GOOGLE_CLIENT_ID) {
+      setError(
+        "Загрузка в Google Диск ещё не настроена (не задан NEXT_PUBLIC_GOOGLE_CLIENT_ID)."
+      );
+      return;
+    }
+    const oauth2 = (window as any).google?.accounts?.oauth2;
+    if (!oauth2) {
+      setError("Сервис Google ещё загружается — повторите попытку через пару секунд.");
+      return;
+    }
+    if (driveState === "uploading") return;
+    setError(null);
+    setDriveFileUrl(null);
+
+    const tokenClient = oauth2.initTokenClient({
+      client_id: GOOGLE_CLIENT_ID,
+      scope: "https://www.googleapis.com/auth/drive.file",
+      callback: async (resp: any) => {
+        if (resp.error || !resp.access_token) {
+          setDriveState("error");
+          setError("Не удалось авторизоваться в Google.");
+          return;
+        }
+        try {
+          setDriveState("uploading");
+          const fileResp = await fetch(
+            `${API_BASE}/api/v1/research/${researchId}/report/docx`,
+            { headers: { "Cache-Control": "no-cache" } }
+          );
+          if (!fileResp.ok) throw new Error("Не удалось получить DOCX для загрузки.");
+          const blob = await fileResp.blob();
+          const productName =
+            enhancedReport?.product_name ||
+            formData.productName ||
+            "Маркетинговое исследование";
+          const metadata = {
+            name: `${productName} — маркетинговое исследование.docx`,
+            mimeType:
+              "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          };
+          const form = new FormData();
+          form.append(
+            "metadata",
+            new Blob([JSON.stringify(metadata)], { type: "application/json" })
+          );
+          form.append("file", blob);
+          const up = await fetch(
+            "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,webViewLink",
+            {
+              method: "POST",
+              headers: { Authorization: `Bearer ${resp.access_token}` },
+              body: form,
+            }
+          );
+          if (!up.ok) throw new Error("Google Диск отклонил загрузку файла.");
+          const data = await up.json();
+          setDriveFileUrl(
+            data.webViewLink || `https://drive.google.com/file/d/${data.id}/view`
+          );
+          setDriveState("done");
+        } catch (e: any) {
+          setDriveState("error");
+          setError(e?.message || "Ошибка загрузки в Google Диск.");
+        }
+      },
+    });
+    tokenClient.requestAccessToken({ prompt: "" });
   };
 
   const handleReset = (options?: {
@@ -2770,7 +2895,29 @@ export default function MarketResearchPage() {
                         <><FiDownload /> Скачать в PDF</>
                       )}
                     </button>
+                    <button
+                      className={styles.downloadButton}
+                      onClick={handleAddToGoogleDrive}
+                      disabled={driveState === "uploading" || !!downloadingFormat}
+                      style={{ backgroundColor: "#0F9D58", ...(driveState === "uploading" ? { opacity: 0.7, cursor: "wait" } : {}) }}
+                      title={GOOGLE_CLIENT_ID ? "Сохранить отчёт (DOCX) в ваш Google Диск" : "Загрузка в Google Диск не настроена"}
+                    >
+                      {driveState === "uploading" ? (
+                        <><FiRefreshCw className={styles.spinIcon} /> Загружаем...</>
+                      ) : driveState === "done" ? (
+                        <><FiCheck /> Добавлено в Google Диск</>
+                      ) : (
+                        <><FaGoogleDrive /> Добавить в Google Диск</>
+                      )}
+                    </button>
                   </div>
+                  {driveState === "done" && driveFileUrl && (
+                    <p style={{ textAlign: "center", marginTop: "0.6rem", fontSize: "0.9rem" }}>
+                      <a href={driveFileUrl} target="_blank" rel="noopener noreferrer" style={{ color: "#0F9D58", fontWeight: 600 }}>
+                        Открыть в Google Диске →
+                      </a>
+                    </p>
+                  )}
                 </div>
                 <div className={styles.resetSection}>
                   <button
@@ -2828,7 +2975,29 @@ export default function MarketResearchPage() {
                         <><FiDownload /> Скачать в PDF</>
                       )}
                     </button>
+                    <button
+                      className={styles.downloadButton}
+                      onClick={handleAddToGoogleDrive}
+                      disabled={driveState === "uploading" || !!downloadingFormat}
+                      style={{ backgroundColor: "#0F9D58", ...(driveState === "uploading" ? { opacity: 0.7, cursor: "wait" } : {}) }}
+                      title={GOOGLE_CLIENT_ID ? "Сохранить отчёт (DOCX) в ваш Google Диск" : "Загрузка в Google Диск не настроена"}
+                    >
+                      {driveState === "uploading" ? (
+                        <><FiRefreshCw className={styles.spinIcon} /> Загружаем...</>
+                      ) : driveState === "done" ? (
+                        <><FiCheck /> Добавлено в Google Диск</>
+                      ) : (
+                        <><FaGoogleDrive /> Добавить в Google Диск</>
+                      )}
+                    </button>
                   </div>
+                  {driveState === "done" && driveFileUrl && (
+                    <p style={{ textAlign: "center", marginTop: "0.6rem", fontSize: "0.9rem" }}>
+                      <a href={driveFileUrl} target="_blank" rel="noopener noreferrer" style={{ color: "#0F9D58", fontWeight: 600 }}>
+                        Открыть в Google Диске →
+                      </a>
+                    </p>
+                  )}
                 </div>
                 <div className={styles.resetSection}>
                   <button
