@@ -1,5 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+// AI crawlers that matter for GEO Visibility tracking
+const AI_BOT_PATTERNS: [string, string][] = [
+  ['GPTBot',            'gptbot'],
+  ['OAI-SearchBot',     'oai-searchbot'],
+  ['ChatGPT-User',      'chatgpt-user'],
+  ['PerplexityBot',     'perplexitybot'],
+  ['Perplexity-User',   'perplexity-user'],
+  ['ClaudeBot',         'claudebot'],
+  ['Claude-User',       'claude-user'],
+  ['Claude-SearchBot',  'claude-searchbot'],
+  ['anthropic-ai',      'anthropic-ai'],
+  ['Google-Extended',   'google-extended'],
+  ['CCBot',             'ccbot'],
+  ['Applebot-Extended', 'applebot-extended'],
+  ['Meta-ExternalAgent','meta-externalagent'],
+  ['Gemini',            'google-inspectiontool'],
+];
+
+function detectAiBot(ua: string): string | null {
+  if (!ua) return null;
+  const u = ua.toLowerCase();
+  for (const [name, pattern] of AI_BOT_PATTERNS) {
+    if (u.includes(pattern)) return name;
+  }
+  return null;
+}
+
+// Only track content pages — skip static assets already excluded by matcher
+const CONTENT_PATH_PREFIXES = ['/blog/', '/solutions/', '/about', '/why-upgrowplan', '/ai-business-plan-generator'];
+
+function isContentPath(pathname: string): boolean {
+  return CONTENT_PATH_PREFIXES.some(p => pathname === p || pathname.startsWith(p));
+}
+
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
@@ -66,7 +100,24 @@ export function middleware(request: NextRequest) {
   // Browser URL stays unchanged (no redirect), canonical URLs remain clean
   const url = request.nextUrl.clone();
   url.pathname = `/en${pathname}`;
-  return NextResponse.rewrite(url);
+  const response = NextResponse.rewrite(url);
+
+  // GEO Visibility: fire-and-forget AI bot detection for content pages
+  const ua = request.headers.get('user-agent') || '';
+  const botName = detectAiBot(ua);
+  if (botName && isContentPath(pathname)) {
+    const monitoringUrl = process.env.NEXT_PUBLIC_MONITORING_API_URL;
+    const ingestToken = process.env.MONITORING_INGEST_TOKEN;
+    if (monitoringUrl && ingestToken) {
+      fetch(`${monitoringUrl}/api/monitoring/bot-crawl`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Ingest-Token': ingestToken },
+        body: JSON.stringify({ bot_name: botName, bot_raw_ua: ua, url_path: pathname, crawled_at: new Date().toISOString() }),
+      }).catch(() => {});
+    }
+  }
+
+  return response;
 }
 
 export const config = {
