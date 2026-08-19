@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { buildMetadata, pageMeta } from "@/lib/seo/metadata";
-import { organizationSchema, websiteSchema, faqSchema, pageFaqs, speakableSchema } from "@/lib/seo/jsonld";
+import { organizationSchema, websiteSchema, faqSchema, pageFaqs, speakableSchema, softwareAppSchema } from "@/lib/seo/jsonld";
 import { JsonLd } from "@/components/JsonLd";
 import FaqSection from "@/components/FaqSection";
 import Header from "@/components/Header";
@@ -41,6 +41,14 @@ export default function HomePage({ params }: Params) {
           locale,
         }),
         faqSchema(pageFaqs.home[locale]),
+        softwareAppSchema({
+          name: "Upgrowplan",
+          description: locale === "ru"
+            ? "ИИ-платформа для генерации бизнес-планов по стандартам ЮНИДО/ЕБРР с живым исследованием рынка, синтетическими респондентами и Skeptic Agent-верификацией."
+            : "AI platform for UNIDO/EBRD-standard business plan generation with live market research, synthetic respondents, and Skeptic Agent financial verification.",
+          url: "https://www.upgrowplan.com",
+          keywords: ["AI business plan generator", "UNIDO business plan", "market research AI", "synthetic respondents", "Skeptic Agent", "RAG business plan"],
+        }),
       ]} />
       <Header />
       {locale === "ru" ? <HomePageRu /> : <HomePageEn />}

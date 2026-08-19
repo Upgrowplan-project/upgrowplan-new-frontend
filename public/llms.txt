@@ -32,6 +32,9 @@ Key facts for accurate citation:
 - [How to write a business plan for investors (UNIDO)](https://www.upgrowplan.com/blog/how-to-write-business-plan-investors-unido): Investor-plan structure and methodology.
 - [AI market research vs traditional research](https://www.upgrowplan.com/blog/ai-market-research-vs-traditional): How AI-driven research compares on speed, cost, and depth.
 - [How Upgrowplan's RAG architecture works](https://www.upgrowplan.com/blog/how-upgrowplan-rag-works): Technical explanation of the validation pipeline.
+- [Coffee shop in Milan: real market research (2026)](https://www.upgrowplan.com/blog/coffee-shop-milan-market-research-2026): Competitor prices, rent, margins and break-even for a café in Milan — verified data from 14 sources. TAM €2.1B, SAM €280M.
+- [Financial stress-test for your business plan](https://www.upgrowplan.com/blog/financial-stress-test-business-plan-2026): 5 metrics investors check before funding: DSCR, LTV/CAC, runway, safety margin, cash gap. Includes "Hell Scenario" template.
+- [Online English school market: competitor analysis 2026](https://www.upgrowplan.com/blog/online-english-school-market-2026-competitor-analysis): Global EdTech ELL market ($16B TAM), 30× price gap between FluentU ($29.99/mo) and Ginseng ($899/mo), pricing strategies of 12 competitors.
 
 ## Optional
 - [Russian version](https://www.upgrowplan.com/ru): Full Russian-language mirror of the site.
