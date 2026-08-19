@@ -238,11 +238,10 @@ export const GeoVisibilityDashboard: React.FC = () => {
             </>
           ) : (
             <>
-              ✅ Скан завершён: отправлено {scanResult.saved ?? 0} запросов,
-              упоминаний: {scanResult.mentions ?? 0}.
-              {(scanResult.errors ?? []).length > 0 && (
-                <> Ошибки: {scanResult.errors!.join(" | ")}</>
-              )}
+              {(scanResult.errors ?? []).length > 0
+                ? <>⚠️ Скан завершён с ошибками: {scanResult.errors!.length} из {(scanResult.saved ?? 0) + scanResult.errors!.length} запросов не прошли. Успешно: {scanResult.saved ?? 0}, упоминаний: {scanResult.mentions ?? 0}.</>
+                : <>✅ Скан завершён: {scanResult.saved ?? 0} запросов, упоминаний: {scanResult.mentions ?? 0}.</>
+              }
             </>
           )}
         </Alert>
@@ -309,7 +308,7 @@ export const GeoVisibilityDashboard: React.FC = () => {
                     </td>
                     <td>
                       {item.excerpt?.startsWith("[ERROR:")
-                        ? <Badge bg="warning" text="dark">⚠️ API ошибка</Badge>
+                        ? <Badge bg="secondary">— нет данных</Badge>
                         : item.mentioned
                           ? <Badge bg="success">✅ Да</Badge>
                           : <Badge bg="danger">❌ Нет</Badge>}
