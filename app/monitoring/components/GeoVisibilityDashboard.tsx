@@ -5,6 +5,14 @@ import {
   Card, Table, Badge, Button, Spinner, Modal,
   Form, Row, Col, Alert,
 } from "react-bootstrap";
+
+type BotPageInfo = { path: string; bots: string[]; count: number; first_crawl: string; last_crawl: string; published_at: string | null; days_to_first_crawl: number | null };
+type BotRecommendation = { type: string; severity: "info" | "warning" | "critical"; path?: string; action: string; age_days?: number; days_to_first_crawl?: number; missing_bots?: string[] };
+type BotCrawlData = { total_events: number; by_bot: Record<string, number>; by_page: BotPageInfo[]; recommendations: BotRecommendation[]; recent_events: { bot_name: string; url_path: string; crawled_at: string }[] };
+
+const SEVERITY_VARIANT: Record<string, string> = { info: "info", warning: "warning", critical: "danger" };
+const BOT_COLOR: Record<string, string> = { GPTBot: "#10a37f", "OAI-SearchBot": "#10a37f", PerplexityBot: "#6b48ff", "Perplexity-User": "#6b48ff", ClaudeBot: "#d97706", "Claude-User": "#d97706", "Google-Extended": "#4285f4", CCBot: "#888" };
+const botColor = (name: string) => BOT_COLOR[name] || "#555";
 import { monitoringFetch } from "../lib/api";
 
 const BRAND = "#1e6078";
@@ -94,6 +102,18 @@ export const GeoVisibilityDashboard: React.FC = () => {
   const [manSaving, setManSaving] = useState(false);
   const [manResult, setManResult] = useState<{ mentioned: boolean; excerpt: string | null } | null>(null);
 
+  const [botData, setBotData] = useState<BotCrawlData | null>(null);
+  const [botLoading, setBotLoading] = useState(true);
+
+  const loadBotCrawls = useCallback(async () => {
+    setBotLoading(true);
+    try {
+      const data = await monitoringFetch("/api/monitoring/visibility/bot-crawls?days=90").then((r) => r.json());
+      setBotData(data);
+    } catch { setBotData(null); }
+    finally { setBotLoading(false); }
+  }, []);
+
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -111,6 +131,7 @@ export const GeoVisibilityDashboard: React.FC = () => {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+  useEffect(() => { loadBotCrawls(); }, [loadBotCrawls]);
 
   const scanNow = async () => {
     setScanning(true);
@@ -370,6 +391,108 @@ export const GeoVisibilityDashboard: React.FC = () => {
           </Button>
         </Modal.Footer>
       </Modal>
+
+      {/* ── AI Bot Crawlers ──────────────────────────────────────── */}
+      <hr className="my-4" />
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h5 className="mb-0" style={{ color: BRAND }}>🕷️ AI Bot Crawlers — кто сканирует контент</h5>
+        <Button variant="outline-secondary" size="sm" onClick={loadBotCrawls} disabled={botLoading}>
+          {botLoading ? <Spinner size="sm" animation="border" /> : "Обновить"}
+        </Button>
+      </div>
+      <p className="text-muted small mb-3">
+        Автоматический трекинг визитов GPTBot, PerplexityBot, ClaudeBot и других AI-краулеров на страницы контента.
+        Данные собираются Next.js middleware при каждом визите.
+      </p>
+      {botLoading ? (
+        <div className="text-center py-3"><Spinner animation="border" style={{ color: BRAND }} /></div>
+      ) : !botData || botData.total_events === 0 ? (
+        <Card className="mb-3">
+          <Card.Body className="text-muted small">
+            Пока нет визитов от AI-краулеров. Данные появятся автоматически, как только GPTBot или PerplexityBot зайдут на страницы блога.
+          </Card.Body>
+        </Card>
+      ) : (
+        <>
+          {botData.recommendations.length > 0 && (
+            <div className="mb-3">
+              {botData.recommendations.map((r, i) => (
+                <Alert key={i} variant={SEVERITY_VARIANT[r.severity] || "info"} className="small py-2 mb-2">
+                  {r.path && <strong>{r.path}</strong>}{r.path && " — "}{r.action}
+                  {r.age_days !== undefined && <span className="ms-1 text-muted">({r.age_days} дн. без краулера)</span>}
+                  {r.days_to_first_crawl !== undefined && <span className="ms-1 text-muted">(обнаружена через {r.days_to_first_crawl} дн.)</span>}
+                  {r.missing_bots && <span className="ms-1 text-muted">Нет: {r.missing_bots.join(", ")}</span>}
+                </Alert>
+              ))}
+            </div>
+          )}
+          <Row className="g-2 mb-3">
+            <Col xs="auto">
+              <Card className="shadow-sm text-center px-3 py-2">
+                <div className="h4 mb-0">{botData.total_events}</div>
+                <div className="text-muted small">визитов</div>
+              </Card>
+            </Col>
+            {Object.entries(botData.by_bot).sort((a, b) => b[1] - a[1]).map(([bot, cnt]) => (
+              <Col xs="auto" key={bot}>
+                <Card className="shadow-sm text-center px-3 py-2" style={{ borderTop: `3px solid ${botColor(bot)}` }}>
+                  <div className="h5 mb-0">{cnt}</div>
+                  <div className="small" style={{ color: botColor(bot), fontWeight: 600 }}>{bot}</div>
+                </Card>
+              </Col>
+            ))}
+          </Row>
+          <Card className="shadow-sm mb-3">
+            <Card.Header className="small fw-semibold">По страницам</Card.Header>
+            <Table hover responsive size="sm" className="mb-0 align-middle">
+              <thead>
+                <tr>
+                  <th>Путь</th><th>Боты</th>
+                  <th className="text-end">Визитов</th>
+                  <th className="text-end">Первый визит</th>
+                  <th className="text-end">До обнаружения</th>
+                </tr>
+              </thead>
+              <tbody>
+                {botData.by_page.map((p) => (
+                  <tr key={p.path}>
+                    <td className="small" style={{ maxWidth: 240, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.path}</td>
+                    <td>
+                      <div className="d-flex gap-1 flex-wrap">
+                        {p.bots.map((b) => <Badge key={b} style={{ backgroundColor: botColor(b), fontSize: "0.65rem" }}>{b}</Badge>)}
+                      </div>
+                    </td>
+                    <td className="text-end">{p.count}</td>
+                    <td className="text-end small">{new Date(p.first_crawl).toLocaleDateString()}</td>
+                    <td className="text-end small">
+                      {p.days_to_first_crawl !== null
+                        ? <Badge bg={p.days_to_first_crawl <= 1 ? "success" : p.days_to_first_crawl <= 7 ? "warning" : "danger"}>
+                            {p.days_to_first_crawl === 0 ? "< 1 дня" : `${p.days_to_first_crawl} дн.`}
+                          </Badge>
+                        : "—"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </Card>
+          <Card className="shadow-sm">
+            <Card.Header className="small fw-semibold">Последние визиты</Card.Header>
+            <Table hover responsive size="sm" className="mb-0">
+              <thead><tr><th>Бот</th><th>Страница</th><th className="text-end">Когда</th></tr></thead>
+              <tbody>
+                {botData.recent_events.slice(0, 10).map((e, i) => (
+                  <tr key={i}>
+                    <td><Badge style={{ backgroundColor: botColor(e.bot_name), fontSize: "0.65rem" }}>{e.bot_name}</Badge></td>
+                    <td className="small" style={{ maxWidth: 280, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.url_path}</td>
+                    <td className="text-end small text-muted">{new Date(e.crawled_at).toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </Card>
+        </>
+      )}
 
       {/* Context modal */}
       <Modal show={!!selected} onHide={() => setSelected(null)} centered size="lg">
