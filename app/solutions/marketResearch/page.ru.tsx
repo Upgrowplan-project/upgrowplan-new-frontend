@@ -19,6 +19,12 @@ import { FaGoogleDrive } from "react-icons/fa";
 // enabled, this site added to Authorized JavaScript origins). Empty → the Drive button self-disables.
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
 
+// [MVP-SCOPE 2026-08-20] PDF download deferred to backlog: server-side DOCX→PDF needs a converter
+// (LibreOffice/Gotenberg ≥1GB RAM) that doesn't fit Heroku's slug/free tiers. DOCX + "Add to Google
+// Drive" (Drive exports DOCX→PDF natively) cover the need. Backend PDF code stays (gated by
+// GOTENBERG_URL); flip this flag to true + point GOTENBERG_URL at a Gotenberg service to re-enable.
+const SHOW_PDF_DOWNLOAD = false;
+
 // Countries where Google CSE coverage is limited — reports may have lower confidence.
 // Shown as a soft warning in the UI; backend still processes the request.
 const LOW_COVERAGE_COUNTRIES = new Set([
@@ -2883,6 +2889,7 @@ export default function MarketResearchPage() {
                         <><FiFile /> Скачать в DOCX</>
                       )}
                     </button>
+                    {SHOW_PDF_DOWNLOAD && (
                     <button
                       className={styles.downloadButton}
                       onClick={() => handleDownload("pdf")}
@@ -2895,6 +2902,7 @@ export default function MarketResearchPage() {
                         <><FiDownload /> Скачать в PDF</>
                       )}
                     </button>
+                    )}
                     <button
                       className={styles.downloadButton}
                       onClick={handleAddToGoogleDrive}
@@ -2963,6 +2971,7 @@ export default function MarketResearchPage() {
                         <><FiFile /> Скачать в DOCX</>
                       )}
                     </button>
+                    {SHOW_PDF_DOWNLOAD && (
                     <button
                       className={styles.downloadButton}
                       onClick={() => handleDownload("pdf")}
@@ -2975,6 +2984,7 @@ export default function MarketResearchPage() {
                         <><FiDownload /> Скачать в PDF</>
                       )}
                     </button>
+                    )}
                     <button
                       className={styles.downloadButton}
                       onClick={handleAddToGoogleDrive}
