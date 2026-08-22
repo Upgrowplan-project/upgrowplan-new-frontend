@@ -49,22 +49,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const isRu = params.locale === "ru";
   const title = (isRu ? post.titleRu : post.titleEn) || post.titleEn || post.titleRu || "Blog";
   const description = (isRu ? post.descriptionRu : post.descriptionEn) || "";
-  const url = `${SITE_URL}/${params.locale}/blog/${params.slug}`;
   const enUrl = `${SITE_URL}/blog/${params.slug}`;
   const ruUrl = `${SITE_URL}/ru/blog/${params.slug}`;
+  // Canonical must match the actual served URL (no /en/ prefix — middleware 301-redirects /en/* → /*)
+  const canonicalUrl = isRu ? ruUrl : enUrl;
   return {
     title: `${title} | Upgrowplan`,
     description,
     alternates: {
-      canonical: url,
+      canonical: canonicalUrl,
       languages: {
         en: enUrl,
         "x-default": enUrl,
         ...((post.messageRu || post.bodyRu) ? { ru: ruUrl } : {}),
-        ...(post.messageEn ? {} : {}),
       },
     },
-    openGraph: { title, description, url, type: "article" },
+    openGraph: { title, description, url: canonicalUrl, type: "article" },
   };
 }
 
