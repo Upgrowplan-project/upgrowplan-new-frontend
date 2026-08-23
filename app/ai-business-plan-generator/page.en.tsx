@@ -443,7 +443,7 @@ export default function AiBizPlanGeneratorEn() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "1rem" }}>
               {[
                 { href: "/solutions/synthetic-customer-research", icon: "👥", title: "Synth Focus Lab", desc: "Test your business idea on virtual buyers in 15 minutes — no focus group recruiting needed." },
-                { href: "/solutions/marketResearch", icon: "🔍", title: "MarketSense AI", desc: "AI agent for full market research with source verification and data analysis." },
+                { href: "/solutions/marketResearch/descriptionPage", icon: "🔍", title: "MarketSense AI", desc: "AI agent for full market research with source verification and data analysis." },
                 { href: "/why-upgrowplan", icon: "⚡", title: "Why not ChatGPT?", desc: "How Upgrowplan differs from ChatGPT, consultants, and templates — a direct comparison." },
               ].map((tool) => (
                 <Link key={tool.href} href={tool.href} style={{ display: "block", background: "#f7fbff", border: "1px solid #d9ebf5", borderRadius: 10, padding: "1rem 1.25rem", textDecoration: "none" }}>

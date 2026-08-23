@@ -104,24 +104,6 @@
 
   <!-- Market Research -->
   <url>
-    <loc>https://www.upgrowplan.com/solutions/marketResearch</loc>
-    <lastmod>2026-05-21</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.upgrowplan.com/solutions/marketResearch"/>
-    <xhtml:link rel="alternate" hreflang="ru" href="https://www.upgrowplan.com/ru/solutions/marketResearch"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.upgrowplan.com/solutions/marketResearch"/>
-  </url>
-  <url>
-    <loc>https://www.upgrowplan.com/ru/solutions/marketResearch</loc>
-    <lastmod>2026-05-21</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.upgrowplan.com/solutions/marketResearch"/>
-    <xhtml:link rel="alternate" hreflang="ru" href="https://www.upgrowplan.com/ru/solutions/marketResearch"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.upgrowplan.com/solutions/marketResearch"/>
-  </url>
-  <url>
     <loc>https://www.upgrowplan.com/solutions/marketResearch/descriptionPage</loc>
     <lastmod>2026-05-21</lastmod>
     <changefreq>weekly</changefreq>

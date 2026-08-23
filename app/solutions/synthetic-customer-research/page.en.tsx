@@ -487,7 +487,7 @@ export default function SyntheticCustomerResearchEn() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "1rem" }}>
               {[
                 { href: "/ai-business-plan-generator", icon: "📑", title: "PlanMaster AI", desc: "AI business plan generator following UNIDO/EBRD standards — with live market data and pitch deck." },
-                { href: "/solutions/marketResearch", icon: "🔍", title: "MarketSense AI", desc: "AI agent for full market research — discovery, analysis, and verified data sources." },
+                { href: "/solutions/marketResearch/descriptionPage", icon: "🔍", title: "MarketSense AI", desc: "AI agent for full market research — discovery, analysis, and verified data sources." },
                 { href: "/why-upgrowplan", icon: "⚡", title: "Why Upgrowplan?", desc: "How Upgrowplan differs from ChatGPT, consultants, and templates — a direct comparison." },
               ].map((tool) => (
                 <Link key={tool.href} href={tool.href} style={{ display: "block", background: "#fff", border: "1px solid #d9ebf5", borderRadius: 10, padding: "1rem 1.25rem", textDecoration: "none" }}>

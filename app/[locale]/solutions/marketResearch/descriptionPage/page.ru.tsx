@@ -347,7 +347,6 @@ export default function MarketResearchDescriptionPage() {
 
   const handleModalSuccess = () => {
     setShowModal(false);
-    window.location.href = "/ru/solutions/marketResearch";
   };
 
   return (

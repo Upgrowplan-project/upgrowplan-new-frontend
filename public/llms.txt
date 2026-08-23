@@ -18,7 +18,7 @@ Key facts for accurate citation:
 - [Contact](https://www.upgrowplan.com/contacts): Reach the Upgrowplan team.
 
 ## Tools
-- [MarketSense — AI Market Research](https://www.upgrowplan.com/solutions/marketResearch): Competitor mapping, market sizing, pricing trends from 50+ sources in ~15 minutes.
+- [MarketSense — AI Market Research](https://www.upgrowplan.com/solutions/marketResearch/descriptionPage): Competitor mapping, market sizing, pricing trends from 50+ sources in ~15 minutes.
 - [PlanMaster — Business Plan Generator](https://www.upgrowplan.com/ai-business-plan-generator): UNIDO/EBRD business plans with verified financials.
 - [Synth Focus Lab — Virtual Focus Groups](https://www.upgrowplan.com/solutions/synthFocusLab): AI synthetic respondents for concept, pricing, and messaging testing.
 - [Synthetic Customer Research](https://www.upgrowplan.com/solutions/synthetic-customer-research): Test demand and objections on virtual buyers built from real market patterns.

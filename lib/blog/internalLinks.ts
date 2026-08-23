@@ -9,9 +9,9 @@ interface LinkRule {
 
 const rulesEn: LinkRule[] = [
   { pattern: /PlanMaster AI/,         url: "/ai-business-plan-generator" },
-  { pattern: /MarketSense AI Agent/,  url: "/solutions/marketResearch" },
-  { pattern: /MarketSense AI/,        url: "/solutions/marketResearch" },
-  { pattern: /MarketSense/,           url: "/solutions/marketResearch" },
+  { pattern: /MarketSense AI Agent/,  url: "/solutions/marketResearch/descriptionPage" },
+  { pattern: /MarketSense AI/,        url: "/solutions/marketResearch/descriptionPage" },
+  { pattern: /MarketSense/,           url: "/solutions/marketResearch/descriptionPage" },
   { pattern: /Synth Focus Lab/,       url: "/solutions/synthetic-customer-research" },
   { pattern: /Business Pulse/,        url: "/solutions/businessPulse" },
   { pattern: /FinPilot Free/,         url: "/solutions/fin-buddy" },
@@ -21,9 +21,9 @@ const rulesEn: LinkRule[] = [
 
 const rulesRu: LinkRule[] = [
   { pattern: /PlanMaster AI/,         url: "/ai-business-plan-generator" },
-  { pattern: /MarketSense AI Agent/,  url: "/solutions/marketResearch" },
-  { pattern: /MarketSense AI/,        url: "/solutions/marketResearch" },
-  { pattern: /MarketSense/,           url: "/solutions/marketResearch" },
+  { pattern: /MarketSense AI Agent/,  url: "/ru/solutions/marketResearch/descriptionPage" },
+  { pattern: /MarketSense AI/,        url: "/ru/solutions/marketResearch/descriptionPage" },
+  { pattern: /MarketSense/,           url: "/ru/solutions/marketResearch/descriptionPage" },
   { pattern: /Synth Focus Lab/,       url: "/solutions/synthetic-customer-research" },
   { pattern: /Business Pulse/,        url: "/solutions/businessPulse" },
   { pattern: /FinPilot Free/,         url: "/solutions/fin-buddy" },

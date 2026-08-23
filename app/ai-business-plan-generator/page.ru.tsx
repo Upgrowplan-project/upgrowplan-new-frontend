@@ -445,7 +445,7 @@ export default function AiBizPlanGeneratorRu() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "1rem" }}>
               {[
                 { href: "/ru/solutions/synthetic-customer-research", icon: "👥", title: "Synth Focus Lab", desc: "Проверьте бизнес-идею на виртуальных покупателях за 15 минут — без рекрутинга фокус-группы." },
-                { href: "/ru/solutions/marketResearch", icon: "🔍", title: "MarketSense AI", desc: "ИИ-агент для полноценного маркетингового исследования с верификацией данных." },
+                { href: "/ru/solutions/marketResearch/descriptionPage", icon: "🔍", title: "MarketSense AI", desc: "ИИ-агент для полноценного маркетингового исследования с верификацией данных." },
                 { href: "/ru/why-upgrowplan", icon: "⚡", title: "Почему не ChatGPT?", desc: "Чем Upgrowplan отличается от ChatGPT, консультанта и шаблонов — конкретное сравнение." },
               ].map((tool) => (
                 <Link key={tool.href} href={tool.href} style={{ display: "block", background: "#f7fbff", border: "1px solid #d9ebf5", borderRadius: 10, padding: "1rem 1.25rem", textDecoration: "none" }}>

@@ -38,18 +38,18 @@ const translations = {
 
 const SOLUTIONS_ITEMS = {
   en: [
-    { label: "🗂 Business Plan", href: "/solutions/plan" },
-    { label: "📊 Market Research", href: "/solutions/marketResearch" },
-    { label: "📈 Business Pulse", href: "/solutions/businessPulse" },
-    { label: "🔬 Focus Lab", href: "/solutions/synthFocusLab" },
-    { label: "✈️ Relocation", href: "/solutions/openAbroad" },
+    { label: "Business Plan", href: "/solutions/plan" },
+    { label: "Market Research", href: "/solutions/marketResearch/descriptionPage" },
+    { label: "Business Pulse", href: "/solutions/businessPulse" },
+    { label: "Focus Lab", href: "/solutions/synthFocusLab" },
+    { label: "Relocation", href: "/solutions/openAbroad" },
   ],
   ru: [
-    { label: "🗂 Бизнес-план", href: "/solutions/plan" },
-    { label: "📊 Анализ рынка", href: "/solutions/marketResearch" },
-    { label: "📈 Business Pulse", href: "/solutions/businessPulse" },
-    { label: "🔬 Focus Lab", href: "/solutions/synthFocusLab" },
-    { label: "✈️ Релокация", href: "/solutions/openAbroad" },
+    { label: "Бизнес-план", href: "/solutions/plan" },
+    { label: "Анализ рынка", href: "/ru/solutions/marketResearch/descriptionPage" },
+    { label: "Business Pulse", href: "/solutions/businessPulse" },
+    { label: "Focus Lab", href: "/solutions/synthFocusLab" },
+    { label: "Релокация", href: "/solutions/openAbroad" },
   ],
 };
 
