@@ -73,6 +73,8 @@ type GeoItem = {
   created_at: string;
 };
 
+type GeoErrorItem = Pick<GeoItem, "id" | "llm" | "query" | "excerpt" | "created_at">;
+
 type Summary = Record<string, { total: number; mentioned: number; last_check: string | null }>;
 
 const positionBadge = (pos: string | null) => {
@@ -86,6 +88,7 @@ const fmtDate = (s: string) => new Date(s).toLocaleDateString("ru-RU", { day: "2
 
 export const GeoVisibilityDashboard: React.FC = () => {
   const [items, setItems] = useState<GeoItem[]>([]);
+  const [errorItems, setErrorItems] = useState<GeoErrorItem[]>([]);
   const [summary, setSummary] = useState<Summary>({});
   const [loading, setLoading] = useState(true);
   const [scanning, setScanning] = useState(false);
@@ -94,6 +97,7 @@ export const GeoVisibilityDashboard: React.FC = () => {
   const [scanResult, setScanResult] = useState<{ status: string; saved?: number; mentions?: number; errors?: string[]; reason?: string; message?: string } | null>(null);
   const [showManual, setShowManual] = useState(false);
   const [selected, setSelected] = useState<GeoItem | null>(null);
+  const [showErrorDetails, setShowErrorDetails] = useState(false);
 
   // Manual form state
   const [manLlm, setManLlm] = useState("chatgpt");
@@ -122,6 +126,7 @@ export const GeoVisibilityDashboard: React.FC = () => {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       setItems(data.items || []);
+      setErrorItems(data.error_items || []);
       setSummary(data.summary || {});
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : String(e));
@@ -218,6 +223,13 @@ export const GeoVisibilityDashboard: React.FC = () => {
       </div>
 
       {error && <Alert variant="danger" className="py-2 small">{error}</Alert>}
+
+      {errorItems.length > 0 && (
+        <Alert variant="warning" className="py-2 small mb-3 d-flex align-items-center justify-content-between gap-2">
+          <span>Скрыто ошибочных проверок: <strong>{errorItems.length}</strong>. Они не влияют на статистику упоминаний.</span>
+          <Button size="sm" variant="outline-secondary" onClick={() => setShowErrorDetails(true)}>Посмотреть</Button>
+        </Alert>
+      )}
 
       {/* Scan result banner */}
       {scanResult && (
@@ -511,6 +523,26 @@ export const GeoVisibilityDashboard: React.FC = () => {
               </Card>
             </>
           )}
+        </Modal.Body>
+      </Modal>
+
+      <Modal show={showErrorDetails} onHide={() => setShowErrorDetails(false)} centered size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title className="small">Ошибочные проверки Gemini</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="p-0">
+          <Table responsive size="sm" className="mb-0 align-middle">
+            <thead className="table-light"><tr><th>Запрос</th><th>Ошибка</th><th>Дата</th></tr></thead>
+            <tbody>
+              {errorItems.map((item) => (
+                <tr key={item.id}>
+                  <td className="small" style={{ maxWidth: 240 }}>{item.query}</td>
+                  <td className="small text-muted" style={{ maxWidth: 260 }}>{item.excerpt}</td>
+                  <td className="small text-nowrap">{fmtDate(item.created_at)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
         </Modal.Body>
       </Modal>
     </div>
