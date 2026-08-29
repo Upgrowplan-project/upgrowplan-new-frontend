@@ -6,6 +6,8 @@ import Grade from "../../../../components/Grade";
 import styles from "./planMaster.module.css";
 import { FiCheck, FiAlertCircle, FiDownload } from "react-icons/fi";
 
+import { fetchWithDownDetect } from "@/lib/backendStatus";
+
 const PLANMASTER_BASE_URL =
   process.env.NEXT_PUBLIC_BACKEND_PLANMASTER_URL || "http://localhost:8004";
 
@@ -68,7 +70,7 @@ export default function PlanMasterPageRu() {
 
     const interval = setInterval(async () => {
       try {
-        const resp = await fetch(`${PLANMASTER_BASE_URL}/planMaster/${planId}`);
+        const resp = await fetchWithDownDetect(`${PLANMASTER_BASE_URL}/planMaster/${planId}`);
         if (!resp.ok) {
           return;
         }
@@ -112,7 +114,7 @@ export default function PlanMasterPageRu() {
     };
 
     try {
-      const resp = await fetch(`${PLANMASTER_BASE_URL}/planMaster`, {
+      const resp = await fetchWithDownDetect(`${PLANMASTER_BASE_URL}/planMaster`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

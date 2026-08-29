@@ -8,6 +8,8 @@
  * Экспортируемые сигнатуры сохранены (execution_id == plan_id) — страница чата не меняется.
  */
 
+import { fetchWithDownDetect } from "@/lib/backendStatus";
+
 const DOC_GEN_API_BASE_URL = process.env.NEXT_PUBLIC_DOC_GEN_API_URL || 'http://localhost:8004';
 
 export interface GenerationStatus {
@@ -54,7 +56,7 @@ export interface HealthStatus {
  * Проверить здоровье Document Generation Service
  */
 export async function checkHealth(): Promise<HealthStatus> {
-  const response = await fetch(`${DOC_GEN_API_BASE_URL}/api/v1/health`);
+  const response = await fetchWithDownDetect(`${DOC_GEN_API_BASE_URL}/api/v1/health`);
 
   if (!response.ok) {
     throw new Error(`Health check failed: ${response.status}`);
@@ -72,7 +74,7 @@ export async function triggerGeneration(
   payload: any
 ): Promise<GenerationResult> {
   // payload ожидается как { answers, system_locale } — сырой онбординг-brief
-  const response = await fetch(`${DOC_GEN_API_BASE_URL}/planMaster/from-brief`, {
+  const response = await fetchWithDownDetect(`${DOC_GEN_API_BASE_URL}/planMaster/from-brief`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -194,7 +196,7 @@ export async function downloadDocument(
  * Драйверы плана для верификации пользователем (масштаб, клиентов/день, чек, аренда, ФОТ…)
  */
 export async function getPlanDrivers(planId: string): Promise<any> {
-  const r = await fetch(`${DOC_GEN_API_BASE_URL}/planMaster/${planId}/drivers`);
+  const r = await fetchWithDownDetect(`${DOC_GEN_API_BASE_URL}/planMaster/${planId}/drivers`);
   if (!r.ok) throw new Error(`Drivers fetch failed: ${r.status}`);
   return r.json(); // { plan_id, drivers: [...], currency, computable }
 }
@@ -206,7 +208,7 @@ export async function verifyPlanDrivers(
   planId: string,
   overrides: Record<string, number>
 ): Promise<any> {
-  const r = await fetch(`${DOC_GEN_API_BASE_URL}/planMaster/${planId}/verify-drivers`, {
+  const r = await fetchWithDownDetect(`${DOC_GEN_API_BASE_URL}/planMaster/${planId}/verify-drivers`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ overrides }),
@@ -219,7 +221,7 @@ export async function verifyPlanDrivers(
  * Получить метрики сервиса
  */
 export async function getMetrics() {
-  const response = await fetch(`${DOC_GEN_API_BASE_URL}/api/v1/metrics`);
+  const response = await fetchWithDownDetect(`${DOC_GEN_API_BASE_URL}/api/v1/metrics`);
 
   if (!response.ok) {
     throw new Error(`Metrics fetch failed: ${response.status}`);

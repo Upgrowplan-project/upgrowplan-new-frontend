@@ -1,6 +1,7 @@
 "use client";
 
 import { API_BASE } from "../../apiConfig";
+import { emitBackendDown, isNetworkError, isServerDownStatus } from "@/lib/backendStatus";
 
 // Базовые URL мониторинга.
 export const MONITORING_BASE =
@@ -46,10 +47,24 @@ export async function monitoringFetch(
     if (tok) headers.set("Authorization", `Bearer ${tok}`);
     return fetch(`${MONITORING_BASE}${path}`, { ...init, headers });
   };
-  let res = await doFetch(getToken());
+  let res: Response;
+  try {
+    res = await doFetch(getToken());
+  } catch (e) {
+    if (isNetworkError(e)) emitBackendDown();
+    throw e;
+  }
+  if (isServerDownStatus(res.status)) emitBackendDown();
   if (res.status === 401) {
     const nt = await refreshToken();
-    if (nt) res = await doFetch(nt);
+    if (nt) {
+      try {
+        res = await doFetch(nt);
+      } catch (e) {
+        if (isNetworkError(e)) emitBackendDown();
+        throw e;
+      }
+    }
   }
   return res;
 }

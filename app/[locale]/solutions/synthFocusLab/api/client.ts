@@ -10,6 +10,7 @@ import {
     Report,
     ResearchDetail,
 } from "../types";
+import { fetchWithDownDetect } from "@/lib/backendStatus";
 
 // UPDATED: Use port 8004 for Synth Focus Lab backend
 const API_BASE_URL = process.env.NEXT_PUBLIC_SYNTH_API_URL || "http://localhost:8004";
@@ -19,7 +20,7 @@ class SynthFocusLabAPI {
      * Create new research
      */
     async createResearch(request: ResearchRequest): Promise<ResearchStatusResponse> {
-        const response = await fetch(`${API_BASE_URL}/api/research`, {
+        const response = await fetchWithDownDetect(`${API_BASE_URL}/api/research`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -39,7 +40,7 @@ class SynthFocusLabAPI {
      * Get research status
      */
     async getResearchStatus(researchId: number): Promise<ResearchStatusResponse> {
-        const response = await fetch(`${API_BASE_URL}/api/research/${researchId}`);
+        const response = await fetchWithDownDetect(`${API_BASE_URL}/api/research/${researchId}`);
 
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
@@ -52,7 +53,7 @@ class SynthFocusLabAPI {
      * Get research personas
      */
     async getPersonas(researchId: number): Promise<Persona[]> {
-        const response = await fetch(`${API_BASE_URL}/api/research/${researchId}/personas`);
+        const response = await fetchWithDownDetect(`${API_BASE_URL}/api/research/${researchId}/personas`);
 
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
@@ -65,7 +66,7 @@ class SynthFocusLabAPI {
      * Get research questions
      */
     async getQuestions(researchId: number): Promise<Question[]> {
-        const response = await fetch(`${API_BASE_URL}/api/research/${researchId}/questions`);
+        const response = await fetchWithDownDetect(`${API_BASE_URL}/api/research/${researchId}/questions`);
 
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
@@ -78,7 +79,7 @@ class SynthFocusLabAPI {
      * Get research report
      */
     async getReport(researchId: number): Promise<Report> {
-        const response = await fetch(`${API_BASE_URL}/api/research/${researchId}/report`);
+        const response = await fetchWithDownDetect(`${API_BASE_URL}/api/research/${researchId}/report`);
 
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
@@ -91,7 +92,7 @@ class SynthFocusLabAPI {
      * Generate research report (new LLM-based generation)
      */
     async generateReport(researchId: number): Promise<any> {
-        const response = await fetch(`${API_BASE_URL}/api/research/${researchId}/generate-report`, {
+        const response = await fetchWithDownDetect(`${API_BASE_URL}/api/research/${researchId}/generate-report`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -110,7 +111,7 @@ class SynthFocusLabAPI {
      * Get complete research details
      */
     async getResearchDetail(researchId: number): Promise<ResearchDetail> {
-        const response = await fetch(`${API_BASE_URL}/api/research/${researchId}/detail`);
+        const response = await fetchWithDownDetect(`${API_BASE_URL}/api/research/${researchId}/detail`);
 
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
@@ -150,7 +151,7 @@ class SynthFocusLabAPI {
      * Get unified segment analytics (Stage C1)
      */
     async getSegmentAnalytics(researchId: number): Promise<any> {
-        const response = await fetch(`${API_BASE_URL}/api/research/${researchId}/analytics/segments`);
+        const response = await fetchWithDownDetect(`${API_BASE_URL}/api/research/${researchId}/analytics/segments`);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         return response.json();
     }
@@ -159,7 +160,7 @@ class SynthFocusLabAPI {
      * Get final unified report HTML/Markdown (Stage C2)
      */
     async getFinalReport(researchId: number, format: "html" | "markdown" = "html"): Promise<string> {
-        const response = await fetch(`${API_BASE_URL}/api/research/${researchId}/report/final?format=${format}`);
+        const response = await fetchWithDownDetect(`${API_BASE_URL}/api/research/${researchId}/report/final?format=${format}`);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         return response.text();
     }
@@ -168,7 +169,7 @@ class SynthFocusLabAPI {
      * Stop running research
      */
     async stopResearch(researchId: number): Promise<any> {
-        const response = await fetch(`${API_BASE_URL}/api/research/${researchId}/stop`, {
+        const response = await fetchWithDownDetect(`${API_BASE_URL}/api/research/${researchId}/stop`, {
             method: "POST",
         });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -179,7 +180,7 @@ class SynthFocusLabAPI {
      * Export research data as CSV/JSON (Stage B1)
      */
     async exportResearchData(researchId: number, format: "csv" | "json" = "csv"): Promise<Blob> {
-        const response = await fetch(`${API_BASE_URL}/api/research/${researchId}/export/${format}`);
+        const response = await fetchWithDownDetect(`${API_BASE_URL}/api/research/${researchId}/export/${format}`);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         return response.blob();
     }
@@ -188,7 +189,7 @@ class SynthFocusLabAPI {
      * Export research report as DOCX
      */
     async exportReportDocx(researchId: number): Promise<Blob> {
-        const response = await fetch(`${API_BASE_URL}/api/research/${researchId}/export/docx`);
+        const response = await fetchWithDownDetect(`${API_BASE_URL}/api/research/${researchId}/export/docx`);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         return response.blob();
     }
@@ -197,7 +198,7 @@ class SynthFocusLabAPI {
      * Export research report as PDF
      */
     async exportReportPdf(researchId: number): Promise<Blob> {
-        const response = await fetch(`${API_BASE_URL}/api/research/${researchId}/export/pdf`);
+        const response = await fetchWithDownDetect(`${API_BASE_URL}/api/research/${researchId}/export/pdf`);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         return response.blob();
     }
