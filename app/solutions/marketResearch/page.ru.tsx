@@ -40,6 +40,31 @@ const LOW_COVERAGE_COUNTRIES = new Set([
 const API_BASE =
   process.env.NEXT_PUBLIC_MARKET_RESEARCH_API_URL || "http://localhost:8005";
 
+// [ТЗ-5.2] Active-research handle persisted OUTSIDE React state (localStorage) so closing or
+// reloading the tab does not lose a running job. Backend job state survives in Redis and is
+// reachable by research_id; on mount we reconnect and either resume polling or show the report.
+// Fail-safe: every localStorage access is guarded (SSR / private-mode / quota → no crash).
+const ACTIVE_RESEARCH_KEY = "marketResearch:activeResearch:ru";
+type ActiveResearchMeta = {
+  research_id: string;
+  startedAt: number;
+  productName?: string;
+  industry?: string;
+  location?: string;
+};
+const saveActiveResearch = (m: ActiveResearchMeta) => {
+  try { localStorage.setItem(ACTIVE_RESEARCH_KEY, JSON.stringify(m)); } catch {}
+};
+const clearActiveResearch = () => {
+  try { localStorage.removeItem(ACTIVE_RESEARCH_KEY); } catch {}
+};
+const loadActiveResearch = (): ActiveResearchMeta | null => {
+  try {
+    const r = localStorage.getItem(ACTIVE_RESEARCH_KEY);
+    return r ? (JSON.parse(r) as ActiveResearchMeta) : null;
+  } catch { return null; }
+};
+
 // Predefined countries: value=English (sent to API/geocoding), label=Russian (shown to user)
 // Sorted by Russian label. English value ensures DRA queries don't need geocoding for country part.
 const COUNTRIES = [
@@ -611,6 +636,64 @@ export default function MarketResearchPage() {
     }
   }, []);
 
+  // [ТЗ-5.2] Reconnect to an in-flight / completed research after a tab close or reload.
+  // The backend job persists in Redis and is reachable by research_id; we only kept the handle
+  // in React state before, so closing the tab lost a running job. On mount we resolve the saved
+  // handle: completed → fetch the report; in_progress/pending → resume the waiting UI + polling;
+  // failed/404 → drop the handle. Fully fail-safe: any error leaves the form usable, no crash.
+  useEffect(() => {
+    const active = loadActiveResearch();
+    if (!active?.research_id) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const resp = await fetch(`${API_BASE}/api/v1/research/${active.research_id}`, {
+          cache: "no-store",
+          headers: { "Cache-Control": "no-cache, no-store, must-revalidate", Pragma: "no-cache" },
+        });
+        if (cancelled) return;
+        if (!resp.ok) {
+          if (resp.status === 404) clearActiveResearch(); // gone (dyno wiped in-memory, no Redis) → forget
+          return;
+        }
+        const status: ResearchStatus = await resp.json();
+        if (cancelled) return;
+        console.log(
+          `[ТЗ-5.2] Reconnected to research ${active.research_id} — status=${status.status}`
+        );
+        setResearchId(active.research_id);
+        setResearchStatus(status);
+        if (active.startedAt) setResearchStartTime(active.startedAt);
+
+        if (status.status === "completed") {
+          await fetchResearchReport(active.research_id);
+        } else if (status.status === "failed") {
+          clearActiveResearch();
+          setError(
+            `Исследование не удалось выполнить: ${
+              status.error || status.current_stage || "Неизвестная ошибка"
+            }`
+          );
+        } else {
+          // in_progress / pending → restore the waiting UX (timer + spinner) and resume polling
+          setIsSubmitting(true);
+          if (active.startedAt) {
+            setElapsedSeconds(Math.floor((Date.now() - active.startedAt) / 1000));
+            if (elapsedTimerRef.current) clearInterval(elapsedTimerRef.current);
+            elapsedTimerRef.current = setInterval(() => setElapsedSeconds((s) => s + 1), 1000);
+          }
+          pollResearchStatus(active.research_id);
+        }
+      } catch (e) {
+        console.warn("[ТЗ-5.2] reconnect skipped (non-fatal):", e);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const fetchHealthStatus = async (manualRefresh = false) => {
     try {
       if (manualRefresh) {
@@ -683,6 +766,7 @@ export default function MarketResearchPage() {
         } else if (status.status === "failed") {
           setIsSubmitting(false);
           setIsResearchPaused(false);
+          clearActiveResearch(); // [ТЗ-5.2] failed run must not be reconnected on next mount
           setError(
             `Исследование не удалось выполнить: ${
               status.error || status.current_stage || "Неизвестная ошибка"
@@ -1202,6 +1286,15 @@ export default function MarketResearchPage() {
 
       setResearchId(result.research_id);
       setResearchStatus(result);
+      // [ТЗ-5.2] Persist the handle so the job survives a tab close/reload (reconnect on mount).
+      saveActiveResearch({
+        research_id: result.research_id,
+        startedAt: Date.now(),
+        productName: formData.productName,
+        industry: industryStr,
+        location: [formData.region, formData.country].filter(Boolean).join(", "),
+      });
+      console.log("[ТЗ-5.2] Active research persisted for tab-survival:", result.research_id);
       pollResearchStatus(result.research_id);
     } catch (err: any) {
       console.error("[Market Research] Error starting research:", err);
@@ -1361,6 +1454,7 @@ export default function MarketResearchPage() {
           stopPolling();
           setIsSubmitting(false);
           setIsResearchPaused(false);
+          clearActiveResearch(); // [ТЗ-5.2] failed run must not be reconnected on next mount
           setError(
             `Исследование не удалось выполнить: ${
               status.error || status.current_stage || "Неизвестная ошибка"
@@ -1794,6 +1888,7 @@ export default function MarketResearchPage() {
       }
     }
 
+    clearActiveResearch(); // [ТЗ-5.2] new/reset research drops the previous tab-survival handle
     setResearchId(null);
     setResearchStatus(null);
     setResearchReport(null);
