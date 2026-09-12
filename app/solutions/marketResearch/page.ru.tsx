@@ -280,6 +280,16 @@ interface PipelineStatus {
   wave_total: number;
 }
 
+// [A3/Ш8] Сырые находки, всплывающие ВО ВРЕМЯ прогона (первый конкурент < 3 мин). Только для показа:
+// список ДО валидации (воронка 21→2 — норма), часть отсеется в итоговом отчёте → всегда с пометкой
+// «проверяется» (решение владельца O2). Бэкенд отдаёт null, если флаг выключен.
+interface PartialFindings {
+  competitors: { name: string; website?: string; source?: string }[];
+  count: number;
+  as_of_stage?: string;
+  elapsed_s?: number | null;
+}
+
 interface ResearchStatus {
   research_id: string;
   status: "pending" | "in_progress" | "completed" | "failed";
@@ -287,6 +297,7 @@ interface ResearchStatus {
   current_stage: string;
   error?: string;
   pipeline_status?: PipelineStatus;
+  partial_findings?: PartialFindings | null;
 }
 
 interface MarketSize {
@@ -2825,6 +2836,38 @@ export default function MarketResearchPage() {
                     {etaMin !== null && etaMin > 0 && ` — ~${etaMin} мин`}
                   </div>
                 </div>
+
+                {/* [A3/Ш8] Предварительные находки — показываем на ходу, ДО валидации, всегда с пометкой */}
+                {(researchStatus.partial_findings?.competitors?.length ?? 0) > 0 && (
+                  <div style={{ padding: "0.75rem 1.25rem 0", fontFamily: T.mono }}>
+                    <div style={{
+                      fontSize: "0.72rem", color: T.textDim, fontWeight: 700,
+                      textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: "0.4rem",
+                    }}>
+                      Предварительно найдено · проверяется
+                      {typeof researchStatus.partial_findings!.elapsed_s === "number" &&
+                        ` · за ${Math.round(researchStatus.partial_findings!.elapsed_s!)} с`}
+                    </div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "0.35rem" }}>
+                      {researchStatus.partial_findings!.competitors.slice(0, 10).map((c, i) => (
+                        <span key={`${c.name}-${i}`} style={{
+                          fontSize: "0.78rem", color: T.textMuted,
+                          border: "1px solid rgba(1,52,110,0.35)", borderRadius: 4, padding: "0.15rem 0.5rem",
+                        }}>
+                          {c.name}
+                        </span>
+                      ))}
+                      {researchStatus.partial_findings!.count > 10 && (
+                        <span style={{ fontSize: "0.78rem", color: T.textDim, padding: "0.15rem 0.3rem" }}>
+                          +{researchStatus.partial_findings!.count - 10}
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ color: T.textDim, fontSize: "0.72rem", marginTop: "0.4rem" }}>
+                      Сырой список кандидатов до проверки — часть отсеется в итоговом отчёте.
+                    </div>
+                  </div>
+                )}
 
                 {/* ── BODY ── */}
                 <div style={{ padding: "0.9rem 1.25rem 1.1rem", fontFamily: T.mono }}>
