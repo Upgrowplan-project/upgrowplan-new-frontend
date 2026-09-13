@@ -1,0 +1,5 @@
+# Security contact for upgrowplan.com (RFC 9116)
+Contact: mailto:info@upgrowplan.com
+Expires: 2027-09-13T00:00:00.000Z
+Preferred-Languages: en, ru
+Canonical: https://www.upgrowplan.com/.well-known/security.txt

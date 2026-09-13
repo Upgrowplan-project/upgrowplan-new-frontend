@@ -21,7 +21,7 @@ export function organizationSchema() {
       height: 512,
     },
     description:
-      "AI business plan generator that validates before it generates. Upgrowplan combines AI market simulation on synthetic respondents, live market research from 50+ sources, UNIDO/EBRD business plan generation, and Python financial modelling — all data Skeptic Agent verified, no hallucinations. Founded 2024, Tel Aviv.",
+      "AI business plan generator that validates before it generates. Upgrowplan combines AI market simulation on synthetic respondents, live market research from 50+ sources, UNIDO/EBRD business plan generation, and Python financial modelling — all data Skeptic Agent verified, every figure linked to its source. Founded 2024, Tel Aviv.",
     foundingDate: "2024",
     foundingLocation: {
       "@type": "Place",
@@ -64,7 +64,7 @@ export function websiteSchema() {
     name: "Upgrowplan",
     url: SITE_URL,
     description:
-      "AI business plan generator that validates before it generates: synthetic respondent market simulation, live market research from 50+ sources, UNIDO/EBRD investor-ready plan, Python financial model — Skeptic Agent verified, no hallucinations.",
+      "AI business plan generator that validates before it generates: synthetic respondent market simulation, live market research from 50+ sources, UNIDO/EBRD investor-ready plan, Python financial model — Skeptic Agent verified, every figure linked to its source.",
     inLanguage: ["en", "ru"],
     potentialAction: {
       "@type": "SearchAction",

@@ -43,9 +43,11 @@ export default function Home() {
   const [displayedLines, setDisplayedLines] = useState<typeof logLines>([]);
   const [isPausing, setIsPausing] = useState(false);
   const [metricsActive, setMetricsActive] = useState(false);
-  const [vatRate, setVatRate] = useState(0);
-  const [marketSize, setMarketSize] = useState(0);
-  const [growthRate, setGrowthRate] = useState(0);
+  // Initial values = final demo values so SSR/crawlers never see zeros;
+  // the count-up animation starts only when the section scrolls into view.
+  const [vatRate, setVatRate] = useState(20);
+  const [marketSize, setMarketSize] = useState(1.2);
+  const [growthRate, setGrowthRate] = useState(6.4);
   const proofRef = useRef<HTMLDivElement | null>(null);
   const skepticRef = useRef<HTMLDivElement | null>(null);
   const pulseRef = useRef<HTMLDivElement | null>(null);
@@ -55,7 +57,7 @@ export default function Home() {
   const userMarkerRef = useRef<MapboxMarker | null>(null);
   const bizMarkersRef = useRef<MapboxMarker[]>([]);
   const [skepticActive, setSkepticActive] = useState(false);
-  const [confidence, setConfidence] = useState(0);
+  const [confidence, setConfidence] = useState(65);
   const [openSources, setOpenSources] = useState<Set<number>>(new Set());
 
   const toggleSource = (index: number) => {
@@ -893,12 +895,12 @@ export default function Home() {
                 Сервис создает основу, контекст будущего документа на основании
                 результатов поиска. Мы обрабатываем ваш запрос и декомпозируем
                 его на тысячи параметров, которые будут кирпичиками вашего
-                бизнеса. Кажждый параметр получает свое значение на основании
+                бизнеса. Каждый параметр получает свое значение на основании
                 обработки данных из интернета. Тут мы изолируем искусственный
-                интеллект от формирования ядра контекста. Это и есть гарантия
-                отсутствия галлюцинаций. ИИ не может придумать цифры, факты или
-                инсайты, которых нет в данных. Он может только выбрать и
-                структурировать то, что реально существует.
+                интеллект от формирования ядра контекста. Это резко снижает риск
+                галлюцинаций: ИИ не выдумывает цифры, факты или инсайты, а
+                выбирает и структурирует то, что найдено в источниках, и
+                каждая ключевая цифра сопровождается ссылкой.
               </p>
             </div>
             <div className="rag-console">
@@ -989,7 +991,8 @@ export default function Home() {
                   плана или исследования рынка.
                 </p>
                 <div className="proof-result">
-                  Результат: 0% выдумок, 100% верифицируемость.
+                  Результат: каждая ключевая цифра — со ссылкой на источник,
+                  спорные выводы помечаются.
                 </div>
               </div>
               <div className="report-card">
@@ -1023,12 +1026,12 @@ export default function Home() {
                           />
                         </svg>
                       </span>
-                      Налоговое управление Франции 2026
+                      Налоговое управление Франции (DGFiP), 2026
                       <span className="source-quote">
-                        «Стандартная ставка НДС — 20% на 2026 год».
+                        «Taux normal de 20 %» — стандартная ставка НДС.
                       </span>
                       <a
-                        href="https://refugies.info/"
+                        href="https://www.impots.gouv.fr/particulier/plusieurs-taux-de-tva"
                         target="_blank"
                         rel="noreferrer"
                       >

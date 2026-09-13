@@ -36,8 +36,8 @@ export default function HomePage({ params }: Params) {
             ? "Upgrowplan — ИИ Генератор бизнес-планов с валидацией рынка, синтетическими респондентами и финансовой моделью"
             : "Upgrowplan — AI Business Plan Generator with Market Validation, Synthetic Respondents & Financial Model",
           description: locale === "ru"
-            ? "ИИ-генератор бизнес-планов, который сначала валидирует: тест на синтетических респондентах, живое исследование рынка из 50+ источников, план по ЮНИДО/ЕБРР, Python-финансовая модель — проверено Skeptic Agent, без галлюцинаций."
-            : "AI business plan generator that validates before it generates: synthetic respondent testing, live market research from 50+ sources, UNIDO/EBRD investor-ready plan, Python financial model — Skeptic Agent verified, no hallucinations.",
+            ? "ИИ-генератор бизнес-планов, который сначала валидирует: тест на синтетических респондентах, живое исследование рынка из 50+ источников, план по ЮНИДО/ЕБРР, Python-финансовая модель — проверено Skeptic Agent, каждая цифра со ссылкой на источник."
+            : "AI business plan generator that validates before it generates: synthetic respondent testing, live market research from 50+ sources, UNIDO/EBRD investor-ready plan, Python financial model — Skeptic Agent verified, every figure linked to its source.",
           locale,
         }),
         faqSchema(pageFaqs.home[locale]),

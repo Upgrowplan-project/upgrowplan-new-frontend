@@ -39,6 +39,48 @@ const nextConfig = {
     return config;
   },
 
+  // ── Security headers (external audit 2026-09-12) ─────────────────────
+  // Only headers that cannot break existing functionality are enforced.
+  // CSP is Report-Only: it never blocks, it only reports to /api/csp-report
+  // so we can inventory real-world script/connect origins before enforcing.
+  // Deliberately NOT set: HSTS includeSubDomains/preload (irreversible),
+  // enforced CSP (needs nonce support -> Next.js upgrade + dynamic rendering).
+  async headers() {
+    const cspReportOnly = [
+      "default-src 'self'",
+      // 'unsafe-inline'/'unsafe-eval': Next.js 13.4 hydration + mapbox-gl.
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://www.googletagmanager.com https://www.google-analytics.com https://mc.yandex.ru https://connect.facebook.net https://static.hotjar.com https://script.hotjar.com https://accounts.google.com https://apis.google.com",
+      "style-src 'self' 'unsafe-inline' https://accounts.google.com",
+      "img-src 'self' data: blob: https:",
+      "font-src 'self' data:",
+      // Backend origins live in Vercel env vars -> keep wide until reports are in.
+      "connect-src 'self' https: wss:",
+      "frame-src 'self' https://accounts.google.com https://www.googletagmanager.com https://vars.hotjar.com",
+      "worker-src 'self' blob:",
+      "child-src 'self' blob:",
+      "media-src 'self' data: blob:",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self' https://accounts.google.com",
+      "frame-ancestors 'self'",
+      "report-uri /api/csp-report",
+    ].join("; ");
+
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          // geolocation=(self): homepage + Business Pulse use navigator.geolocation
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(self), payment=(), usb=()" },
+          { key: "Content-Security-Policy-Report-Only", value: cspReportOnly },
+        ],
+      },
+    ];
+  },
+
   async redirects() {
     return [
       // ── locale ──────────────────────────────────────────────────────────

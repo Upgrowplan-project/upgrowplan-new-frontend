@@ -43,9 +43,11 @@ export default function Home() {
   const [displayedLines, setDisplayedLines] = useState<typeof logLines>([]);
   const [isPausing, setIsPausing] = useState(false);
   const [metricsActive, setMetricsActive] = useState(false);
-  const [vatRate, setVatRate] = useState(0);
-  const [marketSize, setMarketSize] = useState(0);
-  const [growthRate, setGrowthRate] = useState(0);
+  // Initial values = final demo values so SSR/crawlers never see zeros;
+  // the count-up animation starts only when the section scrolls into view.
+  const [vatRate, setVatRate] = useState(18);
+  const [marketSize, setMarketSize] = useState(1.2);
+  const [growthRate, setGrowthRate] = useState(6.4);
   const proofRef = useRef<HTMLDivElement | null>(null);
   const skepticRef = useRef<HTMLDivElement | null>(null);
   const pulseRef = useRef<HTMLDivElement | null>(null);
@@ -55,7 +57,7 @@ export default function Home() {
   const userMarkerRef = useRef<MapboxMarker | null>(null);
   const bizMarkersRef = useRef<MapboxMarker[]>([]);
   const [skepticActive, setSkepticActive] = useState(false);
-  const [confidence, setConfidence] = useState(0);
+  const [confidence, setConfidence] = useState(65);
   const shuffle = <T,>(items: T[]) => {
     // Deterministic shuffle to avoid hydration/layout jumps on first paint.
     const copy = [...items];
@@ -338,7 +340,7 @@ export default function Home() {
     const duration = 900;
     const animate = (time: number) => {
       const progress = Math.min((time - start) / duration, 1);
-      setVatRate(Math.round(17 * progress));
+      setVatRate(Math.round(18 * progress));
       setMarketSize(parseFloat((1.2 * progress).toFixed(2)));
       setGrowthRate(parseFloat((6.4 * progress).toFixed(1)));
       if (progress < 1) {
@@ -845,7 +847,8 @@ export default function Home() {
                   your plan.
                 </p>
                 <div className="proof-result">
-                  Result: 0% fiction, 100% verifiable.
+                  Result: every key figure links to its source; disputed
+                  conclusions are flagged.
                 </div>
               </div>
               <div className="report-card">
@@ -871,12 +874,12 @@ export default function Home() {
                           />
                         </svg>
                       </span>
-                      Ministry of Finance of Israel, 2026
+                      Israel Tax Authority, 2026
                       <span className="source-quote">
-                        “Standard VAT rate is 17% for 2026.”
+                        “Standard VAT rate is 18% (since 1 January 2025).”
                       </span>
                       <a
-                        href="https://www.gov.il"
+                        href="https://www.gov.il/he/pages/vat-rate-amount-new"
                         target="_blank"
                         rel="noreferrer"
                       >
