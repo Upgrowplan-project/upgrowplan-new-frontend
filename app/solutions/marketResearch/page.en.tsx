@@ -2404,6 +2404,16 @@ export default function MarketResearchPage() {
                   Affects competitor and target-audience analysis
                 </p>
                 <div className={styles.buttonGroup}>
+                  {/* explicit "none": the form restores the last request from localStorage, so a segment can arrive
+                      pre-selected and the only way to clear it was re-clicking the active button (not discoverable) */}
+                  <button
+                    type="button"
+                    className={formData.priceSegment === "" ? styles.buttonActive : styles.button}
+                    onClick={() => setFormData((prev) => ({ ...prev, priceSegment: "" }))}
+                  >
+                    {formData.priceSegment === "" && <FiCheck style={{ marginRight: "0.5rem" }} />}
+                    <span><strong>Not specified</strong></span>
+                  </button>
                   {priceSegmentOptions.map((opt) => (
                     <button
                       key={opt.value}
