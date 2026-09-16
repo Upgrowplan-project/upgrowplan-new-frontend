@@ -3,7 +3,7 @@
 import { useGoogleLogin } from "@react-oauth/google";
 import { useRouter } from "next/navigation";
 import { FaGoogle, FaGithub, FaApple, FaWindows } from "react-icons/fa";
-import { oauthLogin } from "./authService";
+import { googleLogin as googleLoginApi } from "./authService";
 import styles from "./auth.module.css";
 
 interface Props {
@@ -38,19 +38,11 @@ export default function OAuthButtons({ locale, onSuccess, onError }: Props) {
   const googleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       try {
-        const info = await fetch(
-          "https://www.googleapis.com/oauth2/v2/userinfo",
-          { headers: { Authorization: `Bearer ${tokenResponse.access_token}` } }
-        ).then((r) => r.json());
-
-        const result = await oauthLogin(
-          info.email,
-          info.name || info.email,
-          "GOOGLE"
-        );
+        // Email не берём на клиенте — его проверяет и возвращает бэкенд.
+        const result = await googleLoginApi(tokenResponse.access_token);
         localStorage.setItem("token", result.token);
         localStorage.setItem("refreshToken", result.refreshToken);
-        localStorage.setItem("email", info.email);
+        localStorage.setItem("email", result.email);
 
         if (onSuccess) onSuccess();
         else router.push("/account");

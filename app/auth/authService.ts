@@ -204,21 +204,11 @@ export const logout = async () => {
 };
 
 
-export interface OAuthResponse {
-  token: string;
-  refreshToken: string;
-  user: UserProfile;
-}
-
-export async function oauthLogin(
-  email: string,
-  fullname: string,
-  provider: string
-): Promise<OAuthResponse> {
-  return handleRequest(
-    axios.post(`${API_BASE}/auth/oauth`, null, {
-      params: { email, fullname, provider },
-    })
+// Google-вход: на бэкенд уходит только access-token от Google; email и имя
+// бэкенд берёт из ответа Google (tokeninfo/userinfo), клиенту не доверяет.
+export async function googleLogin(accessToken: string): Promise<JwtResponse> {
+  return handleRequest<JwtResponse>(
+    axios.post(`${API_BASE}/auth/oauth/google`, { accessToken })
   );
 }
 
