@@ -212,7 +212,7 @@ export default function AdminBlogPanel({ posts, onPostsChange, locale = "ru" }: 
   function handleAuth() {
     if (!password.trim()) return;
     setLoading(true);
-    fetch(`/api/blog/admin?password=${encodeURIComponent(password)}`)
+    fetch("/api/blog/admin", { headers: { "X-Admin-Password": password } })
       .then((res) => {
         setLoading(false);
         if (res.ok) { setAuthed(true); setAuthError(""); }

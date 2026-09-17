@@ -23,14 +23,8 @@ import { RatingsDashboard } from "../components/RatingsDashboard";
 import { ResearchReportsDashboard } from "../components/ResearchReportsDashboard";
 import { SeoAnalyticsDashboard } from "../components/SeoAnalyticsDashboard";
 import { GeoVisibilityDashboard } from "../components/GeoVisibilityDashboard";
-import dynamic from "next/dynamic";
 import { Service, MonitoringData } from "../types/monitoring";
 
-const QualityLabDashboard = dynamic(
-  () =>
-    import("../components/QualityLabDashboard").then((m) => m.QualityLabDashboard),
-  { ssr: false }
-);
 import Header from "@/components/Header";
 
 const BRAND = "#1e6078";
@@ -41,8 +35,7 @@ type SectionKey =
   | "geo"
   | "reports"
   | "ratings"
-  | "emails"
-  | "quality-lab";
+  | "emails";
 
 const statusColor = (status: string) => {
   switch ((status || "").toLowerCase()) {
@@ -233,7 +226,6 @@ export const MonitoringDashboard: React.FC = () => {
     { key: "reports", label: "Reports", icon: "📄" },
     { key: "ratings", label: "Оценки пользователей", icon: "⭐" },
     { key: "emails", label: "Мониторинг почты", icon: "✉️" },
-    { key: "quality-lab", label: "Quality Lab", icon: "🧪" },
   ];
 
   const HealthSection: React.FC = () => (
@@ -422,8 +414,6 @@ export const MonitoringDashboard: React.FC = () => {
         return <RatingsDashboard />;
       case "emails":
         return <EmailsSection />;
-      case "quality-lab":
-        return <QualityLabDashboard />;
       case "health":
       default:
         return <HealthSection />;
