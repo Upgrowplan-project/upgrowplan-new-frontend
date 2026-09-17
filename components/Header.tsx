@@ -53,6 +53,17 @@ const SOLUTIONS_ITEMS = {
   ],
 };
 
+// Module-scope: a component defined inside HeaderContent() gets a new identity on every render,
+// so React remounted the <svg> on each click; the click's target became a detached node and
+// the outside-click handler saw it as "outside" → dropdown closed immediately after opening.
+const GlobeIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
+    <ellipse cx="12" cy="12" rx="4.5" ry="9" stroke="currentColor" strokeWidth="1.4" />
+    <path d="M3 12h18M5 8h14M5 16h14" stroke="currentColor" strokeWidth="1.4" />
+  </svg>
+);
+
 function HeaderContent() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -115,11 +126,15 @@ function HeaderContent() {
   // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      if (!target.closest(".language-dropdown-container")) {
+      // composedPath() is captured at dispatch time, so it stays correct even if React
+      // re-rendered (and detached) the clicked node before the event reached document.
+      const path = event.composedPath() as Element[];
+      const inside = (cls: string) =>
+        path.some((el) => el instanceof Element && el.classList.contains(cls));
+      if (!inside("language-dropdown-container")) {
         setLanguageDropdownOpen(false);
       }
-      if (!target.closest(".solutions-dropdown-container")) {
+      if (!inside("solutions-dropdown-container")) {
         setSolutionsOpen(false);
       }
     };
@@ -150,14 +165,6 @@ function HeaderContent() {
     event.stopPropagation();
     setLanguageDropdownOpen((prev) => !prev);
   };
-  const GlobeIcon = () => (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
-      <ellipse cx="12" cy="12" rx="4.5" ry="9" stroke="currentColor" strokeWidth="1.4" />
-      <path d="M3 12h18M5 8h14M5 16h14" stroke="currentColor" strokeWidth="1.4" />
-    </svg>
-  );
-
   return (
     <header style={{ position: "sticky", top: 0, zIndex: 5000, margin: 0, overflow: "visible" }}>
       <nav
