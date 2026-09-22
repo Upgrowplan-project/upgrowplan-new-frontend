@@ -345,20 +345,13 @@ export default function OpenAbroadPage() {
   const API_PREFIX = process.env.NEXT_PUBLIC_OPENABROAD_API_URL
     ? "/openabroad"
     : "";
-  const EXCHANGE_API_KEY = process.env.NEXT_PUBLIC_EXCHANGERATE_API_KEY;
 
   // Load current exchange rates when component mounts
   useEffect(() => {
     const fetchExchangeRates = async () => {
-      if (!EXCHANGE_API_KEY) {
-        console.warn("ExchangeRate API key not found, using default rates");
-        return;
-      }
-
       try {
-        const response = await fetch(
-          `https://v6.exchangerate-api.com/v6/${EXCHANGE_API_KEY}/latest/USD`
-        );
+        // Rates come from our own server (/api/fx): the API key never reaches the browser.
+        const response = await fetch("/api/fx");
         const data = await response.json();
 
         if (data.result === "success") {
@@ -376,7 +369,7 @@ export default function OpenAbroadPage() {
     };
 
     fetchExchangeRates();
-  }, [EXCHANGE_API_KEY]);
+  }, []);
 
   // Convert numeric string from source currency to selected display currency
   const convertCurrency = (value: string, fromCurrency: string): string => {

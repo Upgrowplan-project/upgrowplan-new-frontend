@@ -178,18 +178,13 @@ export default function OpenAbroadPage() {
   // Production: uses Heroku URL with /openabroad prefix
   const API_URL = process.env.NEXT_PUBLIC_OPENABROAD_API_URL || "http://localhost:8001";
   const API_PREFIX = process.env.NEXT_PUBLIC_OPENABROAD_API_URL ? "/openabroad" : "";
-  const EXCHANGE_API_KEY = process.env.NEXT_PUBLIC_EXCHANGERATE_API_KEY;
 
   // Загрузка актуальных курсов валют при монтировании компонента
   useEffect(() => {
     const fetchExchangeRates = async () => {
-      if (!EXCHANGE_API_KEY) {
-        console.warn('ExchangeRate API key not found, using default rates');
-        return;
-      }
-
       try {
-        const response = await fetch(`https://v6.exchangerate-api.com/v6/${EXCHANGE_API_KEY}/latest/USD`);
+        // Курсы отдаёт наш сервер (/api/fx): ключ не попадает в браузер.
+        const response = await fetch("/api/fx");
         const data = await response.json();
 
         if (data.result === 'success') {
@@ -204,7 +199,7 @@ export default function OpenAbroadPage() {
     };
 
     fetchExchangeRates();
-  }, [EXCHANGE_API_KEY]);
+  }, []);
 
   // Функция конвертации строки с числом в выбранную валюту
   const convertCurrency = (value: string, fromCurrency: string): string => {
