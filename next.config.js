@@ -39,22 +39,88 @@ const nextConfig = {
     return config;
   },
 
-  // ── Security headers (external audit 2026-09-12) ─────────────────────
-  // Only headers that cannot break existing functionality are enforced.
-  // CSP is Report-Only: it never blocks, it only reports to /api/csp-report
-  // so we can inventory real-world script/connect origins before enforcing.
-  // Deliberately NOT set: HSTS includeSubDomains/preload (irreversible),
-  // enforced CSP (needs nonce support -> Next.js upgrade + dynamic rendering).
+  // ── Security headers (external audit 2026-09-12; tightened 2026-09-23) ──
+  // Two policies are sent at once:
+  //   1) Content-Security-Policy (ENFORCED) — the exact policy that was in
+  //      Report-Only for 10 days and produced ZERO violations on /ru, /,
+  //      /blog, /auth, openAbroad, marketResearch, businessPulse, synthFocusLab
+  //      (headless check with cookie consent accepted; a control test with a
+  //      deliberately foreign script/frame/object proved the detector works).
+  //   2) Content-Security-Policy-Report-Only — a STRICTER draft (narrow
+  //      connect-src/img-src) whose violations are reported to /api/csp-report
+  //      so it can be promoted to enforced once it proves clean.
+  // Deliberately NOT set: HSTS includeSubDomains/preload (irreversible).
   async headers() {
-    const cspReportOnly = [
+    // Hosts actually contacted by the site, measured with a headless browser:
+    //   script  : self, cdn.jsdelivr.net (bootstrap), accounts.google.com (GSI)
+    //   fetch   : self, api.mapbox.com, events.mapbox.com, *.herokuapp.com backends
+    //   beacon  : monitoring-service (pageview)
+    //   img/font/css: self only (next/font is self-hosted)
+    // Analytics hosts stay allow-listed: they load only after cookie consent and
+    // only when their IDs are configured, and must not break when they are.
+    const SCRIPT_HOSTS = [
+      "https://cdn.jsdelivr.net",
+      "https://accounts.google.com",
+      "https://apis.google.com",
+      "https://www.googletagmanager.com",
+      "https://www.google-analytics.com",
+      "https://mc.yandex.ru",
+      "https://connect.facebook.net",
+      "https://static.hotjar.com",
+      "https://script.hotjar.com",
+    ].join(" ");
+
+    const enforced = [
       "default-src 'self'",
-      // 'unsafe-inline'/'unsafe-eval': Next.js 13.4 hydration + mapbox-gl.
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://www.googletagmanager.com https://www.google-analytics.com https://mc.yandex.ru https://connect.facebook.net https://static.hotjar.com https://script.hotjar.com https://accounts.google.com https://apis.google.com",
+      // 'unsafe-inline'/'unsafe-eval': Next.js 13 hydration + mapbox-gl.
+      `script-src 'self' 'unsafe-inline' 'unsafe-eval' ${SCRIPT_HOSTS}`,
       "style-src 'self' 'unsafe-inline' https://accounts.google.com",
       "img-src 'self' data: blob: https:",
       "font-src 'self' data:",
-      // Backend origins live in Vercel env vars -> keep wide until reports are in.
+      // Wide on purpose in the enforced policy; the draft below narrows it.
       "connect-src 'self' https: wss:",
+      "frame-src 'self' https://accounts.google.com https://www.googletagmanager.com https://vars.hotjar.com",
+      "worker-src 'self' blob:",
+      "child-src 'self' blob:",
+      "media-src 'self' data: blob:",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self' https://accounts.google.com",
+      "frame-ancestors 'self'",
+      "report-uri /api/csp-report",
+    ].join("; ");
+
+    // Draft: same as enforced, but connect-src/img-src limited to observed hosts.
+    const CONNECT_HOSTS = [
+      "https://*.herokuapp.com",
+      "wss://*.herokuapp.com",
+      "https://api.mapbox.com",
+      "https://events.mapbox.com",
+      "https://*.vercel.app",
+      "https://www.google-analytics.com",
+      "https://mc.yandex.ru",
+      "https://connect.facebook.net",
+      "https://*.hotjar.com",
+      "wss://*.hotjar.com",
+      "https://www.googleapis.com",
+      "https://accounts.google.com",
+    ].join(" ");
+    const IMG_HOSTS = [
+      "https://*.mapbox.com",
+      "https://images.unsplash.com",
+      "https://api.qrserver.com",
+      "https://*.googleusercontent.com",
+      "https://www.google-analytics.com",
+      "https://mc.yandex.ru",
+    ].join(" ");
+
+    const draft = [
+      "default-src 'self'",
+      `script-src 'self' 'unsafe-inline' 'unsafe-eval' ${SCRIPT_HOSTS}`,
+      "style-src 'self' 'unsafe-inline' https://accounts.google.com",
+      `img-src 'self' data: blob: ${IMG_HOSTS}`,
+      "font-src 'self' data:",
+      `connect-src 'self' ${CONNECT_HOSTS}`,
       "frame-src 'self' https://accounts.google.com https://www.googletagmanager.com https://vars.hotjar.com",
       "worker-src 'self' blob:",
       "child-src 'self' blob:",
@@ -75,7 +141,8 @@ const nextConfig = {
           { key: "X-Frame-Options", value: "SAMEORIGIN" },
           // geolocation=(self): homepage + Business Pulse use navigator.geolocation
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(self), payment=(), usb=()" },
-          { key: "Content-Security-Policy-Report-Only", value: cspReportOnly },
+          { key: "Content-Security-Policy", value: enforced },
+          { key: "Content-Security-Policy-Report-Only", value: draft },
         ],
       },
     ];
