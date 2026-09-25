@@ -235,6 +235,10 @@ interface FormData {
   offeringSubType: OfferingSubType | "";
   // Ценовой сегмент
   priceSegment: PriceSegment | "";
+  // Масштаб планов заказчика — N для расчёта SOM снизу вверх (ARPU x N).
+  // Строка, а не number: пустое поле должно отличаться от нуля, а <input type="number"> в React
+  // отдаёт "" при нечисловом вводе — тогда причина ошибки для пользователя пропадает.
+  plannedCustomersFirstYear: string;
   // Дополнительные поля
   targetAudience: string;
   competitors: string;
@@ -514,6 +518,7 @@ export default function MarketResearchPage() {
     offeringType: "",
     offeringSubType: "",
     priceSegment: "",
+    plannedCustomersFirstYear: "",
     targetAudience: "",
     competitors: "",
   };
@@ -1063,6 +1068,11 @@ export default function MarketResearchPage() {
     if (!formData.offeringType) missing.push({ key: "offeringType", label: "Тип предложения" });
     if (formData.offeringType && !formData.offeringSubType)
       missing.push({ key: "offeringSubType", label: "Уточнение типа предложения" });
+    // Scale of the customer's own plan — REQUIRED. It is the N in the bottom-up SOM
+    // (measured ARPU x N). Without it the service falls back to a service-side constant,
+    // and the reachable-share figure stops being the customer's own.
+    if (!/^[1-9][0-9]{0,7}$/.test(formData.plannedCustomersFirstYear.trim()))
+      missing.push({ key: "plannedCustomersFirstYear", label: "Планируемое число клиентов за первый год" });
     return missing;
   };
   // Red outline shown only after a submit attempt, auto-clears once the field is filled.
@@ -1188,6 +1198,9 @@ export default function MarketResearchPage() {
       ...(formData.offeringType ? { offering_type: formData.offeringType } : {}),
       ...(formData.offeringSubType ? { offering_sub_type: formData.offeringSubType } : {}),
       ...(formData.priceSegment ? { price_segment: formData.priceSegment } : {}),
+      ...(/^[1-9][0-9]{0,7}$/.test(formData.plannedCustomersFirstYear.trim())
+        ? { planned_customers_first_year: parseInt(formData.plannedCustomersFirstYear.trim(), 10) }
+        : {}),
       // Optional extras
       ...(formData.targetAudience ? { target_audience_description: formData.targetAudience } : {}),
       ...(competitorsList && competitorsList.length > 0 ? { competitors: competitorsList } : {}),
@@ -2207,6 +2220,9 @@ export default function MarketResearchPage() {
               if (formData.priceSegment) {
                 summaryRows.push(["Сегмент", priceSegmentOptions.find((o) => o.value === formData.priceSegment)?.label || formData.priceSegment]);
               }
+              if (formData.plannedCustomersFirstYear) {
+                summaryRows.push(["Ваш план на 1-й год", `${formData.plannedCustomersFirstYear} клиентов`]);
+              }
               return (
                 <div>
                   <h2 style={{ marginBottom: "0.35rem" }}>Исследуем ваш рынок</h2>
@@ -2594,6 +2610,38 @@ export default function MarketResearchPage() {
                       </span>
                     </button>
                   ))}
+                </div>
+              </div>
+
+              {/* === МАСШТАБ ПЛАНОВ === */}
+              <div className={styles.section}>
+                <h3>Планируемое число клиентов за первый год</h3>
+                <p className={styles.formDescription} style={{ marginBottom: "0.75rem" }}>
+                  Мы должны понимать масштаб ваших планов, иначе не сможем определить ваш потенциал.
+                  Это число покупателей, которые заплатят вам за первый год, — от него и средней цены
+                  по рынку считается достижимая доля (SOM).
+                </p>
+                <div className={styles.formGroup}>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    name="plannedCustomersFirstYear"
+                    value={formData.plannedCustomersFirstYear}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        plannedCustomersFirstYear: e.target.value.replace(/[^0-9]/g, "").slice(0, 8),
+                      }))
+                    }
+                    className={styles.input}
+                    style={requiredFieldStyle(!/^[1-9][0-9]{0,7}$/.test(formData.plannedCustomersFirstYear.trim()))}
+                    placeholder="Например: 1200"
+                  />
+                  {submitAttempted && !/^[1-9][0-9]{0,7}$/.test(formData.plannedCustomersFirstYear.trim()) && (
+                    <span style={fieldErrorTextStyle}>
+                      Укажите целое число клиентов (от 1) — без него расчёт потенциала невозможен
+                    </span>
+                  )}
                 </div>
               </div>
 
