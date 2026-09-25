@@ -70,6 +70,13 @@ const nextConfig = {
       "https://script.hotjar.com",
     ].join(" ");
 
+    // В разработке фронт ходит к локальным бэкендам по http://localhost:PORT — это не
+    // 'self' (другой порт) и не https:, поэтому боевая политика их блокировала бы.
+    // На Vercel/при сборке NODE_ENV=production, и локальные адреса не попадают в политику.
+    const DEV_LOCAL = process.env.NODE_ENV === "production"
+      ? ""
+      : " http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:*";
+
     const enforced = [
       "default-src 'self'",
       // 'unsafe-inline'/'unsafe-eval': Next.js 13 hydration + mapbox-gl.
@@ -78,7 +85,7 @@ const nextConfig = {
       "img-src 'self' data: blob: https:",
       "font-src 'self' data:",
       // Wide on purpose in the enforced policy; the draft below narrows it.
-      "connect-src 'self' https: wss:",
+      `connect-src 'self' https: wss:${DEV_LOCAL}`,
       "frame-src 'self' https://accounts.google.com https://www.googletagmanager.com https://vars.hotjar.com",
       "worker-src 'self' blob:",
       "child-src 'self' blob:",
@@ -120,7 +127,7 @@ const nextConfig = {
       "style-src 'self' 'unsafe-inline' https://accounts.google.com",
       `img-src 'self' data: blob: ${IMG_HOSTS}`,
       "font-src 'self' data:",
-      `connect-src 'self' ${CONNECT_HOSTS}`,
+      `connect-src 'self' ${CONNECT_HOSTS}${DEV_LOCAL}`,
       "frame-src 'self' https://accounts.google.com https://www.googletagmanager.com https://vars.hotjar.com",
       "worker-src 'self' blob:",
       "child-src 'self' blob:",
