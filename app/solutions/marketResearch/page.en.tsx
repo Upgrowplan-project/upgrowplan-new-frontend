@@ -1118,8 +1118,16 @@ export default function MarketResearchPage() {
       ? formData.competitors.split(",").map((c) => c.trim()).filter(Boolean)
       : undefined;
 
-    // Derive industry from selected product type (first selected)
-    const primaryProductType = formData.productTypes[0];
+    // [р.13 · 2026-09-25 · владелец] Если отмечено несколько типов и среди них есть ЦИФРОВОЙ — отправляем
+    // цифровой, а не первый по клику. Живой прогон res_ac1ee3ebcbb2: пользователь выбрал «Образование и
+    // онлайн-обучение» и «B2C SaaS», первым кликнул образование → в сервис ушёл `education`, тот счёл кейс
+    // ФИЗИЧЕСКИМ, пошёл в Google Places (0 результатов) и выродил тему до «education market».
+    // Порядок клика не должен решать маршрут исследования.
+    const DIGITAL_PRODUCT_TYPES: ProductType[] = [
+      "saas_b2b", "saas_b2c", "cloud_platform", "digital_apps", "marketplace", "p2p_platform",
+    ] as ProductType[];
+    const primaryProductType =
+      formData.productTypes.find((t) => DIGITAL_PRODUCT_TYPES.includes(t)) ?? formData.productTypes[0];
     const industryStr = productTypeToIndustry[primaryProductType] ?? primaryProductType;
 
     // Build ResearchRequest directly — no onboarding mapper indirection.
