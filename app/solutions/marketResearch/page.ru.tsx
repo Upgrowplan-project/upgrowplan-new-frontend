@@ -239,6 +239,11 @@ interface FormData {
   // Строка, а не number: пустое поле должно отличаться от нуля, а <input type="number"> в React
   // отдаёт "" при нечисловом вводе — тогда причина ошибки для пользователя пропадает.
   plannedCustomersFirstYear: string;
+  // Ось «чем ограничена пропускная способность» — определяет СПОСОБ СЧЁТА ёмкости, а не только число.
+  capacityLimit: string;
+  capacityValue: string;
+  // Частота покупки: приводит цену за урок/час/визит к месячному знаменателю конкурентов.
+  purchaseFrequency: string;
   // Дополнительные поля
   targetAudience: string;
   competitors: string;
@@ -519,6 +524,9 @@ export default function MarketResearchPage() {
     offeringSubType: "",
     priceSegment: "",
     plannedCustomersFirstYear: "",
+    capacityLimit: "",
+    capacityValue: "",
+    purchaseFrequency: "",
     targetAudience: "",
     competitors: "",
   };
@@ -867,6 +875,14 @@ export default function MarketResearchPage() {
     ],
   };
 
+  const capacityLimitOptions = [
+    { value: "seats", label: "Посадочные места", unit: "мест", hint: "кафе, ресторан, зал" },
+    { value: "workplaces", label: "Рабочие места", unit: "мест", hint: "мастера, посты, кресла, курьеры" },
+    { value: "floor_area", label: "Торговая площадь", unit: "кв. м", hint: "магазин, шоурум" },
+    { value: "production_output", label: "Производственная мощность", unit: "единиц в месяц", hint: "производство" },
+    { value: "deals_per_month", label: "Сделки или проекты", unit: "в месяц", hint: "недвижимость, B2B-проекты" },
+    { value: "none", label: "Ничем физическим", unit: "", hint: "ограничены только спросом — цифровые продукты" },
+  ];
   const priceSegmentOptions = [
     { value: "budget" as PriceSegment, label: "Эконом", desc: "Масс-маркет, низкий ценовой сегмент" },
     { value: "mid" as PriceSegment, label: "Средний", desc: "Средний ценовой сегмент" },
@@ -1071,6 +1087,11 @@ export default function MarketResearchPage() {
     // Scale of the customer's own plan — REQUIRED. It is the N in the bottom-up SOM
     // (measured ARPU x N). Without it the service falls back to a service-side constant,
     // and the reachable-share figure stops being the customer's own.
+    if (!formData.capacityLimit)
+      missing.push({ key: "capacityLimit", label: "Выберите, чем ограничена пропускная способность" });
+    if (formData.capacityLimit && formData.capacityLimit !== "none"
+        && !/^[1-9][0-9]{0,7}$/.test(formData.capacityValue.trim()))
+      missing.push({ key: "capacityValue", label: "Укажите число — без него потенциал не посчитать" });
     if (!/^[1-9][0-9]{0,7}$/.test(formData.plannedCustomersFirstYear.trim()))
       missing.push({ key: "plannedCustomersFirstYear", label: "Планируемое число клиентов за первый год" });
     return missing;
@@ -1198,6 +1219,13 @@ export default function MarketResearchPage() {
       ...(formData.offeringType ? { offering_type: formData.offeringType } : {}),
       ...(formData.offeringSubType ? { offering_sub_type: formData.offeringSubType } : {}),
       ...(formData.priceSegment ? { price_segment: formData.priceSegment } : {}),
+      ...(formData.capacityLimit ? { capacity_limit: formData.capacityLimit } : {}),
+      ...(formData.capacityLimit !== "none" && /^[1-9][0-9]{0,7}$/.test(formData.capacityValue.trim())
+        ? { capacity_value: parseInt(formData.capacityValue.trim(), 10) }
+        : {}),
+      ...(/^[1-9][0-9]{0,7}$/.test(formData.purchaseFrequency.trim())
+        ? { purchase_frequency_per_month: parseInt(formData.purchaseFrequency.trim(), 10) }
+        : {}),
       ...(/^[1-9][0-9]{0,7}$/.test(formData.plannedCustomersFirstYear.trim())
         ? { planned_customers_first_year: parseInt(formData.plannedCustomersFirstYear.trim(), 10) }
         : {}),
@@ -2220,6 +2248,15 @@ export default function MarketResearchPage() {
               if (formData.priceSegment) {
                 summaryRows.push(["Сегмент", priceSegmentOptions.find((o) => o.value === formData.priceSegment)?.label || formData.priceSegment]);
               }
+              if (formData.capacityLimit) {
+                const _cap = capacityLimitOptions.find((o) => o.value === formData.capacityLimit);
+                summaryRows.push(["Мощность", formData.capacityLimit === "none"
+                  ? (_cap?.label || formData.capacityLimit)
+                  : `${formData.capacityValue} ${_cap?.unit || ""}`.trim()]);
+              }
+              if (formData.purchaseFrequency) {
+                summaryRows.push(["Частота покупки", `${formData.purchaseFrequency} раз в месяц`]);
+              }
               if (formData.plannedCustomersFirstYear) {
                 summaryRows.push(["Ваш план на 1-й год", `${formData.plannedCustomersFirstYear} клиентов`]);
               }
@@ -2610,6 +2647,91 @@ export default function MarketResearchPage() {
                       </span>
                     </button>
                   ))}
+                </div>
+              </div>
+
+              {/* === ПРОПУСКНАЯ СПОСОБНОСТЬ === */}
+              <div className={styles.section}>
+                <h3>Чем ограничена ваша пропускная способность?</h3>
+                <p className={styles.formDescription} style={{ marginBottom: "0.75rem" }}>
+                  Мы должны понимать вашу мощность, иначе не сможем посчитать достижимую долю рынка. Это то, что упирается в потолок раньше всего.
+                </p>
+                <div className={styles.buttonGroup} style={requiredFieldStyle(!formData.capacityLimit)}>
+                  {capacityLimitOptions.map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      className={formData.capacityLimit === opt.value ? styles.buttonActive : styles.button}
+                      onClick={() =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          capacityLimit: opt.value,
+                          capacityValue: opt.value === "none" ? "" : prev.capacityValue,
+                        }))
+                      }
+                    >
+                      {formData.capacityLimit === opt.value && <FiCheck style={{ marginRight: "0.5rem" }} />}
+                      <span>
+                        <strong>{opt.label}</strong>
+                        <span style={{ fontWeight: 400, marginLeft: "0.4rem", opacity: 0.75 }}>— {opt.hint}</span>
+                      </span>
+                    </button>
+                  ))}
+                </div>
+                {submitAttempted && !formData.capacityLimit && (
+                  <span style={fieldErrorTextStyle}>Выберите, чем ограничена пропускная способность</span>
+                )}
+                {formData.capacityLimit && formData.capacityLimit !== "none" && (
+                  <div className={styles.formGroup} style={{ marginTop: "0.9rem" }}>
+                    <label className={styles.label}>
+                      Сколько именно?{" "}
+                      <span style={{ fontWeight: 400, opacity: 0.75 }}>
+                        ({capacityLimitOptions.find((o) => o.value === formData.capacityLimit)?.unit})
+                      </span>
+                    </label>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      name="capacityValue"
+                      value={formData.capacityValue}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          capacityValue: e.target.value.replace(/[^0-9]/g, "").slice(0, 8),
+                        }))
+                      }
+                      className={styles.input}
+                      style={requiredFieldStyle(!/^[1-9][0-9]{0,7}$/.test(formData.capacityValue.trim()))}
+                      placeholder="0"
+                    />
+                    {submitAttempted && !/^[1-9][0-9]{0,7}$/.test(formData.capacityValue.trim()) && (
+                      <span style={fieldErrorTextStyle}>Укажите число — без него потенциал не посчитать</span>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* === ЧАСТОТА ПОКУПКИ (опционально) === */}
+              <div className={styles.section}>
+                <h3>Как часто покупает типичный клиент</h3>
+                <p className={styles.formDescription} style={{ marginBottom: "0.75rem" }}>
+                  Сколько раз в месяц: уроков, визитов, часов, заказов. Нужно, чтобы сравнить цену за урок или час с месячными подписками конкурентов. Можно пропустить — тогда сервис возьмёт своё допущение и честно напишет об этом в отчёте.
+                </p>
+                <div className={styles.formGroup}>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    name="purchaseFrequency"
+                    value={formData.purchaseFrequency}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        purchaseFrequency: e.target.value.replace(/[^0-9]/g, "").slice(0, 4),
+                      }))
+                    }
+                    className={styles.input}
+                    placeholder="Например: 8"
+                  />
                 </div>
               </div>
 
