@@ -2,6 +2,8 @@
 import { milanCoffeePost } from "./articles/milan-coffee-2026";
 import { financialStressTestPost } from "./articles/financial-stress-test-2026";
 import { onlineEnglishSchoolPost } from "./articles/online-english-school-2026";
+import { soloUnicornPost } from "./articles/solo-unicorn-2026";
+import { aiBusinessPlanMarketPost } from "./articles/ai-business-plan-generator-market-2026";
 
 export interface Post {
     id: number;
@@ -1808,6 +1810,8 @@ export const codeArticlePosts: BilingualPost[] = [
     milanCoffeePost,
     financialStressTestPost,
     onlineEnglishSchoolPost,
+    soloUnicornPost,
+    aiBusinessPlanMarketPost,
 ];
 
 // Unified bilingual fallback — EN posts + RU bilingual posts

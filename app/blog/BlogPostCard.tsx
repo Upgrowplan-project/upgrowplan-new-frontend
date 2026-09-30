@@ -19,6 +19,7 @@ const categoryEN: Record<string, string> = {
   "Brandsories": "Brand Stories",
   "Upgrowplan": "Upgrowplan",
   "research": "Research",
+  "Исследование рынка": "Market Research",
 };
 
 function getExcerpt(text: string, maxLen = 200): string {
