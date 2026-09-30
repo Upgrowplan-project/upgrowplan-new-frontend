@@ -1,4 +1,4 @@
-import { allStaticPosts, staticPostsRuBilingual, enPostMeta, BilingualPost } from "./staticPosts";
+import { allStaticPosts, staticPostsRuBilingual, enPostMeta, codeArticlePosts, BilingualPost } from "./staticPosts";
 
 const BLOB_PATHNAME = "blog-posts.json";
 const HAS_BLOB = !!process.env.BLOB_READ_WRITE_TOKEN;
@@ -504,8 +504,24 @@ function enrichPosts(basePosts: BilingualPost[]): BilingualPost[] {
 let _postsCache: { at: number; data: BilingualPost[] } | null = null;
 const POSTS_CACHE_TTL_MS = 60_000;
 
+/**
+ * Статьи из кода (codeArticlePosts) присутствуют всегда, какой бы источник ни ответил.
+ * Код — источник истины для них: копия с тем же id или slug из Blob (админка
+ * при недоступном Blob сохраняла туда весь статический список) заменяется.
+ */
+export function withCodeArticles(
+  posts: BilingualPost[],
+  articles: BilingualPost[] = codeArticlePosts
+): BilingualPost[] {
+  const ids = new Set(articles.map((a) => a.id));
+  const slugs = new Set(articles.map((a) => a.slug).filter(Boolean));
+  const rest = posts.filter((p) => !ids.has(p.id) && !(p.slug && slugs.has(p.slug)));
+  // Копии: enrichPosts мутирует объекты постов.
+  return [...rest, ...articles.map((a) => ({ ...a }))];
+}
+
 async function _loadBlogPosts(): Promise<BilingualPost[]> {
-  if (!HAS_BLOB) return enrichPosts(allStaticPosts);
+  if (!HAS_BLOB) return enrichPosts(withCodeArticles(allStaticPosts));
 
   try {
     const url = await getBlobUrl();
@@ -513,12 +529,12 @@ async function _loadBlogPosts(): Promise<BilingualPost[]> {
       const res = await fetch(url, { cache: "no-store" });
       if (res.ok) {
         const blobPosts: BilingualPost[] = await res.json();
-        return enrichPosts(blobPosts);
+        return enrichPosts(withCodeArticles(blobPosts));
       }
     }
   } catch {}
 
-  return enrichPosts(allStaticPosts);
+  return enrichPosts(withCodeArticles(allStaticPosts));
 }
 
 export async function getBlogPosts(): Promise<BilingualPost[]> {

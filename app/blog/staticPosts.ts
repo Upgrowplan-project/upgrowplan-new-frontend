@@ -1800,6 +1800,16 @@ export const enPostMeta: Record<number, { slug: string; titleEn: string; descrip
     105: { slug: "competitor-monitoring-ai-business-pulse", titleEn: "Competitor Monitoring: From Google Alerts to AI-Powered Intelligence", descriptionEn: "Level 1: Google Alerts (always 2 weeks behind). Level 2: spreadsheets, 8 hrs/week. Level 3 (Business Pulse): daily AI monitoring, relevance scoring, structured briefings and job listing intelligence." },
 };
 
+// Long-form статьи, которые живут только в коде (не в Vercel Blob). Этот список —
+// единственный источник для них: getBlogPosts подмешивает их при ЛЮБОМ источнике
+// постов, иначе при рабочем Blob они пропадают с сайта (так было с 01.08.2026).
+// Новую статью-файл из app/blog/articles/ добавлять сюда.
+export const codeArticlePosts: BilingualPost[] = [
+    milanCoffeePost,
+    financialStressTestPost,
+    onlineEnglishSchoolPost,
+];
+
 // Unified bilingual fallback — EN posts + RU bilingual posts
 export const allStaticPosts: BilingualPost[] = [
     ...staticPostsEn.map((p) => {
@@ -1817,7 +1827,5 @@ export const allStaticPosts: BilingualPost[] = [
         };
     }),
     ...staticPostsRuBilingual,
-    milanCoffeePost,
-    financialStressTestPost,
-    onlineEnglishSchoolPost,
+    ...codeArticlePosts,
 ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
