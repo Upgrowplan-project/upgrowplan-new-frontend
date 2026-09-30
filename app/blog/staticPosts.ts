@@ -37,6 +37,7 @@ export interface BilingualPost {
     metaDescriptionEn?: string;
     metaDescriptionRu?: string;
     jsonld?: string; // строка JSON-LD (@graph: Article/Dataset/FAQPage)
+    jsonldRu?: string; // локализованный JSON-LD для русской страницы
 }
 
 export const staticPostsRu: Post[] = [

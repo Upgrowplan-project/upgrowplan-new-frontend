@@ -195,4 +195,36 @@ export const aiBusinessPlanMarketPost: BilingualPost = {
       },
     ],
   }),
+  jsonldRu: JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Article",
+        headline: "ИИ-генераторы бизнес-планов: 18 конкурентов и чек $79",
+        description: "Пример исследования MarketSense в тестовом режиме: конкуренты и цены ИИ-сервисов для бизнес-планирования, а также допущения в оценке SOM $79 000.",
+        author: { "@type": "Person", name: "Denis Naletov" },
+        publisher: { "@type": "Organization", name: "Upgrowplan", url: "https://www.upgrowplan.com" },
+        datePublished: "2026-09-30",
+        mainEntityOfPage: "https://www.upgrowplan.com/ru/blog/ai-business-plan-generator-market-research-2026",
+        inLanguage: "ru",
+        about: {
+          "@type": "Dataset",
+          name: "Исследование рынка ИИ-генераторов бизнес-планов, сентябрь 2026",
+          description: "Кабинетное исследование в тестовом режиме: карта конкурентов, наблюдаемые цены и сценарная оценка достижимого рынка на первый год.",
+          dateCreated: "2026-09-24",
+          creator: { "@type": "Organization", name: "Upgrowplan MarketSense" },
+          variableMeasured: ["Количество конкурентов", "Наблюдаемые цены конкурентов", "Сценарная оценка SOM на первый год"],
+        },
+      },
+      {
+        "@type": "FAQPage",
+        mainEntity: [
+          { "@type": "Question", name: "Сколько конкурентов нашёл MarketSense?", acceptedAnswer: { "@type": "Answer", text: "Тестовое исследование сентября 2026 года выявило 18 прямых и 4 косвенных конкурента в глобальном сегменте ИИ-сервисов для бизнес-планирования." } },
+          { "@type": "Question", name: "Как рассчитан SOM в $79 000?", acceptedAnswer: { "@type": "Answer", text: "Медианная разовая цена конкурентов $79 умножена на предполагаемые 1 000 покупателей за первый год. Число покупателей не измерялось, поэтому это сценарий, а не прогноз спроса." } },
+          { "@type": "Question", name: "Удалось ли установить общий размер рынка?", acceptedAnswer: { "@type": "Answer", text: "Нет. Надёжных оценок TAM и SAM не было, достоверность оценки размера рынка низкая." } },
+          { "@type": "Question", name: "Когда откроется бета-доступ к MarketSense?", acceptedAnswer: { "@type": "Answer", text: "Upgrowplan планирует скоро открыть доступ к MarketSense для бета-тестеров." } },
+        ],
+      },
+    ],
+  }),
 };

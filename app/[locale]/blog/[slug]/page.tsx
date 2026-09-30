@@ -48,13 +48,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!post) return {};
   const isRu = params.locale === "ru";
   const title = (isRu ? post.titleRu : post.titleEn) || post.titleEn || post.titleRu || "Blog";
-  const description = (isRu ? post.descriptionRu : post.descriptionEn) || "";
+  const seoTitle = (isRu ? post.metaTitleRu : post.metaTitleEn) || title;
+  const description = (isRu
+    ? (post.metaDescriptionRu || post.descriptionRu)
+    : (post.metaDescriptionEn || post.descriptionEn)) || "";
   const enUrl = `${SITE_URL}/blog/${params.slug}`;
   const ruUrl = `${SITE_URL}/ru/blog/${params.slug}`;
   // Canonical must match the actual served URL (no /en/ prefix — middleware 301-redirects /en/* → /*)
   const canonicalUrl = isRu ? ruUrl : enUrl;
   return {
-    title: `${title} | Upgrowplan`,
+    title: seoTitle,
     description,
     alternates: {
       canonical: canonicalUrl,
@@ -64,7 +67,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         ...((post.messageRu || post.bodyRu) ? { ru: ruUrl } : {}),
       },
     },
-    openGraph: { title, description, url: canonicalUrl, type: "article" },
+    openGraph: {
+      title: seoTitle,
+      description,
+      url: canonicalUrl,
+      type: "article",
+      images: [{ url: `${SITE_URL}/api/og?title=${encodeURIComponent(title)}&description=${encodeURIComponent(description)}&locale=${isRu ? "ru" : "en"}`, width: 1200, height: 630, alt: title }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: seoTitle,
+      description,
+      images: [`${SITE_URL}/api/og?title=${encodeURIComponent(title)}&description=${encodeURIComponent(description)}&locale=${isRu ? "ru" : "en"}`],
+    },
   };
 }
 
@@ -113,9 +128,10 @@ export default async function BlogPostLocalePage({ params }: Props) {
   };
 
   let customJsonLd: unknown = null;
-  if (post.jsonld) {
+  const localizedJsonLd = isRu ? post.jsonldRu : post.jsonld;
+  if (localizedJsonLd) {
     try {
-      customJsonLd = typeof post.jsonld === "string" ? JSON.parse(post.jsonld) : post.jsonld;
+      customJsonLd = typeof localizedJsonLd === "string" ? JSON.parse(localizedJsonLd) : localizedJsonLd;
     } catch {
       customJsonLd = null;
     }

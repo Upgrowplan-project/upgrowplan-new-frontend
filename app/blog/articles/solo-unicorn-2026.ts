@@ -119,4 +119,27 @@ export const soloUnicornPost: BilingualPost = {
       },
     ],
   }),
+  jsonldRu: JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Article",
+        headline: "Соло-единорог: возможен, но вряд ли станет нормой",
+        description: "ИИ удешевил создание MVP, но привлечение клиентов, доверие и операционные задачи по-прежнему мешают бизнесу из одного человека стать нормой.",
+        author: { "@type": "Person", name: "Denis Naletov" },
+        publisher: { "@type": "Organization", name: "Upgrowplan", url: "https://www.upgrowplan.com" },
+        datePublished: "2026-09-06",
+        mainEntityOfPage: "https://www.upgrowplan.com/ru/blog/solo-unicorn-ai-founder-2026",
+        inLanguage: "ru",
+      },
+      {
+        "@type": "FAQPage",
+        mainEntity: [
+          { "@type": "Question", name: "Что такое соло-единорог?", acceptedAnswer: { "@type": "Answer", text: "Соло-единорог — компания стоимостью от $1 млрд, которой управляет один человек. Оценка компании и её выручка — разные показатели." } },
+          { "@type": "Question", name: "Помогает ли ИИ одному человеку легко создать компанию стоимостью $1 млрд?", acceptedAnswer: { "@type": "Answer", text: "ИИ снижает стоимость разработки, но не решает задачи привлечения клиентов, доверия, поддержки, юридической и финансовой ответственности и управления операциями." } },
+          { "@type": "Question", name: "Pieter Levels — соло-единорог?", acceptedAnswer: { "@type": "Answer", text: "Pieter Levels управляет портфелем проектов, созданных одним основателем, и сообщал о высоких пиках выручки. Эти цифры относятся к выручке нескольких проектов, а не к миллиардной оценке компании." } },
+        ],
+      },
+    ],
+  }),
 };
