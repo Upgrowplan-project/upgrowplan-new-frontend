@@ -14,6 +14,9 @@ const SEVERITY_VARIANT: Record<string, string> = { info: "info", warning: "warni
 const BOT_COLOR: Record<string, string> = { GPTBot: "#10a37f", "OAI-SearchBot": "#10a37f", PerplexityBot: "#6b48ff", "Perplexity-User": "#6b48ff", ClaudeBot: "#d97706", "Claude-User": "#d97706", "Google-Extended": "#4285f4", CCBot: "#888" };
 const botColor = (name: string) => BOT_COLOR[name] || "#555";
 import { monitoringFetch } from "../lib/api";
+import { ExportReportButton } from "./ExportReportButton";
+import { CollapsibleCard } from "./CollapsibleCard";
+import { AiReferralsSection } from "./AiReferralsSection";
 
 const BRAND = "#1e6078";
 const LLM_LABELS: Record<string, string> = {
@@ -34,33 +37,6 @@ const LLM_HINTS: Record<string, string> = {
   gemini: "gemini.google.com",
   manual: "",
 };
-
-function downloadGeoCsv(items: GeoItem[]) {
-  const esc = (v: string | number | boolean | null | undefined) => {
-    const s = v == null ? "" : String(v);
-    return s.includes(",") || s.includes('"') || s.includes("\n") ? `"${s.replace(/"/g, '""')}"` : s;
-  };
-  const headers = ["Date", "LLM", "Query", "Mentioned", "Position", "Auto", "Excerpt"];
-  const rows = items.map((it) => [
-    it.created_at ? new Date(it.created_at).toISOString().slice(0, 10) : "",
-    LLM_LABELS[it.llm] || it.llm,
-    it.query,
-    it.mentioned ? "Yes" : "No",
-    it.position || "",
-    it.auto ? "auto" : "manual",
-    (it.excerpt || "").replace(/\n/g, " "),
-  ]);
-  const csv = [[...headers], ...rows].map((r) => r.map(esc).join(",")).join("\n");
-  const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `geo-visibility-${new Date().toISOString().slice(0, 10)}.csv`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-}
 
 type GeoItem = {
   id: number;
@@ -205,11 +181,7 @@ export const GeoVisibilityDashboard: React.FC = () => {
         </div>
         <div className="d-flex gap-2 flex-wrap">
           <Button variant="outline-secondary" size="sm" onClick={load} disabled={loading}>Обновить</Button>
-          {items.length > 0 && (
-            <Button variant="outline-secondary" size="sm" onClick={() => downloadGeoCsv(items)} title="Скачать данные в CSV">
-              ⬇ CSV
-            </Button>
-          )}
+          <ExportReportButton />
           <Button variant="outline-primary" size="sm" onClick={() => setShowManual(true)}>+ Ручная проверка</Button>
           <Button
             size="sm"
@@ -403,6 +375,10 @@ export const GeoVisibilityDashboard: React.FC = () => {
         </Modal.Footer>
       </Modal>
 
+      {/* ── Переходы людей из ответов нейросетей ─────────────────── */}
+      <hr className="my-4" />
+      <AiReferralsSection />
+
       {/* ── AI Bot Crawlers ──────────────────────────────────────── */}
       <hr className="my-4" />
       <div className="d-flex justify-content-between align-items-center mb-3">
@@ -425,18 +401,6 @@ export const GeoVisibilityDashboard: React.FC = () => {
         </Card>
       ) : (
         <>
-          {botData.recommendations.length > 0 && (
-            <div className="mb-3">
-              {botData.recommendations.map((r, i) => (
-                <Alert key={i} variant={SEVERITY_VARIANT[r.severity] || "info"} className="small py-2 mb-2">
-                  {r.path && <strong>{r.path}</strong>}{r.path && " — "}{r.action}
-                  {r.age_days !== undefined && <span className="ms-1 text-muted">({r.age_days} дн. без краулера)</span>}
-                  {r.days_to_first_crawl !== undefined && <span className="ms-1 text-muted">(обнаружена через {r.days_to_first_crawl} дн.)</span>}
-                  {r.missing_bots && <span className="ms-1 text-muted">Нет: {r.missing_bots.join(", ")}</span>}
-                </Alert>
-              ))}
-            </div>
-          )}
           <Row className="g-2 mb-3">
             <Col xs="auto">
               <Card className="shadow-sm text-center px-3 py-2">
@@ -453,8 +417,21 @@ export const GeoVisibilityDashboard: React.FC = () => {
               </Col>
             ))}
           </Row>
-          <Card className="shadow-sm mb-3">
-            <Card.Header className="small fw-semibold">По страницам</Card.Header>
+          {botData.recommendations.length > 0 && (
+            <CollapsibleCard title="Рекомендации" count={botData.recommendations.length}>
+              <Card.Body className="pb-1">
+                {botData.recommendations.map((r, i) => (
+                  <Alert key={i} variant={SEVERITY_VARIANT[r.severity] || "info"} className="small py-2 mb-2">
+                    {r.path && <strong>{r.path}</strong>}{r.path && " — "}{r.action}
+                    {r.age_days !== undefined && <span className="ms-1 text-muted">({r.age_days} дн. без краулера)</span>}
+                    {r.days_to_first_crawl !== undefined && <span className="ms-1 text-muted">(обнаружена через {r.days_to_first_crawl} дн.)</span>}
+                    {r.missing_bots && <span className="ms-1 text-muted">Нет: {r.missing_bots.join(", ")}</span>}
+                  </Alert>
+                ))}
+              </Card.Body>
+            </CollapsibleCard>
+          )}
+          <CollapsibleCard title="По страницам" count={botData.by_page.length}>
             <Table hover responsive size="sm" className="mb-0 align-middle">
               <thead>
                 <tr>
@@ -486,13 +463,13 @@ export const GeoVisibilityDashboard: React.FC = () => {
                 ))}
               </tbody>
             </Table>
-          </Card>
-          <Card className="shadow-sm">
-            <Card.Header className="small fw-semibold">Последние визиты</Card.Header>
+          </CollapsibleCard>
+          <CollapsibleCard title="Последние визиты" count={botData.recent_events.length}>
+            <div style={{ maxHeight: 420, overflowY: "auto" }}>
             <Table hover responsive size="sm" className="mb-0">
               <thead><tr><th>Бот</th><th>Страница</th><th className="text-end">Когда</th></tr></thead>
               <tbody>
-                {botData.recent_events.slice(0, 10).map((e, i) => (
+                {botData.recent_events.map((e, i) => (
                   <tr key={i}>
                     <td><Badge style={{ backgroundColor: botColor(e.bot_name), fontSize: "0.65rem" }}>{e.bot_name}</Badge></td>
                     <td className="small" style={{ maxWidth: 280, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.url_path}</td>
@@ -501,7 +478,8 @@ export const GeoVisibilityDashboard: React.FC = () => {
                 ))}
               </tbody>
             </Table>
-          </Card>
+            </div>
+          </CollapsibleCard>
         </>
       )}
 

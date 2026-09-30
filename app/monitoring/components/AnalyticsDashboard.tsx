@@ -288,6 +288,13 @@ export const AnalyticsDashboard: React.FC = () => {
           <TopList title="Источники (UTM)" items={data.top_sources} />
         </Col>
       </Row>
+      {(data.ai_referral_pageviews ?? 0) > 0 && (
+        <p className="text-muted small mt-n2 mb-4">
+          🤖 Ещё {data.ai_referral_pageviews} просмотров пришли по ссылкам из нейросетей (ChatGPT,
+          Perplexity и др.) — они не входят в «Источники» и «Рефереры» и показаны во вкладке GEO
+          Visibility → «Переходы из нейросетей».
+        </p>
+      )}
 
       <Row className="g-3 mb-4">
         <Col lg={6}>
