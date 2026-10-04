@@ -112,7 +112,14 @@ export default async function BlogPostPage({ params }: Props) {
     <>
       <JsonLd data={(customJsonLd as object) || articleSchema} />
       {hasBody && <style dangerouslySetInnerHTML={{ __html: ARTICLE_BODY_CSS }} />}
-      <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+      <div style={{
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        backgroundColor: "#fff",
+        color: "#0f172a",
+        colorScheme: "light",
+      }}>
         <Header />
         <main className="container py-5" style={{ flex: 1, maxWidth: "800px" }}>
           <a
