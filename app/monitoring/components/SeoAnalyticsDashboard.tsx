@@ -9,11 +9,7 @@ import { ExportReportButton } from "./ExportReportButton";
 // Визиты AI-ботов живут только во вкладке GEO Visibility.
 export const SeoAnalyticsDashboard: React.FC = () => (
   <div>
-    <div className="d-flex justify-content-end mb-4">
-      <ExportReportButton />
-    </div>
-
-    <AnalyticsDashboard />
+    <AnalyticsDashboard headerAction={<ExportReportButton />} />
 
     <hr className="my-5" />
 

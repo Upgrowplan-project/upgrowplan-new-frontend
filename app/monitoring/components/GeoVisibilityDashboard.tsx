@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import {
-  Card, Table, Badge, Button, Spinner, Modal,
+  Card, Table, Badge, Button, Spinner, Modal, Accordion,
   Form, Row, Col, Alert,
 } from "react-bootstrap";
 
@@ -267,51 +267,52 @@ export const GeoVisibilityDashboard: React.FC = () => {
       {loading ? (
         <div className="text-center py-4"><Spinner animation="border" style={{ color: BRAND }} /></div>
       ) : items.length > 0 ? (
-        <Card className="shadow-sm">
-          <Card.Body className="p-0">
-            <Table hover responsive size="sm" className="mb-0 align-middle">
-              <thead className="table-light">
-                <tr>
-                  <th>Нейросеть</th>
-                  <th>Запрос</th>
-                  <th>Упомянут</th>
-                  <th>Позиция</th>
-                  <th>Дата</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((item) => (
-                  <tr key={item.id}>
-                    <td>
-                      <Badge bg="light" text="dark" className="border">{LLM_LABELS[item.llm] || item.llm}</Badge>
-                      {!item.auto && <Badge bg="secondary" className="ms-1 small">вручную</Badge>}
-                    </td>
-                    <td className="small" style={{ maxWidth: 300 }}>
-                      <div className="text-truncate">{item.query}</div>
-                    </td>
-                    <td>
-                      {item.excerpt?.startsWith("[ERROR:")
-                        ? <Badge bg="secondary">— нет данных</Badge>
-                        : item.mentioned
-                          ? <Badge bg="success">✅ Да</Badge>
-                          : <Badge bg="danger">❌ Нет</Badge>}
-                    </td>
-                    <td>{positionBadge(item.position)}</td>
-                    <td className="text-muted small text-nowrap">{fmtDate(item.created_at)}</td>
-                    <td>
-                      {item.excerpt && (
-                        <Button size="sm" variant="outline-secondary" onClick={() => setSelected(item)}>
-                          Контекст
-                        </Button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          </Card.Body>
-        </Card>
+        <Accordion className="shadow-sm">
+          {([
+            { key: "yes", label: "✅ Да", rows: items.filter((item) => item.mentioned), variant: "success" },
+            { key: "no", label: "❌ Нет", rows: items.filter((item) => !item.mentioned), variant: "danger" },
+          ] as const).map((group) => (
+            <Accordion.Item eventKey={group.key} key={group.key}>
+              <Accordion.Header>
+                <span className={`text-${group.variant} fw-semibold`}>{group.label}</span>
+                <Badge bg={group.variant} className="ms-2">{group.rows.length}</Badge>
+              </Accordion.Header>
+              <Accordion.Body className="p-0">
+                {group.rows.length > 0 ? (
+                  <Table hover responsive size="sm" className="mb-0 align-middle">
+                    <thead className="table-light">
+                      <tr>
+                        <th>Нейросеть</th>
+                        <th>Запрос</th>
+                        <th>Позиция</th>
+                        <th>Дата</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {group.rows.map((item) => (
+                        <tr key={item.id}>
+                          <td>
+                            <Badge bg="light" text="dark" className="border">{LLM_LABELS[item.llm] || item.llm}</Badge>
+                            {!item.auto && <Badge bg="secondary" className="ms-1 small">вручную</Badge>}
+                          </td>
+                          <td className="small" style={{ maxWidth: 300 }}><div className="text-truncate">{item.query}</div></td>
+                          <td>{positionBadge(item.position)}</td>
+                          <td className="text-muted small text-nowrap">{fmtDate(item.created_at)}</td>
+                          <td>
+                            {item.excerpt && (
+                              <Button size="sm" variant="outline-secondary" onClick={() => setSelected(item)}>Контекст</Button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                ) : <div className="text-muted small px-3 py-2">Записей нет.</div>}
+              </Accordion.Body>
+            </Accordion.Item>
+          ))}
+        </Accordion>
       ) : null}
 
       {/* Manual check modal */}

@@ -456,9 +456,11 @@ export const MonitoringDashboard: React.FC = () => {
                 )}
               </Button>
             )}
-            <Button variant="outline-secondary" onClick={refresh}>
-              {t("buttons.refresh")}
-            </Button>
+            {activeSection !== "seo-analytics" && activeSection !== "geo" && (
+              <Button variant="outline-secondary" onClick={refresh}>
+                {t("buttons.refresh")}
+              </Button>
+            )}
           </div>
         </div>
 

@@ -75,7 +75,7 @@ const TopList: React.FC<{ title: string; items: AnalyticsTopItem[]; emptyLabel?:
   </Card>
 );
 
-export const AnalyticsDashboard: React.FC = () => {
+export const AnalyticsDashboard: React.FC<{ headerAction?: React.ReactNode }> = ({ headerAction }) => {
   const [days, setDays] = useState(30);
   const { data, loading, error, refresh } = useAnalytics(days);
 
@@ -171,13 +171,14 @@ export const AnalyticsDashboard: React.FC = () => {
 
   return (
     <div>
-      <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-        <h4 className="mb-0 text-brand">📈 Посещаемость сайта</h4>
-        <div className="d-flex gap-2">
+      <div className="mb-3">
+        <h4 className="mb-1 text-brand">📈 SEO Analytics</h4>
+        <p className="text-muted small mb-2">Посещаемость сайта и регистрации пользователей</p>
+        <div className="d-flex gap-2 flex-wrap">
           <Form.Select
             value={days}
             onChange={(e) => setDays(Number(e.target.value))}
-            className="w-auto border-0 shadow-sm"
+            className="w-auto"
           >
             <option value={7}>7 дней</option>
             <option value={30}>30 дней</option>
@@ -186,29 +187,34 @@ export const AnalyticsDashboard: React.FC = () => {
           <Button variant="outline-secondary" size="sm" onClick={refresh}>
             Обновить
           </Button>
+          {headerAction}
         </div>
       </div>
 
       <Row className="g-3 mb-4">
-        <Col md={4}>
+        <Col md={3} sm={6}>
           <StatCard label="Просмотры" value={data.totals.pageviews} hint={`за ${days} дн.`} />
         </Col>
-        <Col md={4}>
-          <StatCard label="Уник. посетители" value={data.totals.unique_visitors} />
+        <Col md={3} sm={6}>
+          <StatCard label="Уник. посетители" value={data.totals.unique_visitors} hint={`за ${days} дн.`} />
         </Col>
-        <Col md={4}>
-          <StatCard label="Сессии" value={data.totals.sessions} />
+        <Col md={3} sm={6}>
+          <StatCard label="Сессии" value={data.totals.sessions} hint={`за ${days} дн.`} />
+        </Col>
+        <Col md={3} sm={6}>
+          <StatCard
+            label="Юзеры"
+            value={userStatsState === "ok" && userStats ? userStats.total_users ?? 0 : "—"}
+            hint={userStatsState === "ok" ? "всего регистраций" : userStatsState === "loading" ? "загрузка" : "нет подключения"}
+          />
         </Col>
       </Row>
 
       {/* Регистрации пользователей (user-service) */}
       {userStatsState === "ok" && userStats && (
         <>
-          <h6 className="text-brand mb-2">👥 Пользователи (регистрации)</h6>
+          <h6 className="text-brand mb-2">Новые регистрации и активность</h6>
           <Row className="g-3 mb-4">
-            <Col md={2} sm={4} xs={6}>
-              <StatCard label="Всего" value={userStats.total_users ?? 0} />
-            </Col>
             <Col md={2} sm={4} xs={6}>
               <StatCard label="За 24ч" value={userStats.new_24h ?? 0} />
             </Col>
@@ -227,9 +233,9 @@ export const AnalyticsDashboard: React.FC = () => {
           </Row>
         </>
       )}
-      {userStatsState === "off" && (
+      {(userStatsState === "off" || userStatsState === "error") && (
         <div className="text-muted small mb-4">
-          ℹ️ Статистика регистраций отключена (не задан <code>USER_SERVICE_URL</code> / токен).
+          ℹ️ Статистика регистраций недоступна. Проверьте настройки подключения к user-service.
         </div>
       )}
 
