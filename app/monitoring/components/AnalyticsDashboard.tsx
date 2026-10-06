@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Card, Row, Col, Spinner, Form, Table, Button } from "react-bootstrap";
 import {
   Chart as ChartJS,
@@ -16,7 +16,6 @@ import {
 } from "chart.js";
 import { Line, Doughnut } from "react-chartjs-2";
 import { useAnalytics, AnalyticsTopItem } from "../hooks/useAnalytics";
-import { monitoringFetch } from "../lib/api";
 
 ChartJS.register(
   CategoryScale,
@@ -78,35 +77,6 @@ const TopList: React.FC<{ title: string; items: AnalyticsTopItem[]; emptyLabel?:
 export const AnalyticsDashboard: React.FC<{ headerAction?: React.ReactNode }> = ({ headerAction }) => {
   const [days, setDays] = useState(30);
   const { data, loading, error, refresh } = useAnalytics(days);
-
-  // Регистрации из user-service (через прокси мониторинга).
-  const [userStats, setUserStats] = useState<Record<string, number> | null>(null);
-  const [userStatsState, setUserStatsState] = useState<"loading" | "ok" | "off" | "error">(
-    "loading"
-  );
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await monitoringFetch(`/api/monitoring/user-stats`);
-        const body = await res.json();
-        if (cancelled) return;
-        if (!body.configured) {
-          setUserStatsState("off");
-        } else if (body.stats) {
-          setUserStats(body.stats);
-          setUserStatsState("ok");
-        } else {
-          setUserStatsState("error");
-        }
-      } catch {
-        if (!cancelled) setUserStatsState("error");
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   if (loading && !data) {
     return (
@@ -173,7 +143,7 @@ export const AnalyticsDashboard: React.FC<{ headerAction?: React.ReactNode }> = 
     <div>
       <div className="mb-3">
         <h4 className="mb-1 text-brand">📈 SEO Analytics</h4>
-        <p className="text-muted small mb-2">Посещаемость сайта и регистрации пользователей</p>
+        <p className="text-muted small mb-2">Посещаемость сайта</p>
         <div className="d-flex gap-2 flex-wrap">
           <Form.Select
             value={days}
@@ -192,52 +162,16 @@ export const AnalyticsDashboard: React.FC<{ headerAction?: React.ReactNode }> = 
       </div>
 
       <Row className="g-3 mb-4">
-        <Col md={3} sm={6}>
+        <Col md={4} sm={6}>
           <StatCard label="Просмотры" value={data.totals.pageviews} hint={`за ${days} дн.`} />
         </Col>
-        <Col md={3} sm={6}>
+        <Col md={4} sm={6}>
           <StatCard label="Уник. посетители" value={data.totals.unique_visitors} hint={`за ${days} дн.`} />
         </Col>
-        <Col md={3} sm={6}>
+        <Col md={4} sm={6}>
           <StatCard label="Сессии" value={data.totals.sessions} hint={`за ${days} дн.`} />
         </Col>
-        <Col md={3} sm={6}>
-          <StatCard
-            label="Юзеры"
-            value={userStatsState === "ok" && userStats ? userStats.total_users ?? 0 : "—"}
-            hint={userStatsState === "ok" ? "всего регистраций" : userStatsState === "loading" ? "загрузка" : "нет подключения"}
-          />
-        </Col>
       </Row>
-
-      {/* Регистрации пользователей (user-service) */}
-      {userStatsState === "ok" && userStats && (
-        <>
-          <h6 className="text-brand mb-2">Новые регистрации и активность</h6>
-          <Row className="g-3 mb-4">
-            <Col md={2} sm={4} xs={6}>
-              <StatCard label="За 24ч" value={userStats.new_24h ?? 0} />
-            </Col>
-            <Col md={2} sm={4} xs={6}>
-              <StatCard label="За 7 дн." value={userStats.new_7d ?? 0} />
-            </Col>
-            <Col md={2} sm={4} xs={6}>
-              <StatCard label="За 30 дн." value={userStats.new_30d ?? 0} />
-            </Col>
-            <Col md={2} sm={4} xs={6}>
-              <StatCard label="Verified" value={userStats.verified ?? 0} />
-            </Col>
-            <Col md={2} sm={4} xs={6}>
-              <StatCard label="Активны 7д" value={userStats.active_7d ?? 0} />
-            </Col>
-          </Row>
-        </>
-      )}
-      {(userStatsState === "off" || userStatsState === "error") && (
-        <div className="text-muted small mb-4">
-          ℹ️ Статистика регистраций недоступна. Проверьте настройки подключения к user-service.
-        </div>
-      )}
 
       <Card className="shadow-sm border-0 mb-4">
         <Card.Header className="bg-white border-0 py-3">
