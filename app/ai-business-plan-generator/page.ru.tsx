@@ -129,6 +129,7 @@ function BetaForm() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          locale: "ru",
           name: "",
           email,
           message: `запрос на бета-тестирование PlanMaster AI получен`,

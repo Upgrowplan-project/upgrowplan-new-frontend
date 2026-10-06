@@ -95,7 +95,7 @@ export default function ContactForm({
       const res = await fetch(`${API_BASE}/api/monitoring/contact`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, message }),
+        body: JSON.stringify({ name, email, message, locale }),
       });
 
       if (!res.ok) {

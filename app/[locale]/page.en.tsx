@@ -246,7 +246,7 @@ export default function Home() {
       await fetch(`${API_BASE}/api/monitoring/contact`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: "", email: heroEmail, message: "Hero beta request — MarketSense AI (EN)" }),
+        body: JSON.stringify({ locale: "en", name: "", email: heroEmail, message: "Hero beta request — MarketSense AI (EN)" }),
       });
     } catch {
       // silent — still show success

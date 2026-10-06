@@ -87,6 +87,7 @@ function BetaForm() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          locale: "en",
           name: "",
           email,
           message: `User (${email}) is interested in the planMaster product.`,
