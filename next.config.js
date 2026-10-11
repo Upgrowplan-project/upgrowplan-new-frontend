@@ -172,6 +172,8 @@ const nextConfig = {
       { source: "/ru/solutions/planMaster/descriptionPage", destination: "/ru/ai-business-plan-generator", permanent: true },
       { source: "/solutions/synthFocusLab/descriptionPage", destination: "/solutions/synthetic-customer-research", permanent: true },
       { source: "/ru/solutions/synthFocusLab/descriptionPage", destination: "/ru/solutions/synthetic-customer-research", permanent: true },
+      { source: "/solutions/synthFocusLab", destination: "/solutions/synthetic-customer-research", permanent: true },
+      { source: "/ru/solutions/synthFocusLab", destination: "/ru/solutions/synthetic-customer-research", permanent: true },
 
       // ── doubled paths — GSC 404 cleanup (Navigation bug, June-July 2026) ─
       // Pattern /X/X → /X

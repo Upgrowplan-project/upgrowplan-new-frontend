@@ -41,14 +41,14 @@ const SOLUTIONS_ITEMS = {
     { label: "Business Plan", href: "/solutions/plan" },
     { label: "Market Research", href: "/solutions/marketResearch/descriptionPage" },
     { label: "Business Pulse", href: "/solutions/businessPulse" },
-    { label: "Focus Lab", href: "/solutions/synthFocusLab" },
+    { label: "Focus Lab", href: "/solutions/synthetic-customer-research" },
     { label: "Relocation", href: "/solutions/openAbroad" },
   ],
   ru: [
     { label: "Бизнес-план", href: "/solutions/plan" },
     { label: "Анализ рынка", href: "/ru/solutions/marketResearch/descriptionPage" },
     { label: "Business Pulse", href: "/solutions/businessPulse" },
-    { label: "Focus Lab", href: "/solutions/synthFocusLab" },
+    { label: "Focus Lab", href: "/solutions/synthetic-customer-research" },
     { label: "Релокация", href: "/solutions/openAbroad" },
   ],
 };
