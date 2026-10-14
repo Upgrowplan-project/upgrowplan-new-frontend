@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Header from "../../../components/Header";
 import Grade from "../../../components/Grade";
 import styles from "./marketResearch.module.css";
+import { marketResearchFetch } from "./apiFetch";
 import {
   FiBarChart2,
   FiCheck,
@@ -239,6 +240,7 @@ interface FormData {
   // Строка, а не number: пустое поле должно отличаться от нуля, а <input type="number"> в React
   // отдаёт "" при нечисловом вводе — тогда причина ошибки для пользователя пропадает.
   plannedCustomersFirstYear: string;
+  plannedAvgCheck: string;
   // Ось «чем ограничена пропускная способность» — определяет СПОСОБ СЧЁТА ёмкости, а не только число.
   capacityLimit: string;
   capacityValue: string;
@@ -524,6 +526,7 @@ export default function MarketResearchPage() {
     offeringSubType: "",
     priceSegment: "",
     plannedCustomersFirstYear: "",
+    plannedAvgCheck: "",
     capacityLimit: "",
     capacityValue: "",
     purchaseFrequency: "",
@@ -671,7 +674,7 @@ export default function MarketResearchPage() {
     let cancelled = false;
     (async () => {
       try {
-        const resp = await fetch(`${API_BASE}/api/v1/research/${active.research_id}`, {
+        const resp = await marketResearchFetch(`${API_BASE}/api/v1/research/${active.research_id}`, {
           cache: "no-store",
           headers: { "Cache-Control": "no-cache, no-store, must-revalidate", Pragma: "no-cache" },
         });
@@ -768,7 +771,7 @@ export default function MarketResearchPage() {
     const apiBaseUrl = API_BASE;
     const watchdog = setInterval(async () => {
       try {
-        const response = await fetch(`${apiBaseUrl}/api/v1/research/${researchId}`, {
+        const response = await marketResearchFetch(`${apiBaseUrl}/api/v1/research/${researchId}`, {
           cache: "no-store",
           headers: {
             "Cache-Control": "no-cache, no-store, must-revalidate",
@@ -1092,8 +1095,7 @@ export default function MarketResearchPage() {
     if (formData.capacityLimit && formData.capacityLimit !== "none"
         && !/^[1-9][0-9]{0,7}$/.test(formData.capacityValue.trim()))
       missing.push({ key: "capacityValue", label: "Укажите число — без него потенциал не посчитать" });
-    if (!/^[1-9][0-9]{0,7}$/.test(formData.plannedCustomersFirstYear.trim()))
-      missing.push({ key: "plannedCustomersFirstYear", label: "Планируемое число клиентов за первый год" });
+    // [13.10 · владелец] «клиентов за рабочий день» — необязательное: пустое поле сервис моделирует по отраслевым ориентирам
     return missing;
   };
   // Red outline shown only after a submit attempt, auto-clears once the field is filled.
@@ -1226,8 +1228,13 @@ export default function MarketResearchPage() {
       ...(/^[1-9][0-9]{0,7}$/.test(formData.purchaseFrequency.trim())
         ? { purchase_frequency_per_month: parseInt(formData.purchaseFrequency.trim(), 10) }
         : {}),
-      ...(/^[1-9][0-9]{0,7}$/.test(formData.plannedCustomersFirstYear.trim())
-        ? { planned_customers_first_year: parseInt(formData.plannedCustomersFirstYear.trim(), 10) }
+      // [13.10 · владелец] дневной масштаб: клиентов за рабочий день в первый год; в год сервис пересчитывает сам
+      ...(/^[1-9][0-9]{0,4}$/.test(formData.plannedCustomersFirstYear.trim())
+        ? { planned_customers_per_day: parseInt(formData.plannedCustomersFirstYear.trim(), 10) }
+        : {}),
+      // [13.10 · владелец, путь 1] средний чек заказчика (местная валюта) — SOM, если чек рынка не измерен
+      ...(/^[1-9][0-9]{0,6}$/.test(formData.plannedAvgCheck.trim())
+        ? { planned_avg_check: parseInt(formData.plannedAvgCheck.trim(), 10) }
         : {}),
       // Optional extras
       ...(formData.targetAudience ? { target_audience_description: formData.targetAudience } : {}),
@@ -1239,7 +1246,7 @@ export default function MarketResearchPage() {
     // enforced in /research/direct; this is for instant UX. On network failure
     // we proceed and let the backend gate decide.
     try {
-      const validateResp = await fetch(`${healthApiBaseUrl}/api/v1/research/validate`, {
+      const validateResp = await marketResearchFetch(`${healthApiBaseUrl}/api/v1/research/validate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestData),
@@ -1279,7 +1286,7 @@ export default function MarketResearchPage() {
       // HARDCODED FOR NOW - env var not working
       const apiBaseUrl = API_BASE;
 
-      const response = await fetch(
+      const response = await marketResearchFetch(
         `${apiBaseUrl}/api/v1/research/direct`,
         {
           method: "POST",
@@ -1446,7 +1453,7 @@ export default function MarketResearchPage() {
       pollCount++;
 
       try {
-        const response = await fetch(`${apiBaseUrl}/api/v1/research/${id}`, {
+        const response = await marketResearchFetch(`${apiBaseUrl}/api/v1/research/${id}`, {
           cache: "no-store",
           headers: {
             "Cache-Control": "no-cache, no-store, must-revalidate",
@@ -1575,7 +1582,7 @@ export default function MarketResearchPage() {
 
     try {
       // Fetch enhanced report (new format)
-      const enhancedResponse = await fetch(
+      const enhancedResponse = await marketResearchFetch(
         `${apiBaseUrl}/api/v1/research/${id}/enhanced-report`,
         {
           cache: "no-store",
@@ -1658,7 +1665,7 @@ export default function MarketResearchPage() {
           "Enhanced report not available (404), falling back to old format"
         );
         try {
-          const response = await fetch(
+          const response = await marketResearchFetch(
             `${apiBaseUrl}/api/v1/research/${id}/report`,
             {
               cache: "no-store",
@@ -1752,7 +1759,7 @@ export default function MarketResearchPage() {
     try {
       if (researchId) {
         const apiBaseUrl = API_BASE;
-        await fetch(`${apiBaseUrl}/api/v1/research/${researchId}`, {
+        await marketResearchFetch(`${apiBaseUrl}/api/v1/research/${researchId}`, {
           method: "DELETE",
         });
       }
@@ -1771,7 +1778,7 @@ export default function MarketResearchPage() {
     try {
       const apiBaseUrl = API_BASE;
 
-      const response = await fetch(
+      const response = await marketResearchFetch(
         `${apiBaseUrl}/api/v1/research/${researchId}/report/${format}`,
         {
           method: "GET",
@@ -1875,7 +1882,7 @@ export default function MarketResearchPage() {
         }
         try {
           setDriveState("uploading");
-          const fileResp = await fetch(
+          const fileResp = await marketResearchFetch(
             `${API_BASE}/api/v1/research/${researchId}/report/docx`,
             { headers: { "Cache-Control": "no-cache" } }
           );
@@ -2258,7 +2265,10 @@ export default function MarketResearchPage() {
                 summaryRows.push(["Частота покупки", `${formData.purchaseFrequency} раз в месяц`]);
               }
               if (formData.plannedCustomersFirstYear) {
-                summaryRows.push(["Ваш план на 1-й год", `${formData.plannedCustomersFirstYear} клиентов`]);
+                summaryRows.push(["Ваш план (1-й год)", `${formData.plannedCustomersFirstYear} клиентов в рабочий день`]);
+              }
+              if (formData.plannedAvgCheck) {
+                summaryRows.push(["Ваш средний чек", `${formData.plannedAvgCheck} (местная валюта)`]);
               }
               return (
                 <div>
@@ -2737,11 +2747,12 @@ export default function MarketResearchPage() {
 
               {/* === МАСШТАБ ПЛАНОВ === */}
               <div className={styles.section}>
-                <h3>Планируемое число клиентов за первый год</h3>
+                <h3>Планируемое число клиентов за рабочий день (за первый год) — необязательно</h3>
                 <p className={styles.formDescription} style={{ marginBottom: "0.75rem" }}>
-                  Мы должны понимать масштаб ваших планов, иначе не сможем определить ваш потенциал.
-                  Это число покупателей, которые заплатят вам за первый год, — от него и средней цены
-                  по рынку считается достижимая доля (SOM).
+                  Сколько клиентов в среднем вы рассчитываете обслуживать за один рабочий день в первый год.
+                  От этого числа и средней цены по рынку считается достижимая доля (SOM). Если не знаете —
+                  оставьте пустым: сервис оценит число по отраслевым ориентирам для вашей ниши и города и
+                  предупредит об этом в отчёте.
                 </p>
                 <div className={styles.formGroup}>
                   <input
@@ -2752,18 +2763,38 @@ export default function MarketResearchPage() {
                     onChange={(e) =>
                       setFormData((prev) => ({
                         ...prev,
-                        plannedCustomersFirstYear: e.target.value.replace(/[^0-9]/g, "").slice(0, 8),
+                        plannedCustomersFirstYear: e.target.value.replace(/[^0-9]/g, "").slice(0, 5),
                       }))
                     }
                     className={styles.input}
-                    style={requiredFieldStyle(!/^[1-9][0-9]{0,7}$/.test(formData.plannedCustomersFirstYear.trim()))}
-                    placeholder="Например: 1200"
+                    placeholder="Например: 15"
                   />
-                  {submitAttempted && !/^[1-9][0-9]{0,7}$/.test(formData.plannedCustomersFirstYear.trim()) && (
-                    <span style={fieldErrorTextStyle}>
-                      Укажите целое число клиентов (от 1) — без него расчёт потенциала невозможен
-                    </span>
-                  )}
+                </div>
+              </div>
+
+              {/* === СРЕДНИЙ ЧЕК (13.10 · владелец: путь 1) === */}
+              <div className={styles.section}>
+                <h3>Планируемый средний чек — необязательно</h3>
+                <p className={styles.formDescription} style={{ marginBottom: "0.75rem" }}>
+                  Сколько в среднем платит один клиент за визит или заказ, в местной валюте страны вашего бизнеса.
+                  Если сервис найдёт средний чек на рынке, SOM считается по рынку, а ваш чек показывается для
+                  сравнения. Если на рынке чек не найден — SOM будет посчитан по вашему чеку.
+                </p>
+                <div className={styles.formGroup}>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    name="plannedAvgCheck"
+                    value={formData.plannedAvgCheck}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        plannedAvgCheck: e.target.value.replace(/[^0-9]/g, "").slice(0, 7),
+                      }))
+                    }
+                    className={styles.input}
+                    placeholder="Например: 3500"
+                  />
                 </div>
               </div>
 

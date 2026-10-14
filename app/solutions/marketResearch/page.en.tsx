@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Header from "../../../components/Header";
 import Grade from "../../../components/Grade";
 import styles from "./marketResearch.module.css";
+import { marketResearchFetch } from "./apiFetch";
 import {
   FiBarChart2,
   FiCheck,
@@ -227,6 +228,7 @@ interface FormData {
   // Строка, а не number: пустое поле должно отличаться от нуля, а <input type="number"> в React
   // отдаёт "" при нечисловом вводе — тогда причина ошибки для пользователя пропадает.
   plannedCustomersFirstYear: string;
+  plannedAvgCheck: string;
   // Ось «чем ограничена пропускная способность» — определяет СПОСОБ СЧЁТА ёмкости, а не только число.
   capacityLimit: string;
   capacityValue: string;
@@ -512,6 +514,7 @@ export default function MarketResearchPage() {
     offeringSubType: "",
     priceSegment: "",
     plannedCustomersFirstYear: "",
+    plannedAvgCheck: "",
     capacityLimit: "",
     capacityValue: "",
     purchaseFrequency: "",
@@ -634,7 +637,7 @@ export default function MarketResearchPage() {
     let cancelled = false;
     (async () => {
       try {
-        const resp = await fetch(`${API_BASE}/api/v1/research/${active.research_id}`, {
+        const resp = await marketResearchFetch(`${API_BASE}/api/v1/research/${active.research_id}`, {
           cache: "no-store",
           headers: { "Cache-Control": "no-cache, no-store, must-revalidate", Pragma: "no-cache" },
         });
@@ -731,7 +734,7 @@ export default function MarketResearchPage() {
     const apiBaseUrl = API_BASE;
     const watchdog = setInterval(async () => {
       try {
-        const response = await fetch(`${apiBaseUrl}/api/v1/research/${researchId}`, {
+        const response = await marketResearchFetch(`${apiBaseUrl}/api/v1/research/${researchId}`, {
           cache: "no-store",
           headers: {
             "Cache-Control": "no-cache, no-store, must-revalidate",
@@ -1054,8 +1057,7 @@ export default function MarketResearchPage() {
     if (formData.capacityLimit && formData.capacityLimit !== "none"
         && !/^[1-9][0-9]{0,7}$/.test(formData.capacityValue.trim()))
       missing.push({ key: "capacityValue", label: "Enter a number — without it we cannot size your potential" });
-    if (!/^[1-9][0-9]{0,7}$/.test(formData.plannedCustomersFirstYear.trim()))
-      missing.push({ key: "plannedCustomersFirstYear", label: "Planned paying customers in year one" });
+    // [13.10 · owner] "customers per working day" is optional: an empty field is modelled by the service from industry benchmarks
     return missing;
   };
   // Red outline shown only after a submit attempt, auto-clears once the field is filled.
@@ -1188,8 +1190,13 @@ export default function MarketResearchPage() {
       ...(/^[1-9][0-9]{0,7}$/.test(formData.purchaseFrequency.trim())
         ? { purchase_frequency_per_month: parseInt(formData.purchaseFrequency.trim(), 10) }
         : {}),
-      ...(/^[1-9][0-9]{0,7}$/.test(formData.plannedCustomersFirstYear.trim())
-        ? { planned_customers_first_year: parseInt(formData.plannedCustomersFirstYear.trim(), 10) }
+      // [13.10 · owner] daily scale: customers per working day in year one; the service scales it to a year
+      ...(/^[1-9][0-9]{0,4}$/.test(formData.plannedCustomersFirstYear.trim())
+        ? { planned_customers_per_day: parseInt(formData.plannedCustomersFirstYear.trim(), 10) }
+        : {}),
+      // [13.10 · владелец, путь 1] средний чек заказчика (местная валюта) — SOM, если чек рынка не измерен
+      ...(/^[1-9][0-9]{0,6}$/.test(formData.plannedAvgCheck.trim())
+        ? { planned_avg_check: parseInt(formData.plannedAvgCheck.trim(), 10) }
         : {}),
       // Optional extras
       ...(formData.targetAudience ? { target_audience_description: formData.targetAudience } : {}),
@@ -1201,7 +1208,7 @@ export default function MarketResearchPage() {
     // enforced in /research/direct; this is for instant UX. On network failure
     // we proceed and let the backend gate decide.
     try {
-      const validateResp = await fetch(`${healthApiBaseUrl}/api/v1/research/validate`, {
+      const validateResp = await marketResearchFetch(`${healthApiBaseUrl}/api/v1/research/validate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestData),
@@ -1241,7 +1248,7 @@ export default function MarketResearchPage() {
       // HARDCODED FOR NOW - env var not working
       const apiBaseUrl = API_BASE;
 
-      const response = await fetch(
+      const response = await marketResearchFetch(
         `${apiBaseUrl}/api/v1/research/direct`,
         {
           method: "POST",
@@ -1408,7 +1415,7 @@ export default function MarketResearchPage() {
       pollCount++;
 
       try {
-        const response = await fetch(`${apiBaseUrl}/api/v1/research/${id}`, {
+        const response = await marketResearchFetch(`${apiBaseUrl}/api/v1/research/${id}`, {
           cache: "no-store",
           headers: {
             "Cache-Control": "no-cache, no-store, must-revalidate",
@@ -1537,7 +1544,7 @@ export default function MarketResearchPage() {
 
     try {
       // Fetch enhanced report (new format)
-      const enhancedResponse = await fetch(
+      const enhancedResponse = await marketResearchFetch(
         `${apiBaseUrl}/api/v1/research/${id}/enhanced-report`,
         {
           cache: "no-store",
@@ -1620,7 +1627,7 @@ export default function MarketResearchPage() {
           "Enhanced report not available (404), falling back to old format"
         );
         try {
-          const response = await fetch(
+          const response = await marketResearchFetch(
             `${apiBaseUrl}/api/v1/research/${id}/report`,
             {
               cache: "no-store",
@@ -1714,7 +1721,7 @@ export default function MarketResearchPage() {
     try {
       if (researchId) {
         const apiBaseUrl = API_BASE;
-        await fetch(`${apiBaseUrl}/api/v1/research/${researchId}`, {
+        await marketResearchFetch(`${apiBaseUrl}/api/v1/research/${researchId}`, {
           method: "DELETE",
         });
       }
@@ -1733,7 +1740,7 @@ export default function MarketResearchPage() {
     try {
       const apiBaseUrl = API_BASE;
 
-      const response = await fetch(
+      const response = await marketResearchFetch(
         `${apiBaseUrl}/api/v1/research/${researchId}/report/${format}`,
         {
           method: "GET",
@@ -2105,7 +2112,10 @@ export default function MarketResearchPage() {
                 summaryRows.push(["Purchase frequency", `${formData.purchaseFrequency} per month`]);
               }
               if (formData.plannedCustomersFirstYear) {
-                summaryRows.push(["Your year-one plan", `${formData.plannedCustomersFirstYear} customers`]);
+                summaryRows.push(["Your plan (year one)", `${formData.plannedCustomersFirstYear} customers per working day`]);
+              }
+              if (formData.plannedAvgCheck) {
+                summaryRows.push(["Your average check", `${formData.plannedAvgCheck} (local currency)`]);
               }
               return (
                 <div>
@@ -2584,11 +2594,12 @@ export default function MarketResearchPage() {
 
               {/* === SCALE OF THE PLAN === */}
               <div className={styles.section}>
-                <h3>Planned paying customers in year one</h3>
+                <h3>Planned customers per working day (in year one) — optional</h3>
                 <p className={styles.formDescription} style={{ marginBottom: "0.75rem" }}>
-                  We need to understand the scale of your plans, otherwise we cannot determine your
-                  potential. This is the number of buyers who will pay you in the first year — together
-                  with the measured market price it gives your obtainable share (SOM).
+                  How many customers on average you expect to serve in one working day during the first year.
+                  Together with the market price it gives your obtainable share (SOM). If you do not know —
+                  leave it empty: the service will estimate it from industry benchmarks for your niche and city
+                  and will say so in the report.
                 </p>
                 <div className={styles.formGroup}>
                   <input
@@ -2599,18 +2610,38 @@ export default function MarketResearchPage() {
                     onChange={(e) =>
                       setFormData((prev) => ({
                         ...prev,
-                        plannedCustomersFirstYear: e.target.value.replace(/[^0-9]/g, "").slice(0, 8),
+                        plannedCustomersFirstYear: e.target.value.replace(/[^0-9]/g, "").slice(0, 5),
                       }))
                     }
                     className={styles.input}
-                    style={requiredFieldStyle(!/^[1-9][0-9]{0,7}$/.test(formData.plannedCustomersFirstYear.trim()))}
-                    placeholder="For example: 1200"
+                    placeholder="For example: 15"
                   />
-                  {submitAttempted && !/^[1-9][0-9]{0,7}$/.test(formData.plannedCustomersFirstYear.trim()) && (
-                    <span style={fieldErrorTextStyle}>
-                      Enter a whole number of customers (1 or more) — without it we cannot size your potential
-                    </span>
-                  )}
+                </div>
+              </div>
+
+              {/* === AVERAGE CHECK (13.10 · owner: path 1) === */}
+              <div className={styles.section}>
+                <h3>Planned average check — optional</h3>
+                <p className={styles.formDescription} style={{ marginBottom: "0.75rem" }}>
+                  How much one customer pays on average per visit or order, in the local currency of your business's
+                  country. If the service finds the market's average check, SOM uses the market and your check is shown
+                  for comparison. If the market check is not found, SOM is calculated on your check.
+                </p>
+                <div className={styles.formGroup}>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    name="plannedAvgCheck"
+                    value={formData.plannedAvgCheck}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        plannedAvgCheck: e.target.value.replace(/[^0-9]/g, "").slice(0, 7),
+                      }))
+                    }
+                    className={styles.input}
+                    placeholder="For example: 25"
+                  />
                 </div>
               </div>
 
