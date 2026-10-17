@@ -509,6 +509,11 @@ const cleanMarkdown = (text: string): string => {
   );
 };
 
+// Цифровые типы продукта — одно место: маршрут исследования (handleSubmit) и показ полей формы.
+const DIGITAL_PRODUCT_TYPES: ProductType[] = [
+  "saas_b2b", "saas_b2c", "cloud_platform", "digital_apps", "marketplace", "p2p_platform",
+] as ProductType[];
+
 export default function MarketResearchPage() {
   const productNameInputRef = useRef<HTMLInputElement>(null);
   const LAST_REQUEST_FORM_DATA_KEY = "marketResearch:lastRequestFormData:ru";
@@ -535,6 +540,8 @@ export default function MarketResearchPage() {
   };
 
   const [formData, setFormData] = useState<FormData>(defaultFormData);
+  // [17.10 · владелец] цифровой продукт (среди отмеченных есть цифровой тип) — поле «Как часто покупает» скрыто
+  const isDigitalForm = formData.productTypes.some((t) => DIGITAL_PRODUCT_TYPES.includes(t));
 
   const [researchId, setResearchId] = useState<string | null>(null);
   const [researchStatus, setResearchStatus] = useState<ResearchStatus | null>(
@@ -1095,7 +1102,7 @@ export default function MarketResearchPage() {
     if (formData.capacityLimit && formData.capacityLimit !== "none"
         && !/^[1-9][0-9]{0,7}$/.test(formData.capacityValue.trim()))
       missing.push({ key: "capacityValue", label: "Укажите число — без него потенциал не посчитать" });
-    // [13.10 · владелец] «клиентов за рабочий день» — необязательное: пустое поле сервис моделирует по отраслевым ориентирам
+    // [17.10 · владелец, вариант А2] «клиентов в день» — необязательное: пустое поле — SOM «не измерен», сервис число не угадывает
     return missing;
   };
   // Red outline shown only after a submit attempt, auto-clears once the field is filled.
@@ -1194,9 +1201,6 @@ export default function MarketResearchPage() {
     // онлайн-обучение» и «B2C SaaS», первым кликнул образование → в сервис ушёл `education`, тот счёл кейс
     // ФИЗИЧЕСКИМ, пошёл в Google Places (0 результатов) и выродил тему до «education market».
     // Порядок клика не должен решать маршрут исследования.
-    const DIGITAL_PRODUCT_TYPES: ProductType[] = [
-      "saas_b2b", "saas_b2c", "cloud_platform", "digital_apps", "marketplace", "p2p_platform",
-    ] as ProductType[];
     const primaryProductType =
       formData.productTypes.find((t) => DIGITAL_PRODUCT_TYPES.includes(t)) ?? formData.productTypes[0];
     const industryStr = productTypeToIndustry[primaryProductType] ?? primaryProductType;
@@ -1225,7 +1229,8 @@ export default function MarketResearchPage() {
       ...(formData.capacityLimit !== "none" && /^[1-9][0-9]{0,7}$/.test(formData.capacityValue.trim())
         ? { capacity_value: parseInt(formData.capacityValue.trim(), 10) }
         : {}),
-      ...(/^[1-9][0-9]{0,7}$/.test(formData.purchaseFrequency.trim())
+      // [17.10 · владелец] у цифровых продуктов поле частоты скрыто (подписка — цены уже месячные) — и не отправляется
+      ...(!isDigitalForm && /^[1-9][0-9]{0,7}$/.test(formData.purchaseFrequency.trim())
         ? { purchase_frequency_per_month: parseInt(formData.purchaseFrequency.trim(), 10) }
         : {}),
       // [13.10 · владелец] дневной масштаб: клиентов за рабочий день в первый год; в год сервис пересчитывает сам
@@ -2261,11 +2266,11 @@ export default function MarketResearchPage() {
                   ? (_cap?.label || formData.capacityLimit)
                   : `${formData.capacityValue} ${_cap?.unit || ""}`.trim()]);
               }
-              if (formData.purchaseFrequency) {
+              if (formData.purchaseFrequency && !isDigitalForm) {
                 summaryRows.push(["Частота покупки", `${formData.purchaseFrequency} раз в месяц`]);
               }
               if (formData.plannedCustomersFirstYear) {
-                summaryRows.push(["Ваш план (1-й год)", `${formData.plannedCustomersFirstYear} клиентов в рабочий день`]);
+                summaryRows.push(["Клиентов в день", `${formData.plannedCustomersFirstYear}`]);
               }
               if (formData.plannedAvgCheck) {
                 summaryRows.push(["Ваш средний чек", `${formData.plannedAvgCheck} (местная валюта)`]);
@@ -2721,7 +2726,8 @@ export default function MarketResearchPage() {
                 )}
               </div>
 
-              {/* === ЧАСТОТА ПОКУПКИ (опционально) === */}
+              {/* === ЧАСТОТА ПОКУПКИ (опционально; 17.10 · владелец: у цифровых продуктов скрыта) === */}
+              {!isDigitalForm && (
               <div className={styles.section}>
                 <h3>Как часто покупает типичный клиент</h3>
                 <p className={styles.formDescription} style={{ marginBottom: "0.75rem" }}>
@@ -2744,15 +2750,15 @@ export default function MarketResearchPage() {
                   />
                 </div>
               </div>
+              )}
 
-              {/* === МАСШТАБ ПЛАНОВ === */}
+              {/* === МАСШТАБ ПЛАНОВ (17.10 · владелец: текст согласован, вариант А2) === */}
               <div className={styles.section}>
-                <h3>Планируемое число клиентов за рабочий день (за первый год) — необязательно</h3>
+                <h3>Сколько клиентов в день будет у вашего бизнеса — необязательно</h3>
                 <p className={styles.formDescription} style={{ marginBottom: "0.75rem" }}>
-                  Сколько клиентов в среднем вы рассчитываете обслуживать за один рабочий день в первый год.
-                  От этого числа и средней цены по рынку считается достижимая доля (SOM). Если не знаете —
-                  оставьте пустым: сервис оценит число по отраслевым ориентирам для вашей ниши и города и
-                  предупредит об этом в отчёте.
+                  Сколько клиентов в среднем вы рассчитываете обслуживать за один рабочий день. От этого числа и
+                  средней цены по рынку считается достижимая доля (SOM). Если оставить пустым — ваш потенциальный
+                  рынок сбыта не будет посчитан.
                 </p>
                 <div className={styles.formGroup}>
                   <input

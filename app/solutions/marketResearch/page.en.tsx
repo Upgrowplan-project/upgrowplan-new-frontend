@@ -497,6 +497,11 @@ const cleanMarkdown = (text: string): string => {
   );
 };
 
+// Digital product types — one place: the research route (handleSubmit) and which form fields are shown.
+const DIGITAL_PRODUCT_TYPES: ProductType[] = [
+  "saas_b2b", "saas_b2c", "cloud_platform", "digital_apps", "marketplace", "p2p_platform",
+] as ProductType[];
+
 export default function MarketResearchPage() {
   const productNameInputRef = useRef<HTMLInputElement>(null);
   const LAST_REQUEST_FORM_DATA_KEY = "marketResearch:lastRequestFormData:en";
@@ -523,6 +528,8 @@ export default function MarketResearchPage() {
   };
 
   const [formData, setFormData] = useState<FormData>(defaultFormData);
+  // [17.10 · owner] digital product (a digital type is among the selected) — "How often a typical customer buys" is hidden
+  const isDigitalForm = formData.productTypes.some((t) => DIGITAL_PRODUCT_TYPES.includes(t));
 
   const [researchId, setResearchId] = useState<string | null>(null);
   const [researchStatus, setResearchStatus] = useState<ResearchStatus | null>(
@@ -1057,7 +1064,7 @@ export default function MarketResearchPage() {
     if (formData.capacityLimit && formData.capacityLimit !== "none"
         && !/^[1-9][0-9]{0,7}$/.test(formData.capacityValue.trim()))
       missing.push({ key: "capacityValue", label: "Enter a number — without it we cannot size your potential" });
-    // [13.10 · owner] "customers per working day" is optional: an empty field is modelled by the service from industry benchmarks
+    // [17.10 · owner, option A2] "customers per day" is optional: empty — SOM "not measured", the service does not guess the number
     return missing;
   };
   // Red outline shown only after a submit attempt, auto-clears once the field is filled.
@@ -1156,9 +1163,6 @@ export default function MarketResearchPage() {
     // онлайн-обучение» и «B2C SaaS», первым кликнул образование → в сервис ушёл `education`, тот счёл кейс
     // ФИЗИЧЕСКИМ, пошёл в Google Places (0 результатов) и выродил тему до «education market».
     // Порядок клика не должен решать маршрут исследования.
-    const DIGITAL_PRODUCT_TYPES: ProductType[] = [
-      "saas_b2b", "saas_b2c", "cloud_platform", "digital_apps", "marketplace", "p2p_platform",
-    ] as ProductType[];
     const primaryProductType =
       formData.productTypes.find((t) => DIGITAL_PRODUCT_TYPES.includes(t)) ?? formData.productTypes[0];
     const industryStr = productTypeToIndustry[primaryProductType] ?? primaryProductType;
@@ -1187,7 +1191,8 @@ export default function MarketResearchPage() {
       ...(formData.capacityLimit !== "none" && /^[1-9][0-9]{0,7}$/.test(formData.capacityValue.trim())
         ? { capacity_value: parseInt(formData.capacityValue.trim(), 10) }
         : {}),
-      ...(/^[1-9][0-9]{0,7}$/.test(formData.purchaseFrequency.trim())
+      // [17.10 · owner] hidden for digital products (subscription prices are already monthly) — and not sent
+      ...(!isDigitalForm && /^[1-9][0-9]{0,7}$/.test(formData.purchaseFrequency.trim())
         ? { purchase_frequency_per_month: parseInt(formData.purchaseFrequency.trim(), 10) }
         : {}),
       // [13.10 · owner] daily scale: customers per working day in year one; the service scales it to a year
@@ -2108,11 +2113,11 @@ export default function MarketResearchPage() {
                   ? (_cap?.label || formData.capacityLimit)
                   : `${formData.capacityValue} ${_cap?.unit || ""}`.trim()]);
               }
-              if (formData.purchaseFrequency) {
+              if (formData.purchaseFrequency && !isDigitalForm) {
                 summaryRows.push(["Purchase frequency", `${formData.purchaseFrequency} per month`]);
               }
               if (formData.plannedCustomersFirstYear) {
-                summaryRows.push(["Your plan (year one)", `${formData.plannedCustomersFirstYear} customers per working day`]);
+                summaryRows.push(["Customers per day", `${formData.plannedCustomersFirstYear}`]);
               }
               if (formData.plannedAvgCheck) {
                 summaryRows.push(["Your average check", `${formData.plannedAvgCheck} (local currency)`]);
@@ -2568,7 +2573,8 @@ export default function MarketResearchPage() {
                 )}
               </div>
 
-              {/* === ЧАСТОТА ПОКУПКИ (опционально) === */}
+              {/* === ЧАСТОТА ПОКУПКИ (опционально; 17.10 · owner: hidden for digital products) === */}
+              {!isDigitalForm && (
               <div className={styles.section}>
                 <h3>How often a typical customer buys</h3>
                 <p className={styles.formDescription} style={{ marginBottom: "0.75rem" }}>
@@ -2591,15 +2597,15 @@ export default function MarketResearchPage() {
                   />
                 </div>
               </div>
+              )}
 
-              {/* === SCALE OF THE PLAN === */}
+              {/* === SCALE OF THE PLAN (17.10 · owner: wording agreed, option A2) === */}
               <div className={styles.section}>
-                <h3>Planned customers per working day (in year one) — optional</h3>
+                <h3>How many customers per day your business will have — optional</h3>
                 <p className={styles.formDescription} style={{ marginBottom: "0.75rem" }}>
-                  How many customers on average you expect to serve in one working day during the first year.
-                  Together with the market price it gives your obtainable share (SOM). If you do not know —
-                  leave it empty: the service will estimate it from industry benchmarks for your niche and city
-                  and will say so in the report.
+                  How many customers on average you expect to serve in one working day. Together with the market
+                  average price it gives your obtainable share (SOM). If left empty, your potential sales market
+                  will not be calculated.
                 </p>
                 <div className={styles.formGroup}>
                   <input
