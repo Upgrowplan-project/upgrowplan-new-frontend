@@ -497,6 +497,9 @@ const cleanMarkdown = (text: string): string => {
   );
 };
 
+// [17.10 · owner] the beta for testers covers digital products only (physical niches are not ready yet)
+const DIGITAL_ONLY_BETA = true;
+
 // Digital product types — one place: the research route (handleSubmit) and which form fields are shown.
 const DIGITAL_PRODUCT_TYPES: ProductType[] = [
   "saas_b2b", "saas_b2c", "cloud_platform", "digital_apps", "marketplace", "p2p_platform",
@@ -945,7 +948,11 @@ export default function MarketResearchPage() {
   ];
 
   // Grouped structure for the multi-select panel
-  const productTypesByCategory = productTypeOptions.reduce<Record<string, typeof productTypeOptions>>(
+  // [17.10 · owner: testers get the digital version only] beta: digital types only (the same list the service routes as digital);
+  // lift after the beta — DIGITAL_ONLY_BETA = false
+  const productTypesByCategory = productTypeOptions
+    .filter((o) => !DIGITAL_ONLY_BETA || DIGITAL_PRODUCT_TYPES.includes(o.value))
+    .reduce<Record<string, typeof productTypeOptions>>(
     (acc, opt) => {
       if (!acc[opt.category]) acc[opt.category] = [];
       acc[opt.category].push(opt);
@@ -2305,6 +2312,11 @@ export default function MarketResearchPage() {
 
               <div className={styles.section}>
                 <h3>Product or service type * (multiple choice)</h3>
+                {DIGITAL_ONLY_BETA && (
+                  <p className={styles.formDescription} style={{ marginBottom: "0.75rem" }}>
+                    Beta: research is currently available for digital products only (SaaS, apps, platforms).
+                  </p>
+                )}
                 <div className={styles.productTypeSelectWrapper} style={requiredFieldStyle(formData.productTypes.length === 0)}>
                   {/* Selected tags */}
                   {formData.productTypes.length > 0 && (

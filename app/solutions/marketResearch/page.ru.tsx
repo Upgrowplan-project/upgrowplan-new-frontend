@@ -509,6 +509,9 @@ const cleanMarkdown = (text: string): string => {
   );
 };
 
+// [17.10 · владелец] бета для тестеров — только цифровые продукты (физические ниши ещё не готовы)
+const DIGITAL_ONLY_BETA = true;
+
 // Цифровые типы продукта — одно место: маршрут исследования (handleSubmit) и показ полей формы.
 const DIGITAL_PRODUCT_TYPES: ProductType[] = [
   "saas_b2b", "saas_b2c", "cloud_platform", "digital_apps", "marketplace", "p2p_platform",
@@ -982,7 +985,11 @@ export default function MarketResearchPage() {
   ];
 
   // Grouped structure for the multi-select panel
-  const productTypesByCategory = productTypeOptions.reduce<Record<string, typeof productTypeOptions>>(
+  // [17.10 · владелец: тестерам — только цифровая версия] в бете выбор — только цифровые типы (тот же список, по которому сервис
+  // идёт цифровым путём); снять ограничение после беты — DIGITAL_ONLY_BETA = false
+  const productTypesByCategory = productTypeOptions
+    .filter((o) => !DIGITAL_ONLY_BETA || DIGITAL_PRODUCT_TYPES.includes(o.value))
+    .reduce<Record<string, typeof productTypeOptions>>(
     (acc, opt) => {
       if (!acc[opt.category]) acc[opt.category] = [];
       acc[opt.category].push(opt);
@@ -2458,6 +2465,11 @@ export default function MarketResearchPage() {
 
               <div className={styles.section}>
                 <h3>Тип продукта или услуги * (можно выбрать несколько)</h3>
+                {DIGITAL_ONLY_BETA && (
+                  <p className={styles.formDescription} style={{ marginBottom: "0.75rem" }}>
+                    Бета-версия: сейчас доступны исследования только цифровых продуктов (SaaS, приложения, платформы).
+                  </p>
+                )}
                 <div className={styles.productTypeSelectWrapper} style={requiredFieldStyle(formData.productTypes.length === 0)}>
                   {/* Selected tags */}
                   {formData.productTypes.length > 0 && (
