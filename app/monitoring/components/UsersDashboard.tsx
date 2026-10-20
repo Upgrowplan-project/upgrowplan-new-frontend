@@ -23,6 +23,7 @@ type ManagedUser = {
   createdAt: string | null;
   lastLoginAt: string | null;
   provider: string | null;
+  marketResearchRunsRemaining: number;
 };
 
 type UserPage = {
@@ -59,6 +60,14 @@ export const UsersDashboard: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [savingId, setSavingId] = useState<number | null>(null);
   const [reload, setReload] = useState(0);
+  const [newEmail, setNewEmail] = useState("");
+  const [newRole, setNewRole] = useState("USER");
+  const [inviteEmail, setInviteEmail] = useState("");
+  // [20.10] язык письма и ссылки приглашения (шаблон письма в monitoring умеет ru/en; было зашито "ru")
+  const [inviteLang, setInviteLang] = useState<"ru" | "en">("ru");
+  const [inviteUrl, setInviteUrl] = useState<string | null>(null);
+  const [inviteMessage, setInviteMessage] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
 
   const loadData = useCallback(async (signal: AbortSignal) => {
     setLoading(true);
@@ -133,6 +142,81 @@ export const UsersDashboard: React.FC = () => {
     }
   };
 
+  const handleCreateOrAssign = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setCreating(true);
+    setError(null);
+    setInviteUrl(null);
+    setInviteMessage(null);
+    try {
+      const response = await monitoringFetch("/api/monitoring/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: newEmail.trim(), role: newRole, locale: inviteLang }),
+      });
+      const body = await response.json();
+      if (!response.ok) throw new Error(body.detail?.message || body.message || "Не удалось добавить пользователя");
+      if (body.inviteUrl) setInviteUrl(body.inviteUrl);
+      setInviteMessage(body.created
+        ? (body.emailSent ? "Приглашение отправлено. Аккаунт активируется после перехода по ссылке." : "Аккаунт создан. Скопируйте ссылку-приглашение и отправьте пользователю.")
+        : "Роль пользователя обновлена.");
+      setNewEmail("");
+      setReload((value) => value + 1);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Ошибка добавления пользователя");
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleBetaInvite = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setCreating(true);
+    setError(null);
+    setInviteUrl(null);
+    setInviteMessage(null);
+    try {
+      const response = await monitoringFetch("/api/monitoring/beta-invites", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: inviteEmail.trim(), locale: inviteLang }),
+      });
+      const body = await response.json();
+      if (!response.ok) throw new Error(body.detail?.message || body.message || "Не удалось отправить beta-приглашение");
+      setInviteUrl(body.inviteUrl);
+      setInviteMessage(body.emailSent
+        ? "Beta-приглашение отправлено. Если адрес уже зарегистрирован, его роль останется прежней."
+        : "Ссылка создана, но письмо не отправлено. Скопируйте ссылку и отправьте её вручную.");
+      setInviteEmail("");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Ошибка отправки приглашения");
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleRoleChange = async (user: ManagedUser, role: string) => {
+    setSavingId(user.id);
+    setError(null);
+    try {
+      const response = await monitoringFetch(`/api/monitoring/users/${user.id}/role`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role }),
+      });
+      const body = await response.json();
+      if (!response.ok) throw new Error(body.detail?.message || body.message || "Не удалось изменить роль");
+      setPageData((current) => current && ({
+        ...current,
+        content: current.content.map((item) => item.id === user.id ? body : item),
+      }));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Ошибка изменения роли");
+    } finally {
+      setSavingId(null);
+    }
+  };
+
   const maxPage = Math.max((pageData?.totalPages ?? 1) - 1, 0);
 
   return (
@@ -153,6 +237,46 @@ export const UsersDashboard: React.FC = () => {
         </Alert>
       )}
       {error && <Alert variant="danger" className="py-2">{error}</Alert>}
+      {inviteMessage && <Alert variant="success" className="py-2">{inviteMessage}
+        {inviteUrl && <Form.Control className="mt-2" readOnly value={inviteUrl} onFocus={(event) => event.currentTarget.select()} />}
+      </Alert>}
+
+      <Row className="g-3 mb-4">
+        <Col xl={6}>
+          <Card className="border-0 shadow-sm h-100">
+            <Card.Body>
+              <h6>Добавить пользователя / назначить роль</h6>
+              <Form className="d-flex flex-wrap gap-2" onSubmit={handleCreateOrAssign}>
+                <Form.Control type="email" required placeholder="Email пользователя" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} />
+                <Form.Select value={newRole} onChange={(e) => setNewRole(e.target.value)} style={{ maxWidth: 180 }}>
+                  <option value="USER">USER</option><option value="BETA_TESTER">BETA_TESTER</option>
+                  <option value="MANAGER">MANAGER</option><option value="ADMIN">ADMIN</option>
+                </Form.Select>
+                <Form.Select value={inviteLang} onChange={(e) => setInviteLang(e.target.value as "ru" | "en")} style={{ maxWidth: 90 }} title="Язык письма и ссылки">
+                  <option value="ru">RU</option><option value="en">EN</option>
+                </Form.Select>
+                <Button type="submit" disabled={creating}>{creating ? "Сохранение…" : "Добавить / назначить"}</Button>
+              </Form>
+              <div className="small text-muted mt-2">Для нового email будет создан аккаунт и отправлена одноразовая ссылка. Для существующего пользователя роль будет изменена.</div>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col xl={6}>
+          <Card className="border-0 shadow-sm h-100">
+            <Card.Body>
+              <h6>Выдать 2 запуска Market Research</h6>
+              <Form className="d-flex gap-2" onSubmit={handleBetaInvite}>
+                <Form.Control type="email" required placeholder="Email тестера" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} />
+                <Form.Select value={inviteLang} onChange={(e) => setInviteLang(e.target.value as "ru" | "en")} style={{ maxWidth: 90 }} title="Язык письма и ссылки">
+                  <option value="ru">RU</option><option value="en">EN</option>
+                </Form.Select>
+                <Button type="submit" variant="outline-primary" disabled={creating}>{creating ? "Отправка…" : "Отправить приглашение"}</Button>
+              </Form>
+              <div className="small text-muted mt-2">У существующего пользователя роль не меняется; новый получит BETA_TESTER после активации ссылки.</div>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
 
       <Row className="g-3 mb-4">
         <Col xl={2} md={4} xs={6}><Stat title="Всего пользователей" value={stats?.total_users ?? "—"} /></Col>
@@ -185,6 +309,7 @@ export const UsersDashboard: React.FC = () => {
               <tr>
                 <th>Пользователь</th>
                 <th>Роль</th>
+                <th>MR запуски</th>
                 <th>Регистрация</th>
                 <th>Email</th>
                 <th>Последний вход</th>
@@ -199,7 +324,10 @@ export const UsersDashboard: React.FC = () => {
                     {user.fullName && <div className="small text-muted">{user.email}</div>}
                     {user.provider && <div className="small text-muted">{user.provider}</div>}
                   </td>
-                  <td><Badge bg={user.role === "ADMIN" ? "warning" : user.role === "MANAGER" ? "info" : "secondary"}>{user.role}</Badge></td>
+                  <td><Form.Select size="sm" value={user.role} disabled={savingId === user.id} onChange={(e) => void handleRoleChange(user, e.target.value)} aria-label={`Роль ${user.email}`}>
+                    <option value="USER">USER</option><option value="BETA_TESTER">BETA_TESTER</option><option value="MANAGER">MANAGER</option><option value="ADMIN">ADMIN</option>
+                  </Form.Select></td>
+                  <td className="text-center">{user.marketResearchRunsRemaining ?? 0}</td>
                   <td className="small text-nowrap">{dateLabel(user.createdAt)}</td>
                   <td><Badge bg={user.emailVerified ? "success" : "secondary"}>{user.emailVerified ? "Подтверждён" : "Не подтверждён"}</Badge></td>
                   <td className="small text-nowrap">{dateLabel(user.lastLoginAt)}</td>
@@ -216,10 +344,10 @@ export const UsersDashboard: React.FC = () => {
                 </tr>
               ))}
               {!loading && pageData?.content.length === 0 && (
-                <tr><td colSpan={6} className="text-center text-muted py-4">Пользователи не найдены</td></tr>
+                <tr><td colSpan={7} className="text-center text-muted py-4">Пользователи не найдены</td></tr>
               )}
               {loading && (
-                <tr><td colSpan={6} className="text-center text-muted py-4"><Spinner size="sm" className="me-2" />Загрузка пользователей…</td></tr>
+                <tr><td colSpan={7} className="text-center text-muted py-4"><Spinner size="sm" className="me-2" />Загрузка пользователей…</td></tr>
               )}
             </tbody>
           </Table>

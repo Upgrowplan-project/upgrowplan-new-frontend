@@ -13,17 +13,19 @@ import {
   UserProfile,
 } from "../auth/authService";
 import AdvancedSettings from "./AdvancedSettings";
+import ResearchHistory from "./ResearchHistory";
 import styles from "./workspace.module.css";
 import {
-  FiGrid, FiFolder, FiCreditCard, FiUser, FiSettings, FiLogOut,
+  FiGrid, FiFolder, FiCreditCard, FiUser, FiSettings, FiLogOut, FiActivity,
 } from "react-icons/fi";
 
-type Section = "dashboard" | "projects" | "balance" | "profile" | "settings";
+type Section = "dashboard" | "projects" | "balance" | "research" | "profile" | "settings";
 
 const navItems: { id: Section; icon: React.ReactNode; label: string }[] = [
   { id: "dashboard", icon: <FiGrid />, label: "Dashboard" },
   { id: "projects", icon: <FiFolder />, label: "My Projects" },
   { id: "balance", icon: <FiCreditCard />, label: "Balance & Tokens" },
+  { id: "research", icon: <FiActivity />, label: "Research history" },
   { id: "profile", icon: <FiUser />, label: "Profile" },
   { id: "settings", icon: <FiSettings />, label: "Settings" },
 ];
@@ -308,6 +310,7 @@ export default function AccountPageEn() {
           {section === "dashboard" && <DashboardSection user={user} onNav={setSection} />}
           {section === "projects" && <ProjectsSection />}
           {section === "balance" && <BalanceSection user={user} />}
+          {section === "research" && <ResearchHistory locale="en" />}
           {section === "profile" && <ProfileSection user={user} setUser={setUser} />}
           {section === "settings" && <SettingsSection user={user} setUser={setUser} />}
         </main>

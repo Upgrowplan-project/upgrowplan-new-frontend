@@ -22,6 +22,9 @@ module.exports = {
     "/ru/auth",
     "/monitoring",
     "/ru/monitoring",
+    // Invite links (one-time tokens) — not for indexing
+    "/beta/*",
+    "/ru/beta/*",
     "/fin-model",
     "/fin-model/*",
     "/ru/fin-model",

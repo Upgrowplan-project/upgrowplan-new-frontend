@@ -19,6 +19,10 @@ export interface ResearchReportSummary {
   created_at?: string | null;
   completed_at?: string | null;
   rating?: number | null;
+  owner_user_id?: number | null;
+  owner_email?: string | null;
+  artifact_available?: boolean;
+  artifact_filename?: string | null;
 }
 
 export interface ResearchLogEntry {

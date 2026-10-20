@@ -18,6 +18,7 @@ import {
   useResearchReport,
   ResearchReportSummary,
 } from "../hooks/useResearchReports";
+import { monitoringFetch } from "../lib/api";
 
 const KNOWN_SERVICES = [
   { value: "", label: "Все сервисы" },
@@ -55,6 +56,18 @@ const ReportDetailModal: React.FC<{
 }> = ({ researchId, onClose }) => {
   const { report, loading, error } = useResearchReport(researchId);
 
+  const downloadArtifact = async () => {
+    if (!researchId) return;
+    const response = await monitoringFetch(`/api/monitoring/reports/${encodeURIComponent(researchId)}/artifact`);
+    if (!response.ok) return;
+    const url = URL.createObjectURL(await response.blob());
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = report?.artifact_filename || `${researchId}_report.docx`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   const downloadJson = () => {
     if (!report) return;
     const blob = new Blob([JSON.stringify(report, null, 2)], {
@@ -90,13 +103,15 @@ const ReportDetailModal: React.FC<{
             <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
               <div className="d-flex gap-3 flex-wrap small text-muted">
                 <span>ID: <code>{report.research_id}</code></span>
+                {report.owner_email && <span>Пользователь: {report.owner_email}</span>}
                 <span>Статус: <Badge bg="secondary">{report.status}</Badge></span>
                 <span>Длительность: {fmtDuration(report.duration_seconds)}</span>
                 <span>Оценка: {ratingBadge(report.rating?.overall)}</span>
               </div>
-              <Button size="sm" variant="outline-primary" onClick={downloadJson}>
-                ⬇ Скачать JSON
-              </Button>
+              <div className="d-flex gap-2">
+                {report.artifact_available && <Button size="sm" variant="outline-success" onClick={() => void downloadArtifact()}>Скачать DOCX</Button>}
+                <Button size="sm" variant="outline-primary" onClick={downloadJson}>⬇ Скачать JSON</Button>
+              </div>
             </div>
 
             <Tabs defaultActiveKey="request" className="mb-3">
@@ -229,6 +244,7 @@ export const ResearchReportsDashboard: React.FC = () => {
             <thead className="table-light">
               <tr>
                 <th>Продукт</th>
+                <th>Пользователь</th>
                 <th>Сервис</th>
                 <th>Локация</th>
                 <th>Тип</th>
@@ -245,6 +261,7 @@ export const ResearchReportsDashboard: React.FC = () => {
                     <div className="fw-semibold">{r.product_name || "—"}</div>
                     <code className="small text-muted">{r.research_id}</code>
                   </td>
+                  <td className="small">{r.owner_email || "—"}</td>
                   <td>
                     <Badge bg="light" text="dark" className="small border">
                       {r.service_name?.replace("-service", "") || "—"}
@@ -270,7 +287,7 @@ export const ResearchReportsDashboard: React.FC = () => {
               ))}
               {reports.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="text-center text-muted py-5">
+                  <td colSpan={9} className="text-center text-muted py-5">
                     Пока нет сохранённых отчётов. Они появятся после первого
                     завершённого исследования.
                   </td>
