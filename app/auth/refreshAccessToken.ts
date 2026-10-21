@@ -35,14 +35,19 @@ export function refreshAccessToken(): Promise<string | null> {
   return inflight;
 }
 
-/** Seconds until the access token expires (from its own `exp`); null when unknown. */
-export function accessTokenSecondsLeft(token: string | null): number | null {
+/** Claims of the access token (`sub` = account email, `exp`); null when unreadable. No signature check — UI hints only. */
+export function accessTokenClaims(token: string | null): { sub?: string; exp?: number } | null {
   if (!token) return null;
   try {
     const part = token.split(".")[1];
-    const payload = JSON.parse(atob(part.replace(/-/g, "+").replace(/_/g, "/")));
-    return typeof payload.exp === "number" ? payload.exp - Math.floor(Date.now() / 1000) : null;
+    return JSON.parse(atob(part.replace(/-/g, "+").replace(/_/g, "/")));
   } catch {
     return null;
   }
+}
+
+/** Seconds until the access token expires (from its own `exp`); null when unknown. */
+export function accessTokenSecondsLeft(token: string | null): number | null {
+  const exp = accessTokenClaims(token)?.exp;
+  return typeof exp === "number" ? exp - Math.floor(Date.now() / 1000) : null;
 }

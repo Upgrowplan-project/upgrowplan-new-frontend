@@ -5,6 +5,7 @@ import { useState, useEffect, Suspense, type MouseEvent as ReactMouseEvent } fro
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
+import { accessTokenClaims } from "../app/auth/refreshAccessToken";
 
 // Simple inline translations - no next-intl
 const translations = {
@@ -99,10 +100,13 @@ function HeaderContent() {
       return;
     }
     // Кэш в сессии: не дёргаем /users/me на каждой навигации.
+    // [21.10 · владелец] кэш привязан к аккаунту (email из токена): вход по ссылке-приглашению меняет аккаунт в той же
+    // вкладке — прежний кэш «админ» показывал тестеру пункт «Мониторинг». Другой аккаунт → роль спрашивается заново.
+    const account = accessTokenClaims(token)?.sub || "";
     try {
       const cached = sessionStorage.getItem("up_is_admin");
-      if (cached !== null) {
-        setIsAdmin(cached === "1");
+      if (cached !== null && cached.startsWith(`${account}|`)) {
+        setIsAdmin(cached.endsWith("|1"));
         return;
       }
     } catch {
@@ -115,7 +119,7 @@ function HeaderContent() {
         const admin = p?.role === "ADMIN";
         setIsAdmin(admin);
         try {
-          sessionStorage.setItem("up_is_admin", admin ? "1" : "0");
+          sessionStorage.setItem("up_is_admin", `${account}|${admin ? "1" : "0"}`);
         } catch {
           /* ignore */
         }
