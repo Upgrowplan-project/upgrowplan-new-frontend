@@ -43,11 +43,25 @@ function fmtDuration(sec?: number | null): string {
   return m > 0 ? `${m}м ${s}с` : `${s}с`;
 }
 
+// [21.10 · владелец] оценка в форме — из 10 (RuGrade/EnGrade); пороги были под шкалу из 5 (3/10 горело «info»)
 function ratingBadge(rating?: number | null) {
   if (rating == null) return <span className="text-muted">—</span>;
   const variant =
-    rating >= 4 ? "success" : rating >= 3 ? "info" : rating >= 2 ? "warning" : "danger";
+    rating >= 8 ? "success" : rating >= 6 ? "info" : rating >= 4 ? "warning" : "danger";
   return <Badge bg={variant}>{rating} ⭐</Badge>;
+}
+
+// Форма оценки шлёт метки и комментарий одной строкой: "[метка, метка]\nкомментарий" (RuGrade.tsx submit)
+function splitFeedback(feedback?: string | null): { tags: string[]; comment: string } {
+  const text = (feedback || "").trim();
+  const m = text.match(/^\[([^\]]*)\]\s*\n?/);
+  if (!m) return { tags: [], comment: text };
+  return { tags: m[1].split(",").map((t) => t.trim()).filter(Boolean), comment: text.slice(m[0].length).trim() };
+}
+
+function npsZone(v?: number | null): string {
+  if (v == null) return "";
+  return v >= 9 ? " · фанат" : v >= 7 ? " · нейтральный" : " · критик";
 }
 
 const ReportDetailModal: React.FC<{
@@ -81,6 +95,19 @@ const ReportDetailModal: React.FC<{
     URL.revokeObjectURL(url);
   };
 
+  // [21.10 · владелец] журналы прогона — файлом (время, уровень, источник, сообщение)
+  const downloadLogs = () => {
+    if (!report?.logs?.length) return;
+    const lines = report.logs.map((l) => `${l.created_at || ""}\t${l.level || ""}\t${l.source || ""}\t${l.message || ""}`);
+    const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${report.research_id}_logs.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <Modal show={!!researchId} onHide={onClose} size="xl" centered scrollable>
       <Modal.Header closeButton>
@@ -110,6 +137,7 @@ const ReportDetailModal: React.FC<{
               </div>
               <div className="d-flex gap-2">
                 {report.artifact_available && <Button size="sm" variant="outline-success" onClick={() => void downloadArtifact()}>Скачать DOCX</Button>}
+                {!!report.logs?.length && <Button size="sm" variant="outline-secondary" onClick={downloadLogs}>⬇ Скачать логи</Button>}
                 <Button size="sm" variant="outline-primary" onClick={downloadJson}>⬇ Скачать JSON</Button>
               </div>
             </div>
@@ -121,9 +149,16 @@ const ReportDetailModal: React.FC<{
                 </pre>
               </Tab>
               <Tab eventKey="report" title="Отчёт">
-                <pre className="bg-light p-3 rounded small" style={{ maxHeight: 500, overflow: "auto" }}>
-                  {JSON.stringify(report.report, null, 2)}
-                </pre>
+                {report.report == null ? (
+                  <div className="alert alert-warning small mb-0">
+                    Итоговый отчёт этого прогона не дошёл до Monitoring (сбой отправки на стороне сервиса исследований).
+                    {report.artifact_available ? " Документ DOCX и журналы сохранены — их можно скачать." : ""}
+                  </div>
+                ) : (
+                  <pre className="bg-light p-3 rounded small" style={{ maxHeight: 500, overflow: "auto" }}>
+                    {JSON.stringify(report.report, null, 2)}
+                  </pre>
+                )}
               </Tab>
               <Tab eventKey="logs" title={`Логи (${report.logs?.length || 0})`}>
                 <div style={{ maxHeight: 500, overflow: "auto" }}>
@@ -169,18 +204,41 @@ const ReportDetailModal: React.FC<{
                   </Table>
                 </div>
               </Tab>
-              {report.rating?.feedback && (
-                <Tab eventKey="feedback" title="Отзыв">
-                  <Card className="border-0 shadow-sm">
-                    <Card.Body>
-                      <div className="mb-2">{ratingBadge(report.rating.overall)}</div>
-                      <p className="mb-0" style={{ whiteSpace: "pre-wrap" }}>
-                        {report.rating.feedback}
-                      </p>
-                    </Card.Body>
-                  </Card>
-                </Tab>
-              )}
+              {report.rating && (() => {
+                // [21.10 · владелец «отзыв укорочен и непонятен»] все поля формы оценки с её подписями
+                const r = report.rating;
+                const { tags, comment } = splitFeedback(r.feedback);
+                const score = (v?: number | null, max = 10) => (v == null ? "—" : `${v} из ${max}`);
+                return (
+                  <Tab eventKey="feedback" title="Отзыв">
+                    <Card className="border-0 shadow-sm">
+                      <Card.Body>
+                        <Table size="sm" className="small mb-3" style={{ maxWidth: 520 }}>
+                          <tbody>
+                            <tr><td>Как вам результат в целом?</td><td>{ratingBadge(r.overall)} <span className="text-muted">из 10</span></td></tr>
+                            <tr><td>Понятность</td><td>{score(r.clarity)}</td></tr>
+                            <tr><td>Полезность</td><td>{score(r.usefulness)}</td></tr>
+                            <tr><td>Точность</td><td>{score(r.accuracy)}</td></tr>
+                            <tr><td>Ценность</td><td>{score(r.design)}</td></tr>
+                            <tr><td>Порекомендует коллегам?</td><td>{r.recommend == null ? "—" : `${r.recommend} из 10${npsZone(r.recommend)}`}</td></tr>
+                          </tbody>
+                        </Table>
+                        {tags.length > 0 && (
+                          <div className="mb-2">
+                            <div className="small text-muted mb-1">
+                              {(r.overall ?? 10) <= 5 ? "Что пошло не так:" : "Что понравилось больше всего:"}
+                            </div>
+                            {tags.map((t) => <Badge key={t} bg="light" text="dark" className="me-1 border">{t}</Badge>)}
+                          </div>
+                        )}
+                        <div className="small text-muted mb-1">Комментарий:</div>
+                        <p className="mb-2" style={{ whiteSpace: "pre-wrap" }}>{comment || "—"}</p>
+                        {r.created_at && <div className="small text-muted">Оценка оставлена: {fmtDate(r.created_at)}</div>}
+                      </Card.Body>
+                    </Card>
+                  </Tab>
+                );
+              })()}
             </Tabs>
           </>
         )}
