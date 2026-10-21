@@ -5,6 +5,7 @@ import Header from "../../../components/Header";
 import Grade from "../../../components/Grade";
 import styles from "./marketResearch.module.css";
 import { marketResearchFetch } from "./apiFetch";
+import BetaRunsPanel from "./BetaRunsPanel";
 import {
   FiBarChart2,
   FiCheck,
@@ -510,7 +511,9 @@ const cleanMarkdown = (text: string): string => {
 };
 
 // [17.10 · владелец] бета для тестеров — только цифровые продукты (физические ниши ещё не готовы)
-const DIGITAL_ONLY_BETA = true;
+// [21.10 · владелец] все типы снова доступны; над списком — подсказка «лучше цифровые, остальные — в следующем релизе»
+const DIGITAL_ONLY_BETA = false;
+const BETA_DIGITAL_HINT = true;
 
 // Цифровые типы продукта — одно место: маршрут исследования (handleSubmit) и показ полей формы.
 const DIGITAL_PRODUCT_TYPES: ProductType[] = [
@@ -1999,6 +2002,8 @@ export default function MarketResearchPage() {
           </div>
         </div>
 
+        <BetaRunsPanel locale="ru" refreshKey={`${researchId || ""}:${researchStatus?.status || ""}`} />
+
         {error && (
           <div className={styles.errorSection}>
             <div className={styles.errorAlert}>
@@ -2244,7 +2249,7 @@ export default function MarketResearchPage() {
               const S_ICON: Record<string, string> = { waiting: "○", running: "▶", completed: "✓", timeout: "⚠", failed: "✗" };
               const S_COLOR: Record<string, string> = { waiting: "#9aa7b4", running: "#0683f5", completed: "#16a34a", timeout: "#f97316", failed: "#ef4444" };
               const sectionDefs = [
-                { label: "Объём рынка — TAM / SAM / SOM", agent: "MarketSizingAgent" },
+                { label: "Объём рынка — TAM / SAM / достижимый объём рынка", agent: "MarketSizingAgent" },
                 { label: "Конкурентный анализ", agent: "CompetitorAnalysisAgent" },
                 { label: "Ценовой анализ конкурентов", agent: "CompetitorAnalysisAgent" },
                 { label: "Целевая аудитория и сегменты", agent: "TargetAudienceAgent" },
@@ -2280,7 +2285,7 @@ export default function MarketResearchPage() {
                 summaryRows.push(["Клиентов в день", `${formData.plannedCustomersFirstYear}`]);
               }
               if (formData.plannedAvgCheck) {
-                summaryRows.push(["Ваш средний чек", `${formData.plannedAvgCheck} (местная валюта)`]);
+                summaryRows.push(["Ваш средний чек", isDigitalForm ? `$${formData.plannedAvgCheck}` : `${formData.plannedAvgCheck} (местная валюта)`]);
               }
               return (
                 <div>
@@ -2465,9 +2470,10 @@ export default function MarketResearchPage() {
 
               <div className={styles.section}>
                 <h3>Тип продукта или услуги * (можно выбрать несколько)</h3>
-                {DIGITAL_ONLY_BETA && (
+                {BETA_DIGITAL_HINT && (
                   <p className={styles.formDescription} style={{ marginBottom: "0.75rem" }}>
-                    Бета-версия: сейчас доступны исследования только цифровых продуктов (SaaS, приложения, платформы).
+                    Бета-версия: сейчас лучше выбрать исследования цифровых продуктов (SaaS, приложения, платформы).
+                    Остальные отрасли — в следующем релизе.
                   </p>
                 )}
                 <div className={styles.productTypeSelectWrapper} style={requiredFieldStyle(formData.productTypes.length === 0)}>
@@ -2769,7 +2775,7 @@ export default function MarketResearchPage() {
                 <h3>Сколько клиентов в день будет у вашего бизнеса — необязательно</h3>
                 <p className={styles.formDescription} style={{ marginBottom: "0.75rem" }}>
                   Сколько клиентов в среднем вы рассчитываете обслуживать за один рабочий день. От этого числа и
-                  средней цены по рынку считается достижимая доля (SOM). Если оставить пустым — ваш потенциальный
+                  средней цены по рынку считается достижимый объём рынка. Если оставить пустым — ваш потенциальный
                   рынок сбыта не будет посчитан.
                 </p>
                 <div className={styles.formGroup}>
@@ -2794,11 +2800,16 @@ export default function MarketResearchPage() {
               <div className={styles.section}>
                 <h3>Планируемый средний чек — необязательно</h3>
                 <p className={styles.formDescription} style={{ marginBottom: "0.75rem" }}>
-                  Сколько в среднем платит один клиент за визит или заказ, в местной валюте страны вашего бизнеса.
-                  Если сервис найдёт средний чек на рынке, SOM считается по рынку, а ваш чек показывается для
-                  сравнения. Если на рынке чек не найден — SOM будет посчитан по вашему чеку.
+                  {/* [21.10 · владелец] цифровой рынок глобальный — валюта отчёта доллар, поле в $ */}
+                  {isDigitalForm
+                    ? "Сколько в среднем платит один клиент — подписка или покупка, в долларах США ($)."
+                    : "Сколько в среднем платит один клиент за визит или заказ, в местной валюте страны вашего бизнеса."}{" "}
+                  Если сервис найдёт средний чек на рынке, достижимый объём рынка считается по рынку, а ваш чек
+                  показывается для сравнения. Если на рынке чек не найден — достижимый объём рынка будет посчитан по
+                  вашему чеку.
                 </p>
-                <div className={styles.formGroup}>
+                <div className={styles.formGroup} style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  {isDigitalForm && <span style={{ fontWeight: 600, fontSize: "1.1rem" }}>$</span>}
                   <input
                     type="text"
                     inputMode="numeric"
@@ -2811,7 +2822,7 @@ export default function MarketResearchPage() {
                       }))
                     }
                     className={styles.input}
-                    placeholder="Например: 3500"
+                    placeholder={isDigitalForm ? "Например: 29" : "Например: 3500"}
                   />
                 </div>
               </div>
@@ -2979,7 +2990,7 @@ export default function MarketResearchPage() {
             2: ["ValidationAgent"],
           };
           const AGENT_DISPLAY: Record<string, string> = {
-            "MarketSizingAgent":       "Анализ рынка (TAM/SAM/SOM)",
+            "MarketSizingAgent":       "Анализ рынка (TAM, SAM, достижимый объём)",
             "CompetitorAnalysisAgent": "Конкурентный анализ",
             "TargetAudienceAgent":     "Целевая аудитория",
             "TrendsAnalysisAgent":     "Тренды и драйверы",
@@ -3172,7 +3183,7 @@ export default function MarketResearchPage() {
                     /* Fallback: простой список 6 этапов */
                     <div>
                       {([
-                        [10, "Анализ рынка (TAM/SAM/SOM)"],
+                        [10, "Анализ рынка (TAM, SAM, достижимый объём)"],
                         [30, "Конкурентный анализ"],
                         [50, "Целевая аудитория"],
                         [70, "Тренды и драйверы"],

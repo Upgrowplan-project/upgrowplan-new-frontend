@@ -5,6 +5,7 @@ import Header from "../../../components/Header";
 import Grade from "../../../components/Grade";
 import styles from "./marketResearch.module.css";
 import { marketResearchFetch } from "./apiFetch";
+import BetaRunsPanel from "./BetaRunsPanel";
 import {
   FiBarChart2,
   FiCheck,
@@ -498,7 +499,9 @@ const cleanMarkdown = (text: string): string => {
 };
 
 // [17.10 · owner] the beta for testers covers digital products only (physical niches are not ready yet)
-const DIGITAL_ONLY_BETA = true;
+// [21.10 · owner] all types are available again; a hint above the list: digital is the better choice for now
+const DIGITAL_ONLY_BETA = false;
+const BETA_DIGITAL_HINT = true;
 
 // Digital product types — one place: the research route (handleSubmit) and which form fields are shown.
 const DIGITAL_PRODUCT_TYPES: ProductType[] = [
@@ -1846,6 +1849,8 @@ export default function MarketResearchPage() {
           </div>
         </div>
 
+        <BetaRunsPanel locale="en" refreshKey={`${researchId || ""}:${researchStatus?.status || ""}`} />
+
         {error && (
           <div className={styles.errorSection}>
             <div className={styles.errorAlert}>
@@ -2091,7 +2096,7 @@ export default function MarketResearchPage() {
               const S_ICON: Record<string, string> = { waiting: "○", running: "▶", completed: "✓", timeout: "⚠", failed: "✗" };
               const S_COLOR: Record<string, string> = { waiting: "#9aa7b4", running: "#0683f5", completed: "#16a34a", timeout: "#f97316", failed: "#ef4444" };
               const sectionDefs = [
-                { label: "Market size — TAM / SAM / SOM", agent: "MarketSizingAgent" },
+                { label: "Market size — TAM / SAM / obtainable market volume", agent: "MarketSizingAgent" },
                 { label: "Competitive analysis", agent: "CompetitorAnalysisAgent" },
                 { label: "Competitor pricing analysis", agent: "CompetitorAnalysisAgent" },
                 { label: "Target audience & segments", agent: "TargetAudienceAgent" },
@@ -2127,7 +2132,7 @@ export default function MarketResearchPage() {
                 summaryRows.push(["Customers per day", `${formData.plannedCustomersFirstYear}`]);
               }
               if (formData.plannedAvgCheck) {
-                summaryRows.push(["Your average check", `${formData.plannedAvgCheck} (local currency)`]);
+                summaryRows.push(["Your average check", isDigitalForm ? `$${formData.plannedAvgCheck}` : `${formData.plannedAvgCheck} (local currency)`]);
               }
               return (
                 <div>
@@ -2312,9 +2317,10 @@ export default function MarketResearchPage() {
 
               <div className={styles.section}>
                 <h3>Product or service type * (multiple choice)</h3>
-                {DIGITAL_ONLY_BETA && (
+                {BETA_DIGITAL_HINT && (
                   <p className={styles.formDescription} style={{ marginBottom: "0.75rem" }}>
-                    Beta: research is currently available for digital products only (SaaS, apps, platforms).
+                    Beta: for now, digital products (SaaS, apps, platforms) are the better choice. Other industries are
+                    coming in the next release.
                   </p>
                 )}
                 <div className={styles.productTypeSelectWrapper} style={requiredFieldStyle(formData.productTypes.length === 0)}>
@@ -2616,7 +2622,7 @@ export default function MarketResearchPage() {
                 <h3>How many customers per day your business will have — optional</h3>
                 <p className={styles.formDescription} style={{ marginBottom: "0.75rem" }}>
                   How many customers on average you expect to serve in one working day. Together with the market
-                  average price it gives your obtainable share (SOM). If left empty, your potential sales market
+                  average price it gives your obtainable market volume. If left empty, your potential sales market
                   will not be calculated.
                 </p>
                 <div className={styles.formGroup}>
@@ -2641,11 +2647,15 @@ export default function MarketResearchPage() {
               <div className={styles.section}>
                 <h3>Planned average check — optional</h3>
                 <p className={styles.formDescription} style={{ marginBottom: "0.75rem" }}>
-                  How much one customer pays on average per visit or order, in the local currency of your business's
-                  country. If the service finds the market's average check, SOM uses the market and your check is shown
-                  for comparison. If the market check is not found, SOM is calculated on your check.
+                  {/* [21.10 · owner] a digital market is global — the report currency is USD, the field is in $ */}
+                  {isDigitalForm
+                    ? "How much one customer pays on average — subscription or purchase, in US dollars ($)."
+                    : "How much one customer pays on average per visit or order, in the local currency of your business's country."}{" "}
+                  If the service finds the market's average check, the obtainable market volume uses the market and
+                  your check is shown for comparison. If the market check is not found, it is calculated on your check.
                 </p>
-                <div className={styles.formGroup}>
+                <div className={styles.formGroup} style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  {isDigitalForm && <span style={{ fontWeight: 600, fontSize: "1.1rem" }}>$</span>}
                   <input
                     type="text"
                     inputMode="numeric"
@@ -2826,7 +2836,7 @@ export default function MarketResearchPage() {
             2: ["ValidationAgent"],
           };
           const AGENT_DISPLAY: Record<string, string> = {
-            "MarketSizingAgent":       "Market analysis (TAM/SAM/SOM)",
+            "MarketSizingAgent":       "Market analysis (TAM, SAM, obtainable volume)",
             "CompetitorAnalysisAgent": "Competitive analysis",
             "TargetAudienceAgent":     "Target audience",
             "TrendsAnalysisAgent":     "Trends & drivers",
@@ -3019,7 +3029,7 @@ export default function MarketResearchPage() {
                     /* Fallback: простой список 6 этапов */
                     <div>
                       {([
-                        [10, "Market analysis (TAM/SAM/SOM)"],
+                        [10, "Market analysis (TAM, SAM, obtainable volume)"],
                         [30, "Competitive analysis"],
                         [50, "Target audience"],
                         [70, "Trends & drivers"],

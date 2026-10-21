@@ -1,6 +1,6 @@
 "use client";
 
-import { API_BASE } from "../../apiConfig";
+import { refreshAccessToken } from "../../auth/refreshAccessToken";
 import { emitBackendDown, isNetworkError, isServerDownStatus } from "@/lib/backendStatus";
 
 // Базовые URL мониторинга.
@@ -13,26 +13,8 @@ export function getToken(): string | null {
   return typeof window !== "undefined" ? localStorage.getItem("token") : null;
 }
 
-// Тихое продление access-токена по refresh-токену (длинная сессия админа).
-async function refreshToken(): Promise<string | null> {
-  if (typeof window === "undefined") return null;
-  const rt = localStorage.getItem("refreshToken");
-  if (!rt) return null;
-  try {
-    const res = await fetch(`${API_BASE}/auth/refresh`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ refreshToken: rt }),
-    });
-    if (!res.ok) return null;
-    const d = await res.json();
-    if (d.token) localStorage.setItem("token", d.token);
-    if (d.refreshToken) localStorage.setItem("refreshToken", d.refreshToken);
-    return d.token || null;
-  } catch {
-    return null;
-  }
-}
+// Тихое продление access-токена по refresh-токену (длинная сессия админа) — общая функция сайта.
+const refreshToken = refreshAccessToken;
 
 /**
  * fetch к monitoring API с admin-Bearer токеном и авто-refresh при 401.

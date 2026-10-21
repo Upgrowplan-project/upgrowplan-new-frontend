@@ -1,6 +1,7 @@
 // app/auth/authService.ts
 import axios from "axios";
 import { API_BASE } from "./../apiConfig";
+import { refreshAccessToken } from "./refreshAccessToken";
 
 // --- Глобальный авто-refresh access-токена (длинная сессия) ---
 // Access-токен живёт 15 мин; при 401/403 молча обновляем его по refresh-токену
@@ -16,26 +17,18 @@ if (typeof window !== "undefined" && !(axios as any).__authRefreshAttached) {
       const url: string = original?.url || "";
       const isAuthCall = url.includes("/auth/login") || url.includes("/auth/refresh");
       if ((status === 401 || status === 403) && !original.__retried && !isAuthCall) {
-        const refreshToken = localStorage.getItem("refreshToken");
-        if (!refreshToken) return Promise.reject(error);
+        if (!localStorage.getItem("refreshToken")) return Promise.reject(error);
         original.__retried = true;
-        try {
-          const res = await axios.post(`${API_BASE}/auth/refresh`, { refreshToken });
-          const newToken = res.data?.token;
-          if (newToken) {
-            localStorage.setItem("token", newToken);
-            if (res.data?.refreshToken) {
-              localStorage.setItem("refreshToken", res.data.refreshToken);
-            }
-            original.headers = original.headers || {};
-            original.headers.Authorization = `Bearer ${newToken}`;
-            return axios(original);
-          }
-        } catch {
-          // refresh-токен тоже истёк (или невалиден) → сессия закончилась
-          localStorage.removeItem("token");
-          localStorage.removeItem("refreshToken");
+        // one shared renewal (refresh token rotates — parallel renewals would log the user out)
+        const newToken = await refreshAccessToken();
+        if (newToken) {
+          original.headers = original.headers || {};
+          original.headers.Authorization = `Bearer ${newToken}`;
+          return axios(original);
         }
+        // refresh-токен тоже истёк (или невалиден) → сессия закончилась
+        localStorage.removeItem("token");
+        localStorage.removeItem("refreshToken");
       }
       return Promise.reject(error);
     }

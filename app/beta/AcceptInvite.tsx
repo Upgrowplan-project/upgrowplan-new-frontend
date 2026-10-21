@@ -63,9 +63,9 @@ export default function AcceptInvite({ locale }: { locale: "en" | "ru" }) {
       <div>
         <h2 className="h5 mt-3">Как проходит бета-тест</h2>
         <ol>
-          <li>Бета-версия исследует только <b>цифровые продукты</b> (SaaS, приложения, платформы). Чем точнее описание продукта, тем точнее конкуренты.</li>
+          <li>В бета-версии лучше выбирать <b>цифровые продукты</b> (SaaS, приложения, платформы); остальные отрасли — в следующем релизе, но попробовать можно. Чем точнее описание продукта, тем точнее конкуренты.</li>
           <li><b>Страна</b> — где зарегистрирована ваша компания: рынок цифрового продукта считается глобальным.</li>
-          <li><b>Сколько клиентов в день будет у вашего бизнеса</b> — необязательно, но без этого числа достижимая доля рынка (SOM) не будет посчитана.</li>
+          <li><b>Сколько клиентов в день будет у вашего бизнеса</b> — необязательно, но без этого числа достижимый объём рынка не будет посчитан. Средний чек цифрового продукта указывайте в долларах ($).</li>
           <li>Исследование готовится 15–40 минут. Документ DOCX можно скачать сразу на странице результата; он сохраняется и в «Истории исследований» в личном кабинете.</li>
           <li>После генерации на странице появится короткая оценка отчёта — пожалуйста, заполните её. В комментарии напишите: верны ли конкуренты, похожи ли цены, нашли ли вы ошибку или число без источника.</li>
           <li>Все цифры в отчёте — со ссылкой на источник или с пометкой «допущение» / «не измерено». Если источник не ответил, в отчёте будет «поиск не выполнен».</li>
@@ -77,9 +77,9 @@ export default function AcceptInvite({ locale }: { locale: "en" | "ru" }) {
       <div>
         <h2 className="h5 mt-3">How the beta test works</h2>
         <ol>
-          <li>The beta researches <b>digital products</b> only (SaaS, apps, platforms). The more precise the product description, the more precise the competitors.</li>
+          <li>In the beta, <b>digital products</b> (SaaS, apps, platforms) are the better choice; other industries come in the next release, but you can try them. The more precise the product description, the more precise the competitors.</li>
           <li><b>Country</b> — where your company is registered: a digital product market is treated as global.</li>
-          <li><b>How many customers per day your business will have</b> — optional, but without it the obtainable market (SOM) will not be calculated.</li>
+          <li><b>How many customers per day your business will have</b> — optional, but without it the obtainable market volume will not be calculated. For a digital product give the average check in US dollars ($).</li>
           <li>A study takes 15–40 minutes. The DOCX can be downloaded right on the result page; it is also kept in “Research history” in your account.</li>
           <li>After generation a short report rating appears on the page — please fill it in. In the comment, tell us whether the competitors are right, the prices look real, and whether you found an error or a number without a source.</li>
           <li>Every number in the report has a source link or is marked “assumption” / “not measured”. If a source did not respond, the report says “search not performed”.</li>
