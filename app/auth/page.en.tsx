@@ -7,6 +7,7 @@ import { MdEmail } from "react-icons/md";
 import styles from "./auth.module.css";
 import EmailRegisterForm from "./EmailRegisterForm";
 import OAuthButtons from "./OAuthButtons";
+import LoginLinkForm from "./LoginLinkForm";
 
 type Screen = "home" | "login" | "register-options" | "register-email" | "verify-sent";
 
@@ -75,6 +76,10 @@ export default function AuthPageEn() {
               {oauthError && (
                 <p className="text-danger small mt-2">{oauthError}</p>
               )}
+
+              <div className={styles.divider}>or</div>
+
+              <LoginLinkForm locale="en" />
             </div>
           )}
 

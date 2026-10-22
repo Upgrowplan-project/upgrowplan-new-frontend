@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { API_BASE } from "../apiConfig";
+import LoginLinkForm from "../auth/LoginLinkForm";
+import { refusalMessage, storeSession } from "../auth/linkMessages";
 
 export default function AcceptInvite({ locale }: { locale: "en" | "ru" }) {
   const router = useRouter();
@@ -36,11 +38,9 @@ export default function AcceptInvite({ locale }: { locale: "en" | "ru" }) {
       body: JSON.stringify({ token }),
     }).then(async (response) => {
       const data = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(locale === "ru"
-        ? "Приглашение недействительно или срок его действия истёк. Попросите администратора отправить новую ссылку."
-        : "This invitation is invalid or expired. Ask the administrator to send a new link.");
-      localStorage.setItem("token", data.token);
-      if (data.refreshToken) localStorage.setItem("refreshToken", data.refreshToken);
+      // [22.10 · prod] the tester's link was used on his phone, not expired — the page names the reason (User service code)
+      if (!response.ok) throw new Error(refusalMessage(data.code, locale));
+      storeSession(data);
       window.history.replaceState(null, "", `${window.location.pathname}?accepted=1`);
       if (active) {
         setMessage(locale === "ru"
@@ -58,7 +58,7 @@ export default function AcceptInvite({ locale }: { locale: "en" | "ru" }) {
 
   return <main className="container py-5" style={{ maxWidth: 680 }}>
     <div className={`alert ${failed ? "alert-danger" : ready ? "alert-success" : "alert-info"}`} role="status">{message}</div>
-    {failed && <a className="btn btn-primary" href={`/${locale}/auth`}>{locale === "ru" ? "Войти" : "Sign in"}</a>}
+    {failed && <LoginLinkForm locale={locale} />}
     {ready && (locale === "ru" ? (
       <div>
         <h2 className="h5 mt-3">Как проходит бета-тест</h2>
@@ -69,7 +69,7 @@ export default function AcceptInvite({ locale }: { locale: "en" | "ru" }) {
           <li>Исследование готовится 15–40 минут. Документ DOCX можно скачать сразу на странице результата; он сохраняется и в «Истории исследований» в личном кабинете.</li>
           <li>После генерации на странице появится короткая оценка отчёта — пожалуйста, заполните её. В комментарии напишите: верны ли конкуренты, похожи ли цены, нашли ли вы ошибку или число без источника.</li>
           <li>Все цифры в отчёте — со ссылкой на источник или с пометкой «допущение» / «не измерено». Если источник не ответил, в отчёте будет «поиск не выполнен».</li>
-          <li>Пользуйтесь одним браузером: вход по этой ссылке одноразовый.</li>
+          <li>Ссылка из приглашения одноразовая. Чтобы войти на другом устройстве или в другом браузере: «Войти» → «Получить ссылку для входа» — пришлём новую ссылку на вашу почту.</li>
         </ol>
         <button className="btn btn-primary" onClick={() => router.replace(`/${locale}/solutions/marketResearch`)}>Перейти к исследованию</button>
       </div>
@@ -83,7 +83,7 @@ export default function AcceptInvite({ locale }: { locale: "en" | "ru" }) {
           <li>A study takes 15–40 minutes. The DOCX can be downloaded right on the result page; it is also kept in “Research history” in your account.</li>
           <li>After generation a short report rating appears on the page — please fill it in. In the comment, tell us whether the competitors are right, the prices look real, and whether you found an error or a number without a source.</li>
           <li>Every number in the report has a source link or is marked “assumption” / “not measured”. If a source did not respond, the report says “search not performed”.</li>
-          <li>Please use one browser: sign-in via this link is one-time.</li>
+          <li>The invitation link is one-time. To sign in on another device or browser: “Sign in” → “Email me a sign-in link” — we will send a new link to your email.</li>
         </ol>
         <button className="btn btn-primary" onClick={() => router.replace(`/${locale}/solutions/marketResearch`)}>Go to Market Research</button>
       </div>
