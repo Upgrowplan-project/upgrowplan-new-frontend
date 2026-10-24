@@ -5,7 +5,7 @@ import { useState, useEffect, Suspense, type MouseEvent as ReactMouseEvent } fro
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
-import { accessTokenClaims } from "../app/auth/refreshAccessToken";
+import { useIsAdmin } from "./useIsAdmin";
 
 // Simple inline translations - no next-intl
 const translations = {
@@ -68,7 +68,8 @@ const GlobeIcon = () => (
 function HeaderContent() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+  // [24.10] пункт «Мониторинг» — только админу; одна проверка с мобильным меню (useIsAdmin)
+  const isAdmin = useIsAdmin();
   const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false);
   const [solutionsOpen, setSolutionsOpen] = useState(false);
 
@@ -88,43 +89,7 @@ function HeaderContent() {
     : "";
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    setIsLoggedIn(!!token);
-    if (!token) {
-      setIsAdmin(false);
-      try {
-        sessionStorage.removeItem("up_is_admin");
-      } catch {
-        /* ignore */
-      }
-      return;
-    }
-    // Кэш в сессии: не дёргаем /users/me на каждой навигации.
-    // [21.10 · владелец] кэш привязан к аккаунту (email из токена): вход по ссылке-приглашению меняет аккаунт в той же
-    // вкладке — прежний кэш «админ» показывал тестеру пункт «Мониторинг». Другой аккаунт → роль спрашивается заново.
-    const account = accessTokenClaims(token)?.sub || "";
-    try {
-      const cached = sessionStorage.getItem("up_is_admin");
-      if (cached !== null && cached.startsWith(`${account}|`)) {
-        setIsAdmin(cached.endsWith("|1"));
-        return;
-      }
-    } catch {
-      /* ignore */
-    }
-    // Пункт «Мониторинг» показываем только админу (роль из профиля).
-    import("../app/auth/authService")
-      .then((m) => m.getUserProfile())
-      .then((p) => {
-        const admin = p?.role === "ADMIN";
-        setIsAdmin(admin);
-        try {
-          sessionStorage.setItem("up_is_admin", `${account}|${admin ? "1" : "0"}`);
-        } catch {
-          /* ignore */
-        }
-      })
-      .catch(() => setIsAdmin(false));
+    setIsLoggedIn(!!localStorage.getItem("token"));
   }, []);
 
   // Close dropdowns when clicking outside

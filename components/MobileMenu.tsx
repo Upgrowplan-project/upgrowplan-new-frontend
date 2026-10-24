@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useIsAdmin } from "./useIsAdmin";
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -38,8 +39,13 @@ export default function MobileMenu({
   const isRussian = pathname.startsWith("/ru");
   const locale = isRussian ? "ru" : "en";
   const localePrefix = isRussian ? "/ru" : "";
-  const items =
+  // [24.10 · владелец] «Мониторинг» в мобильном меню — админу, та же проверка, что в шапке
+  const isAdmin = useIsAdmin();
+  const baseItems =
     customItems && customItems.length > 0 ? customItems : menuItems[locale];
+  const items = isAdmin
+    ? [...baseItems, { label: locale === "ru" ? "Мониторинг" : "Monitoring", href: "/monitoring" }]
+    : baseItems;
 
   const buildUrl = (href: string): string => {
     if (href === "/") return localePrefix || "/";
