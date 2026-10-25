@@ -30,6 +30,9 @@ const LOW_COVERAGE_COUNTRIES = new Set([
 const API_BASE =
   process.env.NEXT_PUBLIC_MARKET_RESEARCH_API_URL || "http://localhost:8005";
 
+const WARMING_UP_MESSAGE =
+  "The service is starting after a pause — usually under a minute. The button turns on by itself; your form is kept.";
+
 // [ТЗ-5.2] Active-research handle persisted OUTSIDE React state (localStorage) so closing or
 // reloading the tab does not lose a running job. Backend job state survives in Redis and is
 // reachable by research_id; on mount we reconnect and either resume polling or show the report.
@@ -597,6 +600,8 @@ export default function MarketResearchPage() {
   const [healthExpanded, setHealthExpanded] = useState(false);
   const [isLoadingHealth, setIsLoadingHealth] = useState(true);
   const [isRefreshingHealth, setIsRefreshingHealth] = useState(false);
+  const [healthSlow, setHealthSlow] = useState(false);
+  const healthInFlightRef = useRef(false);
   const [downloadingFormat, setDownloadingFormat] = useState<"docx" | "pdf" | null>(null);
 
   // Ref для хранения polling interval
@@ -698,6 +703,9 @@ export default function MarketResearchPage() {
   }, []);
 
   const fetchHealthStatus = async (manualRefresh = false) => {
+    // while the service wakes up an answer takes up to ~20 s — frequent polling must not pile up parallel requests
+    if (healthInFlightRef.current && !manualRefresh) return;
+    healthInFlightRef.current = true;
     try {
       if (manualRefresh) {
         setIsRefreshingHealth(true);
@@ -718,6 +726,7 @@ export default function MarketResearchPage() {
     } catch (error) {
       console.error("[Health Check] Error fetching health status:", error);
     } finally {
+      healthInFlightRef.current = false;
       setIsLoadingHealth(false);
       if (manualRefresh) {
         setIsRefreshingHealth(false);
@@ -726,18 +735,32 @@ export default function MarketResearchPage() {
     }
   };
 
-  // Load health status on mount and refresh every 30 seconds
-  useEffect(() => {
+  // [25.10 · «Г»] the search agent is waking up after idle (the backend sends warming_up) — not a failure
+  const healthWarmingUp = !!healthStatus && !healthStatus.all_ready && healthStatus.warming_up === true;
 
-    // Fetch immediately
+  // Load health status on mount
+  useEffect(() => {
     console.log("[Health Check] Component mounted, starting fetch...");
     fetchHealthStatus(false);
-
-    // Refresh every 30 seconds
-    const interval = setInterval(() => fetchHealthStatus(false), 30000);
-
-    return () => clearInterval(interval);
   }, []);
+
+  // Refresh every 30 seconds; every 5 seconds while the service is waking up
+  useEffect(() => {
+    const interval = setInterval(() => fetchHealthStatus(false), healthWarmingUp ? 5000 : 30000);
+    return () => clearInterval(interval);
+  }, [healthWarmingUp]);
+
+  // the «starting» message from a pressed button goes away by itself once the system is ready
+  useEffect(() => {
+    if (healthStatus?.all_ready) setError((e) => (e === WARMING_UP_MESSAGE ? null : e));
+  }, [healthStatus?.all_ready]);
+
+  // First check longer than 5 s — the service is waking up after idle (up to ~20 s); explain the wait
+  useEffect(() => {
+    if (!isLoadingHealth) return;
+    const timer = setTimeout(() => setHealthSlow(true), 5000);
+    return () => clearTimeout(timer);
+  }, [isLoadingHealth]);
 
   // Watchdog: if polling missed transition to completed, force-sync by research_id.
   useEffect(() => {
@@ -1133,6 +1156,14 @@ export default function MarketResearchPage() {
 
       const healthData = await healthResponse.json();
       console.log("[HEALTH CHECK] Ответ:", healthData);
+
+      if (!healthData.all_ready && healthData.warming_up) {
+        // [25.10 · «Г»] the search agent is waking up — not broken; the status bar re-checks every 5 s
+        setHealthStatus(healthData);
+        setError(WARMING_UP_MESSAGE);
+        setIsSubmitting(false);
+        return;
+      }
 
       if (!healthData.all_ready) {
         // Найти компоненты, которые не работают
@@ -1949,6 +1980,11 @@ export default function MarketResearchPage() {
                     <span style={{ fontWeight: 600, fontSize: "0.9rem", color: "#64748b" }}>
                       Checking system status…
                     </span>
+                    {healthSlow && (
+                      <span style={{ fontSize: "0.85rem", color: "#64748b" }}>
+                        The service is starting after a pause — usually under a minute.
+                      </span>
+                    )}
                   </>
                 ) : (
                   <>
@@ -1996,13 +2032,13 @@ export default function MarketResearchPage() {
                         title={`${a.name}: ${a.status}`}
                         style={{
                           width: 9, height: 9, borderRadius: "50%",
-                          background: a.ready ? "#22c55e" : a.optional ? "#f59e0b" : "#ef4444",
+                          background: a.ready ? "#22c55e" : (a.optional || a.status === "starting") ? "#f59e0b" : "#ef4444",
                         }}
                       />
                     ))}
                   </div>
-                  <span style={{ fontWeight: 600, fontSize: "0.9rem", color: healthStatus.all_ready ? "#166534" : "#b42318" }}>
-                    {healthStatus.all_ready ? "System is ready" : "System not ready"}
+                  <span style={{ fontWeight: 600, fontSize: "0.9rem", color: healthStatus.all_ready ? "#166534" : healthWarmingUp ? "#b45309" : "#b42318" }}>
+                    {healthStatus.all_ready ? "System is ready" : healthWarmingUp ? "Service is starting…" : "System not ready"}
                   </span>
                   <span style={{ fontSize: "0.8rem", color: "#6c757d" }}>{readyCount}/{agents.length}</span>
                   <span style={{ flex: 1 }} />
@@ -2023,30 +2059,34 @@ export default function MarketResearchPage() {
                     style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "0.5rem", marginTop: "0.65rem" }}
                     onClick={(e) => e.stopPropagation()}
                   >
-                    {detailAgents.map((agent: any, index: number) => (
+                    {detailAgents.map((agent: any, index: number) => {
+                      const starting = !agent.ready && agent.status === "starting";
+                      const soft = agent.optional || starting;
+                      return (
                       <div
                         key={index}
                         style={{
                           padding: "0.5rem 0.65rem",
                           border: "1px solid",
-                          borderColor: agent.ready ? "#c3e6cb" : agent.optional ? "#fff3cd" : "#f5c6cb",
+                          borderColor: agent.ready ? "#c3e6cb" : soft ? "#fff3cd" : "#f5c6cb",
                           borderRadius: 8,
-                          backgroundColor: agent.ready ? "#f7fdf9" : agent.optional ? "#fffef5" : "#fff5f6",
+                          backgroundColor: agent.ready ? "#f7fdf9" : soft ? "#fffef5" : "#fff5f6",
                           display: "flex", alignItems: "center", gap: "0.5rem",
                         }}
                       >
-                        <span style={{ fontSize: "1.1rem" }}>{agent.ready ? "✅" : agent.optional ? "⚠️" : "❌"}</span>
+                        <span style={{ fontSize: "1.1rem" }}>{agent.ready ? "✅" : starting ? "⏳" : agent.optional ? "⚠️" : "❌"}</span>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ fontWeight: 500, fontSize: "0.85rem" }}>
                             {agent.name}
                             {agent.port && <span style={{ color: "#6c757d", fontSize: "0.8rem" }}> :{agent.port}</span>}
                             {agent.optional && <span style={{ color: "#856404", fontSize: "0.72rem", marginLeft: "0.25rem" }}>(opt.)</span>}
                           </div>
-                          <div style={{ fontSize: "0.78rem", color: agent.ready ? "#28a745" : agent.optional ? "#856404" : "#dc3545" }}>{agent.status}</div>
+                          <div style={{ fontSize: "0.78rem", color: agent.ready ? "#28a745" : soft ? "#856404" : "#dc3545" }}>{starting ? "starting" : agent.status}</div>
                           {agent.error && <div style={{ fontSize: "0.72rem", color: "#6c757d", marginTop: "0.2rem" }}>{agent.error}</div>}
                         </div>
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -2069,12 +2109,21 @@ export default function MarketResearchPage() {
               gap: '0.75rem'
             }}>
               <FiAlertCircle size={24} color="#856404" />
-              <div>
-                <strong style={{ color: '#856404', fontSize: '0.95rem' }}>System not ready</strong>
-                <p style={{ margin: '0.25rem 0 0', color: '#856404', fontSize: '0.9rem' }}>
-                  Some system components are unavailable. Research will be available only once all required components are ready.
-                </p>
-              </div>
+              {healthWarmingUp ? (
+                <div>
+                  <strong style={{ color: '#856404', fontSize: '0.95rem' }}>The service is starting after a pause</strong>
+                  <p style={{ margin: '0.25rem 0 0', color: '#856404', fontSize: '0.9rem' }}>
+                    This usually takes under a minute. The page checks by itself — no need to click anything; you can fill in the form.
+                  </p>
+                </div>
+              ) : (
+                <div>
+                  <strong style={{ color: '#856404', fontSize: '0.95rem' }}>System not ready</strong>
+                  <p style={{ margin: '0.25rem 0 0', color: '#856404', fontSize: '0.9rem' }}>
+                    Some system components are unavailable. Research will be available only once all required components are ready.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -2758,6 +2807,16 @@ export default function MarketResearchPage() {
                       <>
                         <div className={styles.spinner} />
                         Collecting and analyzing data ...
+                      </>
+                    ) : isLoadingHealth && !healthStatus ? (
+                      <>
+                        <div className={styles.spinner} />
+                        Checking readiness…
+                      </>
+                    ) : healthWarmingUp ? (
+                      <>
+                        <div className={styles.spinner} />
+                        Service is starting…
                       </>
                     ) : !healthStatus?.all_ready ? (
                       <>

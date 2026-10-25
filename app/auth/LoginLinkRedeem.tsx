@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { API_BASE } from "../apiConfig";
 import LoginLinkForm from "./LoginLinkForm";
 import { refusalMessage, storeSession, type Locale } from "./linkMessages";
+import { wakeResearchServices } from "../solutions/marketResearch/wakeResearchServices";
 
 // [22.10] page behind the emailed one-time sign-in link (/<locale>/auth/link?token=…).
 export default function LoginLinkRedeem({ locale }: { locale: Locale }) {
@@ -15,6 +16,7 @@ export default function LoginLinkRedeem({ locale }: { locale: Locale }) {
   useEffect(() => {
     if (started.current) return;
     started.current = true;
+    wakeResearchServices();
     const token = new URLSearchParams(window.location.search).get("token");
     // the token leaves the address bar at once: the language switch keeps path + query and would reuse a one-time link
     window.history.replaceState(null, "", window.location.pathname);

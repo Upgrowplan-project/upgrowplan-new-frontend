@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { API_BASE } from "../apiConfig";
 import LoginLinkForm from "../auth/LoginLinkForm";
 import { refusalMessage, storeSession } from "../auth/linkMessages";
+import { wakeResearchServices } from "../solutions/marketResearch/wakeResearchServices";
 
 export default function AcceptInvite({ locale }: { locale: "en" | "ru" }) {
   const router = useRouter();
@@ -17,6 +18,7 @@ export default function AcceptInvite({ locale }: { locale: "en" | "ru" }) {
   useEffect(() => {
     if (started.current) return;
     started.current = true;
+    wakeResearchServices();
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token");
     // [20.10] после активации токен убирается из адреса (?accepted=1): переключатель языка в шапке сохраняет путь и
