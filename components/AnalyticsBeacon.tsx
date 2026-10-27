@@ -30,6 +30,27 @@ function getId(storage: Storage, key: string): string {
   return v;
 }
 
+function analyticsUrl(raw: string, keepUtm: boolean): string | null {
+  try {
+    const url = new URL(raw, window.location.origin);
+    if (url.protocol !== "http:" && url.protocol !== "https:") return null;
+    const safeParams = new URLSearchParams();
+    if (keepUtm) {
+      url.searchParams.forEach((value, key) => {
+        const normalized = key.toLowerCase();
+        if (normalized.startsWith("utm_") || ["gclid", "msclkid", "fbclid"].includes(normalized)) {
+          safeParams.append(key, value);
+        }
+      });
+    }
+    url.search = safeParams.toString();
+    url.hash = "";
+    return url.toString();
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Anonymous pageview beacon → monitoring service. No cookies, no PII.
  * Fires on every route change. Best-effort: failures are swallowed silently.
@@ -49,8 +70,10 @@ export default function AnalyticsBeacon() {
 
       const payload = {
         path: pathname || window.location.pathname,
-        url: window.location.href,
-        referrer: document.referrer || null,
+        // Keep only campaign attribution. Invite/auth/query tokens must never
+        // leave the browser through the anonymous analytics beacon.
+        url: analyticsUrl(window.location.href, true),
+        referrer: document.referrer ? analyticsUrl(document.referrer, false) : null,
         utm_source: params.get("utm_source"),
         utm_medium: params.get("utm_medium"),
         utm_campaign: params.get("utm_campaign"),

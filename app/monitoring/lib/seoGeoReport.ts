@@ -93,7 +93,7 @@ export function buildSeoGeoCsv(
   parts.push(`# Сформирован: ${stamp} UTC; период: последние ${days} дн.`);
 
   // ── Посещаемость ────────────────────────────────────────────
-  section("analytics", "Посещаемость — итоги за период", ["Показатель", "Значение"], (d) => [
+  section("analytics", "Посещаемость — итоги за период (все маршруты)", ["Показатель", "Значение"], (d) => [
     ["Просмотры", d?.totals?.pageviews ?? ""],
     ["Уникальные посетители", d?.totals?.unique_visitors ?? ""],
     ["Сессии", d?.totals?.sessions ?? ""],
@@ -103,11 +103,22 @@ export function buildSeoGeoCsv(
   section("analytics", "Посещаемость — по дням", ["Дата", "Просмотры", "Посетители"], (d) =>
     arr(d?.timeseries).map((p) => [p.date, p.views, p.visitors])
   );
+  section("analytics", "Посещаемость — публичные страницы", ["Показатель", "Значение"], (d) => [
+    ["Просмотры публичных страниц", d?.marketing?.totals?.pageviews ?? ""],
+    ["Уникальные посетители публичных страниц", d?.marketing?.totals?.unique_visitors ?? ""],
+    ["Сессии с публичными страницами", d?.marketing?.totals?.sessions ?? ""],
+  ], () => "Исключены account/auth, admin/monitoring, beta-приглашения, FinModel и рабочая форма MRS. Общие продуктовые итоги выше не фильтруются.");
+  section("analytics", "Посещаемость — публичные страницы по дням", ["Дата", "Просмотры", "Посетители"], (d) =>
+    arr(d?.marketing?.timeseries).map((p) => [p.date, p.views, p.visitors])
+  );
   const top = (field: string, title: string, head: string) =>
     section("analytics", title, [head, "Просмотры"], (d) =>
       arr(d?.[field]).map((r) => [r.key || "(нет)", r.count])
     );
   top("top_pages", "Посещаемость — топ страниц", "Страница");
+  section("analytics", "Посещаемость — топ публичных страниц", ["Страница", "Просмотры"], (d) =>
+    arr(d?.marketing?.top_pages).map((r) => [r.key || "(нет)", r.count])
+  );
   top("top_sources", "Посещаемость — источники (utm_source)", "Источник");
   top("top_referrers", "Посещаемость — рефереры", "Реферер");
   top("countries", "Посещаемость — страны", "Страна");
@@ -139,7 +150,7 @@ export function buildSeoGeoCsv(
   // ── GEO: упоминания в нейросетях (фильтр по периоду на клиенте) ──
   const cutoff = now.getTime() - days * 86_400_000;
   const inPeriod = (it: any) => it?.created_at && new Date(it.created_at).getTime() >= cutoff;
-  section("geo", "GEO — упоминания бренда по нейросетям", ["Нейросеть", "Проверок", "Упомянут", "Доля", "Ошибочных проверок"], (d) => {
+  section("geo", "GEO — совпадения названия бренда", ["Нейросеть", "Успешных ответов", "Ответов с названием бренда", "Доля совпадений", "Ошибок проверки"], (d) => {
     const items = arr(d?.items).filter(inPeriod);
     const errors = arr(d?.error_items).filter(inPeriod);
     const llms = Array.from(new Set([...items, ...errors].map((i) => i.llm)));
@@ -152,8 +163,8 @@ export function buildSeoGeoCsv(
         errors.filter((i) => i.llm === llm).length,
       ];
     });
-  });
-  section("geo", "GEO — проверки нейросетей", ["Дата", "Нейросеть", "Запрос", "Упомянут", "Позиция", "Способ", "Фрагмент"], (d) =>
+  }, () => "Строковое совпадение не подтверждает правильность описания компании или рекомендации. Ошибки запроса исключены из доли.");
+  section("geo", "GEO — ответы нейросетей", ["Дата", "Нейросеть", "Запрос", "Есть название бренда", "Позиция в ответе", "Способ", "Фрагмент"], (d) =>
     arr(d?.items).filter(inPeriod).map((it) => [
       String(it.created_at).slice(0, 10), LLM_LABELS[it.llm] || it.llm, it.query,
       it.mentioned ? "Да" : "Нет", it.position || "", it.auto ? "авто" : "вручную",

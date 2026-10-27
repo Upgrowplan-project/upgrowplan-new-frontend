@@ -19,6 +19,12 @@ export interface AnalyticsData {
   top_pages: AnalyticsTopItem[];
   top_sources: AnalyticsTopItem[];
   top_referrers: AnalyticsTopItem[];
+  marketing?: {
+    totals: { pageviews: number; unique_visitors: number; sessions: number };
+    timeseries: { date: string; views: number; visitors: number }[];
+    top_pages: AnalyticsTopItem[];
+    excluded_route_groups: string[];
+  };
   // Просмотры по ссылкам из нейросетей (исключены из top_sources/top_referrers,
   // показываются во вкладке GEO). Нет у старой версии бэкенда.
   ai_referral_pageviews?: number;

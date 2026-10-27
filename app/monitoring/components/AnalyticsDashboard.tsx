@@ -173,6 +173,26 @@ export const AnalyticsDashboard: React.FC<{ headerAction?: React.ReactNode }> = 
         </Col>
       </Row>
 
+      {data.marketing && (
+        <>
+          <div className="text-muted small mb-2">
+            Публичные страницы для оценки привлечения. Не учитываются служебные маршруты,
+            beta-приглашения, FinModel и рабочая форма MRS; общая продуктовая статистика выше сохранена.
+          </div>
+          <Row className="g-3 mb-4">
+            <Col md={4} sm={6}>
+              <StatCard label="Публичные просмотры" value={data.marketing.totals.pageviews} hint={`за ${days} дн.`} />
+            </Col>
+            <Col md={4} sm={6}>
+              <StatCard label="Публичные посетители" value={data.marketing.totals.unique_visitors} hint={`за ${days} дн.`} />
+            </Col>
+            <Col md={4} sm={6}>
+              <StatCard label="Публичные сессии" value={data.marketing.totals.sessions} hint={`за ${days} дн.`} />
+            </Col>
+          </Row>
+        </>
+      )}
+
       <Card className="shadow-sm border-0 mb-4">
         <Card.Header className="bg-white border-0 py-3">
           <h6 className="mb-0">Динамика</h6>
@@ -228,6 +248,13 @@ export const AnalyticsDashboard: React.FC<{ headerAction?: React.ReactNode }> = 
           <TopList title="Источники (UTM)" items={data.top_sources} />
         </Col>
       </Row>
+      {data.marketing && (
+        <Row className="g-3 mb-4">
+          <Col lg={6}>
+            <TopList title="Топ публичных страниц" items={data.marketing.top_pages} />
+          </Col>
+        </Row>
+      )}
       {(data.ai_referral_pageviews ?? 0) > 0 && (
         <p className="text-muted small mt-n2 mb-4">
           🤖 Ещё {data.ai_referral_pageviews} просмотров пришли по ссылкам из нейросетей (ChatGPT,

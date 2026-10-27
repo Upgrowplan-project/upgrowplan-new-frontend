@@ -51,7 +51,7 @@ type GeoItem = {
 
 type GeoErrorItem = Pick<GeoItem, "id" | "llm" | "query" | "excerpt" | "created_at">;
 
-type Summary = Record<string, { total: number; mentioned: number; last_check: string | null }>;
+type Summary = Record<string, { total: number; mentioned: number; errors?: number; last_check: string | null }>;
 
 const positionBadge = (pos: string | null) => {
   if (!pos) return null;
@@ -175,8 +175,12 @@ export const GeoVisibilityDashboard: React.FC = () => {
         <div>
           <h4 className="mb-0" style={{ color: BRAND }}>🤖 GEO Visibility — видимость в нейросетях</h4>
           <p className="text-muted small mb-0 mt-1">
-            Автоматически проверяем: упоминает ли Gemini upgrowplan в ответах на бизнес-запросы.
+            Автоматически проверяем: появляется ли название upgrowplan в ответах Gemini на бизнес-запросы.
             Авто-скан раз в день (ротация из 15 запросов). Другие нейросети — вставь ответ вручную.
+          </p>
+          <p className="text-muted small mb-0 mt-1">
+            Доля ниже показывает только совпадение названия в тексте ответа. Она не подтверждает,
+            что нейросеть правильно поняла компанию или дала корректную рекомендацию; ошибки запросов считаются отдельно.
           </p>
         </div>
         <div className="d-flex gap-2 flex-wrap">
@@ -198,7 +202,7 @@ export const GeoVisibilityDashboard: React.FC = () => {
 
       {errorItems.length > 0 && (
         <Alert variant="warning" className="py-2 small mb-3 d-flex align-items-center justify-content-between gap-2">
-          <span>Скрыто ошибочных проверок: <strong>{errorItems.length}</strong>. Они не влияют на статистику упоминаний.</span>
+          <span>Скрыто ошибочных проверок: <strong>{errorItems.length}</strong>. Они не влияют на долю совпадений.</span>
           <Button size="sm" variant="outline-secondary" onClick={() => setShowErrorDetails(true)}>Посмотреть</Button>
         </Alert>
       )}
@@ -250,8 +254,9 @@ export const GeoVisibilityDashboard: React.FC = () => {
                   <Card.Body>
                     <div className="fw-bold mb-2" style={{ color: BRAND }}>{LLM_LABELS[llm] || llm}</div>
                     <div className={`display-6 fw-bold text-${variant}`}>{rate}%</div>
-                    <div className="text-muted small">упоминаний</div>
-                    <div className="text-muted small mt-1">{s.mentioned}/{s.total} запросов</div>
+                    <div className="text-muted small">совпадений названия</div>
+                    <div className="text-muted small mt-1">{s.mentioned}/{s.total} успешных ответов</div>
+                    {!!s.errors && <div className="text-warning small mt-1">Ошибок: {s.errors}</div>}
                     {s.last_check && (
                       <Badge bg="light" text="dark" className="mt-2 small">{fmtDate(s.last_check)}</Badge>
                     )}
@@ -322,7 +327,7 @@ export const GeoVisibilityDashboard: React.FC = () => {
         </Modal.Header>
         <Modal.Body>
           <p className="text-muted small">
-            Выбери нейросеть, задай ей вопрос про бизнес-инструменты, скопируй ответ сюда — система проверит, упоминается ли upgrowplan.
+            Выбери нейросеть, задай ей вопрос про бизнес-инструменты, скопируй ответ сюда — система проверит, встречается ли в нём название upgrowplan.
           </p>
           {manResult && (
             <Alert variant={manResult.mentioned ? "success" : "warning"} className="py-2 small">
