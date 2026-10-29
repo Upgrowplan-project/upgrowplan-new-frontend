@@ -155,7 +155,8 @@ export function buildSeoGeoCsv(
     const errors = arr(d?.error_items).filter(inPeriod);
     const llms = Array.from(new Set([...items, ...errors].map((i) => i.llm)));
     return llms.map((llm) => {
-      const own = items.filter((i) => i.llm === llm);
+      // [29.10 · «5»] questions naming the brand are «mentioned» by any answer — kept out of the share
+      const own = items.filter((i) => i.llm === llm && !i.brand_in_query);
       const hit = own.filter((i) => i.mentioned).length;
       return [
         LLM_LABELS[llm] || llm, own.length, hit,
@@ -163,7 +164,7 @@ export function buildSeoGeoCsv(
         errors.filter((i) => i.llm === llm).length,
       ];
     });
-  }, () => "Строковое совпадение не подтверждает правильность описания компании или рекомендации. Ошибки запроса исключены из доли.");
+  }, () => "Строковое совпадение не подтверждает правильность описания компании или рекомендации. Ошибки запроса и вопросы, в которых уже есть название бренда, исключены из доли.");
   section("geo", "GEO — ответы нейросетей", ["Дата", "Нейросеть", "Запрос", "Есть название бренда", "Позиция в ответе", "Способ", "Фрагмент"], (d) =>
     arr(d?.items).filter(inPeriod).map((it) => [
       String(it.created_at).slice(0, 10), LLM_LABELS[it.llm] || it.llm, it.query,

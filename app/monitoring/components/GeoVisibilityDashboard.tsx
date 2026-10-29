@@ -42,6 +42,7 @@ type GeoItem = {
   id: number;
   llm: string;
   query: string;
+  brand_in_query?: boolean;
   mentioned: boolean;
   position: string | null;
   excerpt: string | null;
@@ -51,7 +52,12 @@ type GeoItem = {
 
 type GeoErrorItem = Pick<GeoItem, "id" | "llm" | "query" | "excerpt" | "created_at">;
 
-type Summary = Record<string, { total: number; mentioned: number; errors?: number; last_check: string | null }>;
+// [29.10 · «5»] total/mentioned — only questions WITHOUT the brand name (a question «What is Upgrowplan?» is «mentioned» by
+// any answer); brand-name questions are counted apart (brand_query_*). Older backend: the fields are absent.
+type Summary = Record<string, {
+  total: number; mentioned: number; errors?: number; last_check: string | null;
+  brand_query_total?: number; brand_query_mentioned?: number;
+}>;
 
 const positionBadge = (pos: string | null) => {
   if (!pos) return null;
@@ -246,16 +252,21 @@ export const GeoVisibilityDashboard: React.FC = () => {
         <Row className="g-3 mb-4">
           {knownLlms.map((llm) => {
             const s = summary[llm] || { total: 0, mentioned: 0, last_check: null };
-            const rate = s.total > 0 ? Math.round((s.mentioned / s.total) * 100) : 0;
-            const variant = rate >= 60 ? "success" : rate >= 30 ? "warning" : "danger";
+            const rate = s.total > 0 ? Math.round((s.mentioned / s.total) * 100) : null;
+            const variant = rate === null ? "secondary" : rate >= 60 ? "success" : rate >= 30 ? "warning" : "danger";
             return (
               <Col md={3} sm={6} key={llm}>
                 <Card className="h-100 shadow-sm text-center">
                   <Card.Body>
                     <div className="fw-bold mb-2" style={{ color: BRAND }}>{LLM_LABELS[llm] || llm}</div>
-                    <div className={`display-6 fw-bold text-${variant}`}>{rate}%</div>
+                    <div className={`display-6 fw-bold text-${variant}`}>{rate === null ? "нет данных" : `${rate}%`}</div>
                     <div className="text-muted small">совпадений названия</div>
-                    <div className="text-muted small mt-1">{s.mentioned}/{s.total} успешных ответов</div>
+                    <div className="text-muted small mt-1">{s.mentioned}/{s.total} успешных ответов на вопросы без названия бренда</div>
+                    {!!s.brand_query_total && (
+                      <div className="text-muted small mt-1">
+                        Вопросы с названием бренда: {s.brand_query_total} (в долю не входят)
+                      </div>
+                    )}
                     {!!s.errors && <div className="text-warning small mt-1">Ошибок: {s.errors}</div>}
                     {s.last_check && (
                       <Badge bg="light" text="dark" className="mt-2 small">{fmtDate(s.last_check)}</Badge>
