@@ -1275,7 +1275,10 @@ export default function MarketResearchPage() {
         ? { purchase_frequency_per_month: parseInt(formData.purchaseFrequency.trim(), 10) }
         : {}),
       // [13.10 · владелец] дневной масштаб: клиентов за рабочий день в первый год; в год сервис пересчитывает сам
-      ...(/^[1-9][0-9]{0,4}$/.test(formData.plannedCustomersFirstYear.trim())
+      // [29.10 · владелец «3. да»] цифровой продукт — сразу платящих клиентов за первый год (без «× рабочие дни»)
+      ...(isDigitalForm && /^[1-9][0-9]{0,6}$/.test(formData.plannedCustomersFirstYear.trim())
+        ? { planned_customers_first_year: parseInt(formData.plannedCustomersFirstYear.trim(), 10) }
+        : !isDigitalForm && /^[1-9][0-9]{0,4}$/.test(formData.plannedCustomersFirstYear.trim())
         ? { planned_customers_per_day: parseInt(formData.plannedCustomersFirstYear.trim(), 10) }
         : {}),
       // [13.10 · владелец, путь 1] средний чек заказчика (местная валюта) — SOM, если чек рынка не измерен
@@ -2331,7 +2334,7 @@ export default function MarketResearchPage() {
                 summaryRows.push(["Частота покупки", `${formData.purchaseFrequency} раз в месяц`]);
               }
               if (formData.plannedCustomersFirstYear) {
-                summaryRows.push(["Клиентов в день", `${formData.plannedCustomersFirstYear}`]);
+                summaryRows.push([isDigitalForm ? "Платящих клиентов за первый год" : "Клиентов в день", `${formData.plannedCustomersFirstYear}`]);
               }
               if (formData.plannedAvgCheck) {
                 summaryRows.push(["Ваш средний чек", isDigitalForm ? `$${formData.plannedAvgCheck}` : `${formData.plannedAvgCheck} (местная валюта)`]);
@@ -2821,11 +2824,15 @@ export default function MarketResearchPage() {
 
               {/* === МАСШТАБ ПЛАНОВ (17.10 · владелец: текст согласован, вариант А2) === */}
               <div className={styles.section}>
-                <h3>Сколько клиентов в день будет у вашего бизнеса — необязательно</h3>
+                {/* [29.10 · владелец «3. да»; отзыв первого тестера: «клиентов в день» для цифрового продукта непонятно] цифровой
+                    продукт — платящих клиентов за первый год; физический — клиентов в рабочий день (как было) */}
+                <h3>{isDigitalForm
+                  ? "Сколько платящих клиентов будет за первый год — необязательно"
+                  : "Сколько клиентов в день будет у вашего бизнеса — необязательно"}</h3>
                 <p className={styles.formDescription} style={{ marginBottom: "0.75rem" }}>
-                  Сколько клиентов в среднем вы рассчитываете обслуживать за один рабочий день. От этого числа и
-                  средней цены по рынку считается достижимый объём рынка. Если оставить пустым — ваш потенциальный
-                  рынок сбыта не будет посчитан.
+                  {isDigitalForm
+                    ? "Сколько клиентов, которые заплатят за продукт, вы рассчитываете получить за первый год. От этого числа и цен конкурентов считается достижимый объём рынка. Если оставить пустым — сервис оценит его сам по аудитории продукта и пометит как оценку."
+                    : "Сколько клиентов в среднем вы рассчитываете обслуживать за один рабочий день. От этого числа и средней цены по рынку считается достижимый объём рынка. Если оставить пустым — сервис оценит его по отраслевым ориентирам и пометит как оценку."}
                 </p>
                 <div className={styles.formGroup}>
                   <input
@@ -2836,11 +2843,11 @@ export default function MarketResearchPage() {
                     onChange={(e) =>
                       setFormData((prev) => ({
                         ...prev,
-                        plannedCustomersFirstYear: e.target.value.replace(/[^0-9]/g, "").slice(0, 5),
+                        plannedCustomersFirstYear: e.target.value.replace(/[^0-9]/g, "").slice(0, isDigitalForm ? 7 : 5),
                       }))
                     }
                     className={styles.input}
-                    placeholder="Например: 15"
+                    placeholder={isDigitalForm ? "Например: 500" : "Например: 15"}
                   />
                 </div>
               </div>

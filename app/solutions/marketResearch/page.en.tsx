@@ -1237,7 +1237,10 @@ export default function MarketResearchPage() {
         ? { purchase_frequency_per_month: parseInt(formData.purchaseFrequency.trim(), 10) }
         : {}),
       // [13.10 · owner] daily scale: customers per working day in year one; the service scales it to a year
-      ...(/^[1-9][0-9]{0,4}$/.test(formData.plannedCustomersFirstYear.trim())
+      // [29.10 · owner «3. yes»] digital — paying customers in the first year directly (no «× working days»)
+      ...(isDigitalForm && /^[1-9][0-9]{0,6}$/.test(formData.plannedCustomersFirstYear.trim())
+        ? { planned_customers_first_year: parseInt(formData.plannedCustomersFirstYear.trim(), 10) }
+        : !isDigitalForm && /^[1-9][0-9]{0,4}$/.test(formData.plannedCustomersFirstYear.trim())
         ? { planned_customers_per_day: parseInt(formData.plannedCustomersFirstYear.trim(), 10) }
         : {}),
       // [13.10 · владелец, путь 1] средний чек заказчика (местная валюта) — SOM, если чек рынка не измерен
@@ -2178,7 +2181,7 @@ export default function MarketResearchPage() {
                 summaryRows.push(["Purchase frequency", `${formData.purchaseFrequency} per month`]);
               }
               if (formData.plannedCustomersFirstYear) {
-                summaryRows.push(["Customers per day", `${formData.plannedCustomersFirstYear}`]);
+                summaryRows.push([isDigitalForm ? "Paying customers in the first year" : "Customers per day", `${formData.plannedCustomersFirstYear}`]);
               }
               if (formData.plannedAvgCheck) {
                 summaryRows.push(["Your average check", isDigitalForm ? `$${formData.plannedAvgCheck}` : `${formData.plannedAvgCheck} (local currency)`]);
@@ -2668,11 +2671,14 @@ export default function MarketResearchPage() {
 
               {/* === SCALE OF THE PLAN (17.10 · owner: wording agreed, option A2) === */}
               <div className={styles.section}>
-                <h3>How many customers per day your business will have — optional</h3>
+                {/* [29.10 · owner «3. yes»] digital product — paying customers in the first year; physical — per working day */}
+                <h3>{isDigitalForm
+                  ? "How many paying customers in the first year — optional"
+                  : "How many customers per day your business will have — optional"}</h3>
                 <p className={styles.formDescription} style={{ marginBottom: "0.75rem" }}>
-                  How many customers on average you expect to serve in one working day. Together with the market
-                  average price it gives your obtainable market volume. If left empty, your potential sales market
-                  will not be calculated.
+                  {isDigitalForm
+                    ? "How many customers who pay for the product you expect in the first year. Together with competitor prices it gives your obtainable market volume. If left empty, the service estimates it from the product's audience and labels it as an estimate."
+                    : "How many customers on average you expect to serve in one working day. Together with the market average price it gives your obtainable market volume. If left empty, the service estimates it from industry benchmarks and labels it as an estimate."}
                 </p>
                 <div className={styles.formGroup}>
                   <input
@@ -2683,11 +2689,11 @@ export default function MarketResearchPage() {
                     onChange={(e) =>
                       setFormData((prev) => ({
                         ...prev,
-                        plannedCustomersFirstYear: e.target.value.replace(/[^0-9]/g, "").slice(0, 5),
+                        plannedCustomersFirstYear: e.target.value.replace(/[^0-9]/g, "").slice(0, isDigitalForm ? 7 : 5),
                       }))
                     }
                     className={styles.input}
-                    placeholder="For example: 15"
+                    placeholder={isDigitalForm ? "For example: 500" : "For example: 15"}
                   />
                 </div>
               </div>
