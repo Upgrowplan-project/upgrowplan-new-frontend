@@ -735,6 +735,22 @@ export default function MarketResearchPage() {
     }
   };
 
+  // [03.11 · owner В6] beta quality-check status of the product type — BEFORE the run; the same list as the report cover
+  // (MRS app/data/beta_type_status.json). No answer (older service, failure) → no notes, the form works as before.
+  type TypeStatusEntry = { status: string; text_ru: string; text_en: string };
+  const [typeStatus, setTypeStatus] = useState<{ types: Record<string, TypeStatusEntry>; default: TypeStatusEntry } | null>(null);
+  useEffect(() => {
+    fetch(`${API_BASE}/api/v1/research/type-status`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (d && d.types && d.default) setTypeStatus(d); })
+      .catch(() => {});
+  }, []);
+  const typeStatusNotes = typeStatus
+    ? formData.productTypes
+        .map((t) => ({ t, s: typeStatus.types[t] || typeStatus.default }))
+        .filter((x) => x.s.status !== "checked" && x.s.text_en)
+    : [];
+
   // [25.10 · «Г»] the search agent is waking up after idle (the backend sends warming_up) — not a failure
   const healthWarmingUp = !!healthStatus && !healthStatus.all_ready && healthStatus.warming_up === true;
 
@@ -2395,6 +2411,17 @@ export default function MarketResearchPage() {
                           </span>
                         );
                       })}
+                    </div>
+                  )}
+                  {/* [03.11 · В6] an honest note on an unchecked type — before the run */}
+                  {typeStatusNotes.length > 0 && (
+                    <div style={{ margin: "0.5rem 0", fontSize: "0.85rem", color: "#92400e", background: "#fffbeb",
+                                  border: "1px solid #fcd34d", borderRadius: "8px", padding: "0.5rem 0.75rem" }}>
+                      {typeStatusNotes.map(({ t, s }) => (
+                        <div key={t}>
+                          Beta: the type «{productTypeOptions.find((o) => o.value === t)?.label ?? t}» {s.text_en}.
+                        </div>
+                      ))}
                     </div>
                   )}
                   {/* Grouped checkbox panel */}
