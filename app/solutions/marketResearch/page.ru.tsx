@@ -272,6 +272,23 @@ interface ValidationResult {
   errors: ValidationIssue[];
   warnings: ValidationIssue[];
 }
+// [06.11 · владелец: паттерн исследования п.2–4] объект исследования — окно «Мы определили объект исследования как…»
+interface ResearchObjectOption {
+  label: string;
+  does: string;
+  not_included: string;
+  unit_of_sale: string;
+  compare_with: string;
+  source: string;
+  custom_text?: string | null;
+  model?: string | null;
+}
+interface InterpretResult {
+  status: "ok" | "invalid" | "failed";
+  interpretations: ResearchObjectOption[];
+  errors: ValidationIssue[];
+}
+const CUSTOM_OBJECT_MAX = 150;
 
 interface PipelineAgent {
   name: string;
@@ -566,6 +583,17 @@ export default function MarketResearchPage() {
   const [validationErrors, setValidationErrors] = useState<ValidationIssue[]>([]);
   const [validationWarnings, setValidationWarnings] = useState<ValidationIssue[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // [06.11 · владелец] разбор запроса до запуска: кнопка неактивна, значок ожидания; затем окно подтверждения объекта
+  const [isInterpreting, setIsInterpreting] = useState(false);
+  const [objectChoice, setObjectChoice] = useState<{
+    requestData: Record<string, unknown>;
+    industryStr: string;
+    options: ResearchObjectOption[];
+    selected: number; // индекс варианта; -1 — «свой вариант»
+    custom: string;
+    busy: boolean;
+    error: string | null;
+  } | null>(null);
   const [isResearchPaused, setIsResearchPaused] = useState(false);
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [submitAttempted, setSubmitAttempted] = useState(false);
@@ -1186,13 +1214,9 @@ export default function MarketResearchPage() {
     setError(null);
     setValidationErrors([]);
     setValidationWarnings([]);
-    setIsSubmitting(true);
-    setIsResearchPaused(false);
-    setElapsedSeconds(0);
-    setResearchStartTime(Date.now()); // Запуск таймера
-    setResearchDuration(null); // Сброс предыдущей длительности
-    if (elapsedTimerRef.current) clearInterval(elapsedTimerRef.current);
-    elapsedTimerRef.current = setInterval(() => setElapsedSeconds(s => s + 1), 1000);
+    // [06.11 · владелец] до запуска — проверка готовности, полей и разбор объекта исследования; таймер исследования
+    // стартует только после подтверждения в окне (15 минут считаются с запуска)
+    setIsInterpreting(true);
     console.log("[Market Research] Starting research submission...");
     console.log("[Market Research] Form data:", formData);
 
@@ -1216,6 +1240,7 @@ export default function MarketResearchPage() {
         setHealthStatus(healthData);
         setError(WARMING_UP_MESSAGE);
         setIsSubmitting(false);
+        setIsInterpreting(false);
         return;
       }
 
@@ -1232,6 +1257,7 @@ export default function MarketResearchPage() {
           `Пожалуйста, убедитесь что все сервисы запущены и повторите попытку.`
         );
         setIsSubmitting(false);
+        setIsInterpreting(false);
         console.error("[HEALTH CHECK] Система не готова:", failedComponents);
         return;
       }
@@ -1245,6 +1271,7 @@ export default function MarketResearchPage() {
         `Убедитесь что Market Research Service запущен на порту 8005.`
       );
       setIsSubmitting(false);
+      setIsInterpreting(false);
       return;
     }
 
@@ -1326,6 +1353,7 @@ export default function MarketResearchPage() {
             elapsedTimerRef.current = null;
           }
           setIsSubmitting(false);
+          setIsInterpreting(false);
           window.scrollTo({ top: 0, behavior: "smooth" });
           return;
         }
@@ -1335,6 +1363,87 @@ export default function MarketResearchPage() {
     }
     setValidationErrors([]);
 
+    // [06.11 · владелец: паттерн п.2–3] разбор объекта исследования → окно подтверждения. Сбой разбора — запуск без
+    // окна с пометкой window_failed (строка на обложке, решение 05.11)
+    let options: ResearchObjectOption[] = [];
+    try {
+      const interpResp = await marketResearchFetch(`${healthApiBaseUrl}/api/v1/research/interpret`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ request: requestData }),
+      });
+      if (interpResp.ok) {
+        const interp: InterpretResult = await interpResp.json();
+        if (interp.status === "invalid") {
+          setValidationErrors(interp.errors || []);
+          setIsInterpreting(false);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          return;
+        }
+        if (interp.status === "ok") options = interp.interpretations || [];
+      }
+    } catch (interpErr) {
+      console.warn("[ResearchObject] interpret failed — launching without the window:", interpErr);
+    }
+    setIsInterpreting(false);
+    if (options.length > 0) {
+      setObjectChoice({ requestData, industryStr, options, selected: 0, custom: "", busy: false, error: null });
+      return;
+    }
+    await launchResearch({ ...requestData, research_object_status: "window_failed" }, industryStr);
+  };
+
+  // [06.11] подтверждение объекта: выбранный вариант или свой (≤ 150 знаков, разбирается той же моделью, второго окна нет)
+  const confirmResearchObject = async () => {
+    if (!objectChoice) return;
+    const custom = objectChoice.custom.trim();
+    let chosen: ResearchObjectOption | null = null;
+    if (objectChoice.selected === -1) {
+      if (!custom) {
+        setObjectChoice({ ...objectChoice, error: "Опишите свой вариант или выберите вариант выше." });
+        return;
+      }
+      setObjectChoice({ ...objectChoice, busy: true, error: null });
+      try {
+        const r = await marketResearchFetch(`${API_BASE}/api/v1/research/interpret`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ request: objectChoice.requestData, custom_text: custom }),
+        });
+        const interp: InterpretResult | null = r.ok ? await r.json() : null;
+        if (interp?.status === "ok" && interp.interpretations?.length) {
+          chosen = interp.interpretations[0];
+        } else {
+          setObjectChoice({
+            ...objectChoice, busy: false,
+            error: interp?.status === "invalid"
+              ? (interp.errors?.[0]?.message || "Свой вариант не прошёл проверку.")
+              : "Не удалось разобрать свой вариант — попробуйте ещё раз или выберите вариант выше.",
+          });
+          return;
+        }
+      } catch {
+        setObjectChoice({ ...objectChoice, busy: false,
+          error: "Не удалось разобрать свой вариант — попробуйте ещё раз или выберите вариант выше." });
+        return;
+      }
+    } else {
+      const opt = objectChoice.options[objectChoice.selected];
+      chosen = { ...opt, source: objectChoice.selected === 0 ? "first" : "alternative" };
+    }
+    const { requestData, industryStr } = objectChoice;
+    setObjectChoice(null);
+    await launchResearch({ ...requestData, research_object: chosen, research_object_status: "confirmed" }, industryStr);
+  };
+
+  const launchResearch = async (requestData: Record<string, unknown>, industryStr: string) => {
+    setIsSubmitting(true);
+    setIsResearchPaused(false);
+    setElapsedSeconds(0);
+    setResearchStartTime(Date.now()); // Запуск таймера
+    setResearchDuration(null); // Сброс предыдущей длительности
+    if (elapsedTimerRef.current) clearInterval(elapsedTimerRef.current);
+    elapsedTimerRef.current = setInterval(() => setElapsedSeconds(s => s + 1), 1000);
     try {
       try {
         localStorage.setItem(LAST_REQUEST_FORM_DATA_KEY, JSON.stringify(formData));
@@ -2034,6 +2143,88 @@ export default function MarketResearchPage() {
   return (
     <div className={styles.container}>
       <Header />
+      {objectChoice && (
+        // [06.11 · владелец: паттерн п.3–4] окно подтверждения объекта исследования
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="research-object-title"
+          style={{
+            position: "fixed", inset: 0, background: "rgba(15, 23, 42, 0.55)", zIndex: 1000,
+            display: "flex", alignItems: "center", justifyContent: "center", padding: "16px",
+          }}
+        >
+          <div style={{
+            background: "#fff", color: "#0f172a", borderRadius: "12px", maxWidth: "640px", width: "100%",
+            maxHeight: "90vh", overflowY: "auto", padding: "24px", boxShadow: "0 20px 50px rgba(0,0,0,0.25)",
+          }}>
+            <h2 id="research-object-title" style={{ margin: "0 0 6px", fontSize: "1.25rem" }}>
+              Мы определили объект исследования как:
+            </h2>
+            <p style={{ margin: "0 0 16px", color: "#475569", fontSize: "0.9rem" }}>
+              По нему мы ищем конкурентов и их цены. Выберите верный вариант или опишите свой.
+            </p>
+            {objectChoice.options.map((o, i) => (
+              <label key={i} style={{
+                display: "flex", gap: "10px", alignItems: "flex-start", padding: "12px", marginBottom: "8px",
+                border: `2px solid ${objectChoice.selected === i ? "#0785f6" : "#e2e8f0"}`, borderRadius: "8px",
+                cursor: "pointer",
+              }}>
+                <input type="radio" name="research-object" checked={objectChoice.selected === i}
+                  onChange={() => setObjectChoice({ ...objectChoice, selected: i, error: null })}
+                  style={{ marginTop: "4px", flexShrink: 0 }} />
+                <span style={{ fontSize: "0.92rem", lineHeight: 1.45 }}>
+                  <strong>{o.label}</strong>
+                  {o.does && <><br />Что делает: {o.does}</>}
+                  {o.not_included && <><br />Не делает: {o.not_included}</>}
+                  {o.unit_of_sale && <><br />Как продаётся: {o.unit_of_sale}</>}
+                  {o.compare_with && <><br />С кем сравниваем: {o.compare_with}</>}
+                </span>
+              </label>
+            ))}
+            <label style={{
+              display: "flex", gap: "10px", alignItems: "flex-start", padding: "12px", marginBottom: "8px",
+              border: `2px solid ${objectChoice.selected === -1 ? "#0785f6" : "#e2e8f0"}`, borderRadius: "8px",
+              cursor: "pointer",
+            }}>
+              <input type="radio" name="research-object" checked={objectChoice.selected === -1}
+                onChange={() => setObjectChoice({ ...objectChoice, selected: -1, error: null })}
+                style={{ marginTop: "4px", flexShrink: 0 }} />
+              <span style={{ flex: 1, fontSize: "0.92rem" }}>
+                <strong>Свой вариант</strong>
+                <textarea
+                  value={objectChoice.custom}
+                  maxLength={CUSTOM_OBJECT_MAX}
+                  rows={2}
+                  placeholder="Например: ремонт обуви и изготовление ключей"
+                  onFocus={() => setObjectChoice({ ...objectChoice, selected: -1 })}
+                  onChange={(e) => setObjectChoice({ ...objectChoice, selected: -1, custom: e.target.value, error: null })}
+                  style={{ display: "block", width: "100%", marginTop: "6px", padding: "8px", borderRadius: "6px",
+                    border: "1px solid #cbd5e1", fontSize: "0.92rem", boxSizing: "border-box", resize: "vertical" }}
+                />
+                <span style={{ fontSize: "0.8rem", color: "#64748b" }}>
+                  {objectChoice.custom.length} / {CUSTOM_OBJECT_MAX}
+                </span>
+              </span>
+            </label>
+            {objectChoice.error && (
+              <p role="alert" style={{ color: "#b91c1c", fontSize: "0.9rem", margin: "4px 0 0" }}>{objectChoice.error}</p>
+            )}
+            <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end", flexWrap: "wrap", marginTop: "16px" }}>
+              <button type="button" disabled={objectChoice.busy} onClick={() => setObjectChoice(null)}
+                style={{ padding: "10px 18px", borderRadius: "8px", border: "1px solid #cbd5e1", background: "#fff",
+                  cursor: "pointer", fontSize: "0.95rem" }}>
+                Назад
+              </button>
+              <button type="button" disabled={objectChoice.busy} onClick={confirmResearchObject}
+                className={styles.submitButton} style={{ width: "auto" }}>
+                {objectChoice.busy ? (<><div className={styles.spinner} />Разбираем ваш вариант…</>)
+                  : "Подтвердить и начать исследование"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <main className={styles.main}>
         <div className={styles.hero}>
           <div className={styles.heroContent}>
@@ -2989,12 +3180,17 @@ export default function MarketResearchPage() {
                   <button
                     type="submit"
                     className={styles.submitButton}
-                    disabled={isSubmitting || !healthStatus?.all_ready}
+                    disabled={isSubmitting || isInterpreting || Boolean(objectChoice) || !healthStatus?.all_ready}
                   >
                     {isSubmitting ? (
                       <>
                         <div className={styles.spinner} />
                         Собираем и анализируем данные ...
+                      </>
+                    ) : isInterpreting ? (
+                      <>
+                        <div className={styles.spinner} />
+                        Определяем объект исследования…
                       </>
                     ) : isLoadingHealth && !healthStatus ? (
                       <>
