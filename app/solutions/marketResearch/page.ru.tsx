@@ -244,6 +244,7 @@ interface FormData {
   // Строка, а не number: пустое поле должно отличаться от нуля, а <input type="number"> в React
   // отдаёт "" при нечисловом вводе — тогда причина ошибки для пользователя пропадает.
   plannedCustomersFirstYear: string;
+  plannedCustomersPeriod: string; // [07.11] day | month | year
   plannedAvgCheck: string;
   // Ось «чем ограничена пропускная способность» — определяет СПОСОБ СЧЁТА ёмкости, а не только число.
   capacityLimit: string;
@@ -557,6 +558,7 @@ export default function MarketResearchPage() {
     offeringSubType: "",
     priceSegment: "",
     plannedCustomersFirstYear: "",
+    plannedCustomersPeriod: "",
     plannedAvgCheck: "",
     capacityLimit: "",
     capacityValue: "",
@@ -585,6 +587,19 @@ export default function MarketResearchPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   // [06.11 · владелец] разбор запроса до запуска: кнопка неактивна, значок ожидания; затем окно подтверждения объекта
   const [isInterpreting, setIsInterpreting] = useState(false);
+  // [07.11 · владелец] чекбокс «я указал всё» → объект подтверждён → старт разблокирован; правка полей — сброс
+  const [objectChecked, setObjectChecked] = useState(false);
+  const [objectConfirmed, setObjectConfirmed] = useState<ResearchObjectOption | null>(null);
+  const [objectFailed, setObjectFailed] = useState(false);
+  const [objectSig, setObjectSig] = useState<string | null>(null);
+  useEffect(() => {
+    if (objectSig && JSON.stringify(formData) !== objectSig) {
+      setObjectConfirmed(null);
+      setObjectFailed(false);
+      setObjectChecked(false);
+      setObjectSig(null);
+    }
+  }, [formData, objectSig]);
   const [objectChoice, setObjectChoice] = useState<{
     requestData: Record<string, unknown>;
     industryStr: string;
@@ -1194,6 +1209,69 @@ export default function MarketResearchPage() {
     color: "#ef4444",
   };
 
+  // [07.11 · владелец] поля запроса — ОДНА сборка: разбор объекта до старта и сам старт
+  const buildRequestData = () => {
+    // Parse competitors string → array
+    const competitorsList = formData.competitors
+      ? formData.competitors.split(",").map((c) => c.trim()).filter(Boolean)
+      : undefined;
+
+    // [р.13 · 2026-09-25 · владелец] Если отмечено несколько типов и среди них есть ЦИФРОВОЙ — отправляем
+    // цифровой, а не первый по клику. Живой прогон res_ac1ee3ebcbb2: пользователь выбрал «Образование и
+    // онлайн-обучение» и «B2C SaaS», первым кликнул образование → в сервис ушёл `education`, тот счёл кейс
+    // ФИЗИЧЕСКИМ, пошёл в Google Places (0 результатов) и выродил тему до «education market».
+    // Порядок клика не должен решать маршрут исследования.
+    const primaryProductType =
+      formData.productTypes.find((t) => DIGITAL_PRODUCT_TYPES.includes(t)) ?? formData.productTypes[0];
+    const industryStr = productTypeToIndustry[primaryProductType] ?? primaryProductType;
+
+    // Build ResearchRequest directly — no onboarding mapper indirection.
+    // Built once: used for both pre-flight validation and submission.
+    const requestData: Record<string, unknown> = {
+      product_name: formData.productName,
+      product_description: formData.productDescription,
+      country: formData.country,
+      ...(formData.region ? { region: formData.region } : {}),
+      // business_type: API expects single value; take first selected
+      business_type: formData.businessTypes[0],
+      // product_type: same — take first selected
+      product_type: primaryProductType,
+      localization: formData.localization,
+      industry: industryStr,
+      research_goals: formData.researchGoals,
+      // Report language — this is the RU page → Russian report
+      report_language: "ru",
+      // Offering & pricing (optional — omit if not set)
+      ...(formData.offeringType ? { offering_type: formData.offeringType } : {}),
+      ...(formData.offeringSubType ? { offering_sub_type: formData.offeringSubType } : {}),
+      ...(formData.priceSegment ? { price_segment: formData.priceSegment } : {}),
+      ...(formData.capacityLimit ? { capacity_limit: formData.capacityLimit } : {}),
+      ...(formData.capacityLimit !== "none" && /^[1-9][0-9]{0,7}$/.test(formData.capacityValue.trim())
+        ? { capacity_value: parseInt(formData.capacityValue.trim(), 10) }
+        : {}),
+      // [17.10 · владелец] у цифровых продуктов поле частоты скрыто (подписка — цены уже месячные) — и не отправляется
+      ...(!isDigitalForm && /^[1-9][0-9]{0,7}$/.test(formData.purchaseFrequency.trim())
+        ? { purchase_frequency_per_month: parseInt(formData.purchaseFrequency.trim(), 10) }
+        : {}),
+      // [13.10 · владелец] дневной масштаб: клиентов за рабочий день в первый год; в год сервис пересчитывает сам
+      // [29.10 · владелец «3. да»] цифровой продукт — сразу платящих клиентов за первый год (без «× рабочие дни»)
+      // [07.11 · владелец «МЕНЯЮ РЕШЕНИЕ»] число + период «день / месяц / год» у любого типа; пересчёт — в одном месте
+      // сервиса (ResearchRequest._customers_period): день → в день, месяц ×12 → за год, год → за год
+      ...(/^[1-9][0-9]{0,8}$/.test(formData.plannedCustomersFirstYear.trim())
+        ? { planned_customers_value: parseInt(formData.plannedCustomersFirstYear.trim(), 10),
+            planned_customers_period: formData.plannedCustomersPeriod || (isDigitalForm ? "year" : "day") }
+        : {}),
+      // [13.10 · владелец, путь 1] средний чек заказчика (местная валюта) — SOM, если чек рынка не измерен
+      ...(/^[1-9][0-9]{0,6}$/.test(formData.plannedAvgCheck.trim())
+        ? { planned_avg_check: parseInt(formData.plannedAvgCheck.trim(), 10) }
+        : {}),
+      // Optional extras
+      ...(formData.targetAudience ? { target_audience_description: formData.targetAudience } : {}),
+      ...(competitorsList && competitorsList.length > 0 ? { competitors: competitorsList } : {}),
+    };
+    return { requestData, industryStr };
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitAttempted(true);
@@ -1216,7 +1294,12 @@ export default function MarketResearchPage() {
     setValidationWarnings([]);
     // [06.11 · владелец] до запуска — проверка готовности, полей и разбор объекта исследования; таймер исследования
     // стартует только после подтверждения в окне (15 минут считаются с запуска)
-    setIsInterpreting(true);
+    // [07.11 · владелец] старт — только с подтверждённым объектом (или после сбоя разбора, пометка window_failed)
+    if (!objectConfirmed && !objectFailed) {
+      setError("Отметьте «Я указал всё, что знаю о своём бизнесе» и подтвердите объект исследования.");
+      return;
+    }
+    setIsSubmitting(true);
     console.log("[Market Research] Starting research submission...");
     console.log("[Market Research] Form data:", formData);
 
@@ -1275,63 +1358,7 @@ export default function MarketResearchPage() {
       return;
     }
 
-    // Parse competitors string → array
-    const competitorsList = formData.competitors
-      ? formData.competitors.split(",").map((c) => c.trim()).filter(Boolean)
-      : undefined;
-
-    // [р.13 · 2026-09-25 · владелец] Если отмечено несколько типов и среди них есть ЦИФРОВОЙ — отправляем
-    // цифровой, а не первый по клику. Живой прогон res_ac1ee3ebcbb2: пользователь выбрал «Образование и
-    // онлайн-обучение» и «B2C SaaS», первым кликнул образование → в сервис ушёл `education`, тот счёл кейс
-    // ФИЗИЧЕСКИМ, пошёл в Google Places (0 результатов) и выродил тему до «education market».
-    // Порядок клика не должен решать маршрут исследования.
-    const primaryProductType =
-      formData.productTypes.find((t) => DIGITAL_PRODUCT_TYPES.includes(t)) ?? formData.productTypes[0];
-    const industryStr = productTypeToIndustry[primaryProductType] ?? primaryProductType;
-
-    // Build ResearchRequest directly — no onboarding mapper indirection.
-    // Built once: used for both pre-flight validation and submission.
-    const requestData: Record<string, unknown> = {
-      product_name: formData.productName,
-      product_description: formData.productDescription,
-      country: formData.country,
-      ...(formData.region ? { region: formData.region } : {}),
-      // business_type: API expects single value; take first selected
-      business_type: formData.businessTypes[0],
-      // product_type: same — take first selected
-      product_type: primaryProductType,
-      localization: formData.localization,
-      industry: industryStr,
-      research_goals: formData.researchGoals,
-      // Report language — this is the RU page → Russian report
-      report_language: "ru",
-      // Offering & pricing (optional — omit if not set)
-      ...(formData.offeringType ? { offering_type: formData.offeringType } : {}),
-      ...(formData.offeringSubType ? { offering_sub_type: formData.offeringSubType } : {}),
-      ...(formData.priceSegment ? { price_segment: formData.priceSegment } : {}),
-      ...(formData.capacityLimit ? { capacity_limit: formData.capacityLimit } : {}),
-      ...(formData.capacityLimit !== "none" && /^[1-9][0-9]{0,7}$/.test(formData.capacityValue.trim())
-        ? { capacity_value: parseInt(formData.capacityValue.trim(), 10) }
-        : {}),
-      // [17.10 · владелец] у цифровых продуктов поле частоты скрыто (подписка — цены уже месячные) — и не отправляется
-      ...(!isDigitalForm && /^[1-9][0-9]{0,7}$/.test(formData.purchaseFrequency.trim())
-        ? { purchase_frequency_per_month: parseInt(formData.purchaseFrequency.trim(), 10) }
-        : {}),
-      // [13.10 · владелец] дневной масштаб: клиентов за рабочий день в первый год; в год сервис пересчитывает сам
-      // [29.10 · владелец «3. да»] цифровой продукт — сразу платящих клиентов за первый год (без «× рабочие дни»)
-      ...(isDigitalForm && /^[1-9][0-9]{0,6}$/.test(formData.plannedCustomersFirstYear.trim())
-        ? { planned_customers_first_year: parseInt(formData.plannedCustomersFirstYear.trim(), 10) }
-        : !isDigitalForm && /^[1-9][0-9]{0,4}$/.test(formData.plannedCustomersFirstYear.trim())
-        ? { planned_customers_per_day: parseInt(formData.plannedCustomersFirstYear.trim(), 10) }
-        : {}),
-      // [13.10 · владелец, путь 1] средний чек заказчика (местная валюта) — SOM, если чек рынка не измерен
-      ...(/^[1-9][0-9]{0,6}$/.test(formData.plannedAvgCheck.trim())
-        ? { planned_avg_check: parseInt(formData.plannedAvgCheck.trim(), 10) }
-        : {}),
-      // Optional extras
-      ...(formData.targetAudience ? { target_audience_description: formData.targetAudience } : {}),
-      ...(competitorsList && competitorsList.length > 0 ? { competitors: competitorsList } : {}),
-    };
+    const { requestData, industryStr } = buildRequestData();
 
     // PRE-FLIGHT VALIDATION — coherence + injection gate BEFORE launching the
     // pipeline (no research started, no cost). Authoritative gate is also
@@ -1363,11 +1390,22 @@ export default function MarketResearchPage() {
     }
     setValidationErrors([]);
 
-    // [06.11 · владелец: паттерн п.2–3] разбор объекта исследования → окно подтверждения. Сбой разбора — запуск без
-    // окна с пометкой window_failed (строка на обложке, решение 05.11)
+    // [07.11 · владелец] объект подтверждён ДО старта (чекбокс + окно); сбой разбора — пометка window_failed
+    await launchResearch(objectConfirmed
+      ? { ...requestData, research_object: objectConfirmed, research_object_status: "confirmed" }
+      : { ...requestData, research_object_status: "window_failed" }, industryStr);
+  };
+
+  // [07.11 · владелец «да, чекбокс»] разбор объекта: чекбокс → разбор → окно; подтверждение разблокирует старт
+  const runObjectInterpretation = async () => {
+    const { requestData, industryStr } = buildRequestData();
+    setIsInterpreting(true);
+    setObjectFailed(false);
+    setValidationErrors([]);
     let options: ResearchObjectOption[] = [];
+    let invalid = false;
     try {
-      const interpResp = await marketResearchFetch(`${healthApiBaseUrl}/api/v1/research/interpret`, {
+      const interpResp = await marketResearchFetch(`${API_BASE}/api/v1/research/interpret`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ request: requestData }),
@@ -1376,21 +1414,24 @@ export default function MarketResearchPage() {
         const interp: InterpretResult = await interpResp.json();
         if (interp.status === "invalid") {
           setValidationErrors(interp.errors || []);
-          setIsInterpreting(false);
-          window.scrollTo({ top: 0, behavior: "smooth" });
-          return;
-        }
-        if (interp.status === "ok") options = interp.interpretations || [];
+          invalid = true;
+        } else if (interp.status === "ok") options = interp.interpretations || [];
       }
     } catch (interpErr) {
-      console.warn("[ResearchObject] interpret failed — launching without the window:", interpErr);
+      console.warn("[ResearchObject] interpret failed:", interpErr);
     }
     setIsInterpreting(false);
+    if (invalid) {
+      setObjectChecked(false);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
     if (options.length > 0) {
       setObjectChoice({ requestData, industryStr, options, selected: 0, custom: "", busy: false, error: null });
       return;
     }
-    await launchResearch({ ...requestData, research_object_status: "window_failed" }, industryStr);
+    setObjectFailed(true);   // сбой разбора — старт разблокирован, исследование с пометкой window_failed
+    setObjectSig(JSON.stringify(formData));
   };
 
   // [06.11] подтверждение объекта: выбранный вариант или свой (≤ 150 знаков, разбирается той же моделью, второго окна нет)
@@ -1431,9 +1472,10 @@ export default function MarketResearchPage() {
       const opt = objectChoice.options[objectChoice.selected];
       chosen = { ...opt, source: objectChoice.selected === 0 ? "first" : "alternative" };
     }
-    const { requestData, industryStr } = objectChoice;
+    // [07.11] подтверждение разблокирует старт; запуск — кнопкой «Начать исследование»
+    setObjectConfirmed(chosen);
+    setObjectSig(JSON.stringify(formData));
     setObjectChoice(null);
-    await launchResearch({ ...requestData, research_object: chosen, research_object_status: "confirmed" }, industryStr);
   };
 
   const launchResearch = async (requestData: Record<string, unknown>, industryStr: string) => {
@@ -2211,7 +2253,7 @@ export default function MarketResearchPage() {
               <p role="alert" style={{ color: "#b91c1c", fontSize: "0.9rem", margin: "4px 0 0" }}>{objectChoice.error}</p>
             )}
             <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end", flexWrap: "wrap", marginTop: "16px" }}>
-              <button type="button" disabled={objectChoice.busy} onClick={() => setObjectChoice(null)}
+              <button type="button" disabled={objectChoice.busy} onClick={() => { setObjectChoice(null); setObjectChecked(false); }}
                 style={{ padding: "10px 18px", borderRadius: "8px", border: "1px solid #cbd5e1", background: "#fff",
                   cursor: "pointer", fontSize: "0.95rem" }}>
                 Назад
@@ -2219,7 +2261,7 @@ export default function MarketResearchPage() {
               <button type="button" disabled={objectChoice.busy} onClick={confirmResearchObject}
                 className={styles.submitButton} style={{ width: "auto" }}>
                 {objectChoice.busy ? (<><div className={styles.spinner} />Разбираем ваш вариант…</>)
-                  : "Подтвердить и начать исследование"}
+                  : "Подтвердить объект"}
               </button>
             </div>
           </div>
@@ -2541,7 +2583,7 @@ export default function MarketResearchPage() {
                 summaryRows.push(["Частота покупки", `${formData.purchaseFrequency} раз в месяц`]);
               }
               if (formData.plannedCustomersFirstYear) {
-                summaryRows.push([isDigitalForm ? "Платящих клиентов за первый год" : "Клиентов в день", `${formData.plannedCustomersFirstYear}`]);
+                summaryRows.push(["Клиентов", `${formData.plannedCustomersFirstYear} ${({ day: "в день", month: "в месяц", year: "за год" } as Record<string, string>)[formData.plannedCustomersPeriod || (isDigitalForm ? "year" : "day")]}`]);
               }
               if (formData.plannedAvgCheck) {
                 summaryRows.push(["Ваш средний чек", isDigitalForm ? `$${formData.plannedAvgCheck}` : `${formData.plannedAvgCheck} (местная валюта)`]);
@@ -3044,15 +3086,11 @@ export default function MarketResearchPage() {
               <div className={styles.section}>
                 {/* [29.10 · владелец «3. да»; отзыв первого тестера: «клиентов в день» для цифрового продукта непонятно] цифровой
                     продукт — платящих клиентов за первый год; физический — клиентов в рабочий день (как было) */}
-                <h3>{isDigitalForm
-                  ? "Сколько платящих клиентов будет за первый год — необязательно"
-                  : "Сколько клиентов в день будет у вашего бизнеса — необязательно"}</h3>
+                <h3>Сколько клиентов будет у вашего бизнеса — необязательно</h3>
                 <p className={styles.formDescription} style={{ marginBottom: "0.75rem" }}>
-                  {isDigitalForm
-                    ? "Сколько клиентов, которые заплатят за продукт, вы рассчитываете получить за первый год. От этого числа и цен конкурентов считается достижимый объём рынка. Если оставить пустым — сервис оценит его сам по аудитории продукта и пометит как оценку."
-                    : "Сколько клиентов в среднем вы рассчитываете обслуживать за один рабочий день. От этого числа и средней цены по рынку считается достижимый объём рынка. Если оставить пустым — сервис оценит его по отраслевым ориентирам и пометит как оценку."}
+                  Укажите число и период: в день, в месяц или за год. От этого числа и цен конкурентов считается достижимый объём рынка. Если оставить пустым — сервис оценит его сам и пометит как оценку.
                 </p>
-                <div className={styles.formGroup}>
+                <div className={styles.formGroup} style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
                   <input
                     type="text"
                     inputMode="numeric"
@@ -3061,12 +3099,24 @@ export default function MarketResearchPage() {
                     onChange={(e) =>
                       setFormData((prev) => ({
                         ...prev,
-                        plannedCustomersFirstYear: e.target.value.replace(/[^0-9]/g, "").slice(0, isDigitalForm ? 7 : 5),
+                        plannedCustomersFirstYear: e.target.value.replace(/[^0-9]/g, "").slice(0, 9),
                       }))
                     }
                     className={styles.input}
-                    placeholder={isDigitalForm ? "Например: 500" : "Например: 15"}
+                    placeholder="Например: 15"
                   />
+                  {/* [07.11] период числа клиентов; по умолчанию: цифровой — за год, остальные — в день */}
+                  <select
+                    name="plannedCustomersPeriod"
+                    value={formData.plannedCustomersPeriod || (isDigitalForm ? "year" : "day")}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, plannedCustomersPeriod: e.target.value }))}
+                    className={styles.input}
+                    style={{ maxWidth: "10rem" }}
+                  >
+                    <option value="day">в день</option>
+                    <option value="month">в месяц</option>
+                    <option value="year">за год</option>
+                  </select>
                 </div>
               </div>
 
@@ -3133,6 +3183,32 @@ export default function MarketResearchPage() {
               </div>
               </>)} {/* /(!isSubmitting || isResearchPaused) */}
 
+              {/* [07.11 · владелец «да, чекбокс»] объект исследования — до старта */}
+              {!isSubmitting && !isResearchPaused && (
+                <div className={styles.section}>
+                  <label style={{ display: "flex", alignItems: "flex-start", gap: "8px", cursor: "pointer",
+                    fontSize: "0.95rem", lineHeight: 1.4 }}>
+                    <input type="checkbox" checked={objectChecked}
+                      disabled={isInterpreting || Boolean(objectChoice) || getMissingRequiredFields().length > 0}
+                      onChange={(e) => {
+                        setObjectChecked(e.target.checked);
+                        if (e.target.checked) { void runObjectInterpretation(); }
+                        else { setObjectConfirmed(null); setObjectFailed(false); setObjectSig(null); }
+                      }}
+                      style={{ marginTop: "3px", flexShrink: 0 }} />
+                    <span>
+                      Я указал всё, что знаю о своём бизнесе — определить объект исследования
+                      {isInterpreting && (<><br /><span style={{ color: "#0785f6" }}>Определяем объект исследования…</span></>)}
+                      {objectConfirmed && (<><br /><strong>Объект исследования: {objectConfirmed.label}</strong>
+                        {objectConfirmed.unit_of_sale ? ` — ${objectConfirmed.unit_of_sale}` : ""}</>)}
+                      {objectFailed && (<><br /><span style={{ color: "#b45309" }}>Объект не удалось определить — исследование пойдёт по полям формы (на обложке будет пометка).</span></>)}
+                      {!objectChecked && getMissingRequiredFields().length > 0 && (<><br /><span style={{ color: "#64748b", fontSize: "0.85rem" }}>
+                        Сначала заполните обязательные поля: {getMissingRequiredFields().map((f) => f.label).join(", ")}</span></>)}
+                    </span>
+                  </label>
+                </div>
+              )}
+
               {/* Privacy Policy consent */}
               {!isSubmitting && !isResearchPaused && (
                 <div className={styles.section}>
@@ -3180,7 +3256,8 @@ export default function MarketResearchPage() {
                   <button
                     type="submit"
                     className={styles.submitButton}
-                    disabled={isSubmitting || isInterpreting || Boolean(objectChoice) || !healthStatus?.all_ready}
+                    disabled={isSubmitting || isInterpreting || Boolean(objectChoice) || !(objectConfirmed || objectFailed) || !healthStatus?.all_ready}
+                    title={!(objectConfirmed || objectFailed) ? "Сначала подтвердите объект исследования" : undefined}
                   >
                     {isSubmitting ? (
                       <>
