@@ -825,6 +825,20 @@ export default function MarketResearchPage() {
       .then((d) => { if (d && d.types && d.default) setTypeStatus(d); })
       .catch(() => {});
   }, []);
+  // [08.11 · владелец «средний чек — подставлять из локации по правилам»] валюта поля чека = валюта, в которой бэкенд
+  // читает чек (resolve_currency: глобальный рынок → $, местный → валюта страны). Сервис не ответил — символа нет,
+  // остаётся текст «в валюте отчёта».
+  const [checkCurrency, setCheckCurrency] = useState<{ code: string; symbol: string } | null>(null);
+  useEffect(() => {
+    const q = new URLSearchParams({ country: formData.country, region: formData.region, localization: formData.localization });
+    let alive = true;
+    fetch(`${API_BASE}/api/v1/research/currency?${q}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (alive) setCheckCurrency(d && d.known ? { code: d.code, symbol: d.symbol } : null); })
+      .catch(() => { if (alive) setCheckCurrency(null); });
+    return () => { alive = false; };
+  }, [formData.country, formData.region, formData.localization]);
+
   const typeStatusNotes = typeStatus
     ? formData.productTypes
         .map((t) => ({ t, s: typeStatus.types[t] || typeStatus.default }))
@@ -2586,7 +2600,7 @@ export default function MarketResearchPage() {
                 summaryRows.push(["Клиентов", `${formData.plannedCustomersFirstYear} ${({ day: "в день", month: "в месяц", year: "за год" } as Record<string, string>)[formData.plannedCustomersPeriod || (isDigitalForm ? "year" : "day")]}`]);
               }
               if (formData.plannedAvgCheck) {
-                summaryRows.push(["Ваш средний чек", isDigitalForm ? `$${formData.plannedAvgCheck}` : `${formData.plannedAvgCheck} (местная валюта)`]);
+                summaryRows.push(["Ваш средний чек", checkCurrency ? `${checkCurrency.symbol}${formData.plannedAvgCheck} (${checkCurrency.code})` : `${formData.plannedAvgCheck} (валюта отчёта)`]);
               }
               return (
                 <div>
@@ -3090,7 +3104,7 @@ export default function MarketResearchPage() {
                 <p className={styles.formDescription} style={{ marginBottom: "0.75rem" }}>
                   Укажите число и период: в день, в месяц или за год. От этого числа и цен конкурентов считается достижимый объём рынка. Если оставить пустым — сервис оценит его сам и пометит как оценку.
                 </p>
-                <div className={styles.formGroup} style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                <div className={styles.formGroup} style={{ flexDirection: "row", gap: "0.5rem", alignItems: "center" }}>
                   <input
                     type="text"
                     inputMode="numeric"
@@ -3124,16 +3138,20 @@ export default function MarketResearchPage() {
               <div className={styles.section}>
                 <h3>Планируемый средний чек — необязательно</h3>
                 <p className={styles.formDescription} style={{ marginBottom: "0.75rem" }}>
-                  {/* [21.10 · владелец] цифровой рынок глобальный — валюта отчёта доллар, поле в $ */}
+                  {/* [08.11 · владелец] валюта — по локации, как у бэкенда: глобальный рынок — доллар США, местный — валюта страны */}
                   {isDigitalForm
-                    ? "Сколько в среднем платит один клиент — подписка или покупка, в долларах США ($)."
-                    : "Сколько в среднем платит один клиент за визит или заказ, в местной валюте страны вашего бизнеса."}{" "}
+                    ? "Сколько в среднем платит один клиент — подписка или покупка."
+                    : "Сколько в среднем платит один клиент за визит или заказ."}{" "}
+                  Сумма — в валюте отчёта: для глобального рынка — доллары США, для местного — валюта страны.{" "}
                   Если сервис найдёт средний чек на рынке, достижимый объём рынка считается по рынку, а ваш чек
                   показывается для сравнения. Если на рынке чек не найден — достижимый объём рынка будет посчитан по
                   вашему чеку.
                 </p>
-                <div className={styles.formGroup} style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                  {isDigitalForm && <span style={{ fontWeight: 600, fontSize: "1.1rem" }}>$</span>}
+                <div className={styles.formGroup} style={{ flexDirection: "row", alignItems: "center", gap: "0.5rem" }}>
+                  <span style={{ fontWeight: 600, fontSize: "1.1rem", whiteSpace: "nowrap" }}
+                        title={checkCurrency ? checkCurrency.code : "Валюта определится после выбора страны и масштаба рынка"}>
+                    {checkCurrency ? checkCurrency.symbol : "—"}
+                  </span>
                   <input
                     type="text"
                     inputMode="numeric"

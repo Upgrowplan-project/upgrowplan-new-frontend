@@ -788,6 +788,20 @@ export default function MarketResearchPage() {
       .then((d) => { if (d && d.types && d.default) setTypeStatus(d); })
       .catch(() => {});
   }, []);
+  // [08.11 · owner «the average check — take it from the location by the rules»] the check field's currency = the currency the
+  // backend reads the check in (resolve_currency: a global market → $, a local one → the country's currency). No answer —
+  // no symbol, the text «in the report currency» stays.
+  const [checkCurrency, setCheckCurrency] = useState<{ code: string; symbol: string } | null>(null);
+  useEffect(() => {
+    const q = new URLSearchParams({ country: formData.country, region: formData.region, localization: formData.localization });
+    let alive = true;
+    fetch(`${API_BASE}/api/v1/research/currency?${q}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (alive) setCheckCurrency(d && d.known ? { code: d.code, symbol: d.symbol } : null); })
+      .catch(() => { if (alive) setCheckCurrency(null); });
+    return () => { alive = false; };
+  }, [formData.country, formData.region, formData.localization]);
+
   const typeStatusNotes = typeStatus
     ? formData.productTypes
         .map((t) => ({ t, s: typeStatus.types[t] || typeStatus.default }))
@@ -2433,7 +2447,7 @@ export default function MarketResearchPage() {
                 summaryRows.push(["Customers", `${formData.plannedCustomersFirstYear} ${({ day: "per day", month: "per month", year: "per year" } as Record<string, string>)[formData.plannedCustomersPeriod || (isDigitalForm ? "year" : "day")]}`]);
               }
               if (formData.plannedAvgCheck) {
-                summaryRows.push(["Your average check", isDigitalForm ? `$${formData.plannedAvgCheck}` : `${formData.plannedAvgCheck} (local currency)`]);
+                summaryRows.push(["Your average check", checkCurrency ? `${checkCurrency.symbol}${formData.plannedAvgCheck} (${checkCurrency.code})` : `${formData.plannedAvgCheck} (report currency)`]);
               }
               return (
                 <div>
@@ -2936,7 +2950,7 @@ export default function MarketResearchPage() {
                 <p className={styles.formDescription} style={{ marginBottom: "0.75rem" }}>
                   Enter a number and a period: per day, per month or per year. The reachable market (SOM) is calculated from this number and competitors' prices. If left empty, the service estimates it and marks it as an estimate.
                 </p>
-                <div className={styles.formGroup} style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                <div className={styles.formGroup} style={{ flexDirection: "row", gap: "0.5rem", alignItems: "center" }}>
                   <input
                     type="text"
                     inputMode="numeric"
@@ -2970,15 +2984,19 @@ export default function MarketResearchPage() {
               <div className={styles.section}>
                 <h3>Planned average check — optional</h3>
                 <p className={styles.formDescription} style={{ marginBottom: "0.75rem" }}>
-                  {/* [21.10 · owner] a digital market is global — the report currency is USD, the field is in $ */}
+                  {/* [08.11 · owner] the currency follows the location, as in the backend: a global market — US dollar, a local one — the country's currency */}
                   {isDigitalForm
-                    ? "How much one customer pays on average — subscription or purchase, in US dollars ($)."
-                    : "How much one customer pays on average per visit or order, in the local currency of your business's country."}{" "}
+                    ? "How much one customer pays on average — subscription or purchase."
+                    : "How much one customer pays on average per visit or order."}{" "}
+                  The amount is in the report currency: US dollars for a global market, the country's currency for a local one.{" "}
                   If the service finds the market's average check, the obtainable market volume uses the market and
                   your check is shown for comparison. If the market check is not found, it is calculated on your check.
                 </p>
-                <div className={styles.formGroup} style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                  {isDigitalForm && <span style={{ fontWeight: 600, fontSize: "1.1rem" }}>$</span>}
+                <div className={styles.formGroup} style={{ flexDirection: "row", alignItems: "center", gap: "0.5rem" }}>
+                  <span style={{ fontWeight: 600, fontSize: "1.1rem", whiteSpace: "nowrap" }}
+                        title={checkCurrency ? checkCurrency.code : "The currency is set once the country and market scale are chosen"}>
+                    {checkCurrency ? checkCurrency.symbol : "—"}
+                  </span>
                   <input
                     type="text"
                     inputMode="numeric"
