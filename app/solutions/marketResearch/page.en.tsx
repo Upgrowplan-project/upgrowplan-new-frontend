@@ -5,6 +5,7 @@ import Header from "../../../components/Header";
 import Grade from "../../../components/Grade";
 import styles from "./marketResearch.module.css";
 import { marketResearchFetch } from "./apiFetch";
+import { monitoringFetch } from "../../monitoring/lib/api";
 import BetaRunsPanel from "./BetaRunsPanel";
 import {
   FiBarChart2,
@@ -1970,7 +1971,7 @@ export default function MarketResearchPage() {
     try {
       const apiBaseUrl = API_BASE;
 
-      const response = await marketResearchFetch(
+      let response = await marketResearchFetch(
         `${apiBaseUrl}/api/v1/research/${researchId}/report/${format}`,
         {
           method: "GET",
@@ -1980,6 +1981,19 @@ export default function MarketResearchPage() {
           },
         }
       );
+      // [09.11 · beta tester 2, prod res_8b35e517416a: 3 × 403 missing_snapshot] the service keeps a research record for 4 h and
+      // loses it when the dyno sleeps → take the document from Monitoring: the service sends the same DOCX there on completion,
+      // it is stored in the database (the account page downloads from there too — ResearchHistory)
+      if (!response.ok && format === "docx") {
+        try {
+          const saved = await monitoringFetch(
+            `/api/monitoring/my-reports/${encodeURIComponent(researchId)}/artifact`
+          );
+          if (saved.ok) response = saved;
+        } catch {
+          /* the service answer stays — an honest error below */
+        }
+      }
 
       if (!response.ok) {
         throw new Error(`Error downloading the ${format.toUpperCase()} file`);

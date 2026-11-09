@@ -5,6 +5,7 @@ import Header from "../../../components/Header";
 import Grade from "../../../components/Grade";
 import styles from "./marketResearch.module.css";
 import { marketResearchFetch } from "./apiFetch";
+import { monitoringFetch } from "../../monitoring/lib/api";
 import BetaRunsPanel from "./BetaRunsPanel";
 import {
   FiBarChart2,
@@ -2008,7 +2009,7 @@ export default function MarketResearchPage() {
     try {
       const apiBaseUrl = API_BASE;
 
-      const response = await marketResearchFetch(
+      let response = await marketResearchFetch(
         `${apiBaseUrl}/api/v1/research/${researchId}/report/${format}`,
         {
           method: "GET",
@@ -2018,6 +2019,19 @@ export default function MarketResearchPage() {
           },
         }
       );
+      // [09.11 · бета-тестер 2, прод res_8b35e517416a: 3 × 403 missing_snapshot] запись исследования в сервисе живёт 4 ч и
+      // теряется, когда сервер засыпает → документ берём из Monitoring: туда сервис отправляет тот же DOCX по завершении,
+      // он хранится в базе (личный кабинет качает оттуда же — ResearchHistory)
+      if (!response.ok && format === "docx") {
+        try {
+          const saved = await monitoringFetch(
+            `/api/monitoring/my-reports/${encodeURIComponent(researchId)}/artifact`
+          );
+          if (saved.ok) response = saved;
+        } catch {
+          /* остаётся ответ сервиса — ниже честная ошибка */
+        }
+      }
 
       if (!response.ok) {
         // PDF may be unavailable server-side (no LibreOffice on the dyno) → honest message, DOCX still works.
