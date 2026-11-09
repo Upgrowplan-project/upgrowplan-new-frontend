@@ -2069,6 +2069,8 @@ export default function MarketResearchPage() {
       a.click();
       window.URL.revokeObjectURL(url);
       a.remove();
+      // [09.11 · владелец] после успешного скачивания — к панели оценки (её не видно ниже результата)
+      window.setTimeout(() => gradeRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 400);
     } catch (err: any) {
       setError(
         err.message || `Ошибка при скачивании ${format.toUpperCase()} файла`
@@ -2209,6 +2211,26 @@ export default function MarketResearchPage() {
     setIsSubmitting(false);
     setIsResearchPaused(false);
   };
+
+  // [09.11 · владелец: «никто из тестеров не заполнил панель оценки — её не видно, она ниже результата»] якорь панели оценки:
+  // после успешного скачивания экран прокручивается к ней (handleDownload)
+  const gradeRef = useRef<HTMLDivElement | null>(null);
+  // [09.11 · владелец «да»] отчёт тестера 2 лежал в её личном кабинете (Monitoring), но она туда не заходила → строка со ссылкой;
+  // только вошедшему — то же правило, что у шапки сайта (токен в localStorage)
+  const [hasSiteLogin, setHasSiteLogin] = useState(false);
+  useEffect(() => {
+    try {
+      setHasSiteLogin(!!localStorage.getItem("token"));
+    } catch {
+      /* хранилище недоступно (приватный режим) — строки нет */
+    }
+  }, []);
+  const accountNote = hasSiteLogin ? (
+    <p style={{ textAlign: "center", marginTop: "0.6rem", fontSize: "0.9rem", color: "#475569" }}>
+      Отчёт также сохраняется в вашем{" "}
+      <a href="/ru/account" style={{ color: "#1e6078", fontWeight: 600 }}>личном кабинете</a> — его можно открыть и скачать там позже.
+    </p>
+  ) : null;
 
   return (
     <div className={styles.container}>
@@ -3710,6 +3732,7 @@ export default function MarketResearchPage() {
                       </a>
                     </p>
                   )}
+                  {accountNote}
                 </div>
                 <div className={styles.resetSection}>
                   <button
@@ -3792,6 +3815,7 @@ export default function MarketResearchPage() {
                       </a>
                     </p>
                   )}
+                  {accountNote}
                 </div>
                 <div className={styles.resetSection}>
                   <button
@@ -3809,7 +3833,9 @@ export default function MarketResearchPage() {
         )}
 
         {isCompletedView && researchId && (
-          <Grade sessionId={researchId} />
+          <div ref={gradeRef}>
+            <Grade sessionId={researchId} />
+          </div>
         )}
 
         {!isCompletedView && (

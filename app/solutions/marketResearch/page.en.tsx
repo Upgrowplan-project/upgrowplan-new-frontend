@@ -2008,6 +2008,8 @@ export default function MarketResearchPage() {
       a.click();
       window.URL.revokeObjectURL(url);
       a.remove();
+      // [09.11 · owner] after a successful download — to the rating panel (it is not visible below the result)
+      window.setTimeout(() => gradeRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 400);
     } catch (err: any) {
       setError(
         err.message || `Error downloading the ${format.toUpperCase()} file`
@@ -2056,6 +2058,26 @@ export default function MarketResearchPage() {
     setIsSubmitting(false);
     setIsResearchPaused(false);
   };
+
+  // [09.11 · owner: «no tester filled in the rating panel — it is not visible, it is below the result»] the rating panel anchor:
+  // after a successful download the screen scrolls to it (handleDownload)
+  const gradeRef = useRef<HTMLDivElement | null>(null);
+  // [09.11 · owner «yes»] beta tester 2's report was in her account (Monitoring) but she never opened it → a line with a link;
+  // only for a signed-in user — the same rule as the site header (token in localStorage)
+  const [hasSiteLogin, setHasSiteLogin] = useState(false);
+  useEffect(() => {
+    try {
+      setHasSiteLogin(!!localStorage.getItem("token"));
+    } catch {
+      /* storage unavailable (private mode) — no line */
+    }
+  }, []);
+  const accountNote = hasSiteLogin ? (
+    <p style={{ textAlign: "center", marginTop: "0.6rem", fontSize: "0.9rem", color: "#475569" }}>
+      The report is also saved in your{" "}
+      <a href="/account" style={{ color: "#1e6078", fontWeight: 600 }}>account</a> — you can open and download it there later.
+    </p>
+  ) : null;
 
   return (
     <div className={styles.container}>
@@ -3531,6 +3553,7 @@ export default function MarketResearchPage() {
                       )}
                     </button>
                   </div>
+                  {accountNote}
                 </div>
                 <div className={styles.resetSection}>
                   <button
@@ -3589,6 +3612,7 @@ export default function MarketResearchPage() {
                       )}
                     </button>
                   </div>
+                  {accountNote}
                 </div>
                 <div className={styles.resetSection}>
                   <button
@@ -3606,7 +3630,9 @@ export default function MarketResearchPage() {
         )}
 
         {isCompletedView && researchId && (
-          <Grade sessionId={researchId} />
+          <div ref={gradeRef}>
+            <Grade sessionId={researchId} />
+          </div>
         )}
 
         {!isCompletedView && (
