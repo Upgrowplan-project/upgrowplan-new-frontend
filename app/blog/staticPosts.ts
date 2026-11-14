@@ -4,6 +4,7 @@ import { financialStressTestPost } from "./articles/financial-stress-test-2026";
 import { onlineEnglishSchoolPost } from "./articles/online-english-school-2026";
 import { soloUnicornPost } from "./articles/solo-unicorn-2026";
 import { aiBusinessPlanMarketPost } from "./articles/ai-business-plan-generator-market-2026";
+import { meatProxyPost } from "./articles/meat-proxy-ai-workflow";
 
 export interface Post {
     id: number;
@@ -1813,6 +1814,7 @@ export const codeArticlePosts: BilingualPost[] = [
     onlineEnglishSchoolPost,
     soloUnicornPost,
     aiBusinessPlanMarketPost,
+    meatProxyPost,
 ];
 
 // Unified bilingual fallback — EN posts + RU bilingual posts
