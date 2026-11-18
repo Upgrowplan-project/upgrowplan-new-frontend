@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Row, Col, Card, Table, Button, Spinner, Badge, ButtonGroup } from "react-bootstrap";
 import { monitoringFetch } from "../lib/api";
+import { fmtDateTime } from "@/lib/formatDate";
 
 // Поисковые показатели (SEO): реальные показы/клики из Google Search Console + Bing.
 // Визиты AI-ботов — во вкладке GEO Visibility (GeoVisibilityDashboard).
@@ -15,7 +16,6 @@ type TopRow = { key: string; impressions: number; clicks: number; ctr: number; p
 const BRAND = "#1e6078";
 const pct = (v: number) => `${((v || 0) * 100).toFixed(1)}%`;
 const num = (v: number) => (v ?? 0).toLocaleString();
-const fmtDateTime = (s: string | null) => (s ? new Date(s).toLocaleString() : "—");
 
 const SOURCE_LABEL: Record<string, string> = { google: "Google", bing: "Bing" };
 

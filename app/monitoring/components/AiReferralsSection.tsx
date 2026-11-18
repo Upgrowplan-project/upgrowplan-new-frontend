@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Alert, Badge, Button, Card, Col, Form, Row, Spinner, Table } from "react-bootstrap";
 import { monitoringFetch } from "../lib/api";
 import { CollapsibleCard } from "./CollapsibleCard";
+import { fmtDateTime } from "@/lib/formatDate";
 
 // Визит человека по ссылке из ответа нейросети (не краулер):
 // monitoring-service /api/monitoring/visibility/ai-referrals.
@@ -149,7 +150,7 @@ export const AiReferralsSection: React.FC = () => {
                 <tbody>
                   {data.visits.map((v, i) => (
                     <tr key={i}>
-                      <td className="small text-nowrap">{new Date(v.started_at).toLocaleString()}</td>
+                      <td className="small text-nowrap">{fmtDateTime(v.started_at)}</td>
                       <td>
                         <SourceBadge source={v.source} />
                       </td>

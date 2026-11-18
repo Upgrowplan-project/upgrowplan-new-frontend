@@ -3,6 +3,7 @@
 import React, { FormEvent, useCallback, useEffect, useState } from "react";
 import { Alert, Badge, Button, Card, Col, Form, Row, Spinner, Table } from "react-bootstrap";
 import { monitoringFetch } from "../lib/api";
+import { fmtDateTime } from "@/lib/formatDate";
 
 type UserStats = {
   total_users: number;
@@ -46,7 +47,7 @@ const Stat: React.FC<{ title: string; value: number | string }> = ({ title, valu
 );
 
 function dateLabel(value: string | null): string {
-  return value ? new Date(value).toLocaleString() : "—";
+  return fmtDateTime(value);
 }
 
 export const UsersDashboard: React.FC = () => {

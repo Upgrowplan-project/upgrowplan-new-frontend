@@ -27,6 +27,7 @@ import { UsersDashboard } from "../components/UsersDashboard";
 import { Service, MonitoringData } from "../types/monitoring";
 
 import Header from "@/components/Header";
+import { fmtDateTime } from "@/lib/formatDate";
 
 const BRAND = "#1e6078";
 
@@ -147,9 +148,9 @@ const EmailsSection: React.FC = () => {
                 </td>
                 <td className="text-muted small text-nowrap">
                   {e.received_at
-                    ? new Date(e.received_at).toLocaleString()
+                    ? fmtDateTime(e.received_at)
                     : e.created_at
-                      ? new Date(e.created_at).toLocaleString()
+                      ? fmtDateTime(e.created_at)
                       : ""}
                 </td>
                 <td>
@@ -354,7 +355,7 @@ export const MonitoringDashboard: React.FC = () => {
                   <td className="text-muted small">{serviceMetric(s)}</td>
                   <td className="text-end pe-3 text-muted" style={{ fontSize: "0.72rem" }}>
                     {s.last_checked
-                      ? new Date(s.last_checked).toLocaleTimeString()
+                      ? fmtDateTime(s.last_checked)
                       : ""}
                   </td>
                 </tr>

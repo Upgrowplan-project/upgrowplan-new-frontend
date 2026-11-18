@@ -6,6 +6,7 @@ import { Container, Card, Button, Spinner, Alert, Form, Badge } from "react-boot
 import Link from "next/link";
 import Header from "@/components/Header";
 import { monitoringFetch } from "@/app/monitoring/lib/api";
+import { fmtDateTime } from "@/lib/formatDate";
 
 export default function EmailView() {
   const router = useRouter();
@@ -96,7 +97,7 @@ export default function EmailView() {
                   <span><strong>От:</strong> {email.from}</span>
                   {email.to && <span><strong>Кому:</strong> {email.to}</span>}
                   {email.received_at && (
-                    <span>{new Date(email.received_at).toLocaleString()}</span>
+                    <span>{fmtDateTime(email.received_at)}</span>
                   )}
                   <Badge bg={email.status === "new" ? "danger" : "secondary"}>
                     {email.status}

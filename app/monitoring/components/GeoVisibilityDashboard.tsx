@@ -17,6 +17,7 @@ import { monitoringFetch } from "../lib/api";
 import { ExportReportButton } from "./ExportReportButton";
 import { CollapsibleCard } from "./CollapsibleCard";
 import { AiReferralsSection } from "./AiReferralsSection";
+import { fmtDate, fmtDateTime } from "@/lib/formatDate";
 
 const BRAND = "#1e6078";
 const LLM_LABELS: Record<string, string> = {
@@ -66,7 +67,6 @@ const positionBadge = (pos: string | null) => {
   return <Badge bg={map[pos] || "light"} text="dark">{labels[pos] || pos}</Badge>;
 };
 
-const fmtDate = (s: string) => new Date(s).toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "2-digit" });
 
 export const GeoVisibilityDashboard: React.FC = () => {
   const [items, setItems] = useState<GeoItem[]>([]);
@@ -468,7 +468,7 @@ export const GeoVisibilityDashboard: React.FC = () => {
                       </div>
                     </td>
                     <td className="text-end">{p.count}</td>
-                    <td className="text-end small">{new Date(p.first_crawl).toLocaleDateString()}</td>
+                    <td className="text-end small">{fmtDate(p.first_crawl)}</td>
                     <td className="text-end small">
                       {p.days_to_first_crawl !== null
                         ? <Badge bg={p.days_to_first_crawl <= 1 ? "success" : p.days_to_first_crawl <= 7 ? "warning" : "danger"}>
@@ -490,7 +490,7 @@ export const GeoVisibilityDashboard: React.FC = () => {
                   <tr key={i}>
                     <td><Badge style={{ backgroundColor: botColor(e.bot_name), fontSize: "0.65rem" }}>{e.bot_name}</Badge></td>
                     <td className="small" style={{ maxWidth: 280, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.url_path}</td>
-                    <td className="text-end small text-muted">{new Date(e.crawled_at).toLocaleString()}</td>
+                    <td className="text-end small text-muted">{fmtDateTime(e.crawled_at)}</td>
                   </tr>
                 ))}
               </tbody>

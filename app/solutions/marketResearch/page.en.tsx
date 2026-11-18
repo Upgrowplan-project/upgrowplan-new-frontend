@@ -5,6 +5,7 @@ import Header from "../../../components/Header";
 import Grade from "../../../components/Grade";
 import styles from "./marketResearch.module.css";
 import { marketResearchFetch } from "./apiFetch";
+import { ACCOUNT_AFTER_MIN, minutesSince } from "./reportAge";
 import { monitoringFetch } from "../../monitoring/lib/api";
 import BetaRunsPanel from "./BetaRunsPanel";
 import {
@@ -2072,11 +2073,29 @@ export default function MarketResearchPage() {
       /* storage unavailable (private mode) — no line */
     }
   }, []);
+  // [18.11 · owner: «if a lot of time has passed between the report and the download — show the way to the account»] after
+  // ACCOUNT_AFTER_MIN (the research server falls asleep) the account «Reports» section is the fast path — a visible panel with a button
+  const [nowTick, setNowTick] = useState(() => Date.now());
+  useEffect(() => {
+    const t = window.setInterval(() => setNowTick(Date.now()), 60000);
+    return () => window.clearInterval(t);
+  }, []);
+  const reportAgeMin = minutesSince(enhancedReport?.completed_at, nowTick);
+  const staleReport = reportAgeMin !== null && reportAgeMin >= ACCOUNT_AFTER_MIN;
   const accountNote = hasSiteLogin ? (
-    <p style={{ textAlign: "center", marginTop: "0.6rem", fontSize: "0.9rem", color: "#475569" }}>
-      The report is also saved in your{" "}
-      <a href="/account" style={{ color: "#1e6078", fontWeight: 600 }}>account</a> — you can open and download it there later.
-    </p>
+    staleReport ? (
+      <div style={{ textAlign: "center", marginTop: "0.8rem", padding: "0.8rem 1rem", borderRadius: 10, background: "#eef6f9", color: "#1e293b" }}>
+        <div style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
+          More than {ACCOUNT_AFTER_MIN} minutes have passed since the report was ready — it opens fastest from your account.
+        </div>
+        <a href="/account?section=research" className="btn btn-primary btn-sm">Open my reports</a>
+      </div>
+    ) : (
+      <p style={{ textAlign: "center", marginTop: "0.6rem", fontSize: "0.9rem", color: "#475569" }}>
+        The report is also saved in your{" "}
+        <a href="/account?section=research" style={{ color: "#1e6078", fontWeight: 600 }}>account</a> — you can open and download it there later.
+      </p>
+    )
   ) : null;
 
   return (

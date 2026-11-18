@@ -15,6 +15,7 @@ import {
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import { useServiceHistory } from '../hooks/useMonitoring';
+import { fmtTime } from "@/lib/formatDate";
 
 // Регистрируем компоненты Chart.js
 ChartJS.register(
@@ -74,7 +75,7 @@ export const ServiceHistoryChart: React.FC<ServiceHistoryChartProps> = ({
   // Подготовка данных для графика
   const labels = history.data_points.map((point) => {
     const date = new Date(point.timestamp);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return fmtTime(date);
   });
 
   const responseTimeData = history.data_points.map(

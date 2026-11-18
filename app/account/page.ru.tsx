@@ -18,11 +18,12 @@ import {
   ProjectStats,
 } from "../auth/authService";
 import AdvancedSettings from "./AdvancedSettings";
-import ResearchHistory from "./ResearchHistory";
+import ResearchHistory, { useMyReportsCount } from "./ResearchHistory";
 import styles from "./workspace.module.css";
 import {
   FiGrid, FiFolder, FiCreditCard, FiUser, FiSettings, FiLogOut, FiActivity,
 } from "react-icons/fi";
+import { fmtDate } from "@/lib/formatDate";
 
 type Section = "dashboard" | "projects" | "balance" | "research" | "profile" | "settings";
 
@@ -30,7 +31,7 @@ const navItems: { id: Section; icon: React.ReactNode; label: string }[] = [
   { id: "dashboard", icon: <FiGrid />, label: "Дашборд" },
   { id: "projects", icon: <FiFolder />, label: "Мои проекты" },
   { id: "balance", icon: <FiCreditCard />, label: "Баланс и токены" },
-  { id: "research", icon: <FiActivity />, label: "История исследований" },
+  { id: "research", icon: <FiActivity />, label: "Отчёты" },
   { id: "profile", icon: <FiUser />, label: "Профиль" },
   { id: "settings", icon: <FiSettings />, label: "Настройки" },
 ];
@@ -45,6 +46,7 @@ function DashboardSection({
   recentProjects: Project[];
 }) {
   const firstName = user.fullname?.split(" ")[0] || "пользователь";
+  const reports = useMyReportsCount();
 
   const quickActions = [
     { icon: "📊", title: "Бизнес-план", desc: "AI-генерация инвестиционного плана", href: "/ru/ai-business-plan-generator" },
@@ -67,7 +69,7 @@ function DashboardSection({
           { value: `$${user.balance ?? 0}`, label: "Баланс", color: "#1d4ed8" },
           { value: user.tokens ?? 0, label: "Токены", color: "#059669" },
           { value: stats.plans, label: "Планов", color: "#7c3aed" },
-          { value: stats.research + stats.deepResearch, label: "Ресёрчей", color: "#d97706" },
+          { value: reports ?? "—", label: "Отчётов", color: "#d97706" },
         ].map((s) => (
           <div className="col-6 col-md-3" key={s.label}>
             <div className={styles.statCard}>
@@ -164,7 +166,7 @@ function ProjectList({ projects, onDeleted }: { projects: Project[]; onDeleted: 
                 <div>
                   <div style={{ fontWeight: 600, fontSize: "0.9rem" }}>{p.title}</div>
                   <div style={{ fontSize: "0.78rem", color: "#6c757d" }}>
-                    {typeLabel[p.type]} · {new Date(p.createdAt).toLocaleDateString("ru-RU")}
+                    {typeLabel[p.type]} · {fmtDate(p.createdAt)}
                   </div>
                 </div>
               </div>
@@ -435,6 +437,15 @@ function SettingsSection({
 export default function AccountPage() {
   const router = useRouter();
   const [section, setSection] = useState<Section>("dashboard");
+  // [18.11 · владелец «переход в ЛК»] /account?section=research открывает раздел «Отчёты» (ссылка со страницы исследования)
+  useEffect(() => {
+    try {
+      const want = new URLSearchParams(window.location.search).get("section");
+      if (want && navItems.some((i) => i.id === want)) setSection(want as Section);
+    } catch {
+      /* без параметра — панель, как раньше */
+    }
+  }, []);
   const [user, setUser] = useState<UserProfile | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [stats, setStats] = useState<ProjectStats>({ total: 0, plans: 0, research: 0, deepResearch: 0 });
@@ -523,7 +534,7 @@ export default function AccountPage() {
           )}
           {section === "projects" && <ProjectsSection projects={projects} onRefresh={loadProjects} />}
           {section === "balance" && <BalanceSection user={user} />}
-          {section === "research" && <ResearchHistory locale="ru" />}
+          {section === "research" && <ResearchHistory locale="ru" isAdmin={user.role === "ADMIN"} />}
           {section === "profile" && <ProfileSection user={user} setUser={setUser} />}
           {section === "settings" && <SettingsSection user={user} setUser={setUser} />}
         </main>

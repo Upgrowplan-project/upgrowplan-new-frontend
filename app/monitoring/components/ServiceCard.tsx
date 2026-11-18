@@ -3,6 +3,7 @@
 import React from 'react';
 import { Card, Badge } from 'react-bootstrap';
 import { Service } from '../types/monitoring';
+import { fmtDateTime } from "@/lib/formatDate";
 
 interface ServiceCardProps {
   service: Service;
@@ -77,7 +78,7 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({ service, onClick }) =>
           </div>
           <div className="text-muted" style={{ fontSize: '0.7rem' }}>
             <i className="bi bi-clock me-1"></i>
-            {new Date(service.last_checked).toLocaleTimeString()}
+            {fmtDateTime(service.last_checked)}
           </div>
         </div>
 

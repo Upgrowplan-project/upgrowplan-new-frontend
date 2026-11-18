@@ -5,6 +5,7 @@ import Header from "../../../components/Header";
 import Grade from "../../../components/Grade";
 import styles from "./marketResearch.module.css";
 import { marketResearchFetch } from "./apiFetch";
+import { ACCOUNT_AFTER_MIN, minutesSince } from "./reportAge";
 import { monitoringFetch } from "../../monitoring/lib/api";
 import BetaRunsPanel from "./BetaRunsPanel";
 import {
@@ -2225,11 +2226,29 @@ export default function MarketResearchPage() {
       /* хранилище недоступно (приватный режим) — строки нет */
     }
   }, []);
+  // [18.11 · владелец: «если прошло много времени между формированием отчета и попыткой его скачать — показать переход в ЛК»]
+  // после ACCOUNT_AFTER_MIN (сервер исследований засыпает) быстрый путь — раздел «Отчёты» кабинета: заметная панель с кнопкой
+  const [nowTick, setNowTick] = useState(() => Date.now());
+  useEffect(() => {
+    const t = window.setInterval(() => setNowTick(Date.now()), 60000);
+    return () => window.clearInterval(t);
+  }, []);
+  const reportAgeMin = minutesSince(enhancedReport?.completed_at, nowTick);
+  const staleReport = reportAgeMin !== null && reportAgeMin >= ACCOUNT_AFTER_MIN;
   const accountNote = hasSiteLogin ? (
-    <p style={{ textAlign: "center", marginTop: "0.6rem", fontSize: "0.9rem", color: "#475569" }}>
-      Отчёт также сохраняется в вашем{" "}
-      <a href="/ru/account" style={{ color: "#1e6078", fontWeight: 600 }}>личном кабинете</a> — его можно открыть и скачать там позже.
-    </p>
+    staleReport ? (
+      <div style={{ textAlign: "center", marginTop: "0.8rem", padding: "0.8rem 1rem", borderRadius: 10, background: "#eef6f9", color: "#1e293b" }}>
+        <div style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
+          С готовности отчёта прошло больше {ACCOUNT_AFTER_MIN} минут — быстрее всего открыть его в личном кабинете.
+        </div>
+        <a href="/ru/account?section=research" className="btn btn-primary btn-sm">Открыть «Отчёты»</a>
+      </div>
+    ) : (
+      <p style={{ textAlign: "center", marginTop: "0.6rem", fontSize: "0.9rem", color: "#475569" }}>
+        Отчёт также сохраняется в вашем{" "}
+        <a href="/ru/account?section=research" style={{ color: "#1e6078", fontWeight: 600 }}>личном кабинете</a> — его можно открыть и скачать там позже.
+      </p>
+    )
   ) : null;
 
   return (

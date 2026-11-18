@@ -13,7 +13,7 @@ import {
   UserProfile,
 } from "../auth/authService";
 import AdvancedSettings from "./AdvancedSettings";
-import ResearchHistory from "./ResearchHistory";
+import ResearchHistory, { useMyReportsCount } from "./ResearchHistory";
 import styles from "./workspace.module.css";
 import {
   FiGrid, FiFolder, FiCreditCard, FiUser, FiSettings, FiLogOut, FiActivity,
@@ -25,13 +25,14 @@ const navItems: { id: Section; icon: React.ReactNode; label: string }[] = [
   { id: "dashboard", icon: <FiGrid />, label: "Dashboard" },
   { id: "projects", icon: <FiFolder />, label: "My Projects" },
   { id: "balance", icon: <FiCreditCard />, label: "Balance & Tokens" },
-  { id: "research", icon: <FiActivity />, label: "Research history" },
+  { id: "research", icon: <FiActivity />, label: "Reports" },
   { id: "profile", icon: <FiUser />, label: "Profile" },
   { id: "settings", icon: <FiSettings />, label: "Settings" },
 ];
 
 function DashboardSection({ user, onNav }: { user: UserProfile; onNav: (s: Section) => void }) {
   const firstName = user.fullname?.split(" ")[0] || "there";
+  const reports = useMyReportsCount();
   const quickActions = [
     { icon: "📊", title: "Business Plan", desc: "AI-generated investor-ready plan", href: "/ai-business-plan-generator" },
     { icon: "🔍", title: "Market Research", desc: "Market & audience analysis", href: "/solutions/synthetic-customer-research" },
@@ -50,7 +51,7 @@ function DashboardSection({ user, onNav }: { user: UserProfile; onNav: (s: Secti
           { value: `${user.balance ?? 0} $`, label: "Balance", color: "#1d4ed8" },
           { value: user.tokens ?? 0, label: "Tokens", color: "#059669" },
           { value: 0, label: "Projects", color: "#7c3aed" },
-          { value: 0, label: "Research", color: "#d97706" },
+          { value: reports ?? "—", label: "Reports", color: "#d97706" },
         ].map((s) => (
           <div className="col-6 col-md-3" key={s.label}>
             <div className={styles.statCard}>
@@ -254,6 +255,15 @@ function SettingsSection({ user, setUser }: { user: UserProfile; setUser: (u: Us
 export default function AccountPageEn() {
   const router = useRouter();
   const [section, setSection] = useState<Section>("dashboard");
+  // [18.11 · владелец «переход в ЛК»] /account?section=research открывает раздел «Отчёты» (ссылка со страницы исследования)
+  useEffect(() => {
+    try {
+      const want = new URLSearchParams(window.location.search).get("section");
+      if (want && navItems.some((i) => i.id === want)) setSection(want as Section);
+    } catch {
+      /* без параметра — панель, как раньше */
+    }
+  }, []);
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -310,7 +320,7 @@ export default function AccountPageEn() {
           {section === "dashboard" && <DashboardSection user={user} onNav={setSection} />}
           {section === "projects" && <ProjectsSection />}
           {section === "balance" && <BalanceSection user={user} />}
-          {section === "research" && <ResearchHistory locale="en" />}
+          {section === "research" && <ResearchHistory locale="en" isAdmin={user.role === "ADMIN"} />}
           {section === "profile" && <ProfileSection user={user} setUser={setUser} />}
           {section === "settings" && <SettingsSection user={user} setUser={setUser} />}
         </main>

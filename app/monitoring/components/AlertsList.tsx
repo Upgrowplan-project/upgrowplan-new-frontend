@@ -3,6 +3,7 @@
 import React from 'react';
 import { Alert, Button, Badge } from 'react-bootstrap';
 import { SystemAlert, AlertSeverity } from '../types/monitoring';
+import { fmtDateTime } from "@/lib/formatDate";
 
 interface AlertsListProps {
   alerts: SystemAlert[];
@@ -55,7 +56,7 @@ export const AlertsList: React.FC<AlertsListProps> = ({
     if (diffHours === 1) return '1 hour ago';
     if (diffHours < 24) return `${diffHours} hours ago`;
     
-    return date.toLocaleString();
+    return fmtDateTime(date);
   };
 
   if (alerts.length === 0) {

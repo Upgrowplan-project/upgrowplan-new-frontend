@@ -19,6 +19,7 @@ import {
   ResearchReportSummary,
 } from "../hooks/useResearchReports";
 import { monitoringFetch } from "../lib/api";
+import { fmtDateTime } from "@/lib/formatDate";
 
 const KNOWN_SERVICES = [
   { value: "", label: "Все сервисы" },
@@ -26,15 +27,6 @@ const KNOWN_SERVICES = [
   { value: "planmaster-service", label: "PlanMaster" },
   { value: "social-plan-master", label: "Social Plan" },
 ];
-
-function fmtDate(iso?: string | null): string {
-  if (!iso) return "—";
-  try {
-    return new Date(iso).toLocaleString();
-  } catch {
-    return iso;
-  }
-}
 
 function fmtDuration(sec?: number | null): string {
   if (sec == null) return "—";
@@ -174,7 +166,7 @@ const ReportDetailModal: React.FC<{
                     <tbody>
                       {(report.logs || []).map((l, i) => (
                         <tr key={i}>
-                          <td className="text-nowrap text-muted">{fmtDate(l.created_at)}</td>
+                          <td className="text-nowrap text-muted">{fmtDateTime(l.created_at)}</td>
                           <td>
                             <Badge
                               bg={
@@ -233,7 +225,7 @@ const ReportDetailModal: React.FC<{
                         )}
                         <div className="small text-muted mb-1">Комментарий:</div>
                         <p className="mb-2" style={{ whiteSpace: "pre-wrap" }}>{comment || "—"}</p>
-                        {r.created_at && <div className="small text-muted">Оценка оставлена: {fmtDate(r.created_at)}</div>}
+                        {r.created_at && <div className="small text-muted">Оценка оставлена: {fmtDateTime(r.created_at)}</div>}
                       </Card.Body>
                     </Card>
                   </Tab>
@@ -329,7 +321,7 @@ export const ResearchReportsDashboard: React.FC = () => {
                   <td className="small text-muted">
                     {[r.business_type, r.product_type].filter(Boolean).join(" · ") || "—"}
                   </td>
-                  <td className="small text-nowrap">{fmtDate(r.completed_at || r.created_at)}</td>
+                  <td className="small text-nowrap">{fmtDateTime(r.completed_at || r.created_at)}</td>
                   <td className="small">{fmtDuration(r.duration_seconds)}</td>
                   <td>{ratingBadge(r.rating)}</td>
                   <td>

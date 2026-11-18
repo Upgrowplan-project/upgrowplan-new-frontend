@@ -2,6 +2,7 @@
 
 import { ChangeEvent } from "react";
 import { UserProfile } from "../auth/authService";
+import { fmtDateTime } from "@/lib/formatDate";
 
 interface AdvancedSettingsProps {
   user: UserProfile;
@@ -27,7 +28,7 @@ export default function AdvancedSettings({
 
   // функция форматирования даты
   const formatDate = (dateStr?: string) =>
-    dateStr ? new Date(dateStr).toLocaleString("ru-RU") : "—";
+    fmtDateTime(dateStr);
 
   const fields = [
     { label: "Баланс ($)", value: user.balance?.toString(), key: "balance" },

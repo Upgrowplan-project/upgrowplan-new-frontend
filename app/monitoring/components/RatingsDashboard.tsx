@@ -31,6 +31,7 @@ import {
   useRatingsTimeline,
   useServicesRatings,
 } from "../hooks/useRatings";
+import { fmtDate } from "@/lib/formatDate";
 
 ChartJS.register(
   CategoryScale,
@@ -343,7 +344,7 @@ export const RatingsDashboard: React.FC = () => {
                   </Badge>
                 )}
                 <span className="text-muted small">
-                  {new Date(f.created_at).toLocaleDateString()}
+                  {fmtDate(f.created_at)}
                 </span>
               </div>
             </div>
