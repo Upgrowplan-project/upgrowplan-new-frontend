@@ -24,6 +24,7 @@ import { ResearchReportsDashboard } from "../components/ResearchReportsDashboard
 import { SeoAnalyticsDashboard } from "../components/SeoAnalyticsDashboard";
 import { GeoVisibilityDashboard } from "../components/GeoVisibilityDashboard";
 import { UsersDashboard } from "../components/UsersDashboard";
+import { ProvidersDashboard } from "../components/ProvidersDashboard";
 import { Service, MonitoringData } from "../types/monitoring";
 
 import Header from "@/components/Header";
@@ -38,7 +39,8 @@ type SectionKey =
   | "geo"
   | "reports"
   | "ratings"
-  | "emails";
+  | "emails"
+  | "providers";
 
 const statusColor = (status: string) => {
   switch ((status || "").toLowerCase()) {
@@ -224,6 +226,7 @@ export const MonitoringDashboard: React.FC = () => {
 
   const sections: { key: SectionKey; label: string; icon: string }[] = [
     { key: "health", label: "Здоровье системы", icon: "🏥" },
+    { key: "providers", label: "Сводка и поставщики", icon: "🧭" },
     { key: "seo-analytics", label: "SEO Analytics", icon: "📈" },
     { key: "users", label: "Пользователи", icon: "👥" },
     { key: "geo", label: "GEO Visibility", icon: "🤖" },
@@ -420,6 +423,8 @@ export const MonitoringDashboard: React.FC = () => {
         return <RatingsDashboard />;
       case "emails":
         return <EmailsSection />;
+      case "providers":
+        return <ProvidersDashboard />;
       case "health":
       default:
         return <HealthSection />;
@@ -462,7 +467,8 @@ export const MonitoringDashboard: React.FC = () => {
                 )}
               </Button>
             )}
-            {activeSection !== "seo-analytics" && activeSection !== "geo" && activeSection !== "users" && (
+            {activeSection !== "seo-analytics" && activeSection !== "geo" && activeSection !== "users" &&
+              activeSection !== "providers" && (
               <Button variant="outline-secondary" onClick={refresh}>
                 {t("buttons.refresh")}
               </Button>

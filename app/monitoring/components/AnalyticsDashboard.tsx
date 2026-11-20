@@ -34,11 +34,12 @@ const StatCard: React.FC<{ label: string; value: number | string; hint?: string 
   value,
   hint,
 }) => (
+  // [20.11 · владелец «в одну строку, можно уменьшить шрифт»] компактная карточка: 6 в ряд на широком экране
   <Card className="shadow-sm border-0 h-100 text-center">
-    <Card.Body>
-      <h6 className="text-muted mb-2">{label}</h6>
-      <div className="display-5 fw-bold text-brand">{value}</div>
-      {hint && <small className="text-muted">{hint}</small>}
+    <Card.Body className="py-2 px-2">
+      <div className="text-muted small mb-1" style={{ lineHeight: 1.2 }}>{label}</div>
+      <div className="fs-3 fw-bold text-brand" style={{ lineHeight: 1.1 }}>{value}</div>
+      {hint && <div className="text-muted" style={{ fontSize: 11 }}>{hint}</div>}
     </Card.Body>
   </Card>
 );
@@ -161,36 +162,35 @@ export const AnalyticsDashboard: React.FC<{ headerAction?: React.ReactNode }> = 
         </div>
       </div>
 
-      <Row className="g-3 mb-4">
-        <Col md={4} sm={6}>
+      <Row className="g-2 mb-2">
+        <Col lg={2} md={4} xs={6}>
           <StatCard label="Просмотры" value={data.totals.pageviews} hint={`за ${days} дн.`} />
         </Col>
-        <Col md={4} sm={6}>
+        <Col lg={2} md={4} xs={6}>
           <StatCard label="Уник. посетители" value={data.totals.unique_visitors} hint={`за ${days} дн.`} />
         </Col>
-        <Col md={4} sm={6}>
+        <Col lg={2} md={4} xs={6}>
           <StatCard label="Сессии" value={data.totals.sessions} hint={`за ${days} дн.`} />
         </Col>
-      </Row>
-
-      {data.marketing && (
-        <>
-          <div className="text-muted small mb-2">
-            Публичные страницы для оценки привлечения. Не учитываются служебные маршруты,
-            beta-приглашения, FinModel и рабочая форма MRS; общая продуктовая статистика выше сохранена.
-          </div>
-          <Row className="g-3 mb-4">
-            <Col md={4} sm={6}>
+        {data.marketing && (
+          <>
+            <Col lg={2} md={4} xs={6}>
               <StatCard label="Публичные просмотры" value={data.marketing.totals.pageviews} hint={`за ${days} дн.`} />
             </Col>
-            <Col md={4} sm={6}>
+            <Col lg={2} md={4} xs={6}>
               <StatCard label="Публичные посетители" value={data.marketing.totals.unique_visitors} hint={`за ${days} дн.`} />
             </Col>
-            <Col md={4} sm={6}>
+            <Col lg={2} md={4} xs={6}>
               <StatCard label="Публичные сессии" value={data.marketing.totals.sessions} hint={`за ${days} дн.`} />
             </Col>
-          </Row>
-        </>
+          </>
+        )}
+      </Row>
+      {data.marketing && (
+        <div className="text-muted mb-4" style={{ fontSize: 12 }}>
+          «Публичные» — страницы для оценки привлечения: без служебных маршрутов, beta-приглашений, FinModel и рабочей
+          формы MRS; первые три карточки — вся продуктовая статистика.
+        </div>
       )}
 
       <Card className="shadow-sm border-0 mb-4">
