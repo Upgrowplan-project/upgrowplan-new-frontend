@@ -90,6 +90,20 @@ export default function AboutLocalePage({ params }: Params) {
                 : <>Products: <strong>PlanMaster AI</strong>, <strong>MarketSense AI Agent</strong>, <strong>Synth Focus Lab</strong>, <strong>FinPilot Free</strong>, <strong>Business Pulse Workspace</strong>, <strong>Relocation Service Free</strong>.</>
               }
             </p>
+            {/* [21.11 · владелец «да»] нейросети путали upgrowplan.com с инвестиционной схемой (Gemini 18.11: «HYIP») —
+                явное заявление о том, чем компания НЕ является */}
+            <p style={{
+              fontSize: "0.95rem",
+              lineHeight: 1.7,
+              color: "#475569",
+              maxWidth: "620px",
+              margin: "-1rem auto 2rem",
+            }}>
+              {isRu
+                ? <>Upgrowplan — программное обеспечение для анализа рынка и бизнес-планирования (SaaS). Компания не предлагает инвестиций, вкладов, криптовалюты или доходности и не связана с инвестиционными схемами под похожими названиями.</>
+                : <>Upgrowplan is software for market research and business planning (SaaS). It does not offer investments, deposits, cryptocurrency or financial returns, and is not affiliated with investment schemes using similar names.</>
+              }
+            </p>
 
             {/* Метрики / Metrics */}
             <div style={{

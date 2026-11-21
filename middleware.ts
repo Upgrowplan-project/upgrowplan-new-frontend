@@ -15,7 +15,9 @@ const AI_BOT_PATTERNS: [string, string][] = [
   ['CCBot',             'ccbot'],
   ['Applebot-Extended', 'applebot-extended'],
   ['Meta-ExternalAgent','meta-externalagent'],
-  ['Gemini',            'google-inspectiontool'],
+  // [21.11] это инструмент проверки URL в Search Console, а не Gemini (Gemini отдельного робота не имеет:
+  // Google-Extended — только строка в robots.txt, читает обычный Googlebot)
+  ['Google-InspectionTool', 'google-inspectiontool'],
 ];
 
 function detectAiBot(ua: string): string | null {

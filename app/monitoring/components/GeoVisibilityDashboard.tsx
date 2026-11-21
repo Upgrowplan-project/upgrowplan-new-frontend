@@ -20,8 +20,13 @@ import { AiReferralsSection } from "./AiReferralsSection";
 import { fmtDate, fmtDateTime } from "@/lib/formatDate";
 
 const BRAND = "#1e6078";
+// [21.11 · владелец «да — помоги»] ряды *_search — нейросеть С ПОИСКОМ в интернете (monitoring/geo_engines.py);
+// «gemini» без поиска отвечает по памяти модели (до января 2025) — от работы над сайтом не меняется.
 const LLM_LABELS: Record<string, string> = {
-  gemini: "Gemini (авто)",
+  gemini: "Gemini — без поиска (память модели)",
+  gemini_search: "Gemini + поиск Google",
+  chatgpt_search: "ChatGPT + поиск",
+  perplexity_search: "Perplexity (Sonar)",
   chatgpt: "ChatGPT",
   bing: "Bing Copilot",
   perplexity: "Perplexity",
@@ -48,6 +53,8 @@ type GeoItem = {
   position: string | null;
   excerpt: string | null;
   auto: boolean;
+  cited?: boolean | null;
+  sources?: string[];
   created_at: string;
 };
 
@@ -57,7 +64,7 @@ type GeoErrorItem = Pick<GeoItem, "id" | "llm" | "query" | "excerpt" | "created_
 // any answer); brand-name questions are counted apart (brand_query_*). Older backend: the fields are absent.
 type Summary = Record<string, {
   total: number; mentioned: number; errors?: number; last_check: string | null;
-  brand_query_total?: number; brand_query_mentioned?: number;
+  brand_query_total?: number; brand_query_mentioned?: number; cited?: number; with_search?: boolean;
 }>;
 
 const positionBadge = (pos: string | null) => {
@@ -181,8 +188,9 @@ export const GeoVisibilityDashboard: React.FC = () => {
         <div>
           <h4 className="mb-0" style={{ color: BRAND }}>🤖 GEO Visibility — видимость в нейросетях</h4>
           <p className="text-muted small mb-0 mt-1">
-            Автоматически проверяем: появляется ли название upgrowplan в ответах Gemini на бизнес-запросы.
-            Авто-скан раз в день (ротация из 15 запросов). Другие нейросети — вставь ответ вручную.
+            Раз в день задаём одни и те же бизнес-вопросы нейросетям: ChatGPT и Perplexity — с поиском в интернете
+            (как у обычного пользователя), Gemini — без поиска (память модели) и с поиском Google, когда он включён.
+            «Ссылки на сайт» — среди источников ответа есть upgrowplan.com.
           </p>
           <p className="text-muted small mb-0 mt-1">
             Доля ниже показывает только совпадение названия в тексте ответа. Она не подтверждает,
@@ -199,7 +207,7 @@ export const GeoVisibilityDashboard: React.FC = () => {
             onClick={scanNow}
             disabled={scanning}
           >
-            {scanning ? <><Spinner size="sm" animation="border" className="me-1" />Сканирую...</> : "Сканировать Gemini"}
+            {scanning ? <><Spinner size="sm" animation="border" className="me-1" />Сканирую...</> : "Сканировать"}
           </Button>
         </div>
       </div>
@@ -245,7 +253,7 @@ export const GeoVisibilityDashboard: React.FC = () => {
       {knownLlms.length === 0 && !loading ? (
         <Card className="mb-4">
           <Card.Body className="text-muted text-center py-4">
-            Пока нет данных. Нажмите «Сканировать Gemini» для первой проверки.
+            Пока нет данных. Нажмите «Сканировать» для первой проверки.
           </Card.Body>
         </Card>
       ) : (
@@ -265,6 +273,11 @@ export const GeoVisibilityDashboard: React.FC = () => {
                     {!!s.brand_query_total && (
                       <div className="text-muted small mt-1">
                         Вопросы с названием бренда: {s.brand_query_total} (в долю не входят)
+                      </div>
+                    )}
+                    {s.with_search && (
+                      <div className="small mt-1">
+                        🔗 Ссылок на сайт: <strong>{s.cited ?? 0}</strong>/{s.total + (s.brand_query_total ?? 0)} ответов
                       </div>
                     )}
                     {!!s.errors && <div className="text-warning small mt-1">Ошибок: {s.errors}</div>}
@@ -311,6 +324,7 @@ export const GeoVisibilityDashboard: React.FC = () => {
                           <td>
                             <Badge bg="light" text="dark" className="border">{LLM_LABELS[item.llm] || item.llm}</Badge>
                             {!item.auto && <Badge bg="secondary" className="ms-1 small">вручную</Badge>}
+                            {item.cited && <Badge bg="success" className="ms-1 small" title={(item.sources || []).join(" · ")}>🔗 сайт</Badge>}
                           </td>
                           <td className="small" style={{ maxWidth: 300 }}><div className="text-truncate">{item.query}</div></td>
                           <td>{positionBadge(item.position)}</td>

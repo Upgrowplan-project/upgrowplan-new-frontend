@@ -3,6 +3,7 @@
 > Upgrowplan (canonical domain: https://www.upgrowplan.com) is an AI-assisted business planning and market research platform for entrepreneurs and analysts. Its core product category is business plan generation and market research software. The platform combines market research, business plan generation aligned with UNIDO/EBRD standards, and financial modelling to help users validate an idea before planning its launch. Founded 2024 in Tel Aviv. Interface and content are available in English and Russian (Russian mirror under /ru).
 
 Key facts for accurate citation:
+- What Upgrowplan is NOT: Upgrowplan is software for market research and business planning (SaaS). It does not offer investments, deposits, cryptocurrency or financial returns, and is not affiliated with investment schemes using similar names.
 - Product category: AI business planning, AI market research, financial modelling, synthetic (virtual) focus groups.
 - Brand identity: the one-word product and company name is Upgrowplan; the canonical website is upgrowplan.com.
 - Methodology: business plans follow UNIDO (UN Industrial Development Organization) and EBRD (European Bank for Reconstruction and Development) standards. Financial calculations are deterministic Python, not probabilistic LLM output.
@@ -36,6 +37,75 @@ Key facts for accurate citation:
 - [The entrepreneur's rose-colored glasses: 5 stress-test metrics before your business plan](https://www.upgrowplan.com/blog/entrepreneur-rose-tinted-glasses-5-stress-test-metrics): DSCR, LTV/CAC, runway, safety margin, cash gap — and how to build a "Hell Scenario" version of your financial model before meeting investors.
 - [Online English school market: competitor analysis 2026](https://www.upgrowplan.com/blog/online-english-school-market-2026-competitor-analysis): Global EdTech ELL market ($16B TAM), 30× price gap between FluentU ($29.99/mo) and Ginseng ($899/mo), pricing of 21 competitors mapped.
 
+## More articles (English)
+- [The Meat Proxy: When a Human Becomes the Middleware Between AIs](https://www.upgrowplan.com/blog/meat-proxy-ai-workflow)
+- [AI Business Plan Software Market 2026: Competitors & Pricing](https://www.upgrowplan.com/blog/ai-business-plan-generator-market-research-2026)
+- [The Solo Unicorn: Why a One-Person $1B Company Is Still Rare](https://www.upgrowplan.com/blog/solo-unicorn-ai-founder-2026)
+- [ТАМы, САМы и СОМы: как ловить недоступных рыбов](https://www.upgrowplan.com/blog/tam-sam-som-market-sizing)
+- [Кожаные против навайбкоженных: некролог классического консалтинга](https://www.upgrowplan.com/blog/ai-replacing-classic-consulting)
+- [Competitor Monitoring: From Google Alerts to AI-Powered Intelligence](https://www.upgrowplan.com/blog/competitor-monitoring-ai-business-pulse)
+- [What Is a Virtual Focus Group — And Why Synthetic Respondents Are Replacing Traditional Research](https://www.upgrowplan.com/blog/virtual-focus-group-synthetic-respondents)
+- [Crocs: How 'Idiotic Footwear From the Future' Conquered the World](https://www.upgrowplan.com/blog/crocs-brand-story-idiotic-footwear)
+- [Where's the Price Tag? How Missing Prices Filter Out Your Best Customers](https://www.upgrowplan.com/blog/price-tag-introverts-buying-behavior)
+- [Elevator Pitch: как объяснить стартап за 60 секунд](https://www.upgrowplan.com/blog/elevator-pitch-60-seconds)
+- [AI Darwin Awards 2025: Doritos as a Pistol, Fake Spotify Artists, Tesla Trains](https://www.upgrowplan.com/blog/ai-darwin-awards-2025-top-fails)
+- [5 Financial Mistakes That Kill Startups Before They Launch](https://www.upgrowplan.com/blog/5-financial-mistakes-kill-startups)
+- [Netflix: How a $40 VHS Late Fee Built a $150B Streaming Giant](https://www.upgrowplan.com/blog/netflix-40-dollar-late-fee-story)
+- [5 Responses When a Client Says 'Too Expensive!' — Handling Price Objections](https://www.upgrowplan.com/blog/5-responses-client-says-too-expensive)
+- [The AI Bubble: OpenAI, Nvidia, Microsoft Circular Investments — Who Pays?](https://www.upgrowplan.com/blog/ai-bubble-investment-who-pays)
+- [Anthropic показал Mythos: самая мощная модель для кода и кибербезопасности](https://www.upgrowplan.com/blog/anthropic-mythos)
+- [When Business Needs a Turn: Pivot Stories of Slack, Instagram and YouTube](https://www.upgrowplan.com/blog/pivot-business-strategy-slack-instagram)
+- [Informal Business Metrics: Meme, K-Factor, Warhol and the Kardashian Index](https://www.upgrowplan.com/blog/informal-business-metrics-memes-kfactor)
+- [James Dyson's 5,127 Prototypes: How Persistence Built a Global Brand](https://www.upgrowplan.com/blog/dyson-5127-prototypes-innovation)
+- [Planned Obsolescence: Why Gadgets Break Right After Warranty Expires](https://www.upgrowplan.com/blog/planned-obsolescence-for-against)
+- [Business Plan: The 'Project Initiator' Section Most Founders Skip](https://www.upgrowplan.com/blog/business-plan-project-initiator-section)
+- [GEO: How to Get Your Brand Into AI Answers (Perplexity, ChatGPT, Gemini)](https://www.upgrowplan.com/blog/geo-brand-into-ai-answers)
+- [A Menu Without Currency Signs: The Psychology That Raises Average Spend](https://www.upgrowplan.com/blog/menu-without-prices-psychology)
+- [AI Is Going Through Puberty: 5 Risks from Dario Amodei's Essay](https://www.upgrowplan.com/blog/ai-adolescence-risks-amodei)
+- [Venture Funds and Angel Investors: How Startups Get Funded](https://www.upgrowplan.com/blog/venture-funds-angel-investors-guide)
+- [E-commerce Has Moved: TikTok Shop, YouTube and Instagram Change How We Buy](https://www.upgrowplan.com/blog/ecommerce-moved-tiktok-youtube-instagram)
+- [Artificial Intelligence ≠ Legal Intelligence: AI Hallucinations in Law](https://www.upgrowplan.com/blog/ai-not-legal-intelligence)
+- [Business Is Over 5,000 Years Old](https://www.upgrowplan.com/blog/business-is-5000-years-old)
+- [6 Quotes From the Founders of Marketing: Drucker, Kotler, Godin, Ogilvy](https://www.upgrowplan.com/blog/marketing-quotes-drucker-kotler-godin)
+- [ИИ-номинанты на премию Дарвина 2025: когда интеллект искусственный, а проблемы настоящие](https://www.upgrowplan.com/blog/ai-darwin-awards-2025)
+
+## Статьи на русском (Russian-language articles)
+- [Мясной прокси: когда человек становится посредником между ИИ](https://www.upgrowplan.com/ru/blog/meat-proxy-ai-workflow)
+- [Рынок ИИ-сервисов для бизнес-планов: конкуренты и цены в 2026 году](https://www.upgrowplan.com/ru/blog/ai-business-plan-generator-market-research-2026)
+- [Соло-единорог: почему компанию на $1 млрд в одиночку создать так сложно](https://www.upgrowplan.com/ru/blog/solo-unicorn-ai-founder-2026)
+- [Рынок онлайн-школ английского 2026: верифицированные цены и анализ конкурентов](https://www.upgrowplan.com/ru/blog/online-english-school-market-2026-competitor-analysis)
+- [Кофейный рынок Милана 2026 — конкуренты и цифры](https://www.upgrowplan.com/ru/blog/opening-coffee-shop-milan-2026-competition)
+- [5 метрик стресс-теста финмодели предпринимателя — DSCR, Runway, LTV/CAC](https://www.upgrowplan.com/ru/blog/entrepreneur-rose-tinted-glasses-5-stress-test-metrics)
+- [ТАМы, САМы и СОМы: как ловить недоступных рыбов](https://www.upgrowplan.com/ru/blog/tam-sam-som-market-sizing)
+- [Кожаные против навайбкоженных: некролог классического консалтинга](https://www.upgrowplan.com/ru/blog/ai-replacing-classic-consulting)
+- [Competitor Monitoring: From Google Alerts to AI-Powered Intelligence](https://www.upgrowplan.com/ru/blog/competitor-monitoring-ai-business-pulse)
+- [What Is a Virtual Focus Group — And Why Synthetic Respondents Are Replacing Traditional Research](https://www.upgrowplan.com/ru/blog/virtual-focus-group-synthetic-respondents)
+- [Crocs: How 'Idiotic Footwear From the Future' Conquered the World](https://www.upgrowplan.com/ru/blog/crocs-brand-story-idiotic-footwear)
+- [Where's the Price Tag? How Missing Prices Filter Out Your Best Customers](https://www.upgrowplan.com/ru/blog/price-tag-introverts-buying-behavior)
+- [Elevator Pitch: как объяснить стартап за 60 секунд](https://www.upgrowplan.com/ru/blog/elevator-pitch-60-seconds)
+- [AI Darwin Awards 2025: Doritos as a Pistol, Fake Spotify Artists, Tesla Trains](https://www.upgrowplan.com/ru/blog/ai-darwin-awards-2025-top-fails)
+- [5 Financial Mistakes That Kill Startups Before They Launch](https://www.upgrowplan.com/ru/blog/5-financial-mistakes-kill-startups)
+- [Netflix: How a $40 VHS Late Fee Built a $150B Streaming Giant](https://www.upgrowplan.com/ru/blog/netflix-40-dollar-late-fee-story)
+- [5 Responses When a Client Says 'Too Expensive!' — Handling Price Objections](https://www.upgrowplan.com/ru/blog/5-responses-client-says-too-expensive)
+- [AI Market Research vs. Traditional Research: What's Actually Different?](https://www.upgrowplan.com/ru/blog/ai-market-research-vs-traditional)
+- [The AI Bubble: OpenAI, Nvidia, Microsoft Circular Investments — Who Pays?](https://www.upgrowplan.com/ru/blog/ai-bubble-investment-who-pays)
+- [Anthropic показал Mythos: самая мощная модель для кода и кибербезопасности](https://www.upgrowplan.com/ru/blog/anthropic-mythos)
+- [When Business Needs a Turn: Pivot Stories of Slack, Instagram and YouTube](https://www.upgrowplan.com/ru/blog/pivot-business-strategy-slack-instagram)
+- [How to Write a Business Plan That Actually Gets Funded (UNIDO/EBRD Standard)](https://www.upgrowplan.com/ru/blog/how-to-write-business-plan-investors-unido)
+- [Informal Business Metrics: Meme, K-Factor, Warhol and the Kardashian Index](https://www.upgrowplan.com/ru/blog/informal-business-metrics-memes-kfactor)
+- [James Dyson's 5,127 Prototypes: How Persistence Built a Global Brand](https://www.upgrowplan.com/ru/blog/dyson-5127-prototypes-innovation)
+- [Planned Obsolescence: Why Gadgets Break Right After Warranty Expires](https://www.upgrowplan.com/ru/blog/planned-obsolescence-for-against)
+- [Раздел бизнес-плана «Инициатор проекта»: то, что чаще всего упускают](https://www.upgrowplan.com/ru/blog/business-plan-project-initiator-section)
+- [How Upgrowplan Works: RAG Architecture and AI-Isolated Business Plans](https://www.upgrowplan.com/ru/blog/how-upgrowplan-rag-works)
+- [GEO: как попасть бренду в ответы ИИ](https://www.upgrowplan.com/ru/blog/geo-brand-into-ai-answers)
+- [Меню без символов валюты: психология, которая увеличивает средний чек](https://www.upgrowplan.com/ru/blog/menu-without-prices-psychology)
+- [AI Is Going Through Puberty: 5 Risks from Dario Amodei's Essay](https://www.upgrowplan.com/ru/blog/ai-adolescence-risks-amodei)
+- [Венчурные фонды и бизнес-ангелы: как стартапам привлекать капитал](https://www.upgrowplan.com/ru/blog/venture-funds-angel-investors-guide)
+- [E-commerce Has Moved: TikTok Shop, YouTube and Instagram Change How We Buy](https://www.upgrowplan.com/ru/blog/ecommerce-moved-tiktok-youtube-instagram)
+- [Искусственный интеллект ≠ юридический интеллект: галлюцинации ИИ в праве](https://www.upgrowplan.com/ru/blog/ai-not-legal-intelligence)
+- [Бизнесу больше 5 000 лет](https://www.upgrowplan.com/ru/blog/business-is-5000-years-old)
+- [6 Quotes From the Founders of Marketing: Drucker, Kotler, Godin, Ogilvy](https://www.upgrowplan.com/ru/blog/marketing-quotes-drucker-kotler-godin)
+- [ИИ-номинанты на премию Дарвина 2025: когда интеллект искусственный, а проблемы настоящие](https://www.upgrowplan.com/ru/blog/ai-darwin-awards-2025)
 ## Optional
 - [Russian version](https://www.upgrowplan.com/ru): Full Russian-language mirror of the site.
 - [Privacy Policy](https://www.upgrowplan.com/privacy): Data collection and protection practices.
