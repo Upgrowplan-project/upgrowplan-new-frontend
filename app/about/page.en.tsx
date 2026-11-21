@@ -99,32 +99,19 @@ export default function AboutPage() {
         <div className="row justify-content-center">
           <FullWidthCard>
             <h2 className="text-center mb-4" style={{ color: "#1e6078" }}>
-              Our Team
+              Founder
             </h2>
             <p className="mb-4 text-center">
-              Upgrowplan is a small independent team of experts combining deep
-              economics knowledge with modern technology to build planning and
-              business development tools.
+              Upgrowplan is a solo-founder project based in Haifa, Israel: an economist
+              with 15+ years in business planning builds the product together with AI agents.
             </p>
 
-            <div className="row">
+            <div className="row justify-content-center">
               <TeamMemberCard
                 name="Denis Naletov"
                 role="Founder, economist, full-stack developer"
                 description="15+ years of experience in business planning and consulting. Specializes in financial modeling, AI integration into business processes and building digital solutions for SMBs."
                 photoSrc="/images/denis.jpg"
-              />
-              <TeamMemberCard
-                name="Natalia Kovaleva"
-                role="Economist, business analyst"
-                description="Financial analyst experienced in market research, feasibility studies, fundraising, management and accounting, subsidy and grant support, and loan portfolio servicing."
-                photoSrc="/images/kovaleva.jpg"
-              />
-              <TeamMemberCard
-                name="Dmitry Volkov"
-                role="Web developer, technical specialist"
-                description="Experienced developer focused on backend systems and data processing. Handles API integration, system optimization, and database management."
-                photoSrc="/images/dima.jpg"
               />
             </div>
           </FullWidthCard>
@@ -285,7 +272,7 @@ export default function AboutPage() {
                 {
                   id: "faqe1",
                   q: "What is Upgrowplan?",
-                  a: "Upgrowplan is an AI platform for entrepreneurs, analysts and consultants. It automates business plan creation following UNIDO/EBRD standards, market research, financial modelling, and competitor monitoring. Founded in 2024 in Tel Aviv.",
+                  a: "Upgrowplan is an AI business planning platform (PlanMaster, in development) for entrepreneurs, analysts and consultants: business plans following UNIDO/EBRD standards, market research, financial modelling and competitor monitoring. Its first module, MarketSense AI market research, is available in beta. Founded in 2024 in Haifa, Israel, as a solo-founder project by Denis Naletov.",
                 },
                 {
                   id: "faqe2",

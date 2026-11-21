@@ -221,7 +221,7 @@ export default function AiBizPlanGeneratorEn() {
               UNIDO / EBRD Standard · Skeptic Agent · 10–20 min · Word + Pitch Deck
             </p>
             <p style={{ fontSize: "0.87rem", color: "#64748b", marginBottom: "1.5rem" }}>
-              ⏳ Product in development. Release — Summer 2026.
+              ⏳ Product in development. The first module, MarketSense AI market research, is available in beta.
             </p>
             <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
               <a href="#beta-form" style={{ background: "#0683f5", color: "#fff", padding: "0.85rem 2rem", borderRadius: 8, textDecoration: "none", fontWeight: 700, fontSize: "1rem" }}>

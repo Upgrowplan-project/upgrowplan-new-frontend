@@ -74,8 +74,8 @@ export default function AboutLocalePage({ params }: Params) {
               margin: "0 auto 1.25rem",
             }}>
               {isRu
-                ? <><strong>Upgrowplan</strong> — ИИ-платформа валидации бизнеса для фаундеров, аналитиков и консультантов. Основана в 2024 году в Тель-Авиве, чтобы сократить разрыв между сырыми данными и стратегическим планированием.</>
-                : <><strong>Upgrowplan</strong> is an AI business validation platform for founders, analysts and consultants. Founded in 2024 in Tel Aviv, it bridges the gap between raw data and strategic planning.</>
+                ? <><strong>Upgrowplan</strong> — ИИ-платформа бизнес-планирования (PlanMaster) для фаундеров, аналитиков и консультантов. Первый модуль — исследование рынка MarketSense AI — доступен в бета-версии. Основана в 2024 году в Хайфе как проект одного основателя.</>
+                : <><strong>Upgrowplan</strong> is an AI business planning platform (PlanMaster) for founders, analysts and consultants. Its first module, MarketSense AI market research, is available in beta. Founded in 2024 in Haifa, Israel, as a solo-founder project.</>
               }
             </p>
             <p style={{
@@ -118,13 +118,13 @@ export default function AboutLocalePage({ params }: Params) {
                     { value: "230+", label: "бизнес-планов" },
                     { value: "$2,45 млн+", label: "привлечено для клиентов" },
                     { value: "7–15 мин", label: "на исследование рынка" },
-                    { value: "15+ лет", label: "опыт команды" },
+                    { value: "15+ лет", label: "опыт основателя" },
                   ]
                 : [
                     { value: "230+", label: "business plans" },
                     { value: "$2.45M+", label: "raised for clients" },
                     { value: "7–15 min", label: "for market research" },
-                    { value: "15+ years", label: "team experience" },
+                    { value: "15+ years", label: "founder experience" },
                   ]
               ).map(({ value, label }) => (
                 <div key={label} style={{

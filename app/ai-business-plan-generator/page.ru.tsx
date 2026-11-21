@@ -221,7 +221,7 @@ export default function AiBizPlanGeneratorRu() {
               Стандарты ЮНИДО / ЕБРР · Skeptic Agent · 10–20 минут · Word + питч
             </p>
             <p style={{ fontSize: "0.87rem", color: "#64748b", marginBottom: "1.5rem" }}>
-              ⏳ Продукт в разработке. Релиз — лето 2026.
+              ⏳ Продукт в разработке. Первый модуль — исследование рынка MarketSense AI — доступен в бета-версии.
             </p>
             <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
               <a href="#beta-form" style={{ background: "#0683f5", color: "#fff", padding: "0.85rem 2rem", borderRadius: 8, textDecoration: "none", fontWeight: 700, fontSize: "1rem" }}>

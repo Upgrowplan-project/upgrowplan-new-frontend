@@ -44,7 +44,7 @@ export default function SolutionsPage() {
       description:
         "Your daily digital department for market monitoring and business protection. A light AI start for your company.",
       icon: <FiMonitor className="me-2 text-primary" />,
-      release: "Autumn 2026",
+      release: "In development",  // [21.11 · владелец] статус вместо прошедшей даты
       link: "/solutions/businessPulse",
       elementId: "business-pulse-workspace-card",
       ctaLabel: "Learn more",
@@ -54,7 +54,7 @@ export default function SolutionsPage() {
       description:
         "Generates an expert business plan based on modern methodology, live search and verified data. Clear handling of hallucinations. User-friendly request chat and investor-ready documents.",
       icon: <FiFileText className="me-2 text-danger" />,
-      release: "Autumn 2026",
+      release: "In development",  // [21.11 · владелец] статус вместо прошедшей даты
       link: "/ai-business-plan-generator",
       elementId: "planmaster-description-card",
       ctaLabel: "Learn more",
@@ -72,7 +72,7 @@ export default function SolutionsPage() {
       description:
         "Test your business idea on virtual buyers in 15 minutes. AI synthetic respondents replace expensive focus groups — no recruiting, no waiting. 85–92% accuracy compared to real participants.",
       icon: <FiUsers className="me-2 text-warning" />,
-      release: "Autumn 2026",
+      release: "Temporarily unavailable",  // [21.11 · владелец] статус вместо прошедшей даты
       link: "/solutions/synthetic-customer-research",
       elementId: "synth-focus-lab-description-card",
       ctaLabel: "Learn more",
@@ -80,7 +80,7 @@ export default function SolutionsPage() {
     {
       title: "Expert Products",
       description:
-        "Personalised solutions from our expert team: business plans, market research, and financial models tailored to your business. Built on 15+ years of practice and 230+ completed projects.",
+        "Personalised solutions from the founder, an economist with 15+ years of practice: business plans, market research, and financial models tailored to your business. 230+ completed projects.",
       icon: <FiAward className="me-2 text-success" />,
       link: "/products",
       elementId: "expert-products-card",
@@ -142,11 +142,11 @@ export default function SolutionsPage() {
                     <div className="text-muted small d-flex flex-column gap-1" style={{ flex: 1 }}>
                       {solution.beta ? (
                         <span className="d-flex align-items-center gap-1">
-                          <FaHourglassHalf /> Available in beta
+                          <FaHourglassHalf /> Available in beta — part of PlanMaster
                         </span>
                       ) : solution.release ? (
                         <span className="d-flex align-items-center gap-1">
-                          <FaHourglassHalf /> Release {solution.release}
+                          <FaHourglassHalf /> {solution.release}
                         </span>
                       ) : null}
                       {solution.hasCountrySelector && (

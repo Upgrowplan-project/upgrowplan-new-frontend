@@ -278,7 +278,7 @@ export default function PlanMasterDescriptionPageEn() {
               }}
             >
               <span aria-hidden>⏳</span>
-              Product in development. Release — Summer 2026.
+              Product in development. The first module, MarketSense AI market research, is available in beta.
             </p>
           </div>
         </section>

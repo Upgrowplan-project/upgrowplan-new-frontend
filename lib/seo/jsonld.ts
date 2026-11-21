@@ -21,12 +21,14 @@ export function organizationSchema() {
       height: 512,
     },
     description:
-      "Upgrowplan is an AI-assisted business planning and market research platform for entrepreneurs and analysts. It combines market research, business plan generation aligned with UNIDO/EBRD standards, and financial modelling to help users validate a business idea before planning its launch.",
+      "Upgrowplan is an AI business planning platform (PlanMaster) for entrepreneurs and analysts; its first module, MarketSense AI market research, is in beta. It combines market research, business plan generation aligned with UNIDO/EBRD standards, and financial modelling to help users validate a business idea before planning its launch.",
     foundingDate: "2024",
     foundingLocation: {
       "@type": "Place",
-      name: "Tel Aviv, Israel",
+      name: "Haifa, Israel",
     },
+    // [21.11 · владелец] проект одного основателя
+    founder: { "@type": "Person", name: "Denis Naletov", alternateName: "Денис Налетов" },
     contactPoint: {
       "@type": "ContactPoint",
       contactType: "customer support",
@@ -277,6 +279,7 @@ export function aboutPageSchema(locale: "en" | "ru") {
 }
 
 // ─── Team members (Person schema) ────────────────────────────────────────────
+// [21.11 · владелец] проект одного основателя — бывшие коллеги убраны
 export function teamMembersSchema() {
   return [
     {
@@ -298,44 +301,6 @@ export function teamMembersSchema() {
       description:
         "15+ years of experience in business planning and consulting. Specialises in financial modelling, AI integration into business processes, and digital solutions for SMBs. Co-authored 230+ business plans.",
     },
-    {
-      "@type": "Person",
-      name: "Natalia Kovaleva",
-      alternateName: "Наталья Ковалева",
-      jobTitle: "Economist & Business Analyst",
-      worksFor: { "@type": "Organization", name: "Upgrowplan" },
-      url: `${SITE_URL}/about`,
-      image: `${SITE_URL}/images/kovaleva.jpg`,
-      knowsAbout: [
-        "Financial analysis",
-        "Market research",
-        "Investment attraction",
-        "Business planning",
-        "Management accounting",
-        "Subsidies and grants",
-      ],
-      description:
-        "Financial analyst with expertise in market research, business plans, feasibility studies, investment attraction, management accounting, and credit portfolio servicing.",
-    },
-    {
-      "@type": "Person",
-      name: "Dmitry Volkov",
-      alternateName: "Дмитрий Волков",
-      jobTitle: "Web Developer & Technical Specialist",
-      worksFor: { "@type": "Organization", name: "Upgrowplan" },
-      url: `${SITE_URL}/about`,
-      image: `${SITE_URL}/images/dima.jpg`,
-      knowsAbout: [
-        "Backend development",
-        "API integration",
-        "Database management",
-        "System optimisation",
-        "Node.js",
-        "Spring Boot",
-      ],
-      description:
-        "Experienced developer specialising in server-side architecture and data processing. Handles API integrations, system optimisation, database management, and external service interactions.",
-    },
   ];
 }
 
@@ -346,7 +311,7 @@ export function aboutFaqSchema(locale: "en" | "ru") {
     ? [
         {
           q: "Что такое Upgrowplan?",
-          a: "Upgrowplan — ИИ-платформа для предпринимателей, аналитиков и консультантов. Автоматизирует создание бизнес-планов по стандартам ЮНИДО/ЕБРР, маркетинговые исследования, финансовое моделирование и конкурентный мониторинг. Основана в 2024 году в Тель-Авиве.",
+          a: "Upgrowplan — ИИ-платформа бизнес-планирования (PlanMaster, в разработке) для предпринимателей, аналитиков и консультантов: бизнес-планы по стандартам ЮНИДО/ЕБРР, исследования рынка, финансовое моделирование и мониторинг конкурентов. Первый модуль — исследование рынка MarketSense AI — доступен в бета-версии. Основана в 2024 году в Хайфе (Израиль) как проект одного основателя — Дениса Налетова.",
         },
         {
           q: "Чем Upgrowplan отличается от ChatGPT?",
@@ -368,7 +333,7 @@ export function aboutFaqSchema(locale: "en" | "ru") {
     : [
         {
           q: "What is Upgrowplan?",
-          a: "Upgrowplan is an AI platform for entrepreneurs, analysts and consultants. It automates business plan creation following UNIDO/EBRD standards, market research, financial modelling, and competitor monitoring. Founded in 2024 in Tel Aviv.",
+          a: "Upgrowplan is an AI business planning platform (PlanMaster, in development) for entrepreneurs, analysts and consultants: business plans following UNIDO/EBRD standards, market research, financial modelling and competitor monitoring. Its first module, MarketSense AI market research, is available in beta. Founded in 2024 in Haifa, Israel, as a solo-founder project by Denis Naletov.",
         },
         {
           q: "How is Upgrowplan different from ChatGPT?",

@@ -99,12 +99,12 @@ export const pageMeta = {
   },
   about: {
     title: {
-      en: "About Upgrowplan — AI Business Validation",
-      ru: "О Upgrowplan — ИИ-валидация бизнеса, Тель-Авив",
+      en: "About Upgrowplan — AI Business Planning Platform",
+      ru: "О Upgrowplan — ИИ-платформа бизнес-планирования, Хайфа",
     },
     description: {
-      en: "Upgrowplan is an AI business validation platform in Tel Aviv, founded 2024 to bridge raw data and strategic planning for founders and analysts.",
-      ru: "Upgrowplan — ИИ-платформа валидации бизнеса из Тель-Авива (2024): соединяем сырые данные и стратегическое планирование для фаундеров и аналитиков.",
+      en: "Upgrowplan is an AI business planning platform (PlanMaster) from Haifa, Israel, founded 2024 by solo founder Denis Naletov; first module — MarketSense AI market research (beta).",
+      ru: "Upgrowplan — ИИ-платформа бизнес-планирования (PlanMaster) из Хайфы, основана в 2024 году Денисом Налетовым; первый модуль — исследование рынка MarketSense AI (бета).",
     },
     enPath: "/about",
     ruPath: "/ru/about",

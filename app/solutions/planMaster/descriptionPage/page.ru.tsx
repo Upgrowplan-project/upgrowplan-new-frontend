@@ -512,7 +512,7 @@ export default function PlanMasterDescriptionPageRu() {
                 }}
               >
                 <span aria-hidden>⏳</span>
-                Продукт в разработке. Релиз — лето 2026.
+                Продукт в разработке. Первый модуль — исследование рынка MarketSense AI — доступен в бета-версии.
               </p>
             </div>
           </section>

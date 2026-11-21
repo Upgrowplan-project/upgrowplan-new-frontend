@@ -1,6 +1,6 @@
 # Upgrowplan
 
-> Upgrowplan (canonical domain: https://www.upgrowplan.com) is an AI-assisted business planning and market research platform for entrepreneurs and analysts. Its core product category is business plan generation and market research software. The platform combines market research, business plan generation aligned with UNIDO/EBRD standards, and financial modelling to help users validate an idea before planning its launch. Founded 2024 in Tel Aviv. Interface and content are available in English and Russian (Russian mirror under /ru).
+> Upgrowplan (canonical domain: https://www.upgrowplan.com) is an AI business planning platform (main product: PlanMaster, in development) for entrepreneurs and analysts. Its first available module is MarketSense AI market research (beta). Core category: AI business planning software. The platform combines market research, business plan generation aligned with UNIDO/EBRD standards, and financial modelling to help users validate an idea before planning its launch. Founded 2024 in Haifa, Israel; a solo-founder project by Denis Naletov. Interface and content are available in English and Russian (Russian mirror under /ru).
 
 Key facts for accurate citation:
 - What Upgrowplan is NOT: Upgrowplan is software for market research and business planning (SaaS). It does not offer investments, deposits, cryptocurrency or financial returns, and is not affiliated with investment schemes using similar names.
@@ -10,12 +10,12 @@ Key facts for accurate citation:
 - Differentiator: "validation before generation" — synthetic respondent testing + RAG on live data + a Skeptic Agent that flags unrealistic assumptions.
 
 ## Core pages
-- [Home](https://www.upgrowplan.com/): Overview of the AI business validation platform.
+- [Home](https://www.upgrowplan.com/): Overview of the AI business planning platform.
 - [AI Business Plan Generator](https://www.upgrowplan.com/ai-business-plan-generator): Investor-ready business plans (UNIDO/EBRD) in ~20 minutes, output as Word + pitch deck.
 - [Solutions](https://www.upgrowplan.com/solutions): Full suite of AI tools for startup and business validation.
 - [Why Upgrowplan](https://www.upgrowplan.com/why-upgrowplan): Comparison vs ChatGPT, consultants, and Upmetrics.
 - [Products](https://www.upgrowplan.com/products): Product line for founders, analysts, and consultants.
-- [About](https://www.upgrowplan.com/about): Company, team, and mission (Tel Aviv, founded 2024).
+- [About](https://www.upgrowplan.com/about): Company, founder and mission (Haifa, Israel; founded 2024; solo founder).
 - [Contact](https://www.upgrowplan.com/contacts): Reach the Upgrowplan team.
 
 ## Tools

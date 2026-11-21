@@ -50,7 +50,7 @@ export default function SolutionsPage() {
       description:
         "Ваш ежедневный цифровой отдел для анализа целевой аудитории, мониторинга конкурентов, проверки налогов и разрешений вашего бизнеса. Легкий старт ИИ для вашего предприятия. Получите отчет на почту каждый понедельник",
       icon: <FiMonitor className="me-2 text-primary" />,
-      release: "осень 2026",
+      release: "В разработке",  // [21.11 · владелец] статус вместо прошедшей даты
       link: "/solutions/businessPulse",
       elementId: "business-pulse-workspace-card",
       ctaLabel: "Подробнее",
@@ -60,7 +60,7 @@ export default function SolutionsPage() {
       description:
         "Генерация экспертного бизнес-плана на основе современной методологии, живого поиска и верифицированных данных. Нулевая толерантность к ИИ-галлюцинациям. Удобный чат запроса. Документ готов к презентации инвесторам.",
       icon: <FiFileText className="me-2 text-danger" />,
-      release: "осень 2026",
+      release: "В разработке",  // [21.11 · владелец] статус вместо прошедшей даты
       link: "/ai-business-plan-generator",
       elementId: "planmaster-description-card",
       ctaLabel: "Подробнее",
@@ -78,7 +78,7 @@ export default function SolutionsPage() {
       description:
         "Проверьте бизнес-идею на виртуальных покупателях за 15 минут. Синтетические респонденты заменяют дорогие фокус-группы — без рекрутинга, без ожидания. Точность 85–92% по сравнению с реальными участниками.",
       icon: <FiUsers className="me-2 text-warning" />,
-      release: "осень 2026",
+      release: "Временно недоступен",  // [21.11 · владелец] статус вместо прошедшей даты
       link: "/solutions/synthetic-customer-research",
       elementId: "synth-focus-lab-description-card",
       ctaLabel: "Подробнее",
@@ -86,7 +86,7 @@ export default function SolutionsPage() {
     {
       title: "Экспертные продукты",
       description:
-        "Персонализированные решения от нашей команды: бизнес-планы, исследования рынка и финансовые модели под ваш бизнес. Основано на 15+ годах практики и 230+ выполненных проектах.",
+        "Персонализированные решения от основателя — экономиста с практикой более 15 лет: бизнес-планы, исследования рынка и финансовые модели под ваш бизнес. 230+ выполненных проектов.",
       icon: <FiAward className="me-2 text-success" />,
       link: "/products",
       elementId: "expert-products-card",
@@ -148,11 +148,11 @@ export default function SolutionsPage() {
                     <div className="text-muted small d-flex flex-column gap-1" style={{ flex: 1 }}>
                       {solution.beta ? (
                         <span className="d-flex align-items-center gap-1">
-                          <FaHourglassHalf /> Доступен в бета-версии
+                          <FaHourglassHalf /> Доступен в бета-версии — модуль PlanMaster
                         </span>
                       ) : solution.release ? (
                         <span className="d-flex align-items-center gap-1">
-                          <FaHourglassHalf /> Релиз {solution.release}
+                          <FaHourglassHalf /> {solution.release}
                         </span>
                       ) : null}
                       {solution.hasCountrySelector && (
