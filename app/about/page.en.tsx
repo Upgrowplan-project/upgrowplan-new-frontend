@@ -110,7 +110,7 @@ export default function AboutPage() {
               <TeamMemberCard
                 name="Denis Naletov"
                 role="Founder, economist, full-stack developer"
-                description="15+ years of experience in business planning and consulting. Specializes in financial modeling, AI integration into business processes and building digital solutions for SMBs."
+                description="15+ years in business planning, financial modelling and feasibility studies; 230+ business plans. Building Upgrowplan to replace static templates with live data and deterministic financial math."
                 photoSrc="/images/denis.jpg"
               />
             </div>
@@ -272,7 +272,7 @@ export default function AboutPage() {
                 {
                   id: "faqe1",
                   q: "What is Upgrowplan?",
-                  a: "Upgrowplan is an AI business planning platform (PlanMaster, in development) for entrepreneurs, analysts and consultants: business plans following UNIDO/EBRD standards, market research, financial modelling and competitor monitoring. Its first module, MarketSense AI market research, is available in beta. Founded in 2024 in Haifa, Israel, as a solo-founder project by Denis Naletov.",
+                  a: "Upgrowplan is an AI business planning platform. Instead of generic templates, it collects live market and competitor data, runs the financial math in deterministic Python, and stress-tests assumptions with a built-in Skeptic Agent. Its first module, MarketSense AI market research, is in free beta by invitation; the full planner, PlanMaster, is in development. Founded in 2024 in Haifa, Israel, as a bootstrapped solo-founder project by Denis Naletov.",
                 },
                 {
                   id: "faqe2",

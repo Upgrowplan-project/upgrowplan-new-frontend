@@ -74,8 +74,8 @@ export default function AboutLocalePage({ params }: Params) {
               margin: "0 auto 1.25rem",
             }}>
               {isRu
-                ? <><strong>Upgrowplan</strong> — ИИ-платформа бизнес-планирования (PlanMaster) для фаундеров, аналитиков и консультантов. Первый модуль — исследование рынка MarketSense AI — доступен в бета-версии. Основана в 2024 году в Хайфе как проект одного основателя.</>
-                : <><strong>Upgrowplan</strong> is an AI business planning platform (PlanMaster) for founders, analysts and consultants. Its first module, MarketSense AI market research, is available in beta. Founded in 2024 in Haifa, Israel, as a solo-founder project.</>
+                ? <><strong>Upgrowplan</strong> — ИИ-платформа бизнес-планирования. Вместо типовых шаблонов она собирает живые данные о рынке и конкурентах, считает финансовую модель детерминированным кодом на Python и проверяет допущения встроенным агентом-скептиком. Первый модуль — исследование рынка MarketSense AI — доступен в бесплатной бета-версии по приглашению; полный планировщик PlanMaster в разработке. Основана в 2024 году в Хайфе (Израиль) как проект одного основателя — Дениса Налетова — без внешних инвестиций.</>
+                : <><strong>Upgrowplan</strong> is an AI business planning platform. Instead of generic templates, it collects live market and competitor data, runs the financial math in deterministic Python, and stress-tests assumptions with a built-in Skeptic Agent. Its first module, MarketSense AI market research, is in free beta by invitation; the full planner, PlanMaster, is in development. Founded in 2024 in Haifa, Israel, as a bootstrapped solo-founder project by Denis Naletov.</>
               }
             </p>
             <p style={{
