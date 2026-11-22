@@ -278,6 +278,7 @@ interface InterpretResult {
   status: "ok" | "invalid" | "failed";
   interpretations: ResearchObjectOption[];
   errors: ValidationIssue[];
+  service_note?: string | null; // [22.11 · Ш4.2] service note (channel on someone else's platform) — code text with a source
 }
 const CUSTOM_OBJECT_MAX = 150;
 
@@ -598,6 +599,7 @@ export default function MarketResearchPage() {
     custom: string;
     busy: boolean;
     error: string | null;
+    note: string | null;
   } | null>(null);
   const [isResearchPaused, setIsResearchPaused] = useState(false);
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
@@ -1381,6 +1383,7 @@ export default function MarketResearchPage() {
     setObjectFailed(false);
     setValidationErrors([]);
     let options: ResearchObjectOption[] = [];
+    let note: string | null = null;
     let invalid = false;
     try {
       const interpResp = await marketResearchFetch(`${API_BASE}/api/v1/research/interpret`, {
@@ -1393,7 +1396,10 @@ export default function MarketResearchPage() {
         if (interp.status === "invalid") {
           setValidationErrors(interp.errors || []);
           invalid = true;
-        } else if (interp.status === "ok") options = interp.interpretations || [];
+        } else if (interp.status === "ok") {
+          options = interp.interpretations || [];
+          note = interp.service_note || null;
+        }
       }
     } catch (interpErr) {
       console.warn("[ResearchObject] interpret failed:", interpErr);
@@ -1405,7 +1411,7 @@ export default function MarketResearchPage() {
       return;
     }
     if (options.length > 0) {
-      setObjectChoice({ requestData, industryStr, options, selected: 0, custom: "", busy: false, error: null });
+      setObjectChoice({ requestData, industryStr, options, selected: 0, custom: "", busy: false, error: null, note });
       return;
     }
     setObjectFailed(true);   // сбой разбора — старт разблокирован, исследование с пометкой window_failed
@@ -2122,6 +2128,15 @@ export default function MarketResearchPage() {
             <p style={{ margin: "0 0 16px", color: "#475569", fontSize: "0.9rem" }}>
               We search for competitors and their prices based on it. Choose the right option or describe your own.
             </p>
+            {objectChoice.note && (
+              // [22.11 · Ш4.2] service note: creator's country outside the YouTube Partner Program / advertising ban
+              <p role="note" style={{
+                margin: "0 0 16px", padding: "10px 12px", background: "#fffbeb", border: "1px solid #fcd34d",
+                borderRadius: "8px", color: "#78350f", fontSize: "0.88rem", lineHeight: 1.45,
+              }}>
+                {objectChoice.note}
+              </p>
+            )}
             {objectChoice.options.map((o, i) => (
               <label key={i} style={{
                 display: "flex", gap: "10px", alignItems: "flex-start", padding: "12px", marginBottom: "8px",
