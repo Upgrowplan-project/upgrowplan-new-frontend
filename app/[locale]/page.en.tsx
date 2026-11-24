@@ -6,8 +6,10 @@ import type { Map as MapboxMap, Marker as MapboxMarker } from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { Modal } from "react-bootstrap";
 import ContactForm from "../../components/ContactForm";
+import HomeBlogCarousel from "../../components/HomeBlogCarousel";
+import type { BilingualPost } from "../../app/blog/staticPosts";
 
-export default function Home() {
+export default function Home({ initialPosts = [] }: { initialPosts?: BilingualPost[] }) {
   const locale = "en";
 
   const logLines = useMemo(
@@ -1629,6 +1631,8 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+        <HomeBlogCarousel posts={initialPosts} locale="en" />
 
         <section className="reality-check section-pad">
           <div className="container text-center">

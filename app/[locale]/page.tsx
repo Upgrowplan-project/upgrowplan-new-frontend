@@ -6,6 +6,8 @@ import FaqSection from "@/components/FaqSection";
 import Header from "@/components/Header";
 import HomePageEn from "./page.en";
 import HomePageRu from "./page.ru";
+import { getCanonicalBlogPosts } from "../blog/getBlogPosts";
+import type { BilingualPost } from "../blog/staticPosts";
 
 type Params = { params: { locale: string } };
 
@@ -22,9 +24,10 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   };
 }
 
-export default function HomePage({ params }: Params) {
+export default async function HomePage({ params }: Params) {
   const locale = params.locale === "ru" ? "ru" : "en";
   const faqTitle = locale === "ru" ? "Часто задаваемые вопросы" : "Frequently Asked Questions";
+  const posts: BilingualPost[] = await getCanonicalBlogPosts();
   return (
     <>
       <JsonLd data={[
@@ -51,7 +54,7 @@ export default function HomePage({ params }: Params) {
         }),
       ]} />
       <Header />
-      {locale === "ru" ? <HomePageRu /> : <HomePageEn />}
+      {locale === "ru" ? <HomePageRu initialPosts={posts} /> : <HomePageEn initialPosts={posts} />}
       <FaqSection items={pageFaqs.home[locale]} title={faqTitle} />
     </>
   );
