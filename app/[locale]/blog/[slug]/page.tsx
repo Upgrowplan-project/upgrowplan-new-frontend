@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { BLOG_SLUG_REDIRECTS, getBlogPostBySlug, getCanonicalBlogPosts } from "../../../blog/getBlogPosts";
+import { categoryLabel } from "../../../blog/categories";
 import { JsonLd } from "@/components/JsonLd";
 import Header from "@/components/Header";
 import FormattedPostContent from "@/components/FormattedPostContent";
@@ -158,13 +159,13 @@ export default async function BlogPostLocalePage({ params }: Props) {
             {isRu ? "← Назад к блогу" : "← Back to Blog"}
           </a>
 
-          {post.category && (
+          {categoryLabel(post.category, locale) && (
             <span style={{
               display: "inline-block", background: "#eff6ff", color: "#1d4ed8",
               borderRadius: "1rem", padding: "0.2rem 0.75rem", fontSize: "0.8rem",
               fontWeight: 600, marginBottom: "1rem",
             }}>
-              {post.category}
+              {categoryLabel(post.category, locale)}
             </span>
           )}
 

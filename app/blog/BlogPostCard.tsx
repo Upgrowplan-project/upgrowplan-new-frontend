@@ -1,3 +1,6 @@
+import { categoryLabel } from "./categories";
+import { getExcerpt } from "./postPreview";
+
 interface BlogPostCardProps {
   message: string;
   createdAt: string;
@@ -11,23 +14,6 @@ interface BlogPostCardProps {
   locale: "ru" | "en";
 }
 
-const categoryEN: Record<string, string> = {
-  "Методичка": "How-To",
-  "ИИ": "AI",
-  "Маркетинг": "Marketing",
-  "Кейсы": "Case Studies",
-  "Brandsories": "Brand Stories",
-  "Upgrowplan": "Upgrowplan",
-  "research": "Research",
-  "Исследование рынка": "Market Research",
-};
-
-function getExcerpt(text: string, maxLen = 200): string {
-  const clean = text.replace(/[#\n]/g, " ").replace(/\s+/g, " ").trim();
-  if (clean.length <= maxLen) return clean;
-  return clean.slice(0, maxLen).replace(/\s\S*$/, "") + "…";
-}
-
 export default function BlogPostCard({
   message, createdAt, slug, title, description,
   category, author, mediaUrl, forwardAuthor, locale,
@@ -38,9 +24,7 @@ export default function BlogPostCard({
 
   const displayAuthor = forwardAuthor || author;
   const excerpt = description || getExcerpt(message);
-  const displayCategory = locale === "en" && category
-    ? (categoryEN[category] ?? category)
-    : category;
+  const displayCategory = categoryLabel(category, locale);
 
   return (
     <div className="col-12">

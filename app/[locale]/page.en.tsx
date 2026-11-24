@@ -965,6 +965,9 @@ export default function Home({ initialPosts = [] }: { initialPosts?: BilingualPo
           </div>
         </section>
 
+        {/* [24.11 · owner] the 5 latest blog posts — right after «Every figure … has an author» */}
+        <HomeBlogCarousel posts={initialPosts} locale="en" />
+
         <section className="skeptic-block section-pad" ref={skepticRef}>
           <div className="container skeptic-grid">
             <div className="skeptic-copy">
@@ -1631,8 +1634,6 @@ export default function Home({ initialPosts = [] }: { initialPosts?: BilingualPo
             </div>
           </div>
         </section>
-
-        <HomeBlogCarousel posts={initialPosts} locale="en" />
 
         <section className="reality-check section-pad">
           <div className="container text-center">
