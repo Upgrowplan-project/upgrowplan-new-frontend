@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextFetchEvent, NextRequest, NextResponse } from 'next/server';
+import { reportBotCrawl } from './lib/eventQueue';
 
 // AI crawlers that matter for GEO Visibility tracking
 const AI_BOT_PATTERNS: [string, string][] = [
@@ -36,7 +37,7 @@ function isContentPath(pathname: string): boolean {
   return CONTENT_PATH_PREFIXES.some(p => pathname === p || pathname.startsWith(p));
 }
 
-export function middleware(request: NextRequest) {
+export function middleware(request: NextRequest, event: NextFetchEvent) {
   const pathname = request.nextUrl.pathname;
 
   // Trailing slash → canonical path (301 Permanent Redirect)
@@ -104,19 +105,12 @@ export function middleware(request: NextRequest) {
   url.pathname = `/en${pathname}`;
   const response = NextResponse.rewrite(url);
 
-  // GEO Visibility: fire-and-forget AI bot detection for content pages
+  // GEO Visibility: AI bot visit → event queue (lib/eventQueue.ts), sent to monitoring once a day; waitUntil keeps the
+  // write alive after the response (a bare fetch could be cut off when the edge function returns)
   const ua = request.headers.get('user-agent') || '';
   const botName = detectAiBot(ua);
   if (botName && isContentPath(pathname)) {
-    const monitoringUrl = process.env.NEXT_PUBLIC_MONITORING_API_URL;
-    const ingestToken = process.env.MONITORING_INGEST_TOKEN;
-    if (monitoringUrl && ingestToken) {
-      fetch(`${monitoringUrl}/api/monitoring/bot-crawl`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Ingest-Token': ingestToken },
-        body: JSON.stringify({ bot_name: botName, bot_raw_ua: ua, url_path: pathname, crawled_at: new Date().toISOString() }),
-      }).catch(() => {});
-    }
+    event.waitUntil(reportBotCrawl({ bot_name: botName, bot_raw_ua: ua, url_path: pathname, crawled_at: new Date().toISOString() }));
   }
 
   return response;

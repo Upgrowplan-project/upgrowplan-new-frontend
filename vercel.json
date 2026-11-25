@@ -5,6 +5,9 @@
   "env": {
     "NODE_ENV": "production"
   },
+  "crons": [
+    { "path": "/api/analytics/flush", "schedule": "0 7 * * *" }
+  ],
   "redirects": [
     {
       "source": "/:path*",

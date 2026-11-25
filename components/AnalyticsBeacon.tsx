@@ -3,9 +3,6 @@
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 
-const MONITORING_URL =
-  process.env.NEXT_PUBLIC_MONITORING_API_URL || "http://localhost:8000";
-
 function uuid(): string {
   try {
     if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -52,8 +49,8 @@ function analyticsUrl(raw: string, keepUtm: boolean): string | null {
 }
 
 /**
- * Anonymous pageview beacon → monitoring service. No cookies, no PII.
- * Fires on every route change. Best-effort: failures are swallowed silently.
+ * Anonymous pageview beacon → this site's /api/track (queued, sent to monitoring once a day — app/api/analytics/flush).
+ * No cookies, no PII. Fires on every route change. Best-effort: failures are swallowed silently.
  */
 export default function AnalyticsBeacon() {
   const pathname = usePathname();
@@ -84,7 +81,7 @@ export default function AnalyticsBeacon() {
         event_type: "pageview",
       };
 
-      const endpoint = `${MONITORING_URL.replace(/\/$/, "")}/api/monitoring/pageview`;
+      const endpoint = "/api/track";
       const body = JSON.stringify(payload);
 
       let sent = false;
