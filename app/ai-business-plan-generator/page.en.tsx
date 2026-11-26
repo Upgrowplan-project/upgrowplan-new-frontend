@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Header from "../../components/Header";
 import dynamic from "next/dynamic";
+import { sendContactRequest, CONTACT_FAIL } from "@/lib/contact";
 const IntelligenceLabV3En = dynamic(
   () => import("../solutions/planMaster/descriptionPage/IntelligenceLab-v3.en"),
   { ssr: false, loading: () => <div style={{ height: "420px", background: "#f8fafc", borderRadius: "1rem" }} /> }
@@ -124,17 +125,16 @@ function BetaForm() {
     setError("");
     setLoading(true);
     try {
-      const API_BASE = process.env.NEXT_PUBLIC_MONITORING_API_URL || "http://localhost:8000";
-      await fetch(`${API_BASE}/api/monitoring/contact`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          locale: "en",
-          name: "",
-          email,
-          message: `запрос на бета-тестирование PlanMaster AI получен`,
-        }),
+      const ok = await sendContactRequest({
+        locale: "en",
+        name: "",
+        email,
+        message: `запрос на бета-тестирование PlanMaster AI получен`,
       });
+      if (!ok) {
+        setError(CONTACT_FAIL.en);
+        return;
+      }
       setSubmitted(true);
       setEmail("");
       setIsChecked(false);

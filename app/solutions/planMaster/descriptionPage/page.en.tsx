@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Header from "../../../../components/Header";
 import IntelligenceLabV3En from "./IntelligenceLab-v3.en";
+import { sendContactRequest, CONTACT_FAIL } from "@/lib/contact";
 
 const INFO_TABS = [
   {
@@ -81,18 +82,16 @@ function BetaForm() {
     setError("");
 
     try {
-      const API_BASE =
-        process.env.NEXT_PUBLIC_MONITORING_API_URL || "http://localhost:8000";
-      await fetch(`${API_BASE}/api/monitoring/contact`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          locale: "en",
-          name: "",
-          email,
-          message: `User (${email}) is interested in the planMaster product.`,
-        }),
+      const ok = await sendContactRequest({
+        locale: "en",
+        name: "",
+        email,
+        message: `User (${email}) is interested in the planMaster product.`,
       });
+      if (!ok) {
+        setError(CONTACT_FAIL.en);
+        return;
+      }
       setSubmitted(true);
       setEmail("");
       setIsChecked(false);

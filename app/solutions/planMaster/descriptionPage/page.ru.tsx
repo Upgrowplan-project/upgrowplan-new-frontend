@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Header from "../../../../components/Header";
 import IntelligenceLabV3 from "./IntelligenceLab-v3";
+import { sendContactRequest, CONTACT_FAIL } from "@/lib/contact";
 
 // ─── ACCESS CODE MODAL ────────────────────────────────────────────────────
 function AccessCodeModal({
@@ -266,18 +267,16 @@ function BetaForm() {
     setError("");
 
     try {
-      const API_BASE =
-        process.env.NEXT_PUBLIC_MONITORING_API_URL || "http://localhost:8000";
-      await fetch(`${API_BASE}/api/monitoring/contact`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          locale: "ru",
-          name: "",
-          email,
-          message: `Пользователь (${email}) интересуется продуктом planMaster, опция ${interest === "worldwide" ? "worldwide" : "соцконтракт"}.`,
-        }),
+      const ok = await sendContactRequest({
+        locale: "ru",
+        name: "",
+        email,
+        message: `Пользователь (${email}) интересуется продуктом planMaster, опция ${interest === "worldwide" ? "worldwide" : "соцконтракт"}.`,
       });
+      if (!ok) {
+        setError(CONTACT_FAIL.ru);
+        return;
+      }
       setSubmitted(true);
       setEmail("");
       setIsChecked(false);

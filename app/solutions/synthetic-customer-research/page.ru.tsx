@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Header from "../../../components/Header";
+import { sendContactRequest, CONTACT_FAIL } from "@/lib/contact";
 
 const FONT = '"Inter", "SF Pro Display", "Segoe UI", Arial, sans-serif';
 
@@ -539,17 +540,16 @@ function SynthBetaForm() {
     setError("");
     setLoading(true);
     try {
-      const API_BASE = process.env.NEXT_PUBLIC_MONITORING_API_URL || "http://localhost:8000";
-      await fetch(`${API_BASE}/api/monitoring/contact`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          locale: "ru",
-          name: "",
-          email,
-          message: `запрос на бета-тестирование Synth Focus Lab получен`,
-        }),
+      const ok = await sendContactRequest({
+        locale: "ru",
+        name: "",
+        email,
+        message: `запрос на бета-тестирование Synth Focus Lab получен`,
       });
+      if (!ok) {
+        setError(CONTACT_FAIL.ru);
+        return;
+      }
       setSubmitted(true);
       setEmail("");
       setIsChecked(false);

@@ -3,6 +3,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Header from "../../../../../components/Header";
+import { sendContactRequest, CONTACT_FAIL } from "@/lib/contact";
 
 function AccessCodeModal({
   onClose,
@@ -182,17 +183,16 @@ function BetaForm() {
     setError("");
     setLoading(true);
     try {
-      const API_BASE = process.env.NEXT_PUBLIC_MONITORING_API_URL || "http://localhost:8000";
-      await fetch(`${API_BASE}/api/monitoring/contact`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          locale: "en",
-          name: "",
-          email,
-          message: `запрос на бета-тестирование MarketSense AI получен`,
-        }),
+      const ok = await sendContactRequest({
+        locale: "en",
+        name: "",
+        email,
+        message: `запрос на бета-тестирование MarketSense AI получен`,
       });
+      if (!ok) {
+        setError(CONTACT_FAIL.en);
+        return;
+      }
       setSubmitted(true);
       setEmail("");
       setIsChecked(false);

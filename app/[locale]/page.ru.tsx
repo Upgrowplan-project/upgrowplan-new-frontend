@@ -368,24 +368,18 @@ export default function Home({ initialPosts = [] }: { initialPosts?: BilingualPo
   const [heroEmail, setHeroEmail] = useState("");
   const [heroSubmitted, setHeroSubmitted] = useState(false);
   const [heroLoading, setHeroLoading] = useState(false);
+  const [heroError, setHeroError] = useState("");
 
   const handleHeroBeta = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!heroEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(heroEmail.trim())) return;
+    setHeroError("");
     setHeroLoading(true);
-    try {
-      const API_BASE = process.env.NEXT_PUBLIC_MONITORING_API_URL || "http://localhost:8000";
-      await fetch(`${API_BASE}/api/monitoring/contact`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ locale: "ru", name: "", email: heroEmail, message: "Hero beta request — MarketSense AI (RU)" }),
-      });
-    } catch {
-      // silent — всё равно показываем успех
-    } finally {
-      setHeroSubmitted(true);
-      setHeroLoading(false);
-    }
+    const { sendContactRequest, CONTACT_FAIL } = await import("@/lib/contact");
+    const ok = await sendContactRequest({ locale: "ru", name: "", email: heroEmail, message: "Hero beta request — MarketSense AI (RU)" });
+    if (ok) setHeroSubmitted(true);
+    else setHeroError(CONTACT_FAIL.ru);
+    setHeroLoading(false);
   };
 
   const deepLogSource = useMemo(
@@ -856,6 +850,9 @@ export default function Home({ initialPosts = [] }: { initialPosts?: BilingualPo
                       {heroLoading ? "..." : "Получить доступ →"}
                     </button>
                   </form>
+                )}
+                {heroError && (
+                  <p role="alert" style={{ color: "#dc2626", fontSize: "0.85rem", marginTop: "0.5rem" }}>{heroError}</p>
                 )}
                 {!heroSubmitted && (
                   <p style={{ fontSize: "0.72rem", color: "#94a3b8", marginTop: "0.4rem" }}>
