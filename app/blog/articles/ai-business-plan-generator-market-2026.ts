@@ -31,7 +31,7 @@ export const aiBusinessPlanMarketPost: BilingualPost = {
 <h2>The quick read</h2>
 <ul>
   <li>The scan identified <strong>18 direct and 4 indirect competitors</strong> in the global AI business-plan software space.</li>
-  <li>Among five vendors with one-time product prices, the observed range was <strong>$11.58–$149</strong>, with a median of <strong>$79</strong>. Three subscription vendors ranged from <strong>$13 to $185 per month</strong>.</li>
+  <li>Among five vendors with one-time product prices, the observed range was <strong>$11.58–$149</strong>, with a median of <strong>$79</strong>. Three subscription vendors ranged from <strong>$13 to $145 per month</strong>.</li>
   <li>The report’s first-year obtainable-market estimate (SOM) is <strong>$79,000</strong>, but it assumes 1,000 buyers. The buyer count was not measured.</li>
   <li>The report did not establish a reliable total or serviceable market size (TAM/SAM), and it found no dependable set of user reviews for this niche.</li>
 </ul>
@@ -53,11 +53,11 @@ export const aiBusinessPlanMarketPost: BilingualPost = {
     <tr><td>LaunchBiz</td><td>$79</td><td>One-time</td></tr>
     <tr><td>PlanMason</td><td>$99</td><td>One-time</td></tr>
     <tr><td>Percision</td><td>$149</td><td>One-time</td></tr>
-    <tr><td>Upmetrics AI</td><td>$185/month</td><td>Subscription</td></tr>
+    <tr><td>Upmetrics AI</td><td>$14–$49/month</td><td>Subscription</td></tr>
   </tbody>
 </table>
 </div>
-<p><small>Prices shown are those captured in the report dated September 24, 2026. Pricing can change; check each vendor’s current offer before making a decision. The report rated the underlying price evidence as low confidence.</small></p>
+<p><small>Prices shown are those captured in the report dated September 24, 2026. Pricing can change; check each vendor’s current offer before making a decision. The report rated the underlying price evidence as low confidence. Corrected on November 26, 2026: the report listed Upmetrics at $185/month, which is the yearly white-label add-on, not a plan; per Upmetrics’ own pricing page, plans cost $19–$49/month, or $14–$37/month billed yearly.</small></p>
 
 <p>The spread points to several different ways of packaging value: an inexpensive document generator, a paid one-time deliverable, or recurring access to a wider toolkit. A new product needs to be clear about which job it does better — for example, research quality, transparent assumptions, financial modeling, collaboration, or sector-specific guidance.</p>
 
@@ -101,7 +101,7 @@ export const aiBusinessPlanMarketPost: BilingualPost = {
 <h2>Коротко о главном</h2>
 <ul>
   <li>В глобальном сегменте ИИ-сервисов для бизнес-планирования исследование выявило <strong>18 прямых и 4 косвенных конкурента</strong>.</li>
-  <li>Среди пяти сервисов с разовой оплатой за продукт цены составили <strong>$11,58–$149</strong>, медиана — <strong>$79</strong>. У трёх сервисов с подпиской цены — от <strong>$13 до $185 в месяц</strong>.</li>
+  <li>Среди пяти сервисов с разовой оплатой за продукт цены составили <strong>$11,58–$149</strong>, медиана — <strong>$79</strong>. У трёх сервисов с подпиской цены — от <strong>$13 до $145 в месяц</strong>.</li>
   <li>Оценка достижимого рынка на первый год (SOM) — <strong>$79 000</strong>, но она предполагает 1 000 покупателей. Их фактическое количество не измерялось.</li>
   <li>Исследование не смогло надёжно оценить общий и доступный рынок (TAM/SAM), а достоверных пользовательских отзывов по этой нише не нашло.</li>
 </ul>
@@ -123,11 +123,11 @@ export const aiBusinessPlanMarketPost: BilingualPost = {
     <tr><td>LaunchBiz</td><td>$79</td><td>Разовая оплата</td></tr>
     <tr><td>PlanMason</td><td>$99</td><td>Разовая оплата</td></tr>
     <tr><td>Percision</td><td>$149</td><td>Разовая оплата</td></tr>
-    <tr><td>Upmetrics AI</td><td>$185/мес.</td><td>Подписка</td></tr>
+    <tr><td>Upmetrics AI</td><td>$14–$49/мес.</td><td>Подписка</td></tr>
   </tbody>
 </table>
 </div>
-<p><small>Цены взяты из отчёта от 24 сентября 2026 года. Они могли измениться — перед принятием решения проверьте актуальные предложения на сайтах компаний. Надёжность ценовых данных в исследовании оценена как низкая.</small></p>
+<p><small>Цены взяты из отчёта от 24 сентября 2026 года. Они могли измениться — перед принятием решения проверьте актуальные предложения на сайтах компаний. Надёжность ценовых данных в исследовании оценена как низкая. Исправлено 26 ноября 2026 года: в отчёте для Upmetrics стояло $185/мес. — это цена дополнительной услуги white label при оплате за год, а не тариф; по странице цен Upmetrics тарифы стоят $19–$49 в месяц или $14–$37 в месяц при оплате за год.</small></p>
 
 <p>Разброс показывает несколько способов продавать ценность: недорогой генератор документа, разовый готовый результат или постоянный доступ к более широкому набору инструментов. Новому продукту важно объяснить, какую именно задачу он решает лучше: например, качество исследования, прозрачность допущений, финансовое моделирование, совместную работу или отраслевую специализацию.</p>
 
