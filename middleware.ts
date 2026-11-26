@@ -33,8 +33,21 @@ function detectAiBot(ua: string): string | null {
 // Only track content pages — skip static assets already excluded by matcher
 const CONTENT_PATH_PREFIXES = ['/blog/', '/solutions/', '/about', '/why-upgrowplan', '/ai-business-plan-generator'];
 
+// [26.11] /ru/* и главная тоже: русская версия — тот же контент с префиксом /ru (раньше /ru/blog/… не совпадал с '/blog/')
 function isContentPath(pathname: string): boolean {
-  return CONTENT_PATH_PREFIXES.some(p => pathname === p || pathname.startsWith(p));
+  const p = pathname === '/ru' ? '/' : pathname.replace(/^\/ru(?=\/)/, '');
+  return p === '/' || p === '/blog' || CONTENT_PATH_PREFIXES.some(prefix => p === prefix || p.startsWith(prefix));
+}
+
+// GEO Visibility: AI bot visit → event queue (lib/eventQueue.ts), sent to monitoring once a day; waitUntil keeps the
+// write alive after the response. [26.11] Вызывается ДО развилки по языкам: прежде /ru/* и «/» выходили из middleware
+// раньше этого места, и визиты ИИ-ботов на русские страницы и главную не записывались никогда.
+function trackAiBot(request: NextRequest, event: NextFetchEvent, pathname: string): void {
+  const ua = request.headers.get('user-agent') || '';
+  const botName = detectAiBot(ua);
+  if (botName && isContentPath(pathname)) {
+    event.waitUntil(reportBotCrawl({ bot_name: botName, bot_raw_ua: ua, url_path: pathname, crawled_at: new Date().toISOString() }));
+  }
 }
 
 export function middleware(request: NextRequest, event: NextFetchEvent) {
@@ -59,6 +72,9 @@ export function middleware(request: NextRequest, event: NextFetchEvent) {
     response.cookies.set('NEXT_LOCALE', 'en', { path: '/', maxAge: 31536000 });
     return response;
   }
+
+  // [26.11] учёт ИИ-ботов — до развилки по языкам (после переадресаций: заход на переадресацию — не визит страницы)
+  trackAiBot(request, event, pathname);
 
   // /ru or /ru/* → pass through, app/[locale]/ handles with locale="ru"
   if (pathname === '/ru' || pathname.startsWith('/ru/')) {
@@ -103,17 +119,7 @@ export function middleware(request: NextRequest, event: NextFetchEvent) {
   // Browser URL stays unchanged (no redirect), canonical URLs remain clean
   const url = request.nextUrl.clone();
   url.pathname = `/en${pathname}`;
-  const response = NextResponse.rewrite(url);
-
-  // GEO Visibility: AI bot visit → event queue (lib/eventQueue.ts), sent to monitoring once a day; waitUntil keeps the
-  // write alive after the response (a bare fetch could be cut off when the edge function returns)
-  const ua = request.headers.get('user-agent') || '';
-  const botName = detectAiBot(ua);
-  if (botName && isContentPath(pathname)) {
-    event.waitUntil(reportBotCrawl({ bot_name: botName, bot_raw_ua: ua, url_path: pathname, crawled_at: new Date().toISOString() }));
-  }
-
-  return response;
+  return NextResponse.rewrite(url);
 }
 
 export const config = {
