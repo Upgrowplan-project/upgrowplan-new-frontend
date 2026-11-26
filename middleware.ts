@@ -31,7 +31,7 @@ function detectAiBot(ua: string): string | null {
 }
 
 // Only track content pages — skip static assets already excluded by matcher
-const CONTENT_PATH_PREFIXES = ['/blog/', '/solutions/', '/about', '/why-upgrowplan', '/ai-business-plan-generator'];
+const CONTENT_PATH_PREFIXES = ['/blog/', '/solutions/', '/about', '/why-upgrowplan', '/ai-business-plan-generator', '/alternatives/'];
 
 // [26.11] /ru/* и главная тоже: русская версия — тот же контент с префиксом /ru (раньше /ru/blog/… не совпадал с '/blog/')
 function isContentPath(pathname: string): boolean {

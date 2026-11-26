@@ -302,4 +302,78 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.upgrowplan.com/privacy"/>
   </url>
 
+  <!-- Alternatives pages (26.11.2026, INFO.md TODO 24) -->
+  <url>
+    <loc>https://www.upgrowplan.com/alternatives/growexa</loc>
+    <lastmod>2026-11-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.upgrowplan.com/alternatives/growexa"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.upgrowplan.com/ru/alternatives/growexa"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.upgrowplan.com/alternatives/growexa"/>
+  </url>
+  <url>
+    <loc>https://www.upgrowplan.com/ru/alternatives/growexa</loc>
+    <lastmod>2026-11-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.upgrowplan.com/alternatives/growexa"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.upgrowplan.com/ru/alternatives/growexa"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.upgrowplan.com/alternatives/growexa"/>
+  </url>
+  <url>
+    <loc>https://www.upgrowplan.com/alternatives/planarmory</loc>
+    <lastmod>2026-11-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.upgrowplan.com/alternatives/planarmory"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.upgrowplan.com/ru/alternatives/planarmory"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.upgrowplan.com/alternatives/planarmory"/>
+  </url>
+  <url>
+    <loc>https://www.upgrowplan.com/ru/alternatives/planarmory</loc>
+    <lastmod>2026-11-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.upgrowplan.com/alternatives/planarmory"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.upgrowplan.com/ru/alternatives/planarmory"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.upgrowplan.com/alternatives/planarmory"/>
+  </url>
+  <url>
+    <loc>https://www.upgrowplan.com/alternatives/prometai</loc>
+    <lastmod>2026-11-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.upgrowplan.com/alternatives/prometai"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.upgrowplan.com/ru/alternatives/prometai"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.upgrowplan.com/alternatives/prometai"/>
+  </url>
+  <url>
+    <loc>https://www.upgrowplan.com/ru/alternatives/prometai</loc>
+    <lastmod>2026-11-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.upgrowplan.com/alternatives/prometai"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.upgrowplan.com/ru/alternatives/prometai"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.upgrowplan.com/alternatives/prometai"/>
+  </url>
+  <url>
+    <loc>https://www.upgrowplan.com/alternatives/upmetrics</loc>
+    <lastmod>2026-11-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.upgrowplan.com/alternatives/upmetrics"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.upgrowplan.com/ru/alternatives/upmetrics"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.upgrowplan.com/alternatives/upmetrics"/>
+  </url>
+  <url>
+    <loc>https://www.upgrowplan.com/ru/alternatives/upmetrics</loc>
+    <lastmod>2026-11-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.upgrowplan.com/alternatives/upmetrics"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.upgrowplan.com/ru/alternatives/upmetrics"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.upgrowplan.com/alternatives/upmetrics"/>
+  </url>
+
 </urlset>
