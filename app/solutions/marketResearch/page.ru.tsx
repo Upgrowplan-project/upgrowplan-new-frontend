@@ -1,5 +1,6 @@
 "use client";
 
+import { wakeUserService } from "./wakeResearchServices";
 import { useState, useEffect, useRef } from "react";
 import Header from "../../../components/Header";
 import Grade from "../../../components/Grade";
@@ -860,9 +861,24 @@ export default function MarketResearchPage() {
 
   // Refresh every 30 seconds; every 5 seconds while the service is waking up
   useEffect(() => {
-    const interval = setInterval(() => fetchHealthStatus(false), healthWarmingUp ? 5000 : 30000);
+    // [27.11 · owner «снизить потребление часов»] the readiness check ran every 30 s for as long as the page was open — an open
+    // tab kept the research backend AND its search agent awake for hours (prod 27.11: 215 checks in 3.5 h, MRS up 9 h, DRA 15 h,
+    // ≈ 1 Eco hour per hour of a forgotten tab). Now: only while the tab is visible and only until the system is ready; the start
+    // button re-checks readiness anyway.
+    if (healthStatus?.all_ready) return;
+    const interval = setInterval(() => {
+      if (typeof document !== "undefined" && document.hidden) return;
+      fetchHealthStatus(false);
+    }, healthWarmingUp ? 5000 : 30000);
     return () => clearInterval(interval);
-  }, [healthWarmingUp]);
+  }, [healthWarmingUp, healthStatus?.all_ready]);
+
+  // a tab brought back to the screen re-checks once (the backend may have fallen asleep meanwhile)
+  useEffect(() => {
+    const onVisible = () => { if (!document.hidden) fetchHealthStatus(false); };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, []);
 
   // сообщение «запускается» от нажатой кнопки уходит само, как только система готова
   useEffect(() => {
@@ -3280,7 +3296,7 @@ export default function MarketResearchPage() {
                       disabled={isInterpreting || Boolean(objectChoice) || getMissingRequiredFields().length > 0}
                       onChange={(e) => {
                         setObjectChecked(e.target.checked);
-                        if (e.target.checked) { void runObjectInterpretation(); }
+                        if (e.target.checked) { wakeUserService(); void runObjectInterpretation(); }
                         else { setObjectConfirmed(null); setObjectFailed(false); setObjectSig(null); }
                       }}
                       style={{ marginTop: "3px", flexShrink: 0 }} />

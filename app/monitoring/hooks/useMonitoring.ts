@@ -12,10 +12,19 @@ export const useMonitoring = () => {
 
   // WebSocket для real-time обновлений (admin-токен в query)
   const wsToken = typeof window !== "undefined" ? getToken() : null;
+  // [27.11 · owner «снизить потребление часов, в том числе мониторинга»] an open dashboard tab kept the socket and reconnected
+  // every ~35 min (prod 26.11: 5 of 10 monitoring wake-ups were /ws/monitoring from one hidden tab). The socket lives only while
+  // the tab is visible: hidden → closed (url null), visible again → reconnects (the socket sends a fresh snapshot every 5 s).
+  const [visible, setVisible] = useState(typeof document === "undefined" ? true : !document.hidden);
+  useEffect(() => {
+    const onVis = () => setVisible(!document.hidden);
+    document.addEventListener("visibilitychange", onVis);
+    return () => document.removeEventListener("visibilitychange", onVis);
+  }, []);
   const { lastMessage, readyState } = useWebSocket(
-    `${MONITORING_WS}/ws/monitoring${wsToken ? `?token=${encodeURIComponent(wsToken)}` : ""}`,
+    visible ? `${MONITORING_WS}/ws/monitoring${wsToken ? `?token=${encodeURIComponent(wsToken)}` : ""}` : null,
     {
-    shouldReconnect: () => true,
+    shouldReconnect: () => !document.hidden,
     reconnectAttempts: 10,
     reconnectInterval: 3000,
   });
