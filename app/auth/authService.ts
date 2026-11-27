@@ -17,7 +17,20 @@ if (typeof window !== "undefined" && !(axios as any).__authRefreshAttached) {
       const url: string = original?.url || "";
       const isAuthCall = url.includes("/auth/login") || url.includes("/auth/refresh");
       if ((status === 401 || status === 403) && !original.__retried && !isAuthCall) {
-        if (!localStorage.getItem("refreshToken")) return Promise.reject(error);
+        // [27.11 · tester could not start research: MRS 401 ×3] the header asked for the profile with a stale token (expired
+        // 21.11) at the same second the invite page stored a NEW session; the renewal used the OLD refresh token (user-service
+        // deletes old refresh tokens when it issues a session) → 401 → this branch wiped the NEW session too. Now: a newer
+        // session already stored → retry with it; after a failed renewal clear only if nothing newer was stored meanwhile.
+        const current = localStorage.getItem("token");
+        const used = String((original.headers || {}).Authorization || "");
+        if (current && used && used !== `Bearer ${current}`) {
+          original.__retried = true;
+          original.headers = original.headers || {};
+          original.headers.Authorization = `Bearer ${current}`;
+          return axios(original);
+        }
+        const refreshUsed = localStorage.getItem("refreshToken");
+        if (!refreshUsed) return Promise.reject(error);
         original.__retried = true;
         // one shared renewal (refresh token rotates — parallel renewals would log the user out)
         const newToken = await refreshAccessToken();
@@ -26,9 +39,11 @@ if (typeof window !== "undefined" && !(axios as any).__authRefreshAttached) {
           original.headers.Authorization = `Bearer ${newToken}`;
           return axios(original);
         }
-        // refresh-токен тоже истёк (или невалиден) → сессия закончилась
-        localStorage.removeItem("token");
-        localStorage.removeItem("refreshToken");
+        // refresh-токен тоже истёк (или невалиден) → сессия закончилась — если за это время не сохранили новую
+        if (localStorage.getItem("refreshToken") === refreshUsed) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("refreshToken");
+        }
       }
       return Promise.reject(error);
     }
