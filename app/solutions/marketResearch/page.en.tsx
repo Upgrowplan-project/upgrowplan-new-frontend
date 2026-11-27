@@ -645,6 +645,7 @@ export default function MarketResearchPage() {
 
   // Health status state
   const [healthStatus, setHealthStatus] = useState<any>(null);
+  const [healthUnreachable, setHealthUnreachable] = useState(false);
   const [healthExpanded, setHealthExpanded] = useState(false);
   const [isLoadingHealth, setIsLoadingHealth] = useState(true);
   const [isRefreshingHealth, setIsRefreshingHealth] = useState(false);
@@ -760,19 +761,24 @@ export default function MarketResearchPage() {
       }
       // HARDCODED FOR NOW - env var not working
       const healthApiBaseUrl = API_BASE;
-      console.log("[Health Check] Fetching from:", `${healthApiBaseUrl}/api/v1/agents/health`);
-      const response = await fetch(`${healthApiBaseUrl}/api/v1/agents/health`);
+      // [28.11] the refresh button asks past the service cache (fresh=1); regular polling shares one result for 60 s
+      const healthUrl = `${healthApiBaseUrl}/api/v1/agents/health${manualRefresh ? "?fresh=1" : ""}`;
+      console.log("[Health Check] Fetching from:", healthUrl);
+      const response = await fetch(healthUrl);
 
       if (response.ok) {
         const data = await response.json();
         console.log("[Health Check] ✅ Data received:", data);
         setHealthStatus(data);
+        setHealthUnreachable(false);
         console.log("[Health Check] State updated, isLoading will be set to false");
       } else {
         console.error("[Health Check] Failed to fetch health status:", response.status);
+        setHealthUnreachable(true);
       }
     } catch (error) {
       console.error("[Health Check] Error fetching health status:", error);
+      setHealthUnreachable(true);
     } finally {
       healthInFlightRef.current = false;
       setIsLoadingHealth(false);
@@ -815,6 +821,21 @@ export default function MarketResearchPage() {
 
   // [25.10 · «Г»] the search agent is waking up after idle (the backend sends warming_up) — not a failure
   const healthWarmingUp = !!healthStatus && !healthStatus.all_ready && healthStatus.warming_up === true;
+
+  // [28.11 · owner «if not all services are reachable — do not let the fields be filled in»] one readiness of the service
+  // (readiness: ready / warming / blocked + RU/EN reasons). Until «ready» (or when the service does not answer) the form fields
+  // are locked, not only the start button. Not locked while a research runs or is paused. An old service without readiness —
+  // by all_ready.
+  const readiness = healthStatus?.readiness;
+  const readinessBlocking: string[] = (readiness?.blocking || []).map((b: { en: string }) => b.en);
+  const readinessWarming: string[] = (readiness?.warming || []).map((w: { en: string }) => w.en);
+  const readinessNotes: string[] = healthStatus?.all_ready
+    ? (readiness?.warnings || [])
+        .filter((w: { applies_to?: string }) => w.applies_to !== "physical" || !isDigitalForm)
+        .map((w: { en: string }) => w.en)
+    : [];
+  const formLocked = !isSubmitting && !isResearchPaused
+    && (isLoadingHealth || healthUnreachable || !healthStatus || !healthStatus.all_ready);
 
   // Load health status on mount
   useEffect(() => {
@@ -1305,7 +1326,8 @@ export default function MarketResearchPage() {
     const healthApiBaseUrl = API_BASE;
 
     try {
-      const healthResponse = await fetch(`${healthApiBaseUrl}/api/v1/agents/health`);
+      // [28.11] right before the start — past the service cache: the state may have changed while the form was filled in
+      const healthResponse = await fetch(`${healthApiBaseUrl}/api/v1/agents/health?fresh=1`);
 
       if (!healthResponse.ok) {
         throw new Error(`System health check failed: HTTP ${healthResponse.status}`);
@@ -1324,16 +1346,20 @@ export default function MarketResearchPage() {
       }
 
       if (!healthData.all_ready) {
-        // Найти компоненты, которые не работают
-        const failedComponents = healthData.agents
-          .filter((agent: any) => !agent.ready && !agent.optional)
-          .map((agent: any) => `${agent.name}: ${agent.error || 'offline'}`)
-          .join('\n');
+        // [28.11] reasons from readiness in plain words; an old service without readiness — the old component list
+        const reasons: string[] = (healthData.readiness?.blocking || []).map((b: { en: string }) => b.en);
+        const failedComponents = reasons.length > 0
+          ? reasons.join('\n')
+          : (healthData.agents || [])
+              .filter((agent: any) => !agent.ready && !agent.optional)
+              .map((agent: any) => `${agent.name}: ${agent.error || 'offline'}`)
+              .join('\n');
+        setHealthStatus(healthData);
 
         setError(
-          `❌ The system is not ready to start research!\n\n` +
-          `The following components are unavailable:\n${failedComponents}\n\n` +
-          `Please make sure all services are running and try again.`
+          `Research cannot be started right now.\n\n` +
+          `Not working:\n${failedComponents}\n\n` +
+          `The fields you filled in stay in place — the form will open as soon as everything works.`
         );
         setIsSubmitting(false);
         setIsInterpreting(false);
@@ -2446,8 +2472,8 @@ export default function MarketResearchPage() {
           );
         })()}
 
-        {/* Warning when system is not ready */}
-        {!isLoadingHealth && healthStatus && !healthStatus.all_ready && (
+        {/* [28.11] The form is locked while the system is not ready — the reason in plain words */}
+        {!isLoadingHealth && formLocked && (healthUnreachable || (healthStatus && !healthStatus.all_ready)) && (
           <div className={styles.errorSection}>
             <div style={{
               maxWidth: '900px',
@@ -2461,22 +2487,40 @@ export default function MarketResearchPage() {
               gap: '0.75rem'
             }}>
               <FiAlertCircle size={24} color="#856404" />
-              {healthWarmingUp ? (
+              {healthUnreachable && !healthStatus?.all_ready ? (
+                <div>
+                  <strong style={{ color: '#856404', fontSize: '0.95rem' }}>The research service does not respond</strong>
+                  <p style={{ margin: '0.25rem 0 0', color: '#856404', fontSize: '0.9rem' }}>
+                    The form will open as soon as it answers — the page checks by itself. You can also come back a little later.
+                  </p>
+                </div>
+              ) : healthWarmingUp ? (
                 <div>
                   <strong style={{ color: '#856404', fontSize: '0.95rem' }}>The service is starting after a pause</strong>
                   <p style={{ margin: '0.25rem 0 0', color: '#856404', fontSize: '0.9rem' }}>
-                    This usually takes under a minute. The page checks by itself — no need to click anything; you can fill in the form.
+                    {readinessWarming.length > 0 ? `Right now: ${readinessWarming.join("; ")}. ` : ""}
+                    This usually takes under a minute. The form will open by itself — no need to click anything.
                   </p>
                 </div>
               ) : (
                 <div>
-                  <strong style={{ color: '#856404', fontSize: '0.95rem' }}>System not ready</strong>
+                  <strong style={{ color: '#856404', fontSize: '0.95rem' }}>Research cannot be started right now</strong>
                   <p style={{ margin: '0.25rem 0 0', color: '#856404', fontSize: '0.9rem' }}>
-                    Some system components are unavailable. Research will be available only once all required components are ready.
+                    {readinessBlocking.length > 0
+                      ? `Not working: ${readinessBlocking.join("; ")}. `
+                      : "Some required parts of the system are unavailable. "}
+                    The form will open as soon as everything works — the page checks by itself.
                   </p>
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {/* [28.11] Notes when the system is ready (they do not lock anything) */}
+        {!isLoadingHealth && !formLocked && !isSubmitting && readinessNotes.length > 0 && (
+          <div style={{ maxWidth: '900px', margin: '0 auto 1rem', color: '#6b7280', fontSize: '0.85rem' }}>
+            Please note: {readinessNotes.join("; ")}.
           </div>
         )}
 
@@ -2601,6 +2645,9 @@ export default function MarketResearchPage() {
               </>
             )}
             <form onSubmit={handleSubmit} className={styles.form}>
+              {/* [28.11] while the system is not ready the browser locks every field and button of the form at once */}
+              <fieldset disabled={formLocked} aria-disabled={formLocked}
+                style={{ border: 0, padding: 0, margin: 0, minWidth: 0, opacity: formLocked ? 0.55 : 1 }}>
               {/* Поля формы скрываются во время исследования — показываются снова при паузе */}
               {(!isSubmitting || isResearchPaused) && (<>
               <div className={styles.section}>
@@ -3284,6 +3331,7 @@ export default function MarketResearchPage() {
                   </div>
                 </div>
               )}
+              </fieldset>
             </form>
           </div>
         </div>

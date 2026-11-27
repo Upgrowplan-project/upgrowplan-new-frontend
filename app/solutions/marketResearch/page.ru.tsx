@@ -678,6 +678,7 @@ export default function MarketResearchPage() {
 
   // Health status state
   const [healthStatus, setHealthStatus] = useState<any>(null);
+  const [healthUnreachable, setHealthUnreachable] = useState(false);
   const [healthExpanded, setHealthExpanded] = useState(false);
   const [isLoadingHealth, setIsLoadingHealth] = useState(true);
   const [isRefreshingHealth, setIsRefreshingHealth] = useState(false);
@@ -797,19 +798,24 @@ export default function MarketResearchPage() {
       }
       // HARDCODED FOR NOW - env var not working
       const healthApiBaseUrl = API_BASE;
-      console.log("[Health Check] Fetching from:", `${healthApiBaseUrl}/api/v1/agents/health`);
-      const response = await fetch(`${healthApiBaseUrl}/api/v1/agents/health`);
+      // [28.11] кнопка «обновить» спрашивает мимо кэша сервиса (fresh=1), обычный опрос — общий результат на 60 с
+      const healthUrl = `${healthApiBaseUrl}/api/v1/agents/health${manualRefresh ? "?fresh=1" : ""}`;
+      console.log("[Health Check] Fetching from:", healthUrl);
+      const response = await fetch(healthUrl);
 
       if (response.ok) {
         const data = await response.json();
         console.log("[Health Check] ✅ Data received:", data);
         setHealthStatus(data);
+        setHealthUnreachable(false);
         console.log("[Health Check] State updated, isLoading will be set to false");
       } else {
         console.error("[Health Check] Failed to fetch health status:", response.status);
+        setHealthUnreachable(true);
       }
     } catch (error) {
       console.error("[Health Check] Error fetching health status:", error);
+      setHealthUnreachable(true);
     } finally {
       healthInFlightRef.current = false;
       setIsLoadingHealth(false);
@@ -852,6 +858,20 @@ export default function MarketResearchPage() {
 
   // [25.10 · «Г»] агент поиска просыпается после простоя (бэкенд отдаёт warming_up) — это не поломка
   const healthWarmingUp = !!healthStatus && !healthStatus.all_ready && healthStatus.warming_up === true;
+
+  // [28.11 · владелец «если нет доступа ко всем сервисам — не давать заполнять поля»] одна готовность сервиса (readiness:
+  // ready / warming / blocked + причины RU/EN). Пока не «готово» (или сервис не ответил) — поля формы заблокированы, а не
+  // только кнопка запуска. Во время исследования и на паузе форма не блокируется. Старый сервис без readiness — по all_ready.
+  const readiness = healthStatus?.readiness;
+  const readinessBlocking: string[] = (readiness?.blocking || []).map((b: { ru: string }) => b.ru);
+  const readinessWarming: string[] = (readiness?.warming || []).map((w: { ru: string }) => w.ru);
+  const readinessNotes: string[] = healthStatus?.all_ready
+    ? (readiness?.warnings || [])
+        .filter((w: { applies_to?: string }) => w.applies_to !== "physical" || !isDigitalForm)
+        .map((w: { ru: string }) => w.ru)
+    : [];
+  const formLocked = !isSubmitting && !isResearchPaused
+    && (isLoadingHealth || healthUnreachable || !healthStatus || !healthStatus.all_ready);
 
   // Load health status on mount
   useEffect(() => {
@@ -1343,7 +1363,8 @@ export default function MarketResearchPage() {
     const healthApiBaseUrl = API_BASE;
 
     try {
-      const healthResponse = await fetch(`${healthApiBaseUrl}/api/v1/agents/health`);
+      // [28.11] перед запуском — мимо кэша сервиса: состояние могло измениться, пока заполнялась форма
+      const healthResponse = await fetch(`${healthApiBaseUrl}/api/v1/agents/health?fresh=1`);
 
       if (!healthResponse.ok) {
         throw new Error(`Проверка здоровья системы не удалась: HTTP ${healthResponse.status}`);
@@ -1362,16 +1383,20 @@ export default function MarketResearchPage() {
       }
 
       if (!healthData.all_ready) {
-        // Найти компоненты, которые не работают
-        const failedComponents = healthData.agents
-          .filter((agent: any) => !agent.ready && !agent.optional)
-          .map((agent: any) => `${agent.name}: ${agent.error || 'offline'}`)
-          .join('\n');
+        // [28.11] причины — из readiness простыми словами; старый сервис без readiness — прежний список компонентов
+        const reasons: string[] = (healthData.readiness?.blocking || []).map((b: { ru: string }) => b.ru);
+        const failedComponents = reasons.length > 0
+          ? reasons.join('\n')
+          : (healthData.agents || [])
+              .filter((agent: any) => !agent.ready && !agent.optional)
+              .map((agent: any) => `${agent.name}: ${agent.error || 'offline'}`)
+              .join('\n');
+        setHealthStatus(healthData);
 
         setError(
-          `❌ Система не готова к запуску исследования!\n\n` +
-          `Следующие компоненты недоступны:\n${failedComponents}\n\n` +
-          `Пожалуйста, убедитесь что все сервисы запущены и повторите попытку.`
+          `Сейчас запустить исследование нельзя.\n\n` +
+          `Не работает:\n${failedComponents}\n\n` +
+          `Заполненные поля останутся на месте — форма откроется, как только всё заработает.`
         );
         setIsSubmitting(false);
         setIsInterpreting(false);
@@ -2599,8 +2624,8 @@ export default function MarketResearchPage() {
           );
         })()}
 
-        {/* Warning when system is not ready */}
-        {!isLoadingHealth && healthStatus && !healthStatus.all_ready && (
+        {/* [28.11] Форма заблокирована, пока система не готова — здесь причина простыми словами */}
+        {!isLoadingHealth && formLocked && (healthUnreachable || (healthStatus && !healthStatus.all_ready)) && (
           <div className={styles.errorSection}>
             <div style={{
               maxWidth: '900px',
@@ -2614,22 +2639,40 @@ export default function MarketResearchPage() {
               gap: '0.75rem'
             }}>
               <FiAlertCircle size={24} color="#856404" />
-              {healthWarmingUp ? (
+              {healthUnreachable && !healthStatus?.all_ready ? (
+                <div>
+                  <strong style={{ color: '#856404', fontSize: '0.95rem' }}>Сервис исследований не отвечает</strong>
+                  <p style={{ margin: '0.25rem 0 0', color: '#856404', fontSize: '0.9rem' }}>
+                    Форма откроется, как только он ответит — страница проверяет это сама. Можно зайти чуть позже.
+                  </p>
+                </div>
+              ) : healthWarmingUp ? (
                 <div>
                   <strong style={{ color: '#856404', fontSize: '0.95rem' }}>Сервис запускается после простоя</strong>
                   <p style={{ margin: '0.25rem 0 0', color: '#856404', fontSize: '0.9rem' }}>
-                    Обычно это занимает до минуты. Страница проверяет готовность сама — ничего нажимать не нужно, форму можно заполнять.
+                    {readinessWarming.length > 0 ? `Сейчас: ${readinessWarming.join("; ")}. ` : ""}
+                    Обычно это занимает до минуты. Форма откроется сама — ничего нажимать не нужно.
                   </p>
                 </div>
               ) : (
                 <div>
-                  <strong style={{ color: '#856404', fontSize: '0.95rem' }}>Система не готова</strong>
+                  <strong style={{ color: '#856404', fontSize: '0.95rem' }}>Сейчас запустить исследование нельзя</strong>
                   <p style={{ margin: '0.25rem 0 0', color: '#856404', fontSize: '0.9rem' }}>
-                    Некоторые компоненты системы недоступны. Исследование будет доступно только когда все обязательные компоненты будут готовы.
+                    {readinessBlocking.length > 0
+                      ? `Не работает: ${readinessBlocking.join("; ")}. `
+                      : "Некоторые обязательные части системы недоступны. "}
+                    Форма откроется, как только всё заработает — страница проверяет это сама.
                   </p>
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {/* [28.11] Предупреждения при готовой системе (не блокируют) */}
+        {!isLoadingHealth && !formLocked && !isSubmitting && readinessNotes.length > 0 && (
+          <div style={{ maxWidth: '900px', margin: '0 auto 1rem', color: '#6b7280', fontSize: '0.85rem' }}>
+            Обратите внимание: {readinessNotes.join("; ")}.
           </div>
         )}
 
@@ -2754,6 +2797,9 @@ export default function MarketResearchPage() {
               </>
             )}
             <form onSubmit={handleSubmit} className={styles.form}>
+              {/* [28.11] пока система не готова, браузер блокирует все поля и кнопки формы разом */}
+              <fieldset disabled={formLocked} aria-disabled={formLocked}
+                style={{ border: 0, padding: 0, margin: 0, minWidth: 0, opacity: formLocked ? 0.55 : 1 }}>
               {/* Поля формы скрываются во время исследования — показываются снова при паузе */}
               {(!isSubmitting || isResearchPaused) && (<>
               <div className={styles.section}>
@@ -3439,6 +3485,7 @@ export default function MarketResearchPage() {
                   </div>
                 </div>
               )}
+              </fieldset>
             </form>
           </div>
         </div>
